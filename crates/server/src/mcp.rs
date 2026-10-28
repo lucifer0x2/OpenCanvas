@@ -1,4 +1,5 @@
 use crate::{
+    cache_hints::Cached,
     domain,
     error::{ApiError, Result},
     jobs::SceneRequest,
@@ -29,6 +30,13 @@ impl ServerHandler for Mcp {
     ) -> std::result::Result<ListResourcesResult, ErrorData> {
         Ok(crate::resources::list())
     }
+    async fn list_resource_templates(
+        &self,
+        _: Option<PaginatedRequestParams>,
+        _: RequestContext<RoleServer>,
+    ) -> std::result::Result<ListResourceTemplatesResult, ErrorData> {
+        Ok(crate::resources::templates())
+    }
     async fn read_resource(
         &self,
         request: ReadResourceRequestParams,
@@ -41,10 +49,7 @@ impl ServerHandler for Mcp {
         _: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> std::result::Result<ListToolsResult, ErrorData> {
-        Ok(ListToolsResult {
-            tools: schemas::tools(),
-            ..Default::default()
-        })
+        Ok(ListToolsResult::with_all_items(schemas::tools()).cached())
     }
     fn get_tool(&self, name: &str) -> Option<Tool> {
         schemas::tools().into_iter().find(|t| t.name == name)

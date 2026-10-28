@@ -1,3 +1,4 @@
+mod cache_hints;
 mod domain;
 mod error;
 mod events;

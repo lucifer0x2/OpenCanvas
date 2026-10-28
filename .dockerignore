@@ -1,0 +1,12 @@
+# Build context for the Dockerfile: sources only. Every artifact is rebuilt inside the image.
+.git
+target
+node_modules
+**/node_modules
+.runtime
+artifacts
+renderer/dist
+web/dist
+.impeccable
+spikes/pipeline/output
+**/.DS_Store

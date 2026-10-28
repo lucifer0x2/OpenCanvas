@@ -11,7 +11,8 @@ Không sửa `crates/`, không sửa `web/`.
 Đây là phần dễ bỏ qua nhất nhưng quyết định hành vi của mọi agent về sau.
 
 Thước đo nghiệm thu hiện tại thưởng đúng một thứ: pixel diff bằng 0 tại một viewport.
-`AGENTS.md` ghi kết quả đạt là "2.995.200 RGBA channels, 0 sai khác", và `docs/ACCEPTANCE.md`
+Nhật ký `AGENTS.md` cũ (nay ở `docs/agents/history/2026-10-28.md`) ghi kết quả đạt là
+"2.995.200 RGBA channels, 0 sai khác", và `docs/ACCEPTANCE.md`
 ghi "exact RGBA 0 sai khác desktop/mobile/restart".
 
 Nhưng với frame `free`, "0 sai khác ở mobile" **không** chứng minh thiết kế chạy được trên

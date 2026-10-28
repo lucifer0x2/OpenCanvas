@@ -2,6 +2,7 @@ use rmcp::model::Tool;
 use serde_json::{json, Value};
 use std::{collections::HashMap, sync::OnceLock};
 mod operations;
+mod render;
 mod validation;
 /// The catalog is fixed for the life of the process, so tools and their input schemas are built
 /// once instead of on every `validate`, `list_tools` and `get_tool`.
@@ -11,7 +12,14 @@ fn catalog() -> &'static (Vec<Tool>, HashMap<String, Value>) {
         let tools = build();
         let schemas = tools
             .iter()
-            .map(|t| (t.name.to_string(), Value::Object((*t.input_schema).clone())))
+            .map(|t| {
+                // render_frame publishes a flat object; its arguments are checked in strict form.
+                let schema = match t.name.as_ref() {
+                    "render_frame" => render::validation(),
+                    _ => Value::Object((*t.input_schema).clone()),
+                };
+                (t.name.to_string(), schema)
+            })
             .collect();
         (tools, schemas)
     })
@@ -135,11 +143,11 @@ fn build() -> Vec<Tool> {
             ],
         ),
     );
-    let render = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4}});
-    let wait = json!({"type":"integer","minimum":0,"maximum":crate::jobs::MAX_WAIT_MS});
-    add("render_frame","Enqueue immutable exact-revision rendering; returns bounded job and HTTP PNG resource metadata when ready. Poll using jobId; pass waitMs (0–10000, default 0) to have the poll return as soon as the job leaves pending, or its current state when the wait expires, instead of polling in a tight loop. waitMs is only accepted with jobId. The PNG is the exact pixels the design has at that revision and viewport, so it is also how an implementation is compared against the design.".into(),{
-        json!({"oneOf":[object(render,&["projectId","revision","frameId","viewport"]),object(json!({"projectId":id(),"jobId":id(),"waitMs":wait}),&["projectId","jobId"])]})
-    });
+    add(
+        "render_frame",
+        render::DESCRIPTION.into(),
+        render::published(),
+    );
     add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
     tools
 }

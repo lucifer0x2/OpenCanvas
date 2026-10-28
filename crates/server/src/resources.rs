@@ -1,3 +1,4 @@
+use crate::cache_hints::Cached;
 use rmcp::{model::*, ErrorData};
 
 const SKILLS: [(&str, &str, &str); 2] = [
@@ -14,8 +15,8 @@ const SKILLS: [(&str, &str, &str); 2] = [
 ];
 
 pub(crate) fn list() -> ListResourcesResult {
-    ListResourcesResult {
-        resources: SKILLS
+    ListResourcesResult::with_all_items(
+        SKILLS
             .iter()
             .map(|(uri, name, text)| {
                 Resource::new(*uri, *name)
@@ -23,8 +24,14 @@ pub(crate) fn list() -> ListResourcesResult {
                     .with_size(text.len() as u64)
             })
             .collect(),
-        ..Default::default()
-    }
+    )
+    .cached()
+}
+
+/// No templates are advertised; the empty list still carries the cache hints that
+/// protocol 2026-07-28 requires (rmcp's default handler omits them).
+pub(crate) fn templates() -> ListResourceTemplatesResult {
+    ListResourceTemplatesResult::default().cached()
 }
 
 pub(crate) fn read(uri: &str) -> Result<ReadResourceResponse, ErrorData> {
@@ -35,5 +42,6 @@ pub(crate) fn read(uri: &str) -> Result<ReadResourceResponse, ErrorData> {
     Ok(ReadResourceResult::new(vec![
         ResourceContents::text(*text, uri).with_mime_type("text/markdown")
     ])
+    .cached()
     .into())
 }

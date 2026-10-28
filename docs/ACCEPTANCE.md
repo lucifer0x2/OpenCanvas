@@ -170,4 +170,4 @@ tương thích. Chi phí và contract tại `docs/TASK03-REPORT.md`, `docs/SERVE
 - Không lấy ảnh đẹp làm bằng chứng persistence/events. Scene line lists và provenance phải kiểm riêng.
 - Root data tests tạm, không dùng project thật trong `~/.opencanvas`.
 - Phân biệt chưa triển khai, chưa kiểm, thất bại và đã đạt. Không ghi toàn bộ milestone đạt chỉ vì một happy path xanh.
-- Ghi command, runtime, fixture, kết quả, giới hạn vào báo cáo của task; giữ nhật ký tóm tắt trong `AGENTS.md`.
+- Ghi command, runtime, fixture, kết quả, giới hạn vào báo cáo của task; giữ nhật ký tóm tắt trong `docs/agents/LOG.md`.
