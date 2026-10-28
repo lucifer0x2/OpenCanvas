@@ -4,10 +4,13 @@ use axum::{
     Json,
 };
 use opencanvas_storage::StorageError;
-use serde_json::json;
+use serde_json::{json, Map, Value};
 
+/// A storage-shaped error plus optional server-added detail fields (such as `changedSince` on
+/// `REVISION_CONFLICT`). Details are merged into the `error` object; they never replace the
+/// storage fields, so `code`, `message`, `retryable` and `currentRevision` stay as storage set them.
 #[derive(Debug, Clone)]
-pub struct ApiError(pub StorageError);
+pub struct ApiError(pub StorageError, Option<Box<Map<String, Value>>>);
 pub type Result<T> = std::result::Result<T, ApiError>;
 impl ApiError {
     pub fn new(code: &str, message: &str) -> Self {
@@ -16,18 +19,29 @@ impl ApiError {
             code,
             "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED"
         );
-        Self(error)
+        Self(error, None)
     }
     pub fn invalid(message: &str) -> Self {
         Self::new("INVALID_REQUEST", message)
     }
-    pub fn value(&self) -> serde_json::Value {
-        json!({"error":self.0})
+    /// Adds a detail field to the serialized `error` object; storage fields win on a name clash.
+    pub fn with_detail(mut self, key: &str, value: Value) -> Self {
+        self.1.get_or_insert_default().insert(key.into(), value);
+        self
+    }
+    pub fn value(&self) -> Value {
+        let mut error = json!(self.0);
+        if let (Some(details), Some(object)) = (&self.1, error.as_object_mut()) {
+            for (key, value) in details.iter() {
+                object.entry(key.clone()).or_insert_with(|| value.clone());
+            }
+        }
+        json!({ "error": error })
     }
 }
 impl From<StorageError> for ApiError {
     fn from(e: StorageError) -> Self {
-        Self(e)
+        Self(e, None)
     }
 }
 impl From<serde_json::Error> for ApiError {

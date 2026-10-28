@@ -2,10 +2,12 @@ use crate::{
     error::{ApiError, Result},
     jobs::Jobs,
 };
-use opencanvas_storage::{Snapshot, Store};
+use opencanvas_storage::{Project, Snapshot, Store};
+use pins::ProjectPins;
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{broadcast, watch};
+mod pins;
 
 #[derive(Clone)]
 pub struct Config {
@@ -33,6 +35,7 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub events: broadcast::Sender<Value>,
     pub jobs: Arc<Jobs>,
+    pins: Arc<ProjectPins>,
     shutdown: Arc<watch::Sender<bool>>,
 }
 impl AppState {
@@ -45,6 +48,7 @@ impl AppState {
             config,
             events,
             jobs,
+            pins: Arc::default(),
             shutdown: Arc::new(watch::channel(false).0),
         }
     }
@@ -71,6 +75,20 @@ impl AppState {
             .map_err(Into::into)
     }
     pub async fn snapshot(&self, id: String) -> Result<Snapshot> {
-        self.db(move |s| s.open_project(&id)?.snapshot()).await
+        let pins = self.pins.clone();
+        self.db(move |s| pins.snapshot(&s, &id)).await
+    }
+    /// Runs `f` on the project named by id or slug, through the pinned handle.
+    pub async fn project<T, F>(&self, id: String, f: F) -> Result<T>
+    where
+        T: Send + 'static,
+        F: FnOnce(&Project) -> opencanvas_storage::Result<T> + Send + 'static,
+    {
+        let pins = self.pins.clone();
+        self.db(move |s| {
+            let project = pins.open(&s, &id)?;
+            f(&project)
+        })
+        .await
     }
 }

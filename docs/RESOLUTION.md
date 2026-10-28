@@ -112,3 +112,49 @@ the full storage suite after M4 stabilizes. Unsupported: style aliases, nested
 token envelopes, forward aliases, undeclared themes, percentage/baseline/rich-text
 layout and ambiguous fill in a hug axis; existing layout limits remain in the
 [pipeline contract](../spikes/pipeline/README.md).
+
+## Task04: opt-in row wrap
+
+Approved schema: `layout.wrap` is literal boolean, omitted/false means no-wrap;
+true requires a page/frame/group row container. Storage rejects unknown layout
+keys and non-booleans including refs/null. Direct typed deserialize reports
+`INVALID_JSON` for wrong types; semantic errors report `LAYOUT_INVALID` before
+measurement. Storage reports `VALIDATION_FAILED` with a field, without committing.
+
+A wrapping row needs positive numeric width, or width fill through ancestors with
+fill widths to a positive fixed width. Missing/hug and min/max alone do not make
+a definite width. Direct computation anchors at the selected frame's viewport;
+storage anchors at fixed root-frame props and validates every concrete token theme.
+Each direct width-fill child needs explicit positive minWidth (resolved dimension
+refs allowed). Fixed/hug children and empty rows are valid. This does not require
+minWidth on text fill inside a card column. Existing fill-in-hug guards on both
+axes remain; all nodes require minWidth≤maxWidth and minHeight≤maxHeight when set.
+Equal bounds work; fixed sizes outside the interval still clamp.
+
+Taffy Wrap and AlignContent START apply only to opted-in rows; old no-wrap defaults
+are untouched. AlignItems START, sibling order and equal fill growth remain.
+Gap applies horizontally and between lines. Last-line fill can use all available
+width; there are no reserved Grid columns. Hug height sums maximum card heights
+per line plus padding/gaps; fixed/min/max height still clamps and may overflow.
+Too-large minima remain visible in computed bounds; clipping is not a fit test.
+
+Validation checks final candidates after update/reparent/token/theme operations,
+including dependent children/ancestors. Invalid batches do not change snapshot,
+revision, commit log or reserve idempotency keys. No storage format migration:
+props JSON is additive; DB2/snapshot1/API1/scene1 and flat geometry remain.
+
+The measurement callback, rounded width cache key, shared text renderer and six
+pass budget are unchanged. Browser batching resolves final-width line lists;
+repeat computation needs zero measurement batches. See
+`spikes/pipeline/responsive-{fixture,assert,test}.mjs`, storage `tests/wrap.rs`,
+layout `wrap_tests.rs`, and `docs/TASK04-REPORT.md` for actual checks/evidence.
+Geometry row hug heights are80/156/212 and real-text heights128/224/320 at
+1040/640/390. Root/card/text bounds fit in the new fixture. The old dashboard is
+unchanged and still has its previously measured sidebar/body/chart/text limits.
+
+Backend and layout binary must upgrade together. Rebuild layout-step then restart
+the backend to refresh startup pipeline fingerprint/job identity; wrap and resolved
+sizing also participate in input identity. This task leaves real3847 untouched.
+Older backends reject wrap and older layout binaries may ignore unknown fields;
+there is no mixed-version, downgrade or runtime hot-replacement guarantee. No
+percentage sizing, breakpoint variants, column wrap, align API or dashboard redesign.

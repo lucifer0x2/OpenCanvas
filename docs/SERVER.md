@@ -37,11 +37,276 @@ Configure a Streamable HTTP server URL, for example the following client-neutral
 {"type":"http","url":"http://127.0.0.1:3847/mcp"}
 ```
 
-Clients initialize the MCP session, send `notifications/initialized`, retain the returned `Mcp-Session-Id`, and use `tools/list` / `tools/call`. The SDK transport supports JSON and SSE results; SSE starts with an empty priming event which is not a JSONRPC result. Concurrent JSONRPC requests must use distinct IDs. The server advertises 13 tools with explicit schemas and validates those schemas at runtime. Domain failures are tool results with `isError:true` and `structuredContent.error`; protocol failures remain MCP JSONRPC errors.
+Clients initialize the MCP session, send `notifications/initialized`, retain the returned `Mcp-Session-Id`, and use `tools/list` / `tools/call`. The SDK transport supports JSON and SSE results; SSE starts with an empty priming event which is not a JSONRPC result. Concurrent JSONRPC requests must use distinct IDs. The server advertises 15 tools with explicit schemas and validates those schemas at runtime. Domain failures are tool results with `isError:true` and `structuredContent.error`; protocol failures remain MCP JSONRPC errors.
 
-Start with `create_project`, then `apply_batch`, and read `get_outline` before requesting a scoped `get_subtree` or `get_design_context`. Text requires explicit font/style properties as described by storage validation; the bundled font ID is `font_bundled`. Mutations require `expectedRevision`, a stable `idempotencyKey`, and ordered operations. Retry exactly the original body after a lost response. A changed body with the same key receives `IDEMPOTENCY_KEY_REUSED`; a stale revision with a new key receives `REVISION_CONFLICT` and `currentRevision`.
+Start with `create_project`, then `apply_batch`, and read `get_outline` before requesting a scoped `get_subtree` or `get_design_context`. Use `find_nodes` to locate a node by name, text, kind or ID in one call. Text requires explicit font/style properties as described by storage validation; the bundled font ID is `font_bundled`. Mutations require `expectedRevision`, a stable `idempotencyKey`, and ordered operations. Retry exactly the original body after a lost response. A changed body with the same key receives `IDEMPOTENCY_KEY_REUSED`; a stale revision with a new key receives `REVISION_CONFLICT` and `currentRevision`, plus `changedSince` (see "Changes since a revision" below).
 
-`render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId}` for polling. Render responses include a job ID and status. Ready PNG metadata includes HTTP URI, MIME, pixel dimensions and actual Node/Chromium versions. No project filesystem paths are returned. `inspect_layout` reads bounds and line lists from a job/scene key; it does not recompute layout or provide a deeper rule explanation.
+`render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId,waitMs?}` for polling. Render responses include a job ID and status.
+
+Bounded wait on a poll: `waitMs` (integer 0–10,000, default 0) is accepted only with `jobId`; on the enqueue form, or out of range or not an integer, the call returns `INVALID_REQUEST`. Absent or 0 returns the job record immediately, byte for byte as before. Otherwise the call returns as soon as the job leaves `pending` (`ready` or `failed`), or the record as it is when `waitMs` elapses (still `pending`; poll again). The response has the same shape either way; there is no extra field telling a timed-out wait apart. The project check and `JOB_NOT_FOUND` happen before waiting, and a record evicted during the wait returns `JOB_NOT_FOUND`. Waiting parks on an in-process completion signal: it holds no storage handle, read transaction, blocking thread or job-table lock, so reads and commits proceed meanwhile. A server shutdown ends every wait at once with the current record. Use `waitMs` instead of tight polling, including on the job IDs that `get_design_context` returns; the context read itself still never waits. The HTTP `/api/v1/jobs/:id` route is unchanged and does not wait. Ready PNG metadata includes HTTP URI, MIME, pixel dimensions and actual Node/Chromium versions. No project filesystem paths are returned. `inspect_layout` reads bounds and line lists from a job/scene key; it does not recompute layout or provide a deeper rule explanation. Its paging and field selection are described in the next section.
+
+## Inspecting a render job: `inspect_layout`
+
+```json
+{"projectId":"p_example","jobId":"j_…","sceneKey":"…","fields":["bounds"],"limit":100}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `projectId`, `jobId`, `sceneKey` | Required; the job must belong to the project and carry that scene key, otherwise `INVALID_REQUEST`. |
+| `nodeIds` | Optional, ≤200 IDs; only those scene nodes are returned (unknown IDs are ignored). |
+| `fields` | 1–2 of `bounds`, `lines`; default both. Order and duplicates do not matter. Every node always has `id`. |
+| `limit` | 1–200 nodes per page, default 200. |
+| `budget` | 1,024–65,536 bytes of `structuredContent` per page. **Omitted means no byte cap**, which is the v1 behaviour. A single node larger than the budget returns `CONTEXT_ITEM_TOO_LARGE`. |
+| `cursor` | `nextCursor` of the previous page; repeat every other argument unchanged. |
+
+Response: `schemaVersion, projectId, revision, sceneKey, status, nodes[{id, bounds?, lines?}],
+diagnostics, truncated`, plus `nextCursor` **only when `truncated` is true**. Nodes are in
+scene order; following `nextCursor` returns every selected node exactly once.
+
+- A call without `fields`, `limit`, `budget` and `cursor` returns the same bytes as before
+  Task07B, with one fix: a scene with more than 200 selected nodes used to return
+  `truncated:true` and drop the rest; it now also returns `nextCursor`.
+- The cursor binds the tool, project, job, scene key, `nodeIds` (as given), the normalized
+  `fields` set, `limit` and `budget`; any change returns `INVALID_CURSOR`. It does not bind a
+  revision: the job's scene is immutable, so commits after the render do not invalidate it.
+  If the job is evicted (32 retained records), the read fails with `JOB_NOT_FOUND` and
+  must restart from a new render.
+- `diagnostics` is repeated on every page. `fields:["bounds"]` drops the text line lists;
+  on the stacks sample it is ~25% smaller per viewport (`TASK07-REPORT.md`, 07B).
+
+## MCP skill resources and context diagnostics
+
+The initialization capabilities advertise both tools and resources. `resources/list`
+returns exactly two embedded Markdown documents (`text/markdown`), available without
+project creation or filesystem access through `resources/read`:
+
+- `skill://opencanvas/implement-frame.md`: context-to-code checklist, stack/sizing
+  mapping, text baseline cautions, and when to state assumptions or ask the user.
+- `skill://opencanvas/author-frame.md`: stack-first `apply_batch` authoring,
+  fill/hug/min/max choices, and verification at two viewports.
+
+Unknown resource URIs return MCP resource-not-found (`-32002`) for protocol
+2025-11-25; rmcp maps this to invalid params (`-32602`) for 2026-07-28 and newer.
+Resources are static, built into the server binary; no subscriptions or templates are advertised.
+Existing tools remain available to clients that only use tools.
+
+`get_design_context.diagnostics` uses one code with two evidence cases:
+
+| Code | Meaning and fields |
+| --- | --- |
+| `NO_REFLOW_INFORMATION` | Every node in the scoped frame uses `free`, explicitly or by default. `frameId` identifies the scope; `authoredSize` preserves the authored width/height, independent of the requested viewport; `message` explains that reflow information is absent and asks the agent to state assumptions or ask the user. |
+| `NO_REFLOW_INFORMATION`, `reason: "UNCHANGED_BOUNDS"` | A successful multi-viewport comparison found identical descendant bounds in a scope containing stacks. The message reports this observation without claiming that the scope is all-free. `frameId` and `authoredSize` have the same meaning. |
+
+The diagnostic examines the full frame scope at the read revision before depth,
+property filters or pagination and repeats on continuation pages. A row/column
+anywhere inside that scope suppresses the authored all-free case; stacks elsewhere in the project do not.
+An empty diagnostics array does not certify responsive behavior or absence of
+overflow. Legacy context reads without `viewports` do not compute bounds. For nested frames whose authored dimensions use fill/hug
+or are omitted, `authoredSize` preserves those values (omitted dimensions are null).
+
+## Multi-viewport context
+
+`get_design_context` accepts optional `viewports: [{width,height}, ...]`: 1–4
+positive viewports, each dimension at most 100,000 logical pixels, with a total
+area at most 16 million pixels. Do not combine `viewport` and `viewports`.
+The old single `viewport` remains an echo on an authored-only read; omitting
+both retains the old behavior. No layout or breakpoint authoring schema changes.
+
+```json
+{"projectId":"p_example","frameId":"frame","viewports":[{"width":1040,"height":720},{"width":800,"height":720}],"properties":["name"]}
+```
+
+This read enqueues the existing immutable `SceneRequest` jobs at scale 1 and
+default interaction state, or reads their process-local cache. It does not wait
+for worker/Chromium completion. In addition to the existing context fields:
+
+- `computed.status`: `pending`, `ready` or `failed` (failure takes precedence).
+- `computed.coordinateSpace: "frame-local"`; `computed.viewports` preserves request
+  order. Each item has `viewport`, `status`, `jobId`, `sceneKey` and optional `error`.
+  Queue rejection has null job/scene IDs and retryable `QUEUE_FULL`.
+- Each returned node has `computedBounds: [Bounds|null, ...]` in that same order.
+  `Bounds` is `{x,y,width,height}` in logical pixels. A pending or failed viewport
+  contributes null, even when a non-strict scene exists with a strict PNG error.
+- `reflow` is null until at least two viewports succeed with complete finite
+  bounds. Then it is true if any descendant's x/y/width/height differs exactly
+  from the first viewport; otherwise false. The resized root is excluded from
+  comparison but its bounds are returned. `computed.comparisonScope` is
+  `all-descendants-excluding-root`, and `comparedNodes` gives that scope's count.
+
+Reflow uses the **whole frame scope**, before depth/property filters or pagination.
+False emits `NO_REFLOW_INFORMATION`: the authored all-free diagnostic when
+applicable, otherwise `reason: "UNCHANGED_BOUNDS"`. True suppresses that diagnostic
+for the measured comparison, including unusual all-free frames with fill sizing.
+Pending/failure never becomes false; an authored all-free diagnostic may still be
+present independently of job readiness. No result certifies other viewport sizes,
+absence of overflow or breakpoint behavior.
+
+While pending, poll the returned job IDs using `render_frame` (with `waitMs`) or HTTP, then repeat
+the identical context request **without cursor** until ready. Start pagination at
+that point. Node bounds travel with each node as one indivisible page item, even
+when property filters omit all authored geometry. All pages include `truncated`
+and `nextCursor`; continuation binds revision, theme and the ordered viewports,
+along with the other query parameters. Small byte budgets may return the usual
+`CONTEXT_ITEM_TOO_LARGE` error for metadata alone or one complete node plus bounds;
+no successful response silently drops bounds or viewport entries. Invalid count,
+dimensions or total area returns the usual `INVALID_REQUEST` error envelope.
+
+Failed jobs remain visible to context reads until eviction. Correct the resource
+or worker problem, explicitly retry the failed viewport with `render_frame` at the
+same revision/theme/scale 1, then repeat context; it picks the newest matching job.
+Queue rejection can be retried directly by repeating context. If cache eviction
+causes a continuation to become pending, restart from the first ready page.
+
+Cold cost is intentionally visible: reuse currently performs both layout/text
+measurement and strict PNG rendering per uncached viewport, on the one worker.
+There is no second layout engine or bounds-only worker path. Cache hits reuse
+the exact render/inspect scene key. The existing 45-second **active-job** deadline,
+30-second worker operation/resource deadlines, one-active/eight-queued limit and
+32 retained records still apply; queue waiting is outside the active deadline.
+The context read itself never polls or holds a read transaction across that wait.
+Measured local examples and exact commands are in `TASK03-REPORT.md`.
+
+## Compact context: `compact:true`
+
+`get_design_context` accepts an optional `compact` boolean (only this tool; the
+other tree reads reject it as `INVALID_REQUEST`). Absent or `false` returns the
+previous response byte for byte, cursors included (`false` is normalized to absent
+before the scope hash). With `compact:true` every page adds two declarations:
+
+- `resolvedPropsMode: "differing"`: each node's `resolvedProps` keeps only keys
+  whose resolved value differs from the authored one, plus keys a style adds. The
+  full resolved object is the authored `props` **without `styleId`**, overlaid with
+  these keys; `{}` means everything resolves to its authored value. The `properties`
+  filter applies first, as before.
+- `resources: "referenced"`: `tokens`, `styles`, `fonts` and `assets` hold only
+  items the frame's nodes reference, with the same item shape (`resolvedValue`
+  included). References are `{tokenId}` and `{styleId}` values, top-level
+  `styleId`, `fontId` and `assetId` in node props; then the fonts and tokens of
+  those styles; then `{aliasId}` targets of those tokens in the default **and every
+  theme branch**, to a fixed point. The set is collected over the whole frame scope,
+  before property filters and pagination, so every page draws from the same set.
+
+Nodes, their order, `computedBounds`, `diagnostics`, `computed` and `reflow` are
+unchanged: diagnostics and reflow are still computed over the full scope. Paging
+works as for the default read; a compact cursor is not valid for a non-compact read.
+The key set mirrors storage validation (`validate/refs.rs`, `properties.rs`,
+`node.rs`, `tokens.rs`), whose helpers are crate-private;
+`crates/server/tests/compact_context.rs` pins it against storage's resolver: the
+compact resources alone resolve the frame to identical values for every theme, and
+dropping any one of them fails validation. Measured savings are in
+`TASK07-REPORT.md` (07C).
+
+## Finding nodes: `find_nodes`
+
+Read-only search in one revision, for when the agent knows a name, visible copy,
+kind or ID. Use `get_outline` when it needs structure. It does not filter the other
+reads: outline, subtree and context keep their schemas and responses.
+
+```json
+{"projectId":"p_example","frameId":"welcome-dashboard-stacks","textContains":"Tổng quan","properties":["text","fill"]}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `projectId` | Required. |
+| `nodeId` / `frameId` | Optional, mutually exclusive scope root (default: whole project). `frameId` must be a frame. |
+| `kinds` | 1–6 of `page`, `frame`, `group`, `rectangle`, `text`, `image`; OR within the list. |
+| `nameContains` | 1–128 characters, against `props.name`; nodes without a string name never match. |
+| `textContains` | 1–256 characters, against `props.text` of text nodes only. |
+| `ids` | 1–200 exact node IDs, for batch reads by ID. |
+| `properties` | ≤20 authored prop keys to attach to every match, same column filter as `get_subtree`; omitted means no `props`. |
+| `limit`, `budget`, `cursor`, `revision` | 1–200 matches per page (default 50), 1,024–65,536 bytes (default 65,536), and the usual cursor/revision. No `depth`, `theme` or `viewport`. |
+
+At least one of `kinds`, `nameContains`, `textContains`, `ids` is required, otherwise
+`INVALID_REQUEST`; criteria are ANDed. Matching lowercases both sides with
+`str::to_lowercase` and tests substring containment. There is **no accent folding and
+no Unicode normalization** (NFC/NFD): "Tong quan" does not find "Tổng quan", and text
+stored in a different normalization form than the query does not match.
+
+Response:
+
+```text
+schemaVersion, projectId, revision, scope (root ID or null)
+criteria      the requested criteria; ids are echoed as idCount
+scannedNodes  nodes in scope, totalMatches  matches in scope (both before paging)
+matches[]     {id, kind, name, parentId, depth, path:[{id,kind,name}], pathTruncated?,
+               matchedOn:["name"|"text"|"kind"|"id"], textPreview?, props?}
+truncated, nextCursor, limits {nodes, bytes}
+```
+
+- Matches are in preorder, the outline's order. `depth` counts from the scope root
+  (a project-scope page is 0). `path` runs from the scope root to the parent, keeping
+  the 8 nearest ancestors; `pathTruncated: true` appears only when it was cut.
+- `textPreview` (only with `textContains`) is at most 120 characters (not bytes) of
+  `props.text`, positioned around the first match.
+- Three outcomes are distinct: no match is `totalMatches: 0`, `matches: []`,
+  `truncated: false` (not an error); a complete answer is `truncated: false` with
+  `nextCursor: null`; more pages is `truncated: true` with `nextCursor`. A single match
+  larger than `budget` returns `CONTEXT_ITEM_TOO_LARGE`.
+- Cursors follow the same rule as the other reads: they bind project, revision, tool
+  and every query field; a concurrent mutation or changed query returns
+  `INVALID_CURSOR`, and an explicit unavailable revision `REVISION_UNAVAILABLE`.
+- Search by position or bounds is not supported. It would need a computed scene.
+  Narrow by name/text/kind, then read bounds with `get_design_context` `viewports`
+  or `inspect_layout` `nodeIds`. The search is a linear scan of the snapshot, with no
+  full-text index; measurements are in `TASK06-REPORT.md`.
+
+## Changes since a revision: `get_changes`
+
+Read-only: what the durable commit log recorded after a revision, so an agent can
+catch up or rebase without re-reading the design. It does not change the revision
+model, idempotency or the SSE cursor.
+
+```json
+{"projectId":"p_example","sinceRevision":12,"limit":100,"includeOperations":false,"budget":65536}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `projectId`, `sinceRevision` | Required. `sinceRevision` is an integer ≥ 0; commits strictly after it are returned. |
+| `limit` | 1–100 commits per page, default 100. |
+| `includeOperations` | Default false. True adds each commit's logged `operations` (asset imports omit the internal `relativeKey`). |
+| `budget` | 1,024–65,536 bytes of `structuredContent`, default 65,536. |
+
+```text
+schemaVersion, projectId, fromRevision (= sinceRevision), currentRevision
+commits[]   {revision, changedIds, operations?}   in revision order, whole commits only
+changed     {nodes, tokens, styles, assets, fonts, removed}   union of this page's changedIds
+truncated, nextRevision, limits {commits, bytes}
+```
+
+- `changed` groups each ID by what it is in the snapshot at `currentRevision`, in first-seen
+  order; an ID that no longer exists is in `removed`. Storage reports the IDs an operation
+  touched (an updated, created or deleted node and every deleted descendant, siblings whose
+  order changed, upserted tokens/styles, imported assets/fonts), not their parents.
+- The page and `currentRevision` come from one snapshot; commits that land after it are left
+  for the next call. `nextRevision` is the last revision on the page (or `sinceRevision` when
+  there are none): `truncated: false` means it equals `currentRevision` and you are caught up;
+  `truncated: true` means call again with `sinceRevision: nextRevision`.
+- Errors use existing codes: `sinceRevision` above the current revision, or a range whose log
+  rows are missing (a bundle import clears the log), returns `RESET_REQUIRED` with
+  `currentRevision`, meaning re-read the snapshot. A single commit larger than `budget` returns
+  `CONTEXT_ITEM_TOO_LARGE` (omit `includeOperations` or raise `budget`). Out-of-range or unknown
+  fields return `INVALID_REQUEST`; an unknown project `PROJECT_NOT_FOUND`.
+
+**`REVISION_CONFLICT.changedSince`.** When `apply_batch` or `import_asset` loses, the error
+object keeps `code`, `message`, `retryable`, HTTP status and `currentRevision` exactly as
+before and gains:
+
+```json
+"changedSince":{"fromRevision":3,"toRevision":5,"changedIds":["card","title"],"truncated":false}
+```
+
+`fromRevision` is the request's `expectedRevision`, `toRevision` the `currentRevision`;
+`changedIds` is the distinct IDs of those commits in commit order, at most 200, read from at most
+100 commits. `truncated: true` means the list is incomplete (more IDs or commits, or missing log
+rows); fall back to `get_changes` or a readback. It is omitted when `expectedRevision` is not
+below `currentRevision`, or when the log cannot be read (the plain conflict is returned). Agent
+rule: if `truncated` is false and no changed ID is a node you edit or one of its ancestors,
+resend with `expectedRevision: toRevision` and a **new** `idempotencyKey` (the body changed);
+otherwise re-read those IDs with `find_nodes {ids}`. Storage validates every batch again, so a
+wrong rebase fails with `VALIDATION_FAILED` rather than writing bad data.
 
 ## Consistency and limits
 
@@ -53,6 +318,8 @@ Start with `create_project`, then `apply_batch`, and read `get_outline` before r
 - Cursors bind project, revision, tool, scope, filters, theme and page parameters. Repeat the same parameters with `cursor`. A concurrent mutation or changed query rejects the cursor with `INVALID_CURSOR`; restart from the outline. An explicit unavailable read revision returns `REVISION_UNAVAILABLE`.
 - Mutation batches cap at 500 operations; assets cap at 10 MiB decoded and 13,981,016 base64 characters. The transport body cap is 15 MiB, including the nested MCP service. Asset import accepts bounded bytes and media metadata, never arbitrary paths or URLs.
 - Rendering caps at 2,048 scoped nodes, 16 million scaled pixels, scale at most 4, one active job plus eight queued jobs, 32 retained job records and 48 MiB per worker response. Backend jobs have a 45-second deadline; the shared worker also enforces its own 30-second operation and resource deadlines. `QUEUE_FULL` is retryable. Failed jobs and ready scenes with a strict-PNG error do not become permanent cache hits: retry creates a new job while old failure readback is retained.
+- After a non-replayed commit the backend prerenders, at authored size, default theme and scale 1, the frames that contain the commit's changed nodes: for each changed node the outermost enclosing frame (the one the viewer lists), at most four, in storage order. When no changed ID resolves to a frame (token/style-only changes, deletions, page edits) it prerenders the first four frames in storage order, as before. Prerender jobs share the render queue and are never awaited.
+- The backend keeps every project it has opened open for its lifetime (one SQLite writer each; after 128 pinned IDs and slugs the set is released and reopened on demand), so reads by ID or slug do not scan the data root. Storage path checks still run on every open. A project directory removed or replaced outside the backend while it runs is unsupported; reads then report `PROJECT_NOT_FOUND` for the old identity rather than another project's data, but a write sent by the old ID before any read can still land in the removed database.
 - A non-strict viewer scene may contain a labeled missing-image diagnostic. Strict PNG must then fail and has no image URI; `/jobs/:id/image` returns `IMAGE_NOT_READY`. Missing fonts cannot produce fabricated text measurements. Worker exit, invalid protocol or timeout fails the representation and restarts the process for subsequent jobs.
 - Host is limited to loopback names and mutation origins to the configured backend origin. Only read-only asset/font routes allow random `http://127.0.0.1:<port>` origins for the headless worker. Binary routes verify storage assets and use `nosniff`.
 - SSE subscribes before reading the snapshot/log, then replays durable ordered commits using `projectId:revision`. Wrong, malformed or ahead cursors, durable-log gaps and a lagged 128-event broadcast buffer cause `reset_required` with actual current revision. Heartbeats are sent every ten seconds. `scene_ready` carries source revision and scene key independently of authored commits. Current commit/idempotency retention is the project lifetime, with no expiration or background GC. Gap tests deliberately remove a temporary log row; they do not claim log-pruning support.
@@ -70,3 +337,27 @@ cargo fmt -p opencanvas-server --check
 A restricted sandbox may need permission to bind loopback for the integration command. See `docs/checkpoints/m1-server.md` for commands and measured results. Browser viewer/restart E2E is a separate acceptance seam; backend tests alone do not claim that browser flow.
 
 Versioned backup/export/import/restore are public **storage APIs**, documented in `docs/BACKUP.md`. This server does not add backup MCP tools or client filesystem access. Live database main-file copies are not backups; use the storage bundle implementation which captures a consistent database and matching resource manifest/binaries.
+
+## Task04 row-wrap contract
+
+`apply_batch` supports literal boolean `props.layout.wrap`, default false. True
+requires a row container with definite positive width (numeric or finite fill
+ancestor chain); every direct width-fill child requires explicit positive
+`minWidth`, including resolved dimension refs. Storage checks all themes and the
+final candidate, so token/theme/update/reparent changes cannot bypass the guard.
+Non-boolean wrap, unknown layout fields and min>max on either axis reject with
+`VALIDATION_FAILED` and field details; failed batches reserve no revision/key.
+
+No new endpoint or schema version: subtree/context preserve authored wrap,
+resolvedProps preserve its literal value, and `viewports` computedBounds/inspect
+expose rows through existing flat bounds. `reflow:true` still compares all
+descendants, not a claim that any dashboard fits mobile. Render and viewer use
+the unchanged scene/line-list/shared-render contract. See `docs/RESOLUTION.md`
+for layout semantics and `docs/TASK04-REPORT.md` for acceptance.
+
+Upgrade backend and layout binary together, rebuild layout-step then restart the
+backend for the startup pipeline fingerprint to change. Real3847 was not
+restarted by Task04 and still serves its older loaded code. Props JSON is additive,
+with no DB migration or snapshot/API/scene version bump. An old layout binary can
+ignore unknown fields; mixed-version/downgrade and hot replacement are unsupported.
+No percentage/breakpoint/column-wrap/align API or changes to existing dashboard data.

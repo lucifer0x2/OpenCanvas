@@ -1,5 +1,14 @@
-mod pagination;
+pub(crate) mod changes;
+mod compact;
+mod diagnostics;
+mod find;
+mod index;
+pub(crate) mod pagination;
+pub(crate) mod targets;
+#[cfg(test)]
+mod traversal_tests;
 mod tree;
+mod viewports;
 use crate::{error::Result, state::AppState};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -16,16 +25,36 @@ pub(super) struct ReadRequest {
     ids: Option<Vec<String>>,
     properties: Option<Vec<String>>,
     viewport: Option<Value>,
+    viewports: Option<Vec<viewports::Viewport>>,
     theme: Option<String>,
     cursor: Option<String>,
     revision: Option<u64>,
+    // find_nodes only. Skipped when absent so older tools keep their cursor scope hash.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    kinds: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    name_contains: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    text_contains: Option<String>,
+    // get_design_context only; false is normalized to absent so the default scope hash holds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    compact: Option<bool>,
 }
 pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
-    let req: ReadRequest = serde_json::from_value(args)?;
+    let mut req: ReadRequest = serde_json::from_value(args)?;
+    req.compact = req.compact.filter(|on| *on);
     let s = state.snapshot(req.project_id.clone()).await?;
+    if name == "find_nodes" {
+        return find::read(&s, req);
+    }
     let (scope, offset) = pagination::scope(&s, name, &req)?;
     if matches!(name, "get_outline" | "get_subtree" | "get_design_context") {
-        return tree::read(&s, name, req, scope, offset);
+        let computed = if name == "get_design_context" {
+            viewports::compute(state, &s, &req).await?
+        } else {
+            None
+        };
+        return tree::read(&s, name, req, scope, offset, computed);
     }
     let value = serde_json::to_value(&s)?;
     let field = name.trim_start_matches("list_");

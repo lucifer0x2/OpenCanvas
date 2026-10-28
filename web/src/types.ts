@@ -55,3 +55,7 @@ export interface CommitEvent {
   projectId: string;
   revision: number;
 }
+export interface ActivityEvent {
+  projectId: string;
+  revision: number;
+}

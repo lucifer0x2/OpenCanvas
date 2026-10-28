@@ -10,6 +10,8 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
 - `POST /projects` with `{slug,name}` → ProjectRef. The browser viewer does not call mutation routes.
 - `GET /projects/:projectId/snapshot` → storage Snapshot with `schemaVersion`, `projectId`, `slug`, `name`, `revision`, `nodes`, `tokens`, `styles`, `assets`, `fonts`, `retention`, `truncated:false`. Nodes: `{id,parentId,sortKey,kind,props}`; `sortKey` is a number (integer sibling index), not a string. Authored data is not replaced by computed data.
 - `GET /projects/:projectId/events?cursor=<projectId>:<revision>` → SSE. Durable `commit` event data `{projectId,revision,changedIds}`, SSE id `<projectId>:<revision>`. `reset_required` data `{projectId,currentRevision,reason}`. `scene_ready` includes `{projectId,revision,sceneKey,jobId}`. Heartbeats are comments. Last-Event-ID also accepted. Register before snapshot/read durable log to avoid a gap; replay after cursor.
+  The same stream also carries two **non-durable workspace hints** without an SSE `id`, so they never move the commit cursor: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Neither reads the durable log; only a commit of the streamed project replays it. Hints are not replayed after a reconnect or `reset_required`: clients refetch `GET /projects`, which is the source of truth, on every (re)open.
+- `GET /events` → SSE workspace stream for a client that has no project to follow yet (an empty workspace). It carries only `project_created` and `project_activity` with the data above, heartbeat comments every 10 s, and ends on server shutdown. No cursor, no replay, no query parameters (`INVALID_REQUEST` otherwise); a broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream. Same loopback Host/Origin guard as every route.
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
 - `GET /jobs/:jobId` → RenderJob.
 - `GET /jobs/:jobId/image` → PNG when ready, otherwise structured readiness error.
@@ -54,6 +56,67 @@ rules are specified in `RESOLUTION.md`. Interaction state supports `default`.
 The viewer currently requests the default design theme; its light UI theme is
 independent. Snapshot database `schemaVersion:2` is separate from scene/API
 representation schema 1.
+
+### Multi-viewport context (additive)
+
+Only `get_design_context` adds optional `viewports: [{width,height}, ...]`.
+Accept 1–4 entries, positive dimensions ≤100,000 and summed area ≤16M logical
+pixels. It is mutually exclusive with legacy `viewport`. Single `viewport` and
+no-viewport calls preserve the authored-only response and viewport echo.
+
+Multi-viewport context reuses immutable render jobs at scale 1/default state and
+the requested concrete theme, without awaiting Chromium. The additive fields are:
+
+```json
+{
+  "computed": {
+    "status": "ready",
+    "coordinateSpace": "frame-local",
+    "comparisonScope": "all-descendants-excluding-root",
+    "comparedNodes": 1,
+    "viewports": [
+      {"viewport":{"width":320,"height":200},"status":"ready","jobId":"job_example1","sceneKey":"scene1"},
+      {"viewport":{"width":160,"height":200},"status":"ready","jobId":"job_example2","sceneKey":"scene2"}
+    ]
+  },
+  "reflow": true,
+  "nodes": [
+    {"id":"child","computedBounds":[{"x":0,"y":0,"width":320,"height":28},{"x":0,"y":0,"width":160,"height":56}]}
+  ],
+  "truncated": false,
+  "nextCursor": null
+}
+```
+
+This example omits unchanged context and authored/resolved node fields.
+`computedBounds` has one slot per requested viewport. Pending/failed slots are
+null. Each viewport item may include a structured `error`; a queue rejection has
+null job/scene IDs. Overall status is failed if any viewport fails, otherwise
+pending if any is pending, otherwise ready. Strict PNG errors count as failed,
+even if a non-strict scene exists. Missing/incomplete bounds cannot produce a
+successful comparison. `reflow` remains null until ≥2 viewports succeed.
+
+Reflow compares exact x/y/width/height across the entire descendant scope at one
+revision, excluding the root resized by the viewport. Depth, properties, limit
+and byte-budget filters never reduce this comparison. False returns the existing
+`NO_REFLOW_INFORMATION` diagnostic; scopes with stacks use reason
+`UNCHANGED_BOUNDS` and describe observed equality, not all-free authoring.
+`authoredSize` always preserves authored dimensions. True suppresses that code
+for the successful measured comparison. No breakpoint semantics are inferred.
+
+Poll jobs then repeat the same read from page one until ready before consuming
+continuations. Complete node bounds are indivisible pagination items; the normal
+64 KiB/200-entry/depth-8 limits, explicit truncated/nextCursor and
+`CONTEXT_ITEM_TOO_LARGE` errors apply, including to fixed metadata. Viewport count
+and total pixel violations return `INVALID_REQUEST`, with no partial page.
+Cursors bind ordered viewports and theme/query/revision. If jobs are evicted and
+a continuation becomes pending, restart the ready read from page one.
+
+Context retains cached job errors for readback; use explicit `render_frame`
+retry with the same revision/viewport/theme to replace a failure, then repeat
+context. Queue rejection can be retried directly. Existing scene cache,
+render pixel/node limits, queue and active-job/worker deadlines apply. Cold
+requests currently pay for PNG generation as well as layout/measurement.
 
 Commit/idempotency retention is currently lifetime, with no pruning or GC.
 SSE detects malformed/foreign/ahead cursors, replay gaps and broadcast overflow

@@ -1,0 +1,2874 @@
+{
+  "scope": "Temporary engine copy: only wrap DTO + Taffy mapping, NOT application acceptance",
+  "productionValidationImplemented": false,
+  "startedAt": "2026-10-28T08:44:17.533Z",
+  "cases": [
+    {
+      "label": "geometry-1040",
+      "viewport": {
+        "width": 1040,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 1040,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 992,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 320,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 320,
+              "x": 360,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 320,
+              "x": 696,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "447257bd8d4da90632b748d48eeeb31c868534bb76ed9d696f6d743f2e5bed15",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 1040
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 416.83758300000045
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-640",
+      "viewport": {
+        "width": 640,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 640,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 156,
+              "width": 592,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 288,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 288,
+              "x": 328,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 592,
+              "x": 24,
+              "y": 100
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "77e93c807db505fa348f952927c945c74648b5a00c54961c4bd0896e055992a4",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 640
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 18.61162500000046
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 212,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 342,
+              "x": 24,
+              "y": 80
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 342,
+              "x": 24,
+              "y": 156
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "5b9728585c4fce133121aec274e6a56eeb37a8ab185b36e2ec6684a7e1e829c3",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 13.252459000000272
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-920",
+      "viewport": {
+        "width": 920,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 920,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 872,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 280,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 280,
+              "x": 320,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 280,
+              "x": 616,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "cb92526a732f0e6c3ef340e6f9a6d6c7f3e6dc68f4081bcfbfa842dd87b45aba",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 920
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 11.497083000000202
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-919",
+      "viewport": {
+        "width": 919,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 919,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 156,
+              "width": 871,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 427.5,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 427.5,
+              "x": 467.5,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 871,
+              "x": 24,
+              "y": 100
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "fc9306ef4395186df10dd55a1c69a9b215aa85bd826b969b251b0d7b55c9bfe2",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 919
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 10.077667000000474
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-624",
+      "viewport": {
+        "width": 624,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 624,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 156,
+              "width": 576,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 280,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 280,
+              "x": 320,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 576,
+              "x": 24,
+              "y": 100
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "abae5d73958451f8966e993bdced1dc7f329c0deff0833da27cf8a111faf9d00",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 624
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 9.436040999999932
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "geometry-623",
+      "viewport": {
+        "width": 623,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 623,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 212,
+              "width": 575,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 575,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 575,
+              "x": 24,
+              "y": 80
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 575,
+              "x": 24,
+              "y": 156
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "4157d811f0cd25447cb5a0d4c1d41bf778384775523cbd248e000b32b5681924",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 623
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 9.174458999999842
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "browser-text-1040",
+      "viewport": {
+        "width": 1040,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 1040,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 128,
+              "width": 992,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 320,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 48,
+              "width": 288,
+              "x": 40,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-1-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Một thiết kế có thể xuống dòng tự",
+                "width": 256.859375,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "nhiên khi chiều rộng thay đổi.",
+                "width": 223.25,
+                "x": 0,
+                "y": 44
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-1",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 128,
+              "width": 320,
+              "x": 360,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 96,
+              "width": 288,
+              "x": 376,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-2-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Nội dung dài hơn để kiểm tra chiều",
+                "width": 264.3125,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "cao ô và hàng, tiếng Việt có dấu,",
+                "width": 242.65625,
+                "x": 0,
+                "y": 44
+              },
+              {
+                "text": "không cắt chữ hoặc vẽ chồng lên",
+                "width": 246.96875,
+                "x": 0,
+                "y": 68
+              },
+              {
+                "text": "hàng kế tiếp.",
+                "width": 97.53125,
+                "x": 0,
+                "y": 92
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-2",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 104,
+              "width": 320,
+              "x": 696,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 72,
+              "width": 288,
+              "x": 712,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-3-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "OpenCanvasTextBoundaryGraphemeT",
+                "width": 287.703125,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "iếngViệtKhôngKhoảngTrắng01234567",
+                "width": 285.09375,
+                "x": 0,
+                "y": 44
+              },
+              {
+                "text": "89 và nội dung cuối.",
+                "width": 150.859375,
+                "x": 0,
+                "y": 68
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-3",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "3e2bbf6c285a0da21ac3a0f923aa5c645d10a056a7b8d70b692561964f1a0f03",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 1040
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 2,
+        "batchRPCs": 1,
+        "measuredItems": 3,
+        "cacheEntriesBefore": 0,
+        "elapsedMs": 19.913708000000042
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "browser-text-640",
+      "viewport": {
+        "width": 640,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 640,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 224,
+              "width": 592,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 288,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 48,
+              "width": 256,
+              "x": 40,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-1-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Một thiết kế có thể xuống dòng",
+                "width": 236.140625,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "tự nhiên khi chiều rộng thay đổi.",
+                "width": 243.96875,
+                "x": 0,
+                "y": 44
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-1",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 128,
+              "width": 288,
+              "x": 328,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 96,
+              "width": 256,
+              "x": 344,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-2-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Nội dung dài hơn để kiểm tra",
+                "width": 219.546875,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "chiều cao ô và hàng, tiếng Việt có",
+                "width": 250.265625,
+                "x": 0,
+                "y": 44
+              },
+              {
+                "text": "dấu, không cắt chữ hoặc vẽ",
+                "width": 205.796875,
+                "x": 0,
+                "y": 68
+              },
+              {
+                "text": "chồng lên hàng kế tiếp.",
+                "width": 175.875,
+                "x": 0,
+                "y": 92
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-2",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 592,
+              "x": 24,
+              "y": 168
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 48,
+              "width": 560,
+              "x": 40,
+              "y": 184
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-3-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "OpenCanvasTextBoundaryGraphemeTiếngViệtKhôngKhoảngTrắng012345",
+                "width": 554.484375,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "6789 và nội dung cuối.",
+                "width": 169.171875,
+                "x": 0,
+                "y": 44
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-3",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "b667e256e021d798757a8bf2b43ea33fefa8da749d5a7fdde3f88ae352fdcaea",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 640
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 2,
+        "batchRPCs": 1,
+        "measuredItems": 3,
+        "cacheEntriesBefore": 3,
+        "elapsedMs": 12.739415999999437
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "browser-text-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 320,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 48,
+              "width": 310,
+              "x": 40,
+              "y": 40
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-1-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Một thiết kế có thể xuống dòng tự nhiên",
+                "width": 303.84375,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "khi chiều rộng thay đổi.",
+                "width": 176.265625,
+                "x": 0,
+                "y": 44
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-1",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 104,
+              "width": 342,
+              "x": 24,
+              "y": 120
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 72,
+              "width": 310,
+              "x": 40,
+              "y": 136
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-2-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "Nội dung dài hơn để kiểm tra chiều cao ô",
+                "width": 308.65625,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "và hàng, tiếng Việt có dấu, không cắt chữ",
+                "width": 309.421875,
+                "x": 0,
+                "y": 44
+              },
+              {
+                "text": "hoặc vẽ chồng lên hàng kế tiếp.",
+                "width": 237.5625,
+                "x": 0,
+                "y": 68
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-2",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 104,
+              "width": 342,
+              "x": 24,
+              "y": 240
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 72,
+              "width": 310,
+              "x": 40,
+              "y": 256
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#182230",
+            "fit": "contain",
+            "fontId": "font_bundled",
+            "fontSize": 16,
+            "id": "card-3-text",
+            "kind": "text",
+            "lineHeight": 24,
+            "lines": [
+              {
+                "text": "OpenCanvasTextBoundaryGraphemeTiế",
+                "width": 300.84375,
+                "x": 0,
+                "y": 20
+              },
+              {
+                "text": "ngViệtKhôngKhoảngTrắng0123456789",
+                "width": 290.234375,
+                "x": 0,
+                "y": 44
+              },
+              {
+                "text": "và nội dung cuối.",
+                "width": 128.40625,
+                "x": 0,
+                "y": 68
+              }
+            ],
+            "opacity": 1,
+            "parentId": "card-3",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "c25655d97bf5562b25448192e589b15fcbcb28765fb7c621690baf2fabb35092",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 2,
+        "batchRPCs": 1,
+        "measuredItems": 3,
+        "cacheEntriesBefore": 6,
+        "elapsedMs": 11.718542000000525
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "no-wrap-overflow-control",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 280,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 280,
+              "x": 320,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 280,
+              "x": 616,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "1cd001e9a60f975040d8e45d3bd353047215d5bd6fba63a89400715c7a539378",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 9,
+        "elapsedMs": 7.539292000000387
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "basis-zero-no-minimum-control",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 103.328125,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 103.328125,
+              "x": 143.328125,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 103.328125,
+              "x": 262.671875,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "432a95f8c5da5a5e628a35a94840f9f6bc095126976e69c33f6e2fe88f69b13e",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 9,
+        "elapsedMs": 7.626917000000503
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "too-large-minimum-control",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 212,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 344,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 344,
+              "x": 24,
+              "y": 80
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 344,
+              "x": 24,
+              "y": 156
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "9014e121e58c520b8ab46ec074bab10c31440e3034d788631a0020ddd6842185",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 9,
+        "elapsedMs": 8.87249999999949
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "omitted-default-compat-1040",
+      "viewport": {
+        "width": 1040,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 1040,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 992,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 320,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 320,
+              "x": 360,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 320,
+              "x": 696,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "91ab9d7745c73a3b54321357f8098f4de0aead1d7c83e8f01d4552ed43f18b22",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 1040
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 9,
+        "elapsedMs": 7.751874999999927
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "label": "omitted-default-compat-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "ready",
+      "scene": {
+        "assets": [],
+        "coordinateSpace": "frame-local",
+        "diagnostics": [],
+        "fonts": [
+          {
+            "family": "OpenCanvas Noto Sans",
+            "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+            "id": "font_bundled",
+            "style": "normal",
+            "url": "/renderer/fonts/NotoSans.ttf",
+            "weight": 400
+          }
+        ],
+        "nodes": [
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "crop": null,
+            "fill": "#ffffff",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "frame",
+            "kind": "frame",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": null,
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 342,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "transparent",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "cards",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "frame",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 40,
+              "width": 280,
+              "x": 24,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dbeafe",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-1",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 60,
+              "width": 280,
+              "x": 320,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#dcfce7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-2",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          },
+          {
+            "assetId": null,
+            "bounds": {
+              "height": 80,
+              "width": 280,
+              "x": 616,
+              "y": 24
+            },
+            "clip": false,
+            "crop": null,
+            "fill": "#fef3c7",
+            "fit": "contain",
+            "fontId": null,
+            "fontSize": 16,
+            "id": "card-3",
+            "kind": "group",
+            "lineHeight": 24,
+            "lines": [],
+            "opacity": 1,
+            "parentId": "cards",
+            "radius": 0
+          }
+        ],
+        "provenance": {
+          "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "fontManifestHash": "aaeb53dfadc77a085ea39b9dd094315fb3013e4420eff2caac6151fec34b2fa2",
+          "frameId": "frame",
+          "projectId": "proposal-only",
+          "rendererVersion": "web-1",
+          "revision": 1,
+          "sceneVersion": "scene-1",
+          "sourceSceneKey": "1cd001e9a60f975040d8e45d3bd353047215d5bd6fba63a89400715c7a539378",
+          "state": "default",
+          "theme": "default",
+          "viewport": {
+            "height": 844,
+            "width": 390
+          }
+        },
+        "schemaVersion": 1
+      },
+      "metrics": {
+        "layoutPasses": 1,
+        "batchRPCs": 0,
+        "measuredItems": 0,
+        "cacheEntriesBefore": 9,
+        "elapsedMs": 7.645625000000109
+      },
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "browserVersion": "156.0.8078.4",
+  "nodeVersion": "v24.21.0",
+  "success": true,
+  "temporaryDirectoryRemoved": true,
+  "completedAt": "2026-10-28T08:44:23.372Z"
+}

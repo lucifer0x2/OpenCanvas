@@ -6,6 +6,8 @@ mod tests;
 mod tree;
 mod util;
 mod validation;
+#[cfg(test)]
+mod wrap_tests;
 pub use engine::compute;
 pub use model::*;
 pub const SCENE_VERSION: &str = "scene-1";

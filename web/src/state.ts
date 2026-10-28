@@ -1,6 +1,8 @@
 import type {
+  ActivityEvent,
   CommitEvent,
   DesignNode,
+  ProjectRef,
   RenderJob,
   SceneRequest,
   Selection,
@@ -118,4 +120,77 @@ export function saveSelection(selection: Selection) {
   } catch {
     /* Viewing still works without storage. */
   }
+}
+
+/** Union by projectId, keeping the newest revision, in the list API's slug order. */
+export function mergeProjects(
+  current: ProjectRef[],
+  incoming: ProjectRef[],
+): ProjectRef[] {
+  const byId = new Map(current.map((entry) => [entry.projectId, entry]));
+  for (const entry of incoming) {
+    const known = byId.get(entry.projectId);
+    byId.set(
+      entry.projectId,
+      known && known.revision > entry.revision
+        ? { ...entry, revision: known.revision }
+        : entry,
+    );
+  }
+  return [...byId.values()].sort((a, b) =>
+    a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0,
+  );
+}
+
+/** A `project_activity` hint only moves a listed project's revision forward. */
+export function bumpRevision(
+  projects: ProjectRef[],
+  event: ActivityEvent,
+): ProjectRef[] {
+  if (!Number.isSafeInteger(event.revision)) return projects;
+  let changed = false;
+  const next = projects.map((entry) => {
+    if (entry.projectId !== event.projectId || entry.revision >= event.revision)
+      return entry;
+    changed = true;
+    return { ...entry, revision: event.revision };
+  });
+  return changed ? next : projects;
+}
+
+/** Projects with unseen agent changes; the one being viewed is never marked. */
+export function markActivity(
+  marked: string[],
+  projectId: string,
+  viewing: string,
+): string[] {
+  return !projectId || projectId === viewing || marked.includes(projectId)
+    ? marked
+    : [...marked, projectId];
+}
+
+export function clearActivity(marked: string[], projectId: string) {
+  return marked.includes(projectId)
+    ? marked.filter((id) => id !== projectId)
+    : marked;
+}
+
+/** Keeps a listed selection; otherwise the first project, as on the first load. */
+export function pickProject(projects: ProjectRef[], current: string) {
+  return projects.some((entry) => entry.projectId === current)
+    ? current
+    : (projects[0]?.projectId ?? "");
+}
+
+/**
+ * Where a workspace hint moves the viewer: an empty workspace always takes a new project;
+ * otherwise only the follow-agent switch moves away from the project being viewed.
+ */
+export function followTarget(
+  follow: boolean,
+  projectId: string,
+  viewing: string,
+): string | null {
+  if (!projectId || projectId === viewing) return null;
+  return follow || !viewing ? projectId : null;
 }

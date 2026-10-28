@@ -4,6 +4,7 @@ use crate::{
     jobs::SceneRequest,
     mcp::{self, Mcp},
     state::AppState,
+    workspace_events,
 };
 use axum::{
     body::Body,
@@ -36,6 +37,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/v1/projects", get(projects).post(create))
         .route("/api/v1/projects/{project}/snapshot", get(snapshot))
+        .route("/api/v1/events", get(workspace_events::events))
         .route("/api/v1/projects/{project}/events", get(events::events))
         .route("/api/v1/projects/{project}/scene", get(scene))
         .route("/api/v1/projects/{project}/assets/{asset}", get(asset))

@@ -9,6 +9,9 @@ import { startServer, workspace } from "./server.mjs";
 import { createDesign, render, token } from "./design.mjs";
 import { restartAndVerify } from "./restart.mjs";
 import { readback, inspect } from "./readback.mjs";
+import { collectResponsive, verifyResponsiveRepeat } from "./responsive.mjs";
+import { collectWrap, verifyWrapRepeat } from "./wrap.mjs";
+import { verifyLiveWorkspace } from "./live-workspace.mjs";
 import {
   openViewer,
   ready,
@@ -122,6 +125,8 @@ try {
   assert.equal(pngResponse.headers.get("content-type"), "image/png");
   const png = Buffer.from(await pngResponse.arrayBuffer());
   await writeFile(new URL("frame.png", artifacts), png);
+  const responsive = await collectResponsive(mcp, base, artifacts);
+  const wrap = await collectWrap(mcp, base, artifacts);
   const restarted = await restartAndVerify({
     server,
     mcp,
@@ -135,11 +140,30 @@ try {
   server = restarted.server;
   mcp = restarted.mcp;
   const restartPixels = restarted.pixels;
+  await verifyResponsiveRepeat(
+    mcp,
+    server.base,
+    browser,
+    responsive,
+    artifacts,
+  );
+  evidence.wrap = await verifyWrapRepeat(
+    mcp,
+    server.base,
+    browser,
+    wrap,
+    artifacts,
+  );
+  evidence.liveWorkspace = await verifyLiveWorkspace(browser);
   assertReadOnly(view);
   evidence.checks.push(
     "process termination/restart + browser reload retains IDs/content/refs/revision/selection",
     "stable scene key after restart",
     "viewer GET-only API requests and no browser errors",
+    "free + stacks actual MCP: all descendant FRAME overflow at 1040/800/390",
+    "full-scope reflow excludes root: free false, stacks true with width changes",
+    "free + stacks independent post-restart PNG pixels at all three viewports",
+    "row wrap actual MCP/context/inspect/PNG at 1040/640/390, persisted restart and GET-only shared-render viewer",
   );
   Object.assign(evidence, {
     completedAt: new Date().toISOString(),
@@ -155,6 +179,10 @@ try {
       mobile: mobile.sceneKey,
     },
     provenance: job3.provenance,
+    responsive: {
+      report: "responsive.json",
+      comparison: responsive.comparison,
+    },
     pixels: {
       r2: pixels2,
       r3: pixels3,

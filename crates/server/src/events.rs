@@ -1,6 +1,7 @@
 use crate::{
     error::{ApiError, Result},
     state::AppState,
+    workspace_events::{classify, Signal},
 };
 use axum::{
     extract::{Path, Query, State},
@@ -81,24 +82,27 @@ pub async fn events(
                 }
             }
             // Broadcast is a wakeup channel; commits always come from the durable ordered log.
+            // Only a commit of this project reads it again: workspace hints and this project's
+            // `scene_ready` are forwarded without a storage read.
             // A stopping server must not wait for this stream's client to disconnect first.
-            let next = tokio::select! {
-                biased;
-                _ = state.shutting_down() => return,
-                message = receiver.recv() => message,
-            };
-            match next {
-                Ok(message)=> {
-                    if message["projectId"]!=project {continue;}
-                    if message["event"]=="scene_ready" {
-                        yield Ok(Event::default().event("scene_ready").data(message.to_string()));
+            loop {
+                let next = tokio::select! {
+                    biased;
+                    _ = state.shutting_down() => return,
+                    message = receiver.recv() => message,
+                };
+                match next {
+                    Ok(message)=> match classify(&message, Some(&project)) {
+                        Signal::Replay=>break,
+                        Signal::Forward(event)=>yield Ok(event),
+                        Signal::Ignore=>{}
+                    },
+                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=> {
+                        let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
+                        yield Ok(reset(&project,current,"buffer_overflow"));return;
                     }
+                    Err(_)=>return,
                 }
-                Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=> {
-                    let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
-                    yield Ok(reset(&project,current,"buffer_overflow"));return;
-                }
-                Err(_)=>return,
             }
         }
     };

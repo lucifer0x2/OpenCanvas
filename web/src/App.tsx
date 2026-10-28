@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { CanvasView } from "./components/CanvasView";
+import { FollowToggle } from "./components/FollowToggle";
 import { Icon } from "./components/Icon";
 import { Inspector } from "./components/Inspector";
 import { Layers } from "./components/Layers";
+import { ProjectPicker } from "./components/ProjectPicker";
 import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
 import { children, nodeName } from "./state";
@@ -65,30 +67,14 @@ export function App() {
           <span>OpenCanvas</span>
         </a>
         <span className="topbar-divider" />
-        <label className="project-picker">
-          <span className="sr-only">Project</span>
-          <select
-            aria-label="Project"
-            value={selection.projectId}
-            onChange={(event) => project.selectProject(event.target.value)}
-            disabled={!project.projects.length}
-          >
-            {!project.projects.length && (
-              <option value="">
-                {project.loadingProjects
-                  ? "Loading projects…"
-                  : project.error
-                    ? "Projects unavailable"
-                    : "No projects yet"}
-              </option>
-            )}
-            {project.projects.map((entry) => (
-              <option key={entry.projectId} value={entry.projectId}>
-                {entry.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ProjectPicker
+          projects={project.projects}
+          selected={selection.projectId}
+          activity={project.activity}
+          loading={project.loadingProjects}
+          failed={!!project.error}
+          select={project.selectProject}
+        />
         <span className="read-only-badge">Read only</span>
         <div className="topbar-actions">
           <button
@@ -224,6 +210,7 @@ export function App() {
                 : "Connecting…"
             : "Local viewer"}
         </span>
+        <FollowToggle follow={project.follow} change={project.setFollow} />
         <div>
           <span>
             {snapshot

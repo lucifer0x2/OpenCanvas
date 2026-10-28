@@ -2,6 +2,7 @@ use crate::model::*;
 use crate::util::{err, finite, is_fill};
 use crate::{MAX_NODES, MAX_PIXELS};
 use std::collections::{HashMap, HashSet};
+mod layout;
 
 pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
     if input.schema_version != 1
@@ -24,6 +25,7 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
             return Err(err("Unsupported node kind"));
         }
         let p = &n.props;
+        layout::properties(n)?;
         for d in [&p.width, &p.height] {
             match d {
                 Some(Sizing::Fixed(v)) if !finite(*v) => return Err(err("Invalid dimension")),
@@ -70,23 +72,21 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
         {
             return Err(err("Unsupported image fit"));
         }
-        if let Some(c) = &p.crop {
-            if ![c.x, c.y, c.width, c.height].into_iter().all(finite)
+        if let Some(c) = &p.crop
+            && (![c.x, c.y, c.width, c.height].into_iter().all(finite)
                 || c.width <= 0.0
                 || c.height <= 0.0
                 || c.x + c.width > 1.0
-                || c.y + c.height > 1.0
-            {
-                return Err(err("Crop must be a normalized source rectangle"));
-            }
+                || c.y + c.height > 1.0)
+        {
+            return Err(err("Crop must be a normalized source rectangle"));
         }
-        if let Some(l) = &p.layout {
-            if !["row", "column", "free"].contains(&l.mode.as_str())
+        if let Some(l) = &p.layout
+            && (!["row", "column", "free"].contains(&l.mode.as_str())
                 || !finite(l.padding)
-                || !finite(l.gap)
-            {
-                return Err(err("Unsupported layout"));
-            }
+                || !finite(l.gap))
+        {
+            return Err(err("Unsupported layout"));
         }
     }
     if ids
@@ -110,6 +110,7 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
                 .copied()
                 .ok_or_else(|| err("Missing parent"))?;
         }
+        layout::relationships(n, input, &ids)?;
         if let Some(parent) = n.parent_id.as_ref().and_then(|p| ids.get(p)) {
             if !["page", "frame", "group"].contains(&parent.kind.as_str()) {
                 return Err(err("Leaf cannot parent nodes"));

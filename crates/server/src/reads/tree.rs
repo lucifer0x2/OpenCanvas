@@ -1,9 +1,11 @@
-use super::{pagination, sanitize_asset, ReadRequest};
-use crate::error::{ApiError, Result};
-use opencanvas_storage::{
-    resolved_nodes_for_theme, resolved_tokens_for_theme, Node, NodeKind, Snapshot,
+use super::{
+    compact, diagnostics, index::TreeIndex, pagination, sanitize_asset, viewports::Computed,
+    ReadRequest,
 };
+use crate::error::{ApiError, Result};
+use opencanvas_storage::{resolved_nodes_for_theme, resolved_tokens_for_theme, NodeKind, Snapshot};
 use serde_json::{json, Value};
+use std::collections::HashMap;
 
 pub(super) fn read(
     s: &Snapshot,
@@ -11,6 +13,7 @@ pub(super) fn read(
     req: ReadRequest,
     scope: String,
     offset: usize,
+    computed: Option<Computed>,
 ) -> Result<Value> {
     let root = req.node_id.as_ref().or(req.frame_id.as_ref());
     if (name == "get_subtree" && req.node_id.is_none())
@@ -23,11 +26,10 @@ pub(super) fn read(
     if req.node_id.is_some() && req.frame_id.is_some() {
         return Err(ApiError::invalid("Choose one scope ID"));
     }
+    let index = TreeIndex::new(&s.nodes);
     if let Some(id) = root {
-        let node = s
-            .nodes
-            .iter()
-            .find(|n| &n.id == id)
+        let node = index
+            .get(id)
             .ok_or_else(|| ApiError::invalid("Scope node does not exist"))?;
         if name == "get_design_context" && node.kind != NodeKind::Frame {
             return Err(ApiError::invalid("frameId must identify a frame"));
@@ -40,22 +42,16 @@ pub(super) fn read(
     } else {
         Vec::new()
     };
-    let mut ordered = Vec::new();
-    let mut roots: Vec<_> = s
-        .nodes
-        .iter()
-        .filter(|n| root.map_or(n.parent_id.is_none(), |id| &n.id == id))
-        .collect();
-    roots.sort_by_key(|n| n.sort_key);
-    for n in roots {
-        visit(&s.nodes, n, 0, &mut ordered);
-    }
+    let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
+    let ordered = index.preorder(root.map(String::as_str));
+    let compact = (context && req.compact == Some(true))
+        .then(|| compact::Referenced::collect(s, ordered.iter().map(|(n, _)| *n)));
     let mut entries = Vec::new();
-    for (node, d) in ordered {
+    for (node, d) in &ordered {
         let value = if name == "get_outline" {
             json!({"id":node.id,"parentId":node.parent_id,"kind":node.kind,"name":node.props["name"],"sortKey":node.sort_key})
         } else {
-            let mut authored = node.clone();
+            let mut authored = (*node).clone();
             if let Some(props) = &req.properties {
                 authored
                     .props
@@ -65,34 +61,43 @@ pub(super) fn read(
             }
             let mut value = json!(authored);
             if context {
-                let mut props = resolved
-                    .iter()
-                    .find(|n| n.id == node.id)
-                    .unwrap()
-                    .props
-                    .clone();
+                let mut props = by_id[node.id.as_str()].props.clone();
                 if let Some(filter) = &req.properties {
                     props
                         .as_object_mut()
                         .unwrap()
                         .retain(|k, _| filter.contains(k));
                 }
-                value["resolvedProps"] = props;
+                value["resolvedProps"] =
+                    compact::resolved_props(compact.is_some(), &authored.props, props);
+                if let Some(computed) = &computed {
+                    value["computedBounds"] = json!(computed.bounds[&node.id]);
+                }
             }
             value
         };
-        entries.push(("nodes".into(), value, d));
+        entries.push(("nodes".into(), value, *d));
     }
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth.unwrap_or(8),"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if context {
         response["theme"] = json!(theme);
+        compact::mark(&mut response, compact.as_ref());
         response["viewport"] = json!(req.viewport);
-        response["diagnostics"] = json!([]);
+        response["diagnostics"] = diagnostics::for_scope(&ordered);
+        if let Some(computed) = computed {
+            response["computed"] = computed.metadata;
+            response["reflow"] = json!(computed.reflow);
+            if computed.reflow == Some(true) {
+                response["diagnostics"] = json!([]);
+            } else if computed.reflow == Some(false) && response["diagnostics"] == json!([]) {
+                response["diagnostics"] = diagnostics::unchanged(ordered[0].0);
+            }
+        }
         let tokens = resolved_tokens_for_theme(s, theme)?;
         let value = serde_json::to_value(s)?;
         for field in ["tokens", "styles", "assets", "fonts"] {
             response[field] = json!([]);
-            for item in value[field].as_array().unwrap() {
+            for item in compact::kept(&value[field], field, compact.as_ref()) {
                 let mut item = sanitize_asset(item.clone());
                 if field == "tokens" {
                     item["resolvedValue"] = tokens[item["id"].as_str().unwrap()].clone();
@@ -124,16 +129,5 @@ fn resolve_style(value: &Value, tokens: &std::collections::BTreeMap<String, Valu
             .map(|(k, v)| (k.clone(), resolve_style(v, tokens)))
             .collect(),
         _ => value.clone(),
-    }
-}
-fn visit<'a>(all: &'a [Node], node: &'a Node, depth: usize, out: &mut Vec<(&'a Node, usize)>) {
-    out.push((node, depth));
-    let mut children: Vec<_> = all
-        .iter()
-        .filter(|n| n.parent_id.as_deref() == Some(&node.id))
-        .collect();
-    children.sort_by_key(|n| n.sort_key);
-    for child in children {
-        visit(all, child, depth + 1, out);
     }
 }

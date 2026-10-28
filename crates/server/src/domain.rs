@@ -1,6 +1,7 @@
 use crate::{
     error::{ApiError, Result},
     jobs::SceneRequest,
+    reads::changes::conflict,
     state::AppState,
 };
 use base64::{engine::general_purpose::STANDARD, Engine};
@@ -22,10 +23,9 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
     let result = match name {
         "apply_batch" => {
             let req: BatchRequest = serde_json::from_value(args)?;
-            let result = state
-                .db(move |s| s.open_project(&req.project_id)?.apply_batch(req))
-                .await?;
-            serde_json::to_value(result)?
+            let (id, expected) = (req.project_id.clone(), req.expected_revision);
+            let result = state.project(id.clone(), move |p| p.apply_batch(req)).await;
+            serde_json::to_value(conflict::checked(state, &id, expected, result).await?)?
         }
         "import_asset" => {
             let req: ImportRequest = serde_json::from_value(args)?;
@@ -46,11 +46,11 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
                 bytes,
                 font: req.font,
             };
-            serde_json::to_value(
-                state
-                    .db(move |s| s.open_project(&req.project_id)?.import_asset(req))
-                    .await?,
-            )?
+            let (id, expected) = (req.project_id.clone(), req.expected_revision);
+            let result = state
+                .project(id.clone(), move |p| p.import_asset(req))
+                .await;
+            serde_json::to_value(conflict::checked(state, &id, expected, result).await?)?
         }
         _ => return Err(ApiError::invalid("Unknown mutation")),
     };
@@ -60,12 +60,14 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
         let _ = state.events.send(event);
         if let Some(project) = committed["projectId"].as_str() {
             if let Ok(snapshot) = state.snapshot(project.into()).await {
-                for frame in snapshot
-                    .nodes
-                    .iter()
-                    .filter(|n| n.kind == opencanvas_storage::NodeKind::Frame)
-                    .take(4)
-                {
+                // Frames holding changed nodes; token/style-only changes keep the first four.
+                let changed: Vec<&str> = committed["changedIds"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_str)
+                    .collect();
+                for frame in crate::reads::targets::prerender_frames(&snapshot, &changed, 4) {
                     let width = frame.props["width"].as_f64().unwrap_or(800.0);
                     let height = frame.props["height"].as_f64().unwrap_or(600.0);
                     let request = SceneRequest {

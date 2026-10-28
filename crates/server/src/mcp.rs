@@ -13,9 +13,28 @@ use serde_json::{json, Value};
 pub struct Mcp(pub AppState);
 impl ServerHandler for Mcp {
     fn get_info(&self) -> ServerConfig {
-        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
-            .with_server_info(Implementation::new("OpenCanvas", "0.1.0"))
-            .with_instructions(crate::instructions::CONNECT)
+        ServerConfig::new(
+            ServerCapabilities::builder()
+                .enable_tools()
+                .enable_resources()
+                .build(),
+        )
+        .with_server_info(Implementation::new("OpenCanvas", "0.1.0"))
+        .with_instructions(crate::instructions::CONNECT)
+    }
+    async fn list_resources(
+        &self,
+        _: Option<PaginatedRequestParams>,
+        _: RequestContext<RoleServer>,
+    ) -> std::result::Result<ListResourcesResult, ErrorData> {
+        Ok(crate::resources::list())
+    }
+    async fn read_resource(
+        &self,
+        request: ReadResourceRequestParams,
+        _: RequestContext<RoleServer>,
+    ) -> std::result::Result<ReadResourceResponse, ErrorData> {
+        crate::resources::read(&request.uri)
     }
     async fn list_tools(
         &self,
@@ -79,9 +98,12 @@ pub(crate) async fn create(state: &AppState, args: Value) -> Result<Value> {
     let s = state
         .db(move |s| s.create_project(&req.slug, &req.name)?.snapshot())
         .await?;
-    Ok(
-        json!({"projectId":s.project_id,"slug":s.slug,"name":s.name,"revision":s.revision,"schemaVersion":s.schema_version}),
-    )
+    let created = json!({"projectId":s.project_id,"slug":s.slug,"name":s.name,"revision":s.revision,"schemaVersion":s.schema_version});
+    // A non-durable hint for open viewers; the project list stays the source of truth.
+    let _ = state
+        .events
+        .send(crate::workspace_events::project_created(&created));
+    Ok(created)
 }
 async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
     schemas::validate(name, &args)?;
@@ -89,10 +111,11 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
         "list_projects" => projects(state, args).await,
         "create_project" => create(state, args).await,
         "apply_batch" | "import_asset" => domain::mutate(state, name, args).await,
-        "get_outline" | "get_subtree" | "get_design_context" | "list_tokens" | "list_styles"
-        | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
+        "get_outline" | "get_subtree" | "get_design_context" | "find_nodes" | "list_tokens"
+        | "list_styles" | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
+        "get_changes" => reads::changes::read(state, args).await,
         "render_frame" => render(state, args).await,
-        "inspect_layout" => inspect(state, args).await,
+        "inspect_layout" => crate::inspect::inspect(state, args).await,
         _ => Err(ApiError::new("UNKNOWN_TOOL", "Tool is not available")),
     }
 }
@@ -114,7 +137,14 @@ async fn render(state: &AppState, mut args: Value) -> Result<Value> {
         if result["projectId"] != project {
             return Err(ApiError::invalid("Job belongs to another project"));
         }
-        return Ok(result);
+        // Absent or 0 keeps the immediate poll; the schema bounds it to 0–MAX_WAIT_MS.
+        return match args["waitMs"].as_u64().filter(|ms| *ms > 0) {
+            Some(ms) => {
+                let wait = std::time::Duration::from_millis(ms);
+                state.jobs.wait(job, wait, state.shutting_down()).await
+            }
+            None => Ok(result),
+        };
     }
     let object = args.as_object_mut().unwrap();
     object.remove("projectId");
@@ -125,32 +155,4 @@ async fn render(state: &AppState, mut args: Value) -> Result<Value> {
     object.insert("height".into(), viewport["height"].clone());
     let request = serde_json::from_value(args)?;
     scene(state, project, request).await
-}
-async fn inspect(state: &AppState, args: Value) -> Result<Value> {
-    let id = args["jobId"]
-        .as_str()
-        .ok_or_else(|| ApiError::invalid("jobId is required"))?;
-    let job = state.jobs.get(id).await?;
-    if job["projectId"] != args["projectId"] || job["sceneKey"] != args["sceneKey"] {
-        return Err(ApiError::invalid("Job/scene scope mismatch"));
-    }
-    let ids = args["nodeIds"].as_array();
-    if ids.is_some_and(|ids| ids.len() > 200) {
-        return Err(ApiError::invalid("At most 200 node IDs"));
-    }
-    let selected: Vec<_> = job["scene"]["nodes"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter(|n| ids.is_none_or(|ids| ids.contains(&n["id"])))
-        .collect();
-    let truncated = selected.len() > 200;
-    let nodes: Vec<_> = selected
-        .into_iter()
-        .take(200)
-        .map(|n| json!({"id":n["id"],"bounds":n["bounds"],"lines":n["lines"]}))
-        .collect();
-    Ok(
-        json!({"schemaVersion":1,"projectId":job["projectId"],"revision":job["revision"],"sceneKey":job["sceneKey"],"status":job["status"],"nodes":nodes,"diagnostics":job["diagnostics"],"truncated":truncated}),
-    )
 }

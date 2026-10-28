@@ -5,6 +5,7 @@ impl Candidate {
     pub(super) fn properties(&self, n: &Node) -> Result<()> {
         let props = self.resolve_props(n)?;
         let p = props.as_object().unwrap();
+        self.layout_properties(n, p)?;
         let allowed = [
             "name",
             "x",
@@ -45,29 +46,7 @@ impl Candidate {
                     }
                 }
                 "x" | "y" => number(v, -100_000., 100_000., k)?,
-                "width" | "height" => {
-                    if matches!(v.as_str(), Some("fill" | "hug")) {
-                    } else {
-                        number(v, 0., 100_000., k)?;
-                    }
-                    if v == "fill" {
-                        if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id))
-                        {
-                            let parent_props = self.resolve_props(parent)?;
-                            if parent_props.get(k).is_none()
-                                || parent_props.get(k) == Some(&Value::String("hug".into()))
-                            {
-                                return Err(StorageError::validation(
-                                    k,
-                                    "Fill inside a hug axis is ambiguous and unsupported",
-                                ));
-                            }
-                        }
-                    }
-                }
-                "minWidth" | "maxWidth" | "minHeight" | "maxHeight" | "radius" => {
-                    number(v, 0., 100_000., k)?
-                }
+                "radius" => number(v, 0., 100_000., k)?,
                 "fontSize" | "lineHeight" => number(v, 1., 10000., k)?,
                 "opacity" => number(v, 0., 1., k)?,
                 "fill" => color(v)?,
@@ -131,60 +110,13 @@ impl Candidate {
                         ));
                     }
                 }
-                "text" => {
-                    if v.as_str().is_none_or(|s| s.len() > 64 * 1024) {
-                        return Err(StorageError::validation(
-                            k,
-                            "Text must be a plain string up to 64 KiB",
-                        ));
-                    }
-                }
-                "layout" => {
-                    if !n.kind.container() {
-                        return Err(StorageError::validation(
-                            k,
-                            "Only containers support layout",
-                        ));
-                    }
-                    let l = v
-                        .as_object()
-                        .ok_or_else(|| StorageError::validation(k, "Layout must be an object"))?;
-                    if !matches!(
-                        l.get("mode").and_then(Value::as_str),
-                        Some("row" | "column" | "free")
-                    ) {
-                        return Err(StorageError::validation(
-                            "layout.mode",
-                            "Only row, column and free layout are supported",
-                        ));
-                    }
-                    for (k, v) in l {
-                        match k.as_str() {
-                            "mode" => {}
-                            "padding" | "gap" => number(v, 0., 100_000., k)?,
-                            _ => {
-                                return Err(StorageError::validation(
-                                    "layout",
-                                    "Unsupported layout property",
-                                ))
-                            }
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
-        for axis in ["Width", "Height"] {
-            if let (Some(min), Some(max)) = (
-                p.get(&format!("min{axis}")).and_then(Value::as_f64),
-                p.get(&format!("max{axis}")).and_then(Value::as_f64),
-            ) {
-                if min > max {
+                "text" if v.as_str().is_none_or(|s| s.len() > 64 * 1024) => {
                     return Err(StorageError::validation(
-                        "bounds",
-                        "Minimum must not exceed maximum",
+                        k,
+                        "Text must be a plain string up to 64 KiB",
                     ));
                 }
+                _ => {}
             }
         }
         if n.kind == NodeKind::Text {

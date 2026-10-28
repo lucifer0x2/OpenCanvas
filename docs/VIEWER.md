@@ -35,9 +35,39 @@ byte-identical to the worker PNG, which is what the acceptance run compares.
 
 Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to a valid frame when a target disappears. A visible message explains removed frame/layer fallbacks.
 
-The event stream is opened before the first snapshot request. Its cursor is based on the last accepted HTTP snapshot. Duplicates and foreign project events are ignored; a commit, gap, reset, or reconnect refetches the authoritative snapshot. Reconnect uses bounded exponential backoff with jitter. Concurrent refreshes coalesce without losing a subsequent refresh. HTTP snapshots never move revision backwards.
+The first snapshot request and the event stream start in the same effect pass; every stream open refetches the snapshot, so a commit between the two is never lost. The stream cursor is based on the last accepted HTTP snapshot. Duplicates and foreign project commits are ignored; a commit, gap, reset, or reconnect refetches the authoritative snapshot. Reconnect uses bounded exponential backoff with jitter. Concurrent refreshes coalesce without losing a subsequent refresh. HTTP snapshots never move revision backwards.
 
 Each render request has an effect lifetime and validates project/revision/frame, expected job ID, viewport, theme/state, and source scene key. A new snapshot or viewport immediately hides the old scene and computed inspector. Late resources and jobs cannot publish into a newer request. Pending jobs are polled at 500 ms and time out after 45 seconds. The top-level job error is distinct from snapshot/connection error; missing fonts and assets display labeled shared-renderer placeholders and explicit status text. Scene and authored revisions are displayed separately.
+
+## Live workspace
+
+The viewer keeps **exactly one `EventSource` per tab**. The server speaks HTTP/1.1 without TLS, so
+a browser allows about six connections per origin; two streams per tab would starve snapshot, job
+and asset requests after three tabs. With a project selected the tab uses the project stream
+(`/api/v1/projects/{id}/events`); with none (an empty workspace) it uses the workspace stream
+(`/api/v1/events`). Switching closes the previous stream before opening the next, and a failed
+stream is closed before its backoff timer opens a replacement.
+
+- **Live project list.** `project_created` inserts or updates the project in the selector by
+  `projectId`, in the list API's slug order, without a reload. While the workspace is empty the
+  viewer selects the new project, as on first load, and switches to its project stream;
+  otherwise a short notice names the new project.
+- **Activity marks.** `project_activity` from another project bumps its revision in the list,
+  marks it with `●` in the selector, shows a count next to the selector and a short notice with
+  the project's name. It never refetches the snapshot in view. Selecting the project clears its
+  mark and loads its newest revision.
+- **Hints are not durable.** On every stream open and every `reset_required` the viewer refetches
+  both the snapshot and `GET /api/v1/projects`; the list merges by `projectId` and never drops a
+  hinted project or moves a revision backwards. Only the first page (100 projects) is read.
+- **Follow agent** (status bar checkbox). When on, `project_created` or `project_activity` moves
+  the viewer to that project. It is **off by default** (`FOLLOW_AGENT_DEFAULT` in
+  `web/src/hooks/useFollowAgent.ts`), because jumping away from the project in view loses
+  context, and the choice persists in local storage (`opencanvas.followAgent`) when available.
+
+Code: `useProjectList` (list and refetch), `useProjectStream` (the single stream),
+`useSnapshot` (authoritative snapshot), `useFollowAgent`, composed by `useProject`; pure reducers
+`mergeProjects`, `bumpRevision`, `markActivity`, `clearActivity`, `pickProject` and
+`followTarget` live in `web/src/state.ts` with unit tests. The viewer still sends only GET.
 
 ## Verification — 2026-10-28
 

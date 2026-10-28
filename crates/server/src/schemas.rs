@@ -1,13 +1,30 @@
 use rmcp::model::Tool;
 use serde_json::{json, Value};
+use std::{collections::HashMap, sync::OnceLock};
 mod operations;
 mod validation;
+/// The catalog is fixed for the life of the process, so tools and their input schemas are built
+/// once instead of on every `validate`, `list_tools` and `get_tool`.
+fn catalog() -> &'static (Vec<Tool>, HashMap<String, Value>) {
+    static CATALOG: OnceLock<(Vec<Tool>, HashMap<String, Value>)> = OnceLock::new();
+    CATALOG.get_or_init(|| {
+        let tools = build();
+        let schemas = tools
+            .iter()
+            .map(|t| (t.name.to_string(), Value::Object((*t.input_schema).clone())))
+            .collect();
+        (tools, schemas)
+    })
+}
 pub fn validate(name: &str, args: &Value) -> crate::error::Result<()> {
-    let tool = tools()
-        .into_iter()
-        .find(|t| t.name == name)
+    let schema = catalog()
+        .1
+        .get(name)
         .ok_or_else(|| crate::ApiError::new("UNKNOWN_TOOL", "Tool is not available"))?;
-    validation::validate(&Value::Object((*tool.input_schema).clone()), args)
+    validation::validate(schema, args)
+}
+pub fn tools() -> Vec<Tool> {
+    catalog().0.clone()
 }
 fn id() -> Value {
     json!({"type":"string","minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9_-]+$"})
@@ -21,7 +38,7 @@ fn text(max: u64) -> Value {
 pub fn object(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
 }
-pub fn tools() -> Vec<Tool> {
+fn build() -> Vec<Tool> {
     let mut tools = Vec::new();
     let mut add = |name: &'static str, description: String, schema: Value| {
         tools.push(Tool::new(
@@ -63,8 +80,25 @@ pub fn tools() -> Vec<Tool> {
             "What implementing one frame needs: its subtree with authored props next to resolvedProps for the requested theme, plus the token and style values behind them. Write code against the authored reference and your own named token for it, so a design theme change stays one change in code; resolvedProps only say what that reference evaluates to today.",
         ),
     ] {
-        add(name, format!("{purpose}{CAPS}"), object(tree.clone(), &required));
+        let mut properties = tree.clone();
+        let mut description = format!("{purpose}{CAPS}");
+        if name == "get_design_context" {
+            properties["viewports"] = json!({"type":"array","minItems":1,"maxItems":4,"items":viewport()});
+            properties["compact"] = json!({"type":"boolean"});
+            description.push_str(" compact:true (default false) shrinks the read: resolvedProps keep only keys whose resolved value differs from authored (resolvedPropsMode:\"differing\"; the full value is authored props without styleId overlaid with them), and tokens/styles/assets/fonts are only those the frame references, closed over style and alias/theme references (resources:\"referenced\"). Diagnostics and reflow still cover the whole frame.");
+            description.push_str(" Optional viewports (1–4, mutually exclusive with viewport, total 16M pixels) enqueue cached render jobs without waiting. Repeat the same read when computed.status is pending; ready nodes include computedBounds in viewport order and reflow compares all descendants, excluding the root. Pending/failed comparisons return reflow:null.");
+        }
+        add(name, description, object(properties, &required));
     }
+    let kinds = json!({"enum":["page","frame","group","rectangle","text","image"]});
+    add(
+        "find_nodes",
+        "Find nodes in one call when you know a name, visible text, kind or ID; use get_outline when you need structure. Criteria are ANDed (kinds is OR within the list) and at least one is required. Matching is case-insensitive substring via lowercase, without accent folding or Unicode normalization; textContains only matches text nodes' props.text. Scope is the project, or one nodeId or frameId subtree. Returns preorder matches with id, kind, name, parentId, depth and the ancestor path (up to 8 nearest, pathTruncated when cut), plus textPreview and the requested authored properties. totalMatches and scannedNodes cover the whole scope before paging: totalMatches 0 means nothing matched, not an error; truncated with nextCursor means more pages. Position (left/right) is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds. One revision, up to 200 matches and 64 KiB per page.".into(),
+        object(
+            json!({"projectId":id(),"nodeId":id(),"frameId":id(),"kinds":{"type":"array","minItems":1,"maxItems":6,"items":kinds},"nameContains":text(128),"textContains":text(256),"ids":{"type":"array","minItems":1,"maxItems":200,"items":id()},"properties":{"type":"array","maxItems":20,"items":text(64)},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024),"revision":{"type":"integer","minimum":0}}),
+            &["projectId"],
+        ),
+    );
     let resource = json!({"projectId":id(),"ids":{"type":"array","maxItems":100,"items":id()},"limit":count(100),"cursor":text(1024),"revision":{"type":"integer","minimum":0}});
     for (name, purpose) in [
         ("list_tokens", "Named design tokens and their per-theme values: the system behind the token references in authored props."),
@@ -78,7 +112,15 @@ pub fn tools() -> Vec<Tool> {
             object(resource.clone(), &["projectId"]),
         );
     }
-    add("apply_batch","Atomically apply ordered operations. Replay the identical key/body after lost responses; a changed body requires a new key. Conflicts require readback.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
+    add(
+        "get_changes",
+        "Commits after sinceRevision from the durable log: each revision with its changedIds (operations with includeOperations:true), and their union grouped at currentRevision into nodes/tokens/styles/assets/fonts, or removed when gone. Use it to catch up or to rebase after REVISION_CONFLICT; re-read nodes with find_nodes ids. Up to limit (max 100) whole commits within budget per page; truncated:true means repeat with sinceRevision:nextRevision. Ahead of the project or missing history returns RESET_REQUIRED: re-read the snapshot.".into(),
+        object(
+            json!({"projectId":id(),"sinceRevision":{"type":"integer","minimum":0},"limit":count(100),"includeOperations":{"type":"boolean"},"budget":{"type":"integer","minimum":1024,"maximum":65536}}),
+            &["projectId", "sinceRevision"],
+        ),
+    );
+    add("apply_batch","Atomically apply ordered operations. Replay the identical key/body after lost responses; a changed body requires a new key. A REVISION_CONFLICT carries changedSince, the IDs changed after your expectedRevision: rebase on them or read back.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
     add(
         "import_asset",
         "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted.".into(),
@@ -94,10 +136,11 @@ pub fn tools() -> Vec<Tool> {
         ),
     );
     let render = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4}});
-    add("render_frame","Enqueue immutable exact-revision rendering; returns bounded job and HTTP PNG resource metadata when ready. Poll using jobId. The PNG is the exact pixels the design has at that revision and viewport, so it is also how an implementation is compared against the design.".into(),{
-        json!({"oneOf":[object(render,&["projectId","revision","frameId","viewport"]),object(json!({"projectId":id(),"jobId":id()}),&["projectId","jobId"])]})
+    let wait = json!({"type":"integer","minimum":0,"maximum":crate::jobs::MAX_WAIT_MS});
+    add("render_frame","Enqueue immutable exact-revision rendering; returns bounded job and HTTP PNG resource metadata when ready. Poll using jobId; pass waitMs (0–10000, default 0) to have the poll return as soon as the job leaves pending, or its current state when the wait expires, instead of polling in a tight loop. waitMs is only accepted with jobId. The PNG is the exact pixels the design has at that revision and viewport, so it is also how an implementation is compared against the design.".into(),{
+        json!({"oneOf":[object(render,&["projectId","revision","frameId","viewport"]),object(json!({"projectId":id(),"jobId":id(),"waitMs":wait}),&["projectId","jobId"])]})
     });
-    add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":id()}}),&["projectId","jobId","sceneKey"]));
+    add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
     tools
 }
 fn viewport() -> Value {

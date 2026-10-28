@@ -43,7 +43,7 @@ Nếu spike không đạt, dừng mở rộng layout và ghi quyết định tha
 Phần viewer chỉ đọc và contract dữ liệu không phụ thuộc việc đã khóa engine layout hay chưa.
 
 MVP hỗ trợ page, frame, group, rectangle, text và image; group dùng layout hoặc tọa độ tự do.
-Layout chỉ gồm row/column, padding, gap, fixed/fill/hug và giới hạn min/max rõ ràng.
+Layout gồm row/column, padding, gap, fixed/fill/hug, min/max và row wrap opt-in đã duyệt ngày 2026-10-28.
 Frame gốc có kích thước cố định; không hỗ trợ chu kỳ phần trăm hoặc fill trong trục hug mơ hồ.
 Text dùng một font/style mỗi node, plain text, line height tường minh và wrap theo chiều rộng.
 Image chỉ cần fit/contain/cover, crop đơn giản, opacity và clip theo frame.
@@ -53,6 +53,53 @@ Asset/font metadata đọc/list được qua MCP; không đòi UI quản lý res
 Component/variant tối giản là giai đoạn sau MVP; chưa triển khai override hoặc inheritance phức tạp.
 Responsive v1 chỉ là agent chọn viewport hữu hạn và bố cục trong phạm vi row/column đã công bố.
 Không cam kết tự động mô phỏng CSS media query hoặc mọi hành vi responsive của website.
+
+### Task04 — row wrap được duyệt trước triển khai
+
+Phạm vi theo `docs/TASK04-PROPOSAL.md`, người dùng duyệt rõ “Duyệt, triển khai row wrap”.
+`layout.wrap` là literal boolean, mặc định false và bỏ khỏi serialization khi false.
+Thiếu/false giữ hành vi cũ ở row/column/free; true chỉ cho container page/frame/group
+với mode row. Sai kiểu (null/string/number/ref) bị từ chối; storage vẫn reject unknown keys.
+Wrapping row cần width số hữu hạn >0 hoặc fill qua chuỗi ancestor fill tới width số >0;
+width thiếu/hug hoặc chỉ có min/max không definite. Direct layout chốt selected frame
+bằng viewport hữu hạn; storage kiểm mọi theme, chốt root frame fixed cả hai trục.
+Child trực tiếp width fill cần minWidth tường minh >0 (dimension ref resolve hợp lệ);
+fixed/hug child hợp lệ, không áp guard này cho text fill nằm trong card column.
+Row rỗng hợp lệ; giữ guard fill trong hug hiện có trên cả hai trục.
+
+Min/max hữu hạn 0…100000, min≤max trên cả hai trục; equality hợp lệ. Fixed ngoài
+interval vẫn clamp. Không reject tổng minima vượt viewport: child quá lớn vẫn overflow.
+Storage validate candidate cuối, mọi theme và update/token/theme/reparent atomically;
+lỗi VALIDATION_FAILED có field, không partial snapshot/revision/log/idempotency.
+Direct guard chạy trước measurement, lỗi LAYOUT_INVALID; sai kiểu deserialize INVALID_JSON.
+
+Mapping Taffy FlexWrap::Wrap + AlignContent::START chỉ khi wrap true, align-items START;
+giữ nguyên default no-wrap. Sibling order không đổi; gap giữa card và giữa hàng.
+Fill grow1/shrink1/basis0 chia theo từng hàng; hàng cuối có thể fill toàn width, không Grid.
+Hug height = padding + tổng max height từng hàng + row gaps; fixed/min/max vẫn clamp,
+có thể overflow dọc. Giữ callback cache-only, batch measurement mỗi pass, tối đa6 passes,
+text cache key/line list/renderer và pixel/node/depth budgets hiện có; input bất biến.
+
+AC: fixture mới 1040→3 card/1 hàng,640→2+1,390→1+1+1, min280/gap16/padding24;
+geometry row hug80/156/212, Vietnamese long/unbroken text128/224/320, không overflow
+frame/card/text hoặc overlap. Biên920/919/624/623; fixed row height align start,
+nested definite width, fixed/hug children, equal min/max/clamp, oversized-min overflow
+control, omitted/false no-wrap compatibility, repeat cache0 batch và input bất biến.
+Negative direct/storage guards gồm sai mode/type, indefinite width, thiếu/nonpositive
+fill minimum, min>max hai trục; token/theme/update/reparent và late invalid op rollback.
+MCP temp root create/apply/read/context/reflow/inspect/render ba viewport, restart giữ
+wrap/revision/bounds/PNG; viewer GET-only dùng shared scene/render ở1040 và390.
+Giữ đủ pipeline11 và E2E15 nhóm cũ, thêm wrap; chạy layout tests, full storage offline
+fault-injection (2 threads), server wrap + multi_viewport/skill_layer, E2E, strict library
+Clippy layout/storage/server, fmt, JS syntax/format, diff/size checks (mã≤250 dòng).
+
+Không DB migration: props JSON additive; DB schema2, snapshot/API/scene schema1 giữ nguyên.
+Scene/job key gồm resolved input và startup pipeline fingerprint; build layout mới rồi
+restart backend mới đổi cache identity. Backend/layout phải nâng cùng nhau; engine cũ
+có thể bỏ unknown field, không hứa mixed-version/downgrade/hot replacement. Task không
+restart3847, không đổi renderer/web behavior, real demo hoặc no-wrap golden.
+Không thêm %/breakpoint/column-wrap/wrap-reverse/align API. Wrap không tự sửa dashboard:
+sidebar/body minima, fixed chart/progress và fixed text heights vẫn cần author riêng.
 
 Ngoài phạm vi: user editing, drag/drop sửa node, undo UI, chat, terminal và AI provider API.
 Ngoài phạm vi: cộng tác nhiều người, cloud hosting, plugin Figma và full Figma clone.
@@ -219,6 +266,8 @@ Batch/pixel budget chốt từ spike; mọi giới hạn có server cap, truncat
 | `import_asset` | project, bounded binary/resource input, media type | Validated asset ref; không nhận arbitrary local path. |
 | `render_frame` | project, revision, frame, viewport, theme/state, scale | PNG resource hoặc job ID, provenance, readiness/errors. |
 | `inspect_layout` | cùng scene key, node scope | Computed bounds/lines/rules và diagnostics. |
+| `find_nodes` | project, page/frame/node scope, kinds/nameContains/textContains/ids, limit, cursor | Danh sách match phẳng có path tổ tiên, totalMatches, truncation rõ. Bổ sung chỉ đọc, người dùng duyệt 2026-10-28 (Task06). |
+| `get_changes` | project, sinceRevision, limit, budget | Commits + changed ids phân loại theo snapshot hiện tại; conflict mang `changedSince`. Người dùng duyệt 2026-10-28 (Task07D). |
 
 `inspect_layout` bản đầu chỉ bounds/status; giải thích sâu và diff tools mở ở giai đoạn sau.
 HTTP tối thiểu: list/create project, GET snapshot, GET events, GET asset và GET render job/resource.

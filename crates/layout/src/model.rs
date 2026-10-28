@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+mod layout;
+pub use layout::{LayoutRule, Sizing};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,13 +41,6 @@ pub struct Asset {
     pub media_type: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Sizing {
-    Fixed(f32),
-    Rule(String),
-}
-
 /// Normalized source-image rectangle, before contain/cover/fill.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Crop {
@@ -53,20 +48,6 @@ pub struct Crop {
     pub y: f32,
     pub width: f32,
     pub height: f32,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LayoutRule {
-    #[serde(default = "free")]
-    pub mode: String,
-    #[serde(default)]
-    pub padding: f32,
-    #[serde(default)]
-    pub gap: f32,
-}
-fn free() -> String {
-    "free".into()
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -208,6 +189,10 @@ pub struct Scene {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "status", rename_all = "snake_case")]
+#[expect(
+    clippy::large_enum_variant,
+    reason = "Preserve the existing public LayoutStep::Ready { scene: Scene } API; boxing is an unrelated breaking change"
+)]
 pub enum LayoutStep {
     Pending { requests: Vec<MeasureRequest> },
     Ready { scene: Scene },

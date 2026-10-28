@@ -3,13 +3,16 @@ mod error;
 mod events;
 mod fingerprint;
 mod http;
+mod inspect;
 mod instructions;
 mod jobs;
 mod mcp;
 mod reads;
+mod resources;
 mod schemas;
 mod state;
 mod worker;
+mod workspace_events;
 
 pub use error::ApiError;
 pub use http::router;

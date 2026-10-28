@@ -8,7 +8,7 @@ use support::{design, Server};
 async fn mcp_atomic_conflict_replay_snapshot_and_guards() {
     let s = Server::start().await;
     let tools = s.rpc("tools/list", json!({})).await;
-    assert_eq!(tools["tools"].as_array().unwrap().len(), 13);
+    assert_eq!(tools["tools"].as_array().unwrap().len(), 15);
     let p = s.project().await;
     let first = s.batch(&p, 0, "initial", design()).await;
     assert_eq!(first["committedRevision"], 1, "{first}");

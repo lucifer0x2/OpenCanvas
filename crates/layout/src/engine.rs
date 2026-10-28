@@ -42,7 +42,7 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                     let Some(idx) = context else {
                         return Size::ZERO;
                     };
-                    let width = known.width.or_else(|| match available.width {
+                    let width = known.width.or(match available.width {
                         AvailableSpace::Definite(w) => Some(w),
                         AvailableSpace::MinContent => Some(0.0),
                         _ => None,

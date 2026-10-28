@@ -1,5 +1,6 @@
 mod input;
 mod png;
+mod wait;
 use crate::{
     error::{ApiError, Result},
     state::Config,
@@ -10,7 +11,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{collections::VecDeque, sync::Arc};
-use tokio::sync::{broadcast, mpsc, Mutex};
+use tokio::sync::{broadcast, mpsc, watch, Mutex};
+pub use wait::MAX_WAIT_MS;
 
 fn default_name() -> String {
     "default".into()
@@ -47,6 +49,8 @@ pub struct Jobs {
     entries: Mutex<VecDeque<Entry>>,
     sender: mpsc::Sender<Work>,
     config: Arc<Config>,
+    /// Bumped after every job leaves `pending`; `wait` parks on it.
+    done: watch::Sender<u64>,
 }
 impl Jobs {
     pub fn start(config: Arc<Config>, events: broadcast::Sender<Value>) -> Arc<Self> {
@@ -55,6 +59,7 @@ impl Jobs {
             entries: Mutex::new(VecDeque::new()),
             sender,
             config: config.clone(),
+            done: watch::channel(0).0,
         });
         let weak = Arc::downgrade(&jobs);
         tokio::spawn(async move {
@@ -87,6 +92,22 @@ impl Jobs {
         jobs
     }
     pub async fn enqueue(&self, snapshot: Snapshot, request: SceneRequest) -> Result<Value> {
+        self.enqueue_inner(snapshot, request, true).await
+    }
+    /// Context reads retain failures for diagnosis. Explicit render_frame retries them.
+    pub(crate) async fn for_context(
+        &self,
+        snapshot: Snapshot,
+        request: SceneRequest,
+    ) -> Result<Value> {
+        self.enqueue_inner(snapshot, request, false).await
+    }
+    async fn enqueue_inner(
+        &self,
+        snapshot: Snapshot,
+        request: SceneRequest,
+        retry: bool,
+    ) -> Result<Value> {
         if snapshot.revision != request.revision {
             return Err(ApiError::new(
                 "REVISION_UNAVAILABLE",
@@ -121,8 +142,9 @@ impl Jobs {
             )?)
         );
         let mut entries = self.entries.lock().await;
-        if let Some(entry) = entries.iter().find(|e| {
-            e.key == key && e.value["status"] != "failed" && e.value.get("error").is_none()
+        if let Some(entry) = entries.iter().rev().find(|e| {
+            e.key == key
+                && (!retry || (e.value["status"] != "failed" && e.value.get("error").is_none()))
         }) {
             return Ok(entry.value.clone());
         }
@@ -212,5 +234,6 @@ impl Jobs {
                 let _=events.send(json!({"event":"scene_ready","projectId":entry.value["projectId"],"revision":entry.value["revision"],"sceneKey":entry.value["sceneKey"],"jobId":id}));
             }
         }
+        self.done.send_modify(|n| *n = n.wrapping_add(1));
     }
 }

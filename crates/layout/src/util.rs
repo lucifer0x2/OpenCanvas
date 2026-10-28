@@ -17,7 +17,7 @@ pub(crate) fn quantize(n: f32) -> f32 {
     (n * 64.0).round() / 64.0
 }
 pub(crate) fn finite(n: f32) -> bool {
-    n.is_finite() && n >= 0.0 && n <= 100_000.0
+    n.is_finite() && (0.0..=100_000.0).contains(&n)
 }
 pub(crate) fn is_fill(n: &Option<Sizing>) -> bool {
     matches!(n, Some(Sizing::Rule(r)) if r == "fill")

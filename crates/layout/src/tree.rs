@@ -46,6 +46,10 @@ pub(crate) fn build(
         style.flex_basis = length(0.0);
     }
     if let Some(layout) = &p.layout {
+        if layout.wrap {
+            style.flex_wrap = FlexWrap::Wrap;
+            style.align_content = AlignContent::START;
+        }
         style.padding = Rect {
             left: length(layout.padding),
             right: length(layout.padding),
