@@ -1,7 +1,6 @@
 use super::{
     animated, compact, diagnostics, index::TreeIndex, navigation, notes, pagination,
-    sanitize_asset,
-    viewports::Computed, ReadRequest,
+    sanitize_asset, viewports::Computed, ReadRequest,
 };
 use crate::error::{ApiError, Result};
 use opencanvas_storage::{resolved_nodes_for_theme, resolved_tokens_for_theme, NodeKind, Snapshot};
