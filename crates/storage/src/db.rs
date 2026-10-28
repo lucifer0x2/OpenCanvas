@@ -30,6 +30,7 @@ pub(crate) fn initialize(conn: &mut Connection, id: &str, slug: &str, name: &str
         params![font.id, serde_json::to_string(&font)?],
     )?;
     tx.commit()?;
+    migration::migrate(conn)?;
     Ok(())
 }
 pub(crate) fn read_meta(conn: &Connection) -> Result<ProjectMeta> {
@@ -70,6 +71,7 @@ pub(crate) fn read_snapshot(conn: &mut Connection) -> Result<Snapshot> {
     let styles = json_rows(&tx, "styles")?;
     let assets = json_rows(&tx, "assets")?;
     let fonts = json_rows(&tx, "fonts")?;
+    let retention = migration::read_retention(&tx)?;
     tx.commit()?;
     Ok(Snapshot {
         schema_version: meta.schema_version,
@@ -82,10 +84,7 @@ pub(crate) fn read_snapshot(conn: &mut Connection) -> Result<Snapshot> {
         styles,
         assets,
         fonts,
-        retention: Retention {
-            oldest_commit_revision: 1,
-            idempotency_policy: "Retained for project lifetime; no expiration in schema v1".into(),
-        },
+        retention,
     })
 }
 

@@ -43,8 +43,9 @@ cargo build --release -p opencanvas-storage --example storage_spike
 /usr/bin/time -l target/release/examples/storage_spike > spikes/storage/results.json 2> spikes/storage/resource-usage.txt
 ```
 
-Tests: **15 passed, 0 failed**, seven suites including documentation/unit harnesses,
-2.10 seconds on the final targeted run. The first benchmark completed all assertions
+Tests: **17 passed, 0 failed**, eight suites including documentation/unit harnesses,
+2.17 seconds on the final targeted run, including ordered mutual-style-alias and
+legacy alias-cycle rejection without recursion or partial commit. The first benchmark completed all assertions
 and emitted valid `results.json`, but the sandbox denied `time`'s `kern.clockrate`
 sysctl, so its wrapper exited 1 after printing CPU times. A second identical binary
 run with resource-accounting permission exited 0; its JSON is

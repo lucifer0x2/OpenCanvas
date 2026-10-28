@@ -1,0 +1,1952 @@
+{
+  "diagnostics": [],
+  "frameId": "welcome-dashboard",
+  "image": {
+    "height": 720,
+    "mimeType": "image/png",
+    "provenance": {
+      "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "browserVersion": "156.0.8078.4",
+      "fontManifestHash": "be049ee674b4d0db46a89c0284de0e296fb62e3469c78db734729fbb43d77517",
+      "frameId": "welcome-dashboard",
+      "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+      "readiness": [
+        {
+          "id": "font_bundled",
+          "kind": "font",
+          "status": "ready"
+        }
+      ],
+      "rendererVersion": "web-1",
+      "revision": 1,
+      "runtimeVersion": "v24.21.0",
+      "scale": 1,
+      "sceneVersion": "scene-1",
+      "sourceSceneKey": "5b0904e9afee266e5ab0b9edfcb9f12de0b646cdc0f142caea14367cc74c4441",
+      "state": "default",
+      "theme": "default",
+      "viewport": {
+        "height": 720,
+        "width": 1040
+      }
+    },
+    "uri": "http://127.0.0.1:3847/api/v1/jobs/job_5383445446714184a95ff91080452a08/image",
+    "width": 1040
+  },
+  "imageUrl": "http://127.0.0.1:3847/api/v1/jobs/job_5383445446714184a95ff91080452a08/image",
+  "jobId": "job_5383445446714184a95ff91080452a08",
+  "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+  "provenance": {
+    "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "browserVersion": "156.0.8078.4",
+    "fontManifestHash": "be049ee674b4d0db46a89c0284de0e296fb62e3469c78db734729fbb43d77517",
+    "frameId": "welcome-dashboard",
+    "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+    "rendererVersion": "web-1",
+    "revision": 1,
+    "runtimeVersion": "v24.21.0",
+    "sceneVersion": "scene-1",
+    "sourceSceneKey": "5b0904e9afee266e5ab0b9edfcb9f12de0b646cdc0f142caea14367cc74c4441",
+    "state": "default",
+    "theme": "default",
+    "viewport": {
+      "height": 720,
+      "width": 1040
+    }
+  },
+  "readiness": [
+    {
+      "id": "font_bundled",
+      "kind": "font",
+      "status": "ready"
+    }
+  ],
+  "revision": 1,
+  "scene": {
+    "assets": [],
+    "coordinateSpace": "frame-local",
+    "diagnostics": [],
+    "fonts": [
+      {
+        "family": "OpenCanvas Noto Sans",
+        "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+        "id": "font_bundled",
+        "style": "normal",
+        "url": "http://127.0.0.1:3847/api/v1/fonts/font_bundled",
+        "weight": 400
+      }
+    ],
+    "nodes": [
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 720,
+          "width": 1040,
+          "x": 0,
+          "y": 0
+        },
+        "clip": true,
+        "crop": null,
+        "fill": "#F5F6FA",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "welcome-dashboard",
+        "kind": "frame",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": null,
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 720,
+          "width": 176,
+          "x": 0,
+          "y": 0
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "sidebar",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 32,
+          "width": 32,
+          "x": 24,
+          "y": 32
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "logo",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 9
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 35,
+          "width": 20,
+          "x": 33,
+          "y": 30
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 25,
+        "id": "logo-letter",
+        "kind": "text",
+        "lineHeight": 35,
+        "lines": [
+          {
+            "text": "o",
+            "width": 15.125,
+            "x": 0,
+            "y": 30
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 30,
+          "width": 96,
+          "x": 67,
+          "y": 33
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 21,
+        "id": "brand-name",
+        "kind": "text",
+        "lineHeight": 30,
+        "lines": [
+          {
+            "text": "Orbit",
+            "width": 50.984375,
+            "x": 0,
+            "y": 25.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 145,
+          "x": 24,
+          "y": 104
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "workspace-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "KHÔNG GIAN CỦA BẠN",
+            "width": 109.15625,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 44,
+          "width": 144,
+          "x": 16,
+          "y": 136
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEEDFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "active-nav",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 10
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 20,
+          "width": 118,
+          "x": 32,
+          "y": 146
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "id": "overview-nav",
+        "kind": "text",
+        "lineHeight": 20,
+        "lines": [
+          {
+            "text": "Tổng quan",
+            "width": 69.9375,
+            "x": 0,
+            "y": 17
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 20,
+          "width": 118,
+          "x": 32,
+          "y": 200
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "id": "projects-nav",
+        "kind": "text",
+        "lineHeight": 20,
+        "lines": [
+          {
+            "text": "Dự án",
+            "width": 39.796875,
+            "x": 0,
+            "y": 17
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 20,
+          "width": 125,
+          "x": 32,
+          "y": 246
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "id": "calendar-nav",
+        "kind": "text",
+        "lineHeight": 20,
+        "lines": [
+          {
+            "text": "Lịch làm việc",
+            "width": 83.5,
+            "x": 0,
+            "y": 17
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 1,
+          "width": 128,
+          "x": 24,
+          "y": 625
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#E9ECF2",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "sidebar-divider",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 144,
+          "x": 24,
+          "y": 646
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "id": "profile-name",
+        "kind": "text",
+        "lineHeight": 17,
+        "lines": [
+          {
+            "text": "Không gian sáng tạo",
+            "width": 116.484375,
+            "x": 0,
+            "y": 14.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 145,
+          "x": 24,
+          "y": 669
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "profile-plan",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "Chậm một chút. Tốt hơn.",
+            "width": 116.046875,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "sidebar",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 420,
+          "x": 208,
+          "y": 28
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "date",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "THỨ TƯ, 28 THÁNG 10",
+            "width": 114.765625,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 42,
+          "width": 600,
+          "x": 208,
+          "y": 50
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 30,
+        "id": "greeting",
+        "kind": "text",
+        "lineHeight": 42,
+        "lines": [
+          {
+            "text": "Một ngày thật tốt.",
+            "width": 253.59375,
+            "x": 0,
+            "y": 36
+          }
+        ],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 19,
+          "width": 570,
+          "x": 208,
+          "y": 99
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "id": "intro",
+        "kind": "text",
+        "lineHeight": 19,
+        "lines": [
+          {
+            "text": "Tập trung vào điều quan trọng, từng việc một.",
+            "width": 280.890625,
+            "x": 0,
+            "y": 16
+          }
+        ],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 42,
+          "width": 140,
+          "x": 852,
+          "y": 47
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "new-task-button",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 10
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 19,
+          "width": 120,
+          "x": 868,
+          "y": 58
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "id": "new-task-label",
+        "kind": "text",
+        "lineHeight": 19,
+        "lines": [
+          {
+            "text": "+ Tạo công việc",
+            "width": 92.578125,
+            "x": 0,
+            "y": 16
+          }
+        ],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 112,
+          "width": 248,
+          "x": 208,
+          "y": 148
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "completed",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 216,
+          "x": 228,
+          "y": 164
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "id": "completed-label",
+        "kind": "text",
+        "lineHeight": 17,
+        "lines": [
+          {
+            "text": "Đã hoàn thành",
+            "width": 83.875,
+            "x": 0,
+            "y": 14.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "completed",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 40,
+          "width": 216,
+          "x": 228,
+          "y": 186
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "id": "completed-value",
+        "kind": "text",
+        "lineHeight": 40,
+        "lines": [
+          {
+            "text": "24",
+            "width": 32.03125,
+            "x": 0,
+            "y": 34
+          }
+        ],
+        "opacity": 1,
+        "parentId": "completed",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 216,
+          "x": 228,
+          "y": 231
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#178061",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "completed-note",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "+6 so với tuần trước",
+            "width": 102.875,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "completed",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 112,
+          "width": 248,
+          "x": 476,
+          "y": 148
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "active",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 216,
+          "x": 496,
+          "y": 164
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "id": "active-label",
+        "kind": "text",
+        "lineHeight": 17,
+        "lines": [
+          {
+            "text": "Đang thực hiện",
+            "width": 86.8125,
+            "x": 0,
+            "y": 14.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "active",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 40,
+          "width": 216,
+          "x": 496,
+          "y": 186
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "id": "active-value",
+        "kind": "text",
+        "lineHeight": 40,
+        "lines": [
+          {
+            "text": "08",
+            "width": 32.03125,
+            "x": 0,
+            "y": 34
+          }
+        ],
+        "opacity": 1,
+        "parentId": "active",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 216,
+          "x": 496,
+          "y": 231
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "active-note",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "3 việc cần bạn hôm nay",
+            "width": 120.796875,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "active",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 112,
+          "width": 248,
+          "x": 744,
+          "y": 148
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "focus",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 216,
+          "x": 764,
+          "y": 164
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "id": "focus-label",
+        "kind": "text",
+        "lineHeight": 17,
+        "lines": [
+          {
+            "text": "Thời gian tập trung",
+            "width": 108.5,
+            "x": 0,
+            "y": 14.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "focus",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 40,
+          "width": 216,
+          "x": 764,
+          "y": 186
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "id": "focus-value",
+        "kind": "text",
+        "lineHeight": 40,
+        "lines": [
+          {
+            "text": "18,5 giờ",
+            "width": 104.53125,
+            "x": 0,
+            "y": 34
+          }
+        ],
+        "opacity": 1,
+        "parentId": "focus",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 216,
+          "x": 764,
+          "y": 231
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "focus-note",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "Đều đặn mỗi ngày",
+            "width": 94.484375,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "focus",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 238,
+          "width": 498,
+          "x": 208,
+          "y": 280
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "weekly-chart",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 24,
+          "width": 300,
+          "x": 230,
+          "y": 298
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "id": "chart-title",
+        "kind": "text",
+        "lineHeight": 24,
+        "lines": [
+          {
+            "text": "Nhịp làm việc",
+            "width": 107.6875,
+            "x": 0,
+            "y": 20.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 330,
+          "x": 230,
+          "y": 327
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "chart-subtitle",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "Công việc hoàn thành trong 7 ngày",
+            "width": 181.34375,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 8,
+          "width": 8,
+          "x": 601,
+          "y": 306
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "chart-legend-dot",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 3
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 82,
+          "x": 617,
+          "y": 301
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "chart-legend",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "Tuần này",
+            "width": 42.515625,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 1,
+          "width": 450,
+          "x": 232,
+          "y": 368
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEF0F5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "chart-grid-0",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 1,
+          "width": 450,
+          "x": 232,
+          "y": 418
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEF0F5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "chart-grid-1",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 1,
+          "width": 450,
+          "x": 232,
+          "y": 468
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEF0F5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "chart-grid-2",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 33,
+          "width": 28,
+          "x": 247,
+          "y": 435
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-0-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 250,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-0-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T2",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 55,
+          "width": 28,
+          "x": 309,
+          "y": 413
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-1-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 312,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-1-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T3",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 44,
+          "width": 28,
+          "x": 371,
+          "y": 424
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-2-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 374,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-2-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T4",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 77,
+          "width": 28,
+          "x": 433,
+          "y": 391
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-3-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 436,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-3-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T5",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 66,
+          "width": 28,
+          "x": 495,
+          "y": 402
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-4-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 498,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-4-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T6",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 99,
+          "width": 28,
+          "x": 557,
+          "y": 369
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-5-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 560,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-5-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "T7",
+            "width": 11.28125,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 88,
+          "width": 28,
+          "x": 619,
+          "y": 380
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#C7C4FC",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "day-6-bar",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 40,
+          "x": 622,
+          "y": 484
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "day-6-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "CN",
+            "width": 13.921875,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-chart",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 238,
+          "width": 266,
+          "x": 726,
+          "y": 280
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEEDFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "weekly-goal",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 14,
+          "width": 230,
+          "x": 748,
+          "y": 303
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#514A9D",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "id": "goal-label",
+        "kind": "text",
+        "lineHeight": 14,
+        "lines": [
+          {
+            "text": "MỤC TIÊU TUẦN",
+            "width": 76.484375,
+            "x": 0,
+            "y": 12
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 54,
+          "width": 230,
+          "x": 748,
+          "y": 329
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 38,
+        "id": "goal-value",
+        "kind": "text",
+        "lineHeight": 54,
+        "lines": [
+          {
+            "text": "80%",
+            "width": 75.046875,
+            "x": 0,
+            "y": 46
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 19,
+          "width": 230,
+          "x": 748,
+          "y": 393
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "id": "goal-caption",
+        "kind": "text",
+        "lineHeight": 19,
+        "lines": [
+          {
+            "text": "Bạn đang giữ nhịp rất tốt.",
+            "width": 157.375,
+            "x": 0,
+            "y": 16
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 8,
+          "width": 222,
+          "x": 748,
+          "y": 438
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#DCD9FB",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "goal-track",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 4
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 8,
+          "width": 178,
+          "x": 748,
+          "y": 438
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#4F46E5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "goal-progress",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 4
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 230,
+          "x": 748,
+          "y": 464
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#514A9D",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "goal-details",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "24 / 30 công việc hoàn thành",
+            "width": 148.78125,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "weekly-goal",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 150,
+          "width": 784,
+          "x": 208,
+          "y": 538
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#FFFFFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "today-tasks",
+        "kind": "group",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "welcome-dashboard",
+        "radius": 16
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 24,
+          "width": 380,
+          "x": 230,
+          "y": 555
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "id": "tasks-title",
+        "kind": "text",
+        "lineHeight": 24,
+        "lines": [
+          {
+            "text": "Ưu tiên hôm nay",
+            "width": 133.046875,
+            "x": 0,
+            "y": 20.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 170,
+          "x": 812,
+          "y": 560
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "tasks-count",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "2 việc cần tập trung",
+            "width": 101.671875,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 1,
+          "width": 740,
+          "x": 230,
+          "y": 591
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEF0F5",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "task-divider",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 17,
+          "x": 230,
+          "y": 607
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#E8EBF2",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "review-checkbox",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 19,
+          "width": 510,
+          "x": 260,
+          "y": 605
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "id": "review-text",
+        "kind": "text",
+        "lineHeight": 19,
+        "lines": [
+          {
+            "text": "Hoàn thiện giao diện trang chủ",
+            "width": 189.828125,
+            "x": 0,
+            "y": 16
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 26,
+          "width": 100,
+          "x": 870,
+          "y": 603
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#EEEDFF",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "review-status",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 13
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 80,
+          "x": 884,
+          "y": 608
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#5145BC",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "review-status-label",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "Đang làm",
+            "width": 49.921875,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 17,
+          "width": 17,
+          "x": 230,
+          "y": 648
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#E8EBF2",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "feedback-checkbox",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 5
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 19,
+          "width": 510,
+          "x": 260,
+          "y": 646
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#1B2440",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "id": "feedback-text",
+        "kind": "text",
+        "lineHeight": 19,
+        "lines": [
+          {
+            "text": "Đọc phản hồi từ nhóm thiết kế",
+            "width": 186.40625,
+            "x": 0,
+            "y": 16
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 26,
+          "width": 100,
+          "x": 870,
+          "y": 644
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#F2F4F7",
+        "fit": "contain",
+        "fontId": null,
+        "fontSize": 16,
+        "id": "feedback-status",
+        "kind": "rectangle",
+        "lineHeight": 24,
+        "lines": [],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 13
+      },
+      {
+        "assetId": null,
+        "bounds": {
+          "height": 16,
+          "width": 80,
+          "x": 884,
+          "y": 649
+        },
+        "clip": false,
+        "crop": null,
+        "fill": "#667085",
+        "fit": "contain",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "id": "feedback-status-label",
+        "kind": "text",
+        "lineHeight": 16,
+        "lines": [
+          {
+            "text": "Tiếp theo",
+            "width": 48.40625,
+            "x": 0,
+            "y": 13.5
+          }
+        ],
+        "opacity": 1,
+        "parentId": "today-tasks",
+        "radius": 0
+      }
+    ],
+    "provenance": {
+      "assetManifestHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "browserVersion": "156.0.8078.4",
+      "fontManifestHash": "be049ee674b4d0db46a89c0284de0e296fb62e3469c78db734729fbb43d77517",
+      "frameId": "welcome-dashboard",
+      "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+      "rendererVersion": "web-1",
+      "revision": 1,
+      "runtimeVersion": "v24.21.0",
+      "sceneVersion": "scene-1",
+      "sourceSceneKey": "5b0904e9afee266e5ab0b9edfcb9f12de0b646cdc0f142caea14367cc74c4441",
+      "state": "default",
+      "theme": "default",
+      "viewport": {
+        "height": 720,
+        "width": 1040
+      }
+    },
+    "schemaVersion": 1
+  },
+  "sceneKey": "5b0904e9afee266e5ab0b9edfcb9f12de0b646cdc0f142caea14367cc74c4441",
+  "status": "ready"
+}

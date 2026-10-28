@@ -1,7 +1,10 @@
 # OpenCanvas — kế hoạch triển khai v1
 
-Trạng thái: kế hoạch để triển khai; chưa cài dependency, tạo database hay viết mã.
-Workspace hiện trống, chưa có Git repository hoặc nhánh để dùng làm điểm gốc.
+Trạng thái triển khai 2026-10-28: M0–M2 đã được nghiệm thu bằng fixture/module tests
+và E2E local thật; M3 resolution/context/layout và M4 storage hardening đã được
+kiểm trong phạm vi công bố. Bằng chứng và giới hạn tại `docs/ACCEPTANCE.md`;
+hướng dẫn chạy tại `README.md`. Các AC bên dưới vẫn là nguồn yêu cầu.
+Workspace hiện có Git và mã triển khai; thay đổi chưa commit/push.
 Mục tiêu: agent tạo và đọc thiết kế qua MCP; người dùng nhìn kết quả trong browser local.
 Ưu tiên sản phẩm hiện tại là hiển thị thiết kế, không phải xây công cụ chỉnh sửa bằng chuột.
 

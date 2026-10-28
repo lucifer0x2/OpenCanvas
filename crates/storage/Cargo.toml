@@ -8,12 +8,14 @@ license.workspace = true
 fault-injection = []
 
 [dependencies]
-rusqlite = { version = "=0.41.0", features = ["bundled"] }
+rusqlite = { version = "=0.41.0", features = ["bundled", "backup"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 uuid = { version = "1", features = ["v4"] }
 fs2 = "0.4"
+tar = "0.4"
+tempfile = "3"
 
 [dev-dependencies]
 tempfile = "3"

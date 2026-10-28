@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
 
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 pub const MAX_BATCH_OPS: usize = 500;
 pub const MAX_BATCH_BYTES: usize = 2 * 1024 * 1024;
 pub const MAX_ASSET_BYTES: usize = 10 * 1024 * 1024;

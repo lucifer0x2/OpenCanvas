@@ -75,7 +75,11 @@ export function App() {
           >
             {!project.projects.length && (
               <option value="">
-                {project.error ? "Projects unavailable" : "No projects yet"}
+                {project.loadingProjects
+                  ? "Loading projects…"
+                  : project.error
+                    ? "Projects unavailable"
+                    : "No projects yet"}
               </option>
             )}
             {project.projects.map((entry) => (

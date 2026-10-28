@@ -1,0 +1,16 @@
+{
+  "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+  "revision": 1,
+  "pixels": {
+    "width": 1040,
+    "height": 720,
+    "differences": 0,
+    "comparedChannels": 2995200
+  },
+  "pageErrors": [],
+  "viewerApiMethods": [
+    "GET"
+  ],
+  "selectedFrame": "welcome-dashboard",
+  "inspectorReadback": "greeting selected and inspected successfully"
+}

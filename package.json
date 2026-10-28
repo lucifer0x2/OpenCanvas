@@ -6,7 +6,8 @@
     "build:renderer": "esbuild renderer/index.ts --bundle --format=esm --outfile=renderer/dist/index.js",
     "check:renderer": "tsc --noEmit",
     "test:pipeline": "npm run build:renderer && cargo build -p opencanvas-layout --bin layout-step && node --test --test-concurrency=1 spikes/pipeline/*.test.mjs",
-    "worker": "node worker/cli.mjs"
+    "worker": "node worker/cli.mjs",
+    "test:e2e": "npm run build:renderer && cargo build --offline -p opencanvas-layout -p opencanvas-server && npm --prefix web run build && node spikes/e2e/run.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

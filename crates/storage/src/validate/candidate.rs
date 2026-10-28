@@ -3,6 +3,7 @@ use crate::{error::*, model::*};
 use std::collections::{BTreeMap, BTreeSet};
 #[derive(Clone)]
 pub(crate) struct Candidate {
+    pub(super) theme: String,
     pub nodes: BTreeMap<String, Node>,
     pub tokens: BTreeMap<String, Token>,
     pub styles: BTreeMap<String, Style>,
@@ -12,6 +13,7 @@ pub(crate) struct Candidate {
 impl Candidate {
     pub fn from_snapshot(s: &Snapshot) -> Self {
         Self {
+            theme: "default".into(),
             nodes: s.nodes.iter().cloned().map(|x| (x.id.clone(), x)).collect(),
             tokens: s
                 .tokens
@@ -43,10 +45,15 @@ impl Candidate {
                 "Project exceeds 20000 authored nodes",
             ));
         }
-        for token in self.tokens.values() {
-            id(&token.id)?;
-            literal(&token.value, &token.token_type)?;
+        let themes = self.validate_tokens()?;
+        for theme in themes {
+            let mut themed = self.clone();
+            themed.theme = theme;
+            themed.validate_content()?;
         }
+        Ok(())
+    }
+    fn validate_content(&self) -> Result<()> {
         for style in self.styles.values() {
             self.style(style)?;
         }
@@ -177,8 +184,8 @@ impl Candidate {
             }
             Operation::UpsertToken { token } => {
                 id(&token.id)?;
-                literal(&token.value, &token.token_type)?;
                 self.tokens.insert(token.id.clone(), token.clone());
+                self.validate_tokens()?;
                 changed.insert(token.id.clone());
             }
             Operation::UpsertStyle { style } => {

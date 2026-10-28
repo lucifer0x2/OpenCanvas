@@ -23,7 +23,7 @@ impl Candidate {
                         "Token type does not match this property",
                     ));
                 }
-                return Ok(token.value.clone());
+                return self.token_value(&token.id, &self.theme);
             }
             if expected == "color" {
                 if let Some(s) = o.get("styleId").and_then(Value::as_str) {
@@ -70,9 +70,15 @@ impl Candidate {
                     StorageError::validation("styleId", "Referenced style does not exist")
                 })?;
             match style.kind.as_str() {
-                "text" if node.kind == NodeKind::Text => {
-                    out.extend(style.value.as_object().unwrap().clone())
-                }
+                "text" if node.kind == NodeKind::Text => out.extend(
+                    style
+                        .value
+                        .as_object()
+                        .ok_or_else(|| {
+                            StorageError::validation("style.value", "Text style must be an object")
+                        })?
+                        .clone(),
+                ),
                 "fill" => {
                     out.insert("fill".into(), style.value.clone());
                 }
@@ -116,8 +122,13 @@ impl Candidate {
 }
 /// Resolve only supported typed refs into primitive renderer properties.
 pub fn resolved_nodes(snapshot: &Snapshot) -> Result<Vec<Node>> {
-    let c = Candidate::from_snapshot(snapshot);
+    resolved_nodes_for_theme(snapshot, "default")
+}
+/// Resolve a concrete design theme; authored snapshot properties stay intact.
+pub fn resolved_nodes_for_theme(snapshot: &Snapshot, theme: &str) -> Result<Vec<Node>> {
+    let mut c = Candidate::from_snapshot(snapshot);
     c.validate()?;
+    c.select_theme(theme)?;
     snapshot
         .nodes
         .iter()
@@ -131,5 +142,19 @@ pub fn resolved_nodes(snapshot: &Snapshot) -> Result<Vec<Node>> {
             }
             Ok(n)
         })
+        .collect()
+}
+
+/// Read back literal token values at one concrete theme and snapshot revision.
+pub fn resolved_tokens_for_theme(
+    snapshot: &Snapshot,
+    theme: &str,
+) -> Result<std::collections::BTreeMap<String, Value>> {
+    let mut c = Candidate::from_snapshot(snapshot);
+    c.validate()?;
+    c.select_theme(theme)?;
+    c.tokens
+        .keys()
+        .map(|id| Ok((id.clone(), c.token_value(id, theme)?)))
         .collect()
 }

@@ -4,9 +4,21 @@ pub(crate) struct Root {
     _lock: File,
     pub(crate) projects: Mutex<BTreeMap<String, Weak<Project>>>,
 }
+impl Root {
+    pub(crate) fn check_path(&self) -> Result<()> {
+        no_symlink(&self.path)?;
+        if fs::canonicalize(&self.path)? != self.path || !self.path.is_dir() {
+            return Err(StorageError::new(
+                "PATH_REJECTED",
+                "Data root location has changed",
+            ));
+        }
+        Ok(())
+    }
+}
 #[derive(Clone)]
 pub struct Store {
-    root: Arc<Root>,
+    pub(crate) root: Arc<Root>,
 }
 impl Store {
     /// Explicit root selection. Does not create any project or touch a default home.
@@ -34,6 +46,7 @@ impl Store {
         })
     }
     pub fn create_project(&self, slug: &str, name: &str) -> Result<Arc<Project>> {
+        self.root.check_path()?;
         validate_slug(slug)?;
         if name.is_empty() || name.len() > 256 {
             return Err(StorageError::validation(
@@ -72,6 +85,7 @@ impl Store {
         Ok(project)
     }
     pub fn list_projects(&self) -> Result<Vec<ProjectMeta>> {
+        self.root.check_path()?;
         let mut list = Vec::new();
         for entry in fs::read_dir(&self.root.path)? {
             let entry = entry?;
@@ -102,6 +116,7 @@ impl Store {
         Ok(list)
     }
     pub fn open_project(&self, id_or_slug: &str) -> Result<Arc<Project>> {
+        self.root.check_path()?;
         if !validate::valid_id(id_or_slug) {
             return Err(StorageError::validation(
                 "projectId",
@@ -128,8 +143,10 @@ impl Store {
         guard(&path.join("db.sql"), &path)?;
         no_symlink(&path.join("db.sql-wal"))?;
         no_symlink(&path.join("db.sql-shm"))?;
-        let conn =
+        let mut conn =
             Connection::open_with_flags(path.join("db.sql"), OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        configure(&conn, false)?;
+        migration::migrate(&mut conn)?;
         configure(&conn, true)?;
         let meta = read_meta(&conn)?;
         if meta.schema_version != SCHEMA_VERSION {

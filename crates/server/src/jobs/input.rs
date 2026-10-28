@@ -1,0 +1,57 @@
+use crate::{
+    error::{ApiError, Result},
+    jobs::SceneRequest,
+};
+use opencanvas_storage::{resolved_nodes_for_theme, Node, NodeKind, Snapshot};
+use serde_json::{json, Value};
+use std::collections::HashSet;
+
+pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Result<Value> {
+    let all = resolved_nodes_for_theme(snapshot, &request.theme)?;
+    if !all
+        .iter()
+        .any(|n| n.id == request.frame_id && n.kind == NodeKind::Frame)
+    {
+        return Err(ApiError::invalid("frameId must identify a frame"));
+    }
+    let mut nodes = Vec::new();
+    collect(&all, &request.frame_id, &mut nodes);
+    // A frame scene is a standalone subtree; its authored page is outside this input.
+    nodes[0].parent_id = None;
+    if nodes.len() > 2048 {
+        return Err(ApiError::invalid("Frame exceeds 2048 render nodes"));
+    }
+    let fonts_used: HashSet<_> = nodes
+        .iter()
+        .filter(|n| n.kind == NodeKind::Text)
+        .map(|n| n.props["fontId"].as_str().unwrap_or("font_bundled"))
+        .collect();
+    let assets_used: HashSet<_> = nodes
+        .iter()
+        .filter_map(|n| n.props["assetId"].as_str())
+        .collect();
+    let fonts:Vec<_> = snapshot.fonts.iter().filter(|f| fonts_used.contains(f.id.as_str())).map(|f| {
+        let url = if let Some(asset) = &f.asset_id { format!("{base}/api/v1/projects/{}/assets/{asset}",snapshot.project_id) } else { format!("{base}/api/v1/fonts/font_bundled") };
+        json!({"id":f.id,"family":f.family,"hash":f.content_hash,"url":url,"weight":f.weight,"style":f.style})
+    }).collect();
+    let assets:Vec<_> = snapshot.assets.iter().filter(|a| assets_used.contains(a.id.as_str())).map(|a|
+        json!({"id":a.id,"hash":a.content_hash,"url":format!("{base}/api/v1/projects/{}/assets/{}",snapshot.project_id,a.id),"mediaType":a.media_type})).collect();
+    Ok(
+        json!({"schemaVersion":1,"projectId":snapshot.project_id,"revision":snapshot.revision,
+        "frameId":request.frame_id,"viewport":{"width":request.width,"height":request.height},
+        "theme":request.theme,"state":request.state,"nodes":nodes,"fonts":fonts,"assets":assets}),
+    )
+}
+fn collect(all: &[Node], id: &str, out: &mut Vec<Node>) {
+    if let Some(node) = all.iter().find(|n| n.id == id) {
+        out.push(node.clone());
+        let mut children: Vec<_> = all
+            .iter()
+            .filter(|n| n.parent_id.as_deref() == Some(id))
+            .collect();
+        children.sort_by_key(|n| n.sort_key);
+        for child in children {
+            collect(all, &child.id, out);
+        }
+    }
+}

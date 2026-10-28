@@ -168,12 +168,19 @@ impl Project {
     /// Content-addressed binaries without committed DB refs. Read-only inventory;
     /// no GC is run because render/export handles may still own a binary.
     pub fn orphan_asset_keys(&self) -> Result<Vec<String>> {
-        let referenced: BTreeSet<_> = self
-            .snapshot()?
+        let snapshot = self.snapshot()?;
+        let mut referenced: BTreeSet<_> = snapshot
             .assets
             .into_iter()
             .map(|a| a.relative_key)
             .collect();
+        // Bundle restore also materializes the pinned fallback font. Its
+        // committed bundled-font reference owns that copy without an asset row.
+        referenced.extend(snapshot.fonts.into_iter().filter_map(|font| {
+            (font.bundled_id.as_deref() == Some("font_bundled"))
+                .then_some(font.content_hash)
+                .flatten()
+        }));
         let mut orphan = Vec::new();
         for entry in fs::read_dir(guard(&self.path.join("assets"), &self.path)?)? {
             let entry = entry?;
@@ -190,7 +197,7 @@ impl Project {
         Ok(orphan)
     }
 }
-fn asset_dimensions(mime: &str, bytes: &[u8]) -> Result<(Option<u32>, Option<u32>)> {
+pub(crate) fn asset_dimensions(mime: &str, bytes: &[u8]) -> Result<(Option<u32>, Option<u32>)> {
     match mime {
         "image/png" if bytes.len()>=33 && bytes.starts_with(b"\x89PNG\r\n\x1a\n") && &bytes[12..16]==b"IHDR" => {
             let width=u32::from_be_bytes(bytes[16..20].try_into().unwrap()); let height=u32::from_be_bytes(bytes[20..24].try_into().unwrap());

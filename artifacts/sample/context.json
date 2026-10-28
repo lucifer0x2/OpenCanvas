@@ -1,0 +1,2171 @@
+{
+  "assets": [],
+  "diagnostics": [],
+  "fonts": [
+    {
+      "assetId": null,
+      "bundledId": "font_bundled",
+      "contentHash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+      "family": "OpenCanvas Noto Sans",
+      "id": "font_bundled",
+      "license": "OFL-1.1; renderer/fonts/OFL.txt",
+      "status": "ready",
+      "style": "normal",
+      "weight": 400
+    }
+  ],
+  "limits": {
+    "bytes": 65536,
+    "depth": 8,
+    "nodes": 200
+  },
+  "nextCursor": null,
+  "nodes": [
+    {
+      "id": "welcome-dashboard",
+      "kind": "frame",
+      "parentId": "welcome-page",
+      "props": {
+        "clip": true,
+        "fill": {
+          "tokenId": "canvas"
+        },
+        "height": 720,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "Một ngày thật tốt",
+        "width": 1040
+      },
+      "resolvedProps": {
+        "clip": true,
+        "fill": "#F5F6FA",
+        "height": 720,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "Một ngày thật tốt",
+        "width": 1040
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "sidebar",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 720,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "sidebar",
+        "radius": 0,
+        "width": 176,
+        "x": 0,
+        "y": 0
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 720,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "sidebar",
+        "radius": 0,
+        "width": 176,
+        "x": 0,
+        "y": 0
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "logo",
+      "kind": "rectangle",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "height": 32,
+        "name": "logo",
+        "radius": 9,
+        "width": 32,
+        "x": 24,
+        "y": 32
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "height": 32,
+        "name": "logo",
+        "radius": 9,
+        "width": 32,
+        "x": 24,
+        "y": 32
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "logo-letter",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": "#FFFFFF",
+        "fontId": "font_bundled",
+        "fontSize": 25,
+        "height": "hug",
+        "lineHeight": 35,
+        "name": "logo-letter",
+        "text": "o",
+        "width": 20,
+        "x": 33,
+        "y": 30
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "fontId": "font_bundled",
+        "fontSize": 25,
+        "height": "hug",
+        "lineHeight": 35,
+        "name": "logo-letter",
+        "text": "o",
+        "width": 20,
+        "x": 33,
+        "y": 30
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "brand-name",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 21,
+        "height": "hug",
+        "lineHeight": 30,
+        "name": "brand-name",
+        "text": "Orbit",
+        "width": 96,
+        "x": 67,
+        "y": 33
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 21,
+        "height": "hug",
+        "lineHeight": 30,
+        "name": "brand-name",
+        "text": "Orbit",
+        "width": 96,
+        "x": 67,
+        "y": 33
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "workspace-label",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "workspace-label",
+        "text": "KHÔNG GIAN CỦA BẠN",
+        "width": 145,
+        "x": 24,
+        "y": 104
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "workspace-label",
+        "text": "KHÔNG GIAN CỦA BẠN",
+        "width": 145,
+        "x": 24,
+        "y": 104
+      },
+      "sortKey": 3
+    },
+    {
+      "id": "active-nav",
+      "kind": "rectangle",
+      "parentId": "sidebar",
+      "props": {
+        "fill": "#EEEDFF",
+        "height": 44,
+        "name": "active-nav",
+        "radius": 10,
+        "width": 144,
+        "x": 16,
+        "y": 136
+      },
+      "resolvedProps": {
+        "fill": "#EEEDFF",
+        "height": 44,
+        "name": "active-nav",
+        "radius": 10,
+        "width": 144,
+        "x": 16,
+        "y": 136
+      },
+      "sortKey": 4
+    },
+    {
+      "id": "overview-nav",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "overview-nav",
+        "text": "Tổng quan",
+        "width": 118,
+        "x": 32,
+        "y": 146
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "overview-nav",
+        "text": "Tổng quan",
+        "width": 118,
+        "x": 32,
+        "y": 146
+      },
+      "sortKey": 5
+    },
+    {
+      "id": "projects-nav",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "projects-nav",
+        "text": "Dự án",
+        "width": 118,
+        "x": 32,
+        "y": 200
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "projects-nav",
+        "text": "Dự án",
+        "width": 118,
+        "x": 32,
+        "y": 200
+      },
+      "sortKey": 6
+    },
+    {
+      "id": "calendar-nav",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "calendar-nav",
+        "text": "Lịch làm việc",
+        "width": 125,
+        "x": 32,
+        "y": 246
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 14,
+        "height": "hug",
+        "lineHeight": 20,
+        "name": "calendar-nav",
+        "text": "Lịch làm việc",
+        "width": 125,
+        "x": 32,
+        "y": 246
+      },
+      "sortKey": 7
+    },
+    {
+      "id": "sidebar-divider",
+      "kind": "rectangle",
+      "parentId": "sidebar",
+      "props": {
+        "fill": "#E9ECF2",
+        "height": 1,
+        "name": "sidebar-divider",
+        "radius": 0,
+        "width": 128,
+        "x": 24,
+        "y": 625
+      },
+      "resolvedProps": {
+        "fill": "#E9ECF2",
+        "height": 1,
+        "name": "sidebar-divider",
+        "radius": 0,
+        "width": 128,
+        "x": 24,
+        "y": 625
+      },
+      "sortKey": 8
+    },
+    {
+      "id": "profile-name",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "profile-name",
+        "text": "Không gian sáng tạo",
+        "width": 144,
+        "x": 24,
+        "y": 646
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "profile-name",
+        "text": "Không gian sáng tạo",
+        "width": 144,
+        "x": 24,
+        "y": 646
+      },
+      "sortKey": 9
+    },
+    {
+      "id": "profile-plan",
+      "kind": "text",
+      "parentId": "sidebar",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "profile-plan",
+        "text": "Chậm một chút. Tốt hơn.",
+        "width": 145,
+        "x": 24,
+        "y": 669
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "profile-plan",
+        "text": "Chậm một chút. Tốt hơn.",
+        "width": 145,
+        "x": 24,
+        "y": 669
+      },
+      "sortKey": 10
+    },
+    {
+      "id": "date",
+      "kind": "text",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "date",
+        "text": "THỨ TƯ, 28 THÁNG 10",
+        "width": 420,
+        "x": 208,
+        "y": 28
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "date",
+        "text": "THỨ TƯ, 28 THÁNG 10",
+        "width": 420,
+        "x": 208,
+        "y": 28
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "greeting",
+      "kind": "text",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 30,
+        "height": "hug",
+        "lineHeight": 42,
+        "name": "greeting",
+        "text": "Một ngày thật tốt.",
+        "width": 600,
+        "x": 208,
+        "y": 50
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 30,
+        "height": "hug",
+        "lineHeight": 42,
+        "name": "greeting",
+        "text": "Một ngày thật tốt.",
+        "width": 600,
+        "x": 208,
+        "y": 50
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "intro",
+      "kind": "text",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "intro",
+        "text": "Tập trung vào điều quan trọng, từng việc một.",
+        "width": 570,
+        "x": 208,
+        "y": 99
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "intro",
+        "text": "Tập trung vào điều quan trọng, từng việc một.",
+        "width": 570,
+        "x": 208,
+        "y": 99
+      },
+      "sortKey": 3
+    },
+    {
+      "id": "new-task-button",
+      "kind": "rectangle",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "height": 42,
+        "name": "new-task-button",
+        "radius": 10,
+        "width": 140,
+        "x": 852,
+        "y": 47
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "height": 42,
+        "name": "new-task-button",
+        "radius": 10,
+        "width": 140,
+        "x": 852,
+        "y": 47
+      },
+      "sortKey": 4
+    },
+    {
+      "id": "new-task-label",
+      "kind": "text",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": "#FFFFFF",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "new-task-label",
+        "text": "+  Tạo công việc",
+        "width": 120,
+        "x": 868,
+        "y": 58
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "new-task-label",
+        "text": "+  Tạo công việc",
+        "width": 120,
+        "x": 868,
+        "y": 58
+      },
+      "sortKey": 5
+    },
+    {
+      "id": "completed",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "completed",
+        "radius": 16,
+        "width": 248,
+        "x": 208,
+        "y": 148
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "completed",
+        "radius": 16,
+        "width": 248,
+        "x": 208,
+        "y": 148
+      },
+      "sortKey": 6
+    },
+    {
+      "id": "completed-label",
+      "kind": "text",
+      "parentId": "completed",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "completed-label",
+        "text": "Đã hoàn thành",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "completed-label",
+        "text": "Đã hoàn thành",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "completed-value",
+      "kind": "text",
+      "parentId": "completed",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "completed-value",
+        "text": "24",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "completed-value",
+        "text": "24",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "completed-note",
+      "kind": "text",
+      "parentId": "completed",
+      "props": {
+        "fill": "#178061",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "completed-note",
+        "text": "+6 so với tuần trước",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "resolvedProps": {
+        "fill": "#178061",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "completed-note",
+        "text": "+6 so với tuần trước",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "active",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "active",
+        "radius": 16,
+        "width": 248,
+        "x": 476,
+        "y": 148
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "active",
+        "radius": 16,
+        "width": 248,
+        "x": 476,
+        "y": 148
+      },
+      "sortKey": 7
+    },
+    {
+      "id": "active-label",
+      "kind": "text",
+      "parentId": "active",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "active-label",
+        "text": "Đang thực hiện",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "active-label",
+        "text": "Đang thực hiện",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "active-value",
+      "kind": "text",
+      "parentId": "active",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "active-value",
+        "text": "08",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "active-value",
+        "text": "08",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "active-note",
+      "kind": "text",
+      "parentId": "active",
+      "props": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "active-note",
+        "text": "3 việc cần bạn hôm nay",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "active-note",
+        "text": "3 việc cần bạn hôm nay",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "focus",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "focus",
+        "radius": 16,
+        "width": 248,
+        "x": 744,
+        "y": 148
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 112,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "focus",
+        "radius": 16,
+        "width": 248,
+        "x": 744,
+        "y": 148
+      },
+      "sortKey": 8
+    },
+    {
+      "id": "focus-label",
+      "kind": "text",
+      "parentId": "focus",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "focus-label",
+        "text": "Thời gian tập trung",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 12,
+        "height": "hug",
+        "lineHeight": 17,
+        "name": "focus-label",
+        "text": "Thời gian tập trung",
+        "width": 216,
+        "x": 20,
+        "y": 16
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "focus-value",
+      "kind": "text",
+      "parentId": "focus",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "focus-value",
+        "text": "18,5 giờ",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 28,
+        "height": "hug",
+        "lineHeight": 40,
+        "name": "focus-value",
+        "text": "18,5 giờ",
+        "width": 216,
+        "x": 20,
+        "y": 38
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "focus-note",
+      "kind": "text",
+      "parentId": "focus",
+      "props": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "focus-note",
+        "text": "Đều đặn mỗi ngày",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "focus-note",
+        "text": "Đều đặn mỗi ngày",
+        "width": 216,
+        "x": 20,
+        "y": 83
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "weekly-chart",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 238,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "weekly-chart",
+        "radius": 16,
+        "width": 498,
+        "x": 208,
+        "y": 280
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 238,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "weekly-chart",
+        "radius": 16,
+        "width": 498,
+        "x": 208,
+        "y": 280
+      },
+      "sortKey": 9
+    },
+    {
+      "id": "chart-title",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "height": "hug",
+        "lineHeight": 24,
+        "name": "chart-title",
+        "text": "Nhịp làm việc",
+        "width": 300,
+        "x": 22,
+        "y": 18
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "height": "hug",
+        "lineHeight": 24,
+        "name": "chart-title",
+        "text": "Nhịp làm việc",
+        "width": 300,
+        "x": 22,
+        "y": 18
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "chart-subtitle",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "chart-subtitle",
+        "text": "Công việc hoàn thành trong 7 ngày",
+        "width": 330,
+        "x": 22,
+        "y": 47
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "chart-subtitle",
+        "text": "Công việc hoàn thành trong 7 ngày",
+        "width": 330,
+        "x": 22,
+        "y": 47
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "chart-legend-dot",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "height": 8,
+        "name": "chart-legend-dot",
+        "radius": 3,
+        "width": 8,
+        "x": 393,
+        "y": 26
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "height": 8,
+        "name": "chart-legend-dot",
+        "radius": 3,
+        "width": 8,
+        "x": 393,
+        "y": 26
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "chart-legend",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "chart-legend",
+        "text": "Tuần này",
+        "width": 82,
+        "x": 409,
+        "y": 21
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "chart-legend",
+        "text": "Tuần này",
+        "width": 82,
+        "x": 409,
+        "y": 21
+      },
+      "sortKey": 3
+    },
+    {
+      "id": "chart-grid-0",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-0",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 88
+      },
+      "resolvedProps": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-0",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 88
+      },
+      "sortKey": 4
+    },
+    {
+      "id": "chart-grid-1",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-1",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 138
+      },
+      "resolvedProps": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-1",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 138
+      },
+      "sortKey": 5
+    },
+    {
+      "id": "chart-grid-2",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-2",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 188
+      },
+      "resolvedProps": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "chart-grid-2",
+        "radius": 0,
+        "width": 450,
+        "x": 24,
+        "y": 188
+      },
+      "sortKey": 6
+    },
+    {
+      "id": "day-0-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 33,
+        "name": "day-0-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 39,
+        "y": 155
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 33,
+        "name": "day-0-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 39,
+        "y": 155
+      },
+      "sortKey": 7
+    },
+    {
+      "id": "day-0-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-0-label",
+        "text": "T2",
+        "width": 40,
+        "x": 42,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-0-label",
+        "text": "T2",
+        "width": 40,
+        "x": 42,
+        "y": 204
+      },
+      "sortKey": 8
+    },
+    {
+      "id": "day-1-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 55,
+        "name": "day-1-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 101,
+        "y": 133
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 55,
+        "name": "day-1-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 101,
+        "y": 133
+      },
+      "sortKey": 9
+    },
+    {
+      "id": "day-1-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-1-label",
+        "text": "T3",
+        "width": 40,
+        "x": 104,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-1-label",
+        "text": "T3",
+        "width": 40,
+        "x": 104,
+        "y": 204
+      },
+      "sortKey": 10
+    },
+    {
+      "id": "day-2-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 44,
+        "name": "day-2-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 163,
+        "y": 144
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 44,
+        "name": "day-2-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 163,
+        "y": 144
+      },
+      "sortKey": 11
+    },
+    {
+      "id": "day-2-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-2-label",
+        "text": "T4",
+        "width": 40,
+        "x": 166,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-2-label",
+        "text": "T4",
+        "width": 40,
+        "x": 166,
+        "y": 204
+      },
+      "sortKey": 12
+    },
+    {
+      "id": "day-3-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 77,
+        "name": "day-3-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 225,
+        "y": 111
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 77,
+        "name": "day-3-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 225,
+        "y": 111
+      },
+      "sortKey": 13
+    },
+    {
+      "id": "day-3-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-3-label",
+        "text": "T5",
+        "width": 40,
+        "x": 228,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-3-label",
+        "text": "T5",
+        "width": 40,
+        "x": 228,
+        "y": 204
+      },
+      "sortKey": 14
+    },
+    {
+      "id": "day-4-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 66,
+        "name": "day-4-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 287,
+        "y": 122
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 66,
+        "name": "day-4-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 287,
+        "y": 122
+      },
+      "sortKey": 15
+    },
+    {
+      "id": "day-4-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-4-label",
+        "text": "T6",
+        "width": 40,
+        "x": 290,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-4-label",
+        "text": "T6",
+        "width": 40,
+        "x": 290,
+        "y": 204
+      },
+      "sortKey": 16
+    },
+    {
+      "id": "day-5-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "height": 99,
+        "name": "day-5-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 349,
+        "y": 89
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "height": 99,
+        "name": "day-5-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 349,
+        "y": 89
+      },
+      "sortKey": 17
+    },
+    {
+      "id": "day-5-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-5-label",
+        "text": "T7",
+        "width": 40,
+        "x": 352,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-5-label",
+        "text": "T7",
+        "width": 40,
+        "x": 352,
+        "y": 204
+      },
+      "sortKey": 18
+    },
+    {
+      "id": "day-6-bar",
+      "kind": "rectangle",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": "#C7C4FC",
+        "height": 88,
+        "name": "day-6-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 411,
+        "y": 100
+      },
+      "resolvedProps": {
+        "fill": "#C7C4FC",
+        "height": 88,
+        "name": "day-6-bar",
+        "radius": 5,
+        "width": 28,
+        "x": 411,
+        "y": 100
+      },
+      "sortKey": 19
+    },
+    {
+      "id": "day-6-label",
+      "kind": "text",
+      "parentId": "weekly-chart",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-6-label",
+        "text": "CN",
+        "width": 40,
+        "x": 414,
+        "y": 204
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "day-6-label",
+        "text": "CN",
+        "width": 40,
+        "x": 414,
+        "y": 204
+      },
+      "sortKey": 20
+    },
+    {
+      "id": "weekly-goal",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": "#EEEDFF",
+        "height": 238,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "weekly-goal",
+        "radius": 16,
+        "width": 266,
+        "x": 726,
+        "y": 280
+      },
+      "resolvedProps": {
+        "fill": "#EEEDFF",
+        "height": 238,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "weekly-goal",
+        "radius": 16,
+        "width": 266,
+        "x": 726,
+        "y": 280
+      },
+      "sortKey": 10
+    },
+    {
+      "id": "goal-label",
+      "kind": "text",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": "#514A9D",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "goal-label",
+        "text": "MỤC TIÊU TUẦN",
+        "width": 230,
+        "x": 22,
+        "y": 23
+      },
+      "resolvedProps": {
+        "fill": "#514A9D",
+        "fontId": "font_bundled",
+        "fontSize": 10,
+        "height": "hug",
+        "lineHeight": 14,
+        "name": "goal-label",
+        "text": "MỤC TIÊU TUẦN",
+        "width": 230,
+        "x": 22,
+        "y": 23
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "goal-value",
+      "kind": "text",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 38,
+        "height": "hug",
+        "lineHeight": 54,
+        "name": "goal-value",
+        "text": "80%",
+        "width": 230,
+        "x": 22,
+        "y": 49
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "fontId": "font_bundled",
+        "fontSize": 38,
+        "height": "hug",
+        "lineHeight": 54,
+        "name": "goal-value",
+        "text": "80%",
+        "width": 230,
+        "x": 22,
+        "y": 49
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "goal-caption",
+      "kind": "text",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "goal-caption",
+        "text": "Bạn đang giữ nhịp rất tốt.",
+        "width": 230,
+        "x": 22,
+        "y": 113
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "goal-caption",
+        "text": "Bạn đang giữ nhịp rất tốt.",
+        "width": 230,
+        "x": 22,
+        "y": 113
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "goal-track",
+      "kind": "rectangle",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": "#DCD9FB",
+        "height": 8,
+        "name": "goal-track",
+        "radius": 4,
+        "width": 222,
+        "x": 22,
+        "y": 158
+      },
+      "resolvedProps": {
+        "fill": "#DCD9FB",
+        "height": 8,
+        "name": "goal-track",
+        "radius": 4,
+        "width": 222,
+        "x": 22,
+        "y": 158
+      },
+      "sortKey": 3
+    },
+    {
+      "id": "goal-progress",
+      "kind": "rectangle",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": {
+          "styleId": "brand-fill"
+        },
+        "height": 8,
+        "name": "goal-progress",
+        "radius": 4,
+        "width": 178,
+        "x": 22,
+        "y": 158
+      },
+      "resolvedProps": {
+        "fill": "#4F46E5",
+        "height": 8,
+        "name": "goal-progress",
+        "radius": 4,
+        "width": 178,
+        "x": 22,
+        "y": 158
+      },
+      "sortKey": 4
+    },
+    {
+      "id": "goal-details",
+      "kind": "text",
+      "parentId": "weekly-goal",
+      "props": {
+        "fill": "#514A9D",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "goal-details",
+        "text": "24 / 30 công việc hoàn thành",
+        "width": 230,
+        "x": 22,
+        "y": 184
+      },
+      "resolvedProps": {
+        "fill": "#514A9D",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "goal-details",
+        "text": "24 / 30 công việc hoàn thành",
+        "width": 230,
+        "x": 22,
+        "y": 184
+      },
+      "sortKey": 5
+    },
+    {
+      "id": "today-tasks",
+      "kind": "group",
+      "parentId": "welcome-dashboard",
+      "props": {
+        "fill": {
+          "styleId": "surface-fill"
+        },
+        "height": 150,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "today-tasks",
+        "radius": 16,
+        "width": 784,
+        "x": 208,
+        "y": 538
+      },
+      "resolvedProps": {
+        "fill": "#FFFFFF",
+        "height": 150,
+        "layout": {
+          "mode": "free"
+        },
+        "name": "today-tasks",
+        "radius": 16,
+        "width": 784,
+        "x": 208,
+        "y": 538
+      },
+      "sortKey": 11
+    },
+    {
+      "id": "tasks-title",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "height": "hug",
+        "lineHeight": 24,
+        "name": "tasks-title",
+        "text": "Ưu tiên hôm nay",
+        "width": 380,
+        "x": 22,
+        "y": 17
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 17,
+        "height": "hug",
+        "lineHeight": 24,
+        "name": "tasks-title",
+        "text": "Ưu tiên hôm nay",
+        "width": 380,
+        "x": 22,
+        "y": 17
+      },
+      "sortKey": 0
+    },
+    {
+      "id": "tasks-count",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": {
+          "tokenId": "muted"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "tasks-count",
+        "text": "2 việc cần tập trung",
+        "width": 170,
+        "x": 604,
+        "y": 22
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "tasks-count",
+        "text": "2 việc cần tập trung",
+        "width": 170,
+        "x": 604,
+        "y": 22
+      },
+      "sortKey": 1
+    },
+    {
+      "id": "task-divider",
+      "kind": "rectangle",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "task-divider",
+        "radius": 0,
+        "width": 740,
+        "x": 22,
+        "y": 53
+      },
+      "resolvedProps": {
+        "fill": "#EEF0F5",
+        "height": 1,
+        "name": "task-divider",
+        "radius": 0,
+        "width": 740,
+        "x": 22,
+        "y": 53
+      },
+      "sortKey": 2
+    },
+    {
+      "id": "review-checkbox",
+      "kind": "rectangle",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#E8EBF2",
+        "height": 17,
+        "name": "review-checkbox",
+        "radius": 5,
+        "width": 17,
+        "x": 22,
+        "y": 69
+      },
+      "resolvedProps": {
+        "fill": "#E8EBF2",
+        "height": 17,
+        "name": "review-checkbox",
+        "radius": 5,
+        "width": 17,
+        "x": 22,
+        "y": 69
+      },
+      "sortKey": 3
+    },
+    {
+      "id": "review-text",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "review-text",
+        "text": "Hoàn thiện giao diện trang chủ",
+        "width": 510,
+        "x": 52,
+        "y": 67
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "review-text",
+        "text": "Hoàn thiện giao diện trang chủ",
+        "width": 510,
+        "x": 52,
+        "y": 67
+      },
+      "sortKey": 4
+    },
+    {
+      "id": "review-status",
+      "kind": "rectangle",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#EEEDFF",
+        "height": 26,
+        "name": "review-status",
+        "radius": 13,
+        "width": 100,
+        "x": 662,
+        "y": 65
+      },
+      "resolvedProps": {
+        "fill": "#EEEDFF",
+        "height": 26,
+        "name": "review-status",
+        "radius": 13,
+        "width": 100,
+        "x": 662,
+        "y": 65
+      },
+      "sortKey": 5
+    },
+    {
+      "id": "review-status-label",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#5145BC",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "review-status-label",
+        "text": "Đang làm",
+        "width": 80,
+        "x": 676,
+        "y": 70
+      },
+      "resolvedProps": {
+        "fill": "#5145BC",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "review-status-label",
+        "text": "Đang làm",
+        "width": 80,
+        "x": 676,
+        "y": 70
+      },
+      "sortKey": 6
+    },
+    {
+      "id": "feedback-checkbox",
+      "kind": "rectangle",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#E8EBF2",
+        "height": 17,
+        "name": "feedback-checkbox",
+        "radius": 5,
+        "width": 17,
+        "x": 22,
+        "y": 110
+      },
+      "resolvedProps": {
+        "fill": "#E8EBF2",
+        "height": 17,
+        "name": "feedback-checkbox",
+        "radius": 5,
+        "width": 17,
+        "x": 22,
+        "y": 110
+      },
+      "sortKey": 7
+    },
+    {
+      "id": "feedback-text",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": {
+          "tokenId": "ink"
+        },
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "feedback-text",
+        "text": "Đọc phản hồi từ nhóm thiết kế",
+        "width": 510,
+        "x": 52,
+        "y": 108
+      },
+      "resolvedProps": {
+        "fill": "#1B2440",
+        "fontId": "font_bundled",
+        "fontSize": 13,
+        "height": "hug",
+        "lineHeight": 19,
+        "name": "feedback-text",
+        "text": "Đọc phản hồi từ nhóm thiết kế",
+        "width": 510,
+        "x": 52,
+        "y": 108
+      },
+      "sortKey": 8
+    },
+    {
+      "id": "feedback-status",
+      "kind": "rectangle",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#F2F4F7",
+        "height": 26,
+        "name": "feedback-status",
+        "radius": 13,
+        "width": 100,
+        "x": 662,
+        "y": 106
+      },
+      "resolvedProps": {
+        "fill": "#F2F4F7",
+        "height": 26,
+        "name": "feedback-status",
+        "radius": 13,
+        "width": 100,
+        "x": 662,
+        "y": 106
+      },
+      "sortKey": 9
+    },
+    {
+      "id": "feedback-status-label",
+      "kind": "text",
+      "parentId": "today-tasks",
+      "props": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "feedback-status-label",
+        "text": "Tiếp theo",
+        "width": 80,
+        "x": 676,
+        "y": 111
+      },
+      "resolvedProps": {
+        "fill": "#667085",
+        "fontId": "font_bundled",
+        "fontSize": 11,
+        "height": "hug",
+        "lineHeight": 16,
+        "name": "feedback-status-label",
+        "text": "Tiếp theo",
+        "width": 80,
+        "x": 676,
+        "y": 111
+      },
+      "sortKey": 10
+    }
+  ],
+  "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+  "revision": 1,
+  "schemaVersion": 1,
+  "scope": "welcome-dashboard",
+  "styles": [
+    {
+      "id": "brand-fill",
+      "kind": "fill",
+      "name": "Brand surface",
+      "resolvedValue": "#4F46E5",
+      "value": {
+        "tokenId": "brand"
+      }
+    },
+    {
+      "id": "surface-fill",
+      "kind": "fill",
+      "name": "Card surface",
+      "resolvedValue": "#FFFFFF",
+      "value": {
+        "tokenId": "surface"
+      }
+    }
+  ],
+  "theme": "default",
+  "tokens": [
+    {
+      "id": "brand",
+      "name": "Brand / Indigo",
+      "resolvedValue": "#4F46E5",
+      "type": "color",
+      "value": "#4F46E5"
+    },
+    {
+      "id": "canvas",
+      "name": "Canvas / Mist",
+      "resolvedValue": "#F5F6FA",
+      "type": "color",
+      "value": "#F5F6FA"
+    },
+    {
+      "id": "ink",
+      "name": "Text / Primary",
+      "resolvedValue": "#1B2440",
+      "type": "color",
+      "value": "#1B2440"
+    },
+    {
+      "id": "muted",
+      "name": "Text / Secondary",
+      "resolvedValue": "#667085",
+      "type": "color",
+      "value": "#667085"
+    },
+    {
+      "id": "surface",
+      "name": "Surface / White",
+      "resolvedValue": "#FFFFFF",
+      "type": "color",
+      "value": "#FFFFFF"
+    }
+  ],
+  "truncated": false,
+  "viewport": null
+}

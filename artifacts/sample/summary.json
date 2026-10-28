@@ -1,0 +1,20 @@
+{
+  "name": "OpenCanvas · Mẫu đầu tiên",
+  "projectId": "p_dfafcf1451e543a5b1fcedb6ad441a81",
+  "revision": 1,
+  "schemaVersion": 2,
+  "slug": "opencanvas-welcome",
+  "frameId": "welcome-dashboard",
+  "viewport": {
+    "width": 1040,
+    "height": 720
+  },
+  "nodeCount": 72,
+  "tokenCount": 5,
+  "styleCount": 2,
+  "jobId": "job_5383445446714184a95ff91080452a08",
+  "sceneKey": "5b0904e9afee266e5ab0b9edfcb9f12de0b646cdc0f142caea14367cc74c4441",
+  "viewerUrl": "http://127.0.0.1:3847",
+  "imageUrl": "http://127.0.0.1:3847/api/v1/jobs/job_5383445446714184a95ff91080452a08/image",
+  "createdThrough": "MCP create_project + one atomic apply_batch at revision 0"
+}

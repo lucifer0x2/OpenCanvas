@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
-import { drawScene, loadResources } from "../../../renderer/index";
+import { drawScene, loadResources, MAX_PIXELS } from "../../../renderer/index";
 import type { Scene } from "../../../renderer/types";
 import { projectPath, read } from "../api";
 import { acceptsJob } from "../state";
 import type { RenderJob, SceneRequest } from "../types";
 
+export interface Raster {
+  canvas: HTMLCanvasElement;
+  /** The device scale actually rasterized, after the pixel budget clamp. */
+  scale: number;
+}
+
 export interface SceneView {
   status: "empty" | "pending" | "ready" | "failed";
   scene?: Scene;
+  /** The 1:1 rasterization, identical to the worker PNG and the base for cheap previews. */
   canvas?: HTMLCanvasElement;
+  /** Rasterizes the same scene at a display scale, so text is drawn at the size it is shown. */
+  renderAt?: (scale: number) => Raster | null;
   missing: string[];
   diagnostics: string[];
   error?: string;
@@ -83,6 +92,19 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
       if (stopped) return;
       const canvas = document.createElement("canvas");
       drawScene(canvas, scene, resources, { strict: false });
+      const { width, height } = scene.provenance.viewport;
+      const limit = Math.min(4, Math.sqrt(MAX_PIXELS / (width * height)));
+      const renderAt = (scale: number): Raster | null => {
+        const wanted = Math.max(0.05, Math.min(limit, scale));
+        if (wanted === 1) return { canvas, scale: 1 };
+        const target = document.createElement("canvas");
+        try {
+          drawScene(target, scene, resources, { strict: false, scale: wanted });
+        } catch {
+          return null;
+        }
+        return { canvas: target, scale: wanted };
+      };
       const missing = resources.readiness
         .filter((resource) => resource.status === "failed")
         .map(
@@ -93,6 +115,7 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
         status: "ready",
         scene,
         canvas,
+        renderAt,
         missing,
         diagnostics: [
           ...new Set([

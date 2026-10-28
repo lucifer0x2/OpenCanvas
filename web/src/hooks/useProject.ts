@@ -17,6 +17,7 @@ import type {
 
 export function useProject() {
   const [projects, setProjects] = useState<ProjectRef[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
   const [selection, setSelection] = useState<Selection>(readSelection);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [connection, setConnection] = useState<Connection>("connecting");
@@ -28,6 +29,7 @@ export function useProject() {
 
   useEffect(() => {
     const controller = new AbortController();
+    setLoadingProjects(true);
     read<{ projects: ProjectRef[] }>("/api/v1/projects", controller.signal)
       .then((result) => {
         setProjects(result.projects);
@@ -43,6 +45,9 @@ export function useProject() {
       })
       .catch((cause: Error) => {
         if (!controller.signal.aborted) setError(cause.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingProjects(false);
       });
     return () => controller.abort();
   }, [reload]);
@@ -189,6 +194,7 @@ export function useProject() {
   };
   return {
     projects,
+    loadingProjects,
     selection,
     snapshot,
     connection,
