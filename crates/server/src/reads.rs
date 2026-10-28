@@ -1,3 +1,4 @@
+mod animated;
 pub(crate) mod changes;
 mod compact;
 mod diagnostics;

@@ -1,5 +1,6 @@
 use super::{
-    compact, diagnostics, index::TreeIndex, navigation, notes, pagination, sanitize_asset,
+    animated, compact, diagnostics, index::TreeIndex, navigation, notes, pagination,
+    sanitize_asset,
     viewports::Computed, ReadRequest,
 };
 use crate::error::{ApiError, Result};
@@ -101,6 +102,9 @@ pub(super) fn read(
             .and_then(|f| navigation::summary(&index, f))
         {
             response["navigation"] = nav;
+        }
+        if let Some(animated) = animated::summary(&ordered) {
+            response["animated"] = animated;
         }
         if let Some(computed) = computed {
             response["computed"] = computed.metadata;

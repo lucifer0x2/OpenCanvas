@@ -1,4 +1,8 @@
+mod animation_refs;
+mod animations;
 mod candidate;
+mod easing;
+mod keyframes;
 mod layout;
 mod layout_rule;
 mod links;

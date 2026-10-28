@@ -49,7 +49,9 @@ impl PropScope {
     pub fn requirement(self) -> &'static str {
         match self {
             Self::Any => "Property is supported on every node kind",
-            Self::Rendered => "Pages cannot be exported",
+            Self::Rendered => {
+                "Pages cannot be exported or animated; put exportSettings and animations on a node inside a frame"
+            }
             Self::Layer => "Pages cannot carry links; put them on a node inside a frame",
             Self::Frame => "Only frames support flowStart",
             Self::Container => "Only containers support layout",
@@ -117,6 +119,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("exportSettings", Rendered, false, "array of 0..8 {format?: \"png\", scale?: 0.01..4 | width?: 1..16384 | height?: 1..16384 (only one), suffix?: string} marking the node as an image asset to export (export_nodes); suffix defaults to \"@<scale>x\" when scale is not 1; [] clears it", &["exports", "export", "exportSetting"]),
     prop("links", Layer, false, "array of {to?, on?: \"click\" (default) | \"hover\", action?: \"navigate\" (default) | \"overlay\" | \"back\" | \"close\"}; to = a root frame ID, required for navigate/overlay, absent for back/close; one link per on; hover needs overlay; [] = none", &["reactions", "interactions", "prototype", "onClick", "href", "link", "navigation"]),
     prop("flowStart", Frame, false, "flow name 1–64 bytes, unique in the project; marks this root frame as the first screen of that flow", &["startingPoint", "flowStartingPoint", "start", "entry", "initialRoute"]),
+    prop("animations", Rendered, false, "array of at most 8 {name, on?, duration, delay?, easing?, iterations?, direction?, fillMode?, keyframes}; keyframes animate opacity, translateX/Y, scale, rotate and fill from the authored (resting) props; see Animations below; [] = none", &["animation", "motion", "transitions", "transition", "keyframes"]),
 ];
 
 pub fn prop_spec(key: &str) -> Option<&'static PropSpec> {

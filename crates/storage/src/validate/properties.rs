@@ -1,4 +1,5 @@
 use super::{
+    animations::check_animations,
     links::check_links,
     prop_keys::{check_keys, check_required},
     stroke::validate_stroke,
@@ -32,6 +33,7 @@ impl Candidate {
                 "stroke" => validate_stroke(v)?,
                 "links" => check_links(v)?,
                 "flowStart" => self.check_flow_start(n, v)?,
+                "animations" => check_animations(v)?,
                 "clip" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

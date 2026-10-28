@@ -1,5 +1,6 @@
 //! Durable, per-project serialized SQLite storage. No network or render work runs
 //! inside a transaction. All public errors are safe for a client response.
+mod animation_catalog;
 mod error;
 mod export_settings;
 mod image_fit;
@@ -8,6 +9,7 @@ mod model;
 mod props_catalog;
 mod props_suggest;
 mod validate;
+pub use animation_catalog::{AnimationKey, ANIMATED_PROPS, ANIMATION_KEYS, KEYFRAME_KEYS};
 pub use error::{NodeErrorContext, Result, StorageError};
 pub use export_settings::{
     check_export_settings, export_format, export_suffix, EXPORT_FORMATS, MAX_EXPORT_SETTINGS,

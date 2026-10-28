@@ -99,6 +99,25 @@ layout key with the one you change.
 - Mark the first screen of a flow with `flowStart:"Main"` on its root frame.
 - Deleting a target frame removes links to it; their sources are in `changedIds`.
 
+## Animation
+
+- Author props as the resting state (after load). `animations` only says how a
+  node reaches or leaves it: keyframes of `opacity`, `translateX`, `translateY`,
+  `scale`, `rotate` and `fill`; nothing that changes layout. A key missing from
+  the 0 or 1 keyframe takes the authored value, so never repeat it.
+- `duration`/`delay` are milliseconds. A lone keyframe without `offset` is the
+  end (animate *to* it); write `offset:0` to animate *from* it.
+- Each property belongs to one animation per node (translateX/Y count as one);
+  to combine a load fade with a hover change of the same property, animate a
+  wrapping group. When an animation sets both translate axes, set them at the
+  same keyframes. `on:"hover"` takes exactly one keyframe and no iterations.
+
+```json
+{"name":"enter","duration":400,"easing":"ease-out","keyframes":[{"offset":0,"opacity":0,"translateY":12}]}
+{"name":"lift","on":"hover","duration":200,"keyframes":[{"scale":1.02}]}
+{"name":"pulse","duration":800,"iterations":"infinite","direction":"alternate","keyframes":[{"fill":{"tokenId":"color-brand-soft"}}]}
+```
+
 ## Read back and check
 
 - Read `get_design_context` for the complete frame, following pagination. An

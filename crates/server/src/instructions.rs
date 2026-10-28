@@ -45,8 +45,10 @@ Only interaction state 'default' is supported; named token themes may be request
 Navigation is the one interaction a design declares: props.links on a node ({on: click|hover, \
 action: navigate|overlay with to = a root frame ID, or back|close}) and flowStart on a root frame; \
 get_design_context returns them as navigation {out, in}. Implement declared links as routes and \
-overlays. Transitions, animation, route paths, overlay placement and data are not in the design: \
-ask rather than invent. Notes: put intent props cannot carry (behavior, constraints, unsupported \
+overlays. Motion a design declares is props.animations on a node: CSS-like keyframes of opacity, \
+translateX/Y, scale, rotate and fill, played on load, hover or click; get_design_context lists \
+them in animated. Implement exactly those. Screen transitions, route paths, overlay placement and \
+data are not in the design: ask rather than invent. Notes: put intent props cannot carry (behavior, constraints, unsupported \
 effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
 descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. \
 To check an implementation, render_frame at the same revision and viewport and \

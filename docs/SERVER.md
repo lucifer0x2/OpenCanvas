@@ -528,3 +528,7 @@ layout keys, with `node.suggestion` for CSS/Figma spellings (`alignItems` →
 hold numbers. `tools/list`, scene schema and renderer are unchanged; existing
 layouts serialize and lay out exactly as before. Upgrade backend and layout-step
 together: an older layout binary cannot deserialize a padding list.
+
+## Declared animations: `props.animations`
+
+Layer nodes (not pages) may author `animations`: up to 8 `{name, on?, duration, delay?, easing?, iterations?, direction?, fillMode?, keyframes}` with 1..16 WAAPI-shaped keyframes of `opacity`, `translateX`, `translateY`, `scale`, `rotate` and `fill`. Times are milliseconds; `fillMode` defaults to `both`; missing 0/1 keyframes take the authored (resting) props. Errors are `VALIDATION_FAILED` with the full path (`props.animations[0].keyframes[1].offset`), `nodeId`, `nodeKind`, and `allowedKeys`/`suggestion` for unknown keys. Number tokens resolve in timing and numeric keyframe values, color tokens and fill styles in `fill`; `resolvedProps.animations` holds theme literals. `get_design_context` adds `animated: [{ref:"<nodeId>:<name>", on}]` over the whole scope (same on every page), absent when the frame has none. Static renders ignore animations (resting state). Full key table: `skill://opencanvas/props.md`. `tools/list` is unchanged (props schema is a free object).

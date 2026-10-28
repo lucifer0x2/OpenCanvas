@@ -4,24 +4,28 @@ use crate::props_catalog::PROPS;
 /// The catalog key an agent most likely meant: a known alias, a case-insensitive match,
 /// then the closest key within two edits. `None` when nothing is plausibly close.
 pub fn suggest_prop(key: &str) -> Option<&'static str> {
+    suggest_from(key, PROPS.iter().map(|spec| (spec.key, spec.aliases)))
+}
+
+/// The same lookup over any table of `(key, aliases)`, such as the animation keys.
+pub(crate) fn suggest_from<I>(key: &str, table: I) -> Option<&'static str>
+where
+    I: Iterator<Item = (&'static str, &'static [&'static str])> + Clone,
+{
     let lower = key.to_ascii_lowercase();
-    if let Some(spec) = PROPS.iter().find(|spec| {
-        spec.key.eq_ignore_ascii_case(key)
-            || spec
-                .aliases
-                .iter()
-                .any(|alias| alias.eq_ignore_ascii_case(key))
+    if let Some((found, _)) = table.clone().find(|(candidate, aliases)| {
+        candidate.eq_ignore_ascii_case(key)
+            || aliases.iter().any(|alias| alias.eq_ignore_ascii_case(key))
     }) {
-        return Some(spec.key);
+        return Some(found);
     }
     // Short keys tolerate one edit so "id" does not turn into "x".
     let tolerance = (lower.len() / 3).clamp(1, 2);
-    PROPS
-        .iter()
-        .map(|spec| {
+    table
+        .map(|(candidate, _)| {
             (
-                edit_distance(&lower, &spec.key.to_ascii_lowercase()),
-                spec.key,
+                edit_distance(&lower, &candidate.to_ascii_lowercase()),
+                candidate,
             )
         })
         .filter(|(distance, _)| *distance <= tolerance)
