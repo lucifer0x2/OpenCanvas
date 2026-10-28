@@ -183,3 +183,12 @@ fn missing_image_bytes_fail_instead_of_a_partial_svg() {
         .unwrap();
     assert_eq!(error.0.code, "RESOURCE_NOT_READY");
 }
+
+#[test]
+fn xml_invalid_control_characters_are_dropped() {
+    let mut scene = scene();
+    scene["nodes"][3]["lines"][0]["text"] = json!("ctrl:\u{1}\u{8}\u{1b}\u{fffe}\tok\u{7f}");
+    let markup = scene_to_svg(&scene, &images(), false).unwrap().markup;
+    let doc = roxmltree::Document::parse(&markup).unwrap();
+    assert_eq!(named(&doc, "text")[0].text(), Some("ctrl:\tok\u{7f}"));
+}

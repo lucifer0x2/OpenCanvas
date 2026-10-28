@@ -11,11 +11,15 @@ pub fn num(value: f64) -> String {
     }
 }
 
-/// Escapes text content and attribute values alike.
+/// Escapes text content and attribute values alike. Characters XML 1.0 forbids even as
+/// references (C0 controls other than tab/newline/CR, U+FFFE, U+FFFF) are dropped; Rust
+/// strings hold no surrogates.
 pub fn attr(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for c in value.chars() {
         match c {
+            '\t' | '\n' | '\r' => out.push(c),
+            '\u{0}'..='\u{1f}' | '\u{fffe}' | '\u{ffff}' => {}
             '&' => out.push_str("&amp;"),
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
