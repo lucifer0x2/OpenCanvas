@@ -1,5 +1,7 @@
 //! Byte-for-byte guard for the outline/subtree/context traversal. The golden file was written by
-//! the pre-index `visit()` implementation; set OPENCANVAS_WRITE_GOLDEN=1 only to re-baseline.
+//! the pre-index `visit()` implementation and re-baselined once by B03, when depth became a filter
+//! from the scope root (whole-scope pages were unchanged); set OPENCANVAS_WRITE_GOLDEN=1 only to
+//! re-baseline.
 use super::{index::TreeIndex, pagination, tree, viewports::Computed, ReadRequest};
 use opencanvas_storage::{BatchRequest, Node, Snapshot, Store};
 use serde_json::{json, Value};

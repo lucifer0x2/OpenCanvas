@@ -37,6 +37,10 @@ impl<'a> TreeIndex<'a> {
         self.by_id.get(id).copied()
     }
 
+    pub fn child_count(&self, id: &str) -> usize {
+        self.children.get(id).map_or(0, Vec::len)
+    }
+
     /// Preorder `(node, depth)` from one root, or from every top-level node; a root has depth 0.
     pub fn preorder(&self, root: Option<&str>) -> Vec<(&'a Node, usize)> {
         let starts = match root {

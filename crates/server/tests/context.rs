@@ -14,7 +14,7 @@ async fn pagination_binds_revision_scope_filters_and_preserves_theme_values() {
     ]);
     let result = s.batch(&p, 0, "initial", ops).await;
     assert_eq!(result["committedRevision"], 1, "{result}");
-    let mut req = json!({"projectId":p,"limit":1,"depth":0});
+    let mut req = json!({"projectId":p,"limit":1});
     let mut ids = Vec::new();
     let first = s.call("get_outline", req.clone()).await;
     assert!(first["truncated"].as_bool().unwrap());

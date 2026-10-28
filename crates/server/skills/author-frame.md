@@ -3,6 +3,8 @@
 1. Read `get_outline` and the scoped context before editing an existing project.
    To locate a node you know by name, visible text, kind or ID, use `find_nodes`
    instead of scanning the outline; each match carries its ancestor `path`.
+   `get_outline` `depth` counts from the scope root (`{nodeId:<page>, depth:1}` is the
+   page and its root frames); `find_nodes {parentId}` lists one node's direct children.
    For a new project use `create_project`, then create a page and a root frame.
 2. Plan containers and sizing before placing nodes. Default to `row`/`column`
    stacks with explicit padding/gap. Use `free` for intentional overlays or

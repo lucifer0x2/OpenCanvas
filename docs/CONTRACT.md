@@ -45,9 +45,11 @@ Tree/context/resource reads return one authored revision, `truncated` and
 changing scope or advancing revision requires restarting pagination. A response
 budget never silently discards a complete item. An item exceeding the byte
 budget returns `CONTEXT_ITEM_TOO_LARGE`; callers can use a property filter.
-Each page is capped at 200 tree entries, depth 8 and 64 KiB, with at most 100
-items per resource kind. Continuation may start at a deeper tree node; depth is
-relative to that page's first entry. Resource-only continuation pages are valid.
+Each page is capped at 200 tree entries and 64 KiB, with at most 100 items per
+resource kind. `depth` (0–8) filters nodes by distance from the scope root (depth 0);
+deeper nodes are never listed, and a node whose children were cut carries
+`omittedChildren`. Without `depth` the whole scope is listed (`limits.depth: null`).
+Resource-only continuation pages are valid.
 
 Design context keeps authored `props` and adds `resolvedProps`, plus authored
 token/style values and `resolvedValue` for the requested concrete design theme.

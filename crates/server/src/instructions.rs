@@ -3,8 +3,9 @@
 pub const CONNECT: &str = "Versioned design tools over a local design store. Every read is one \
 consistent revision.
 
-Finding: when you know a node's name, visible text, kind or ID, call find_nodes; use get_outline \
-when you need structure. totalMatches 0 means nothing matched, not an error. Position ('the card on \
+Finding: when you know a node's name, visible text, kind, ID or parent (parentId lists direct \
+children), call find_nodes; use get_outline when you need structure: depth counts from the scope \
+root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \
 the right') is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds.
 
 Authoring: get_outline first, then scoped reads. Create a page, then a frame, then its \

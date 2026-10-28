@@ -13,7 +13,14 @@ async fn kinds_list_every_frame_and_paths_locate_matches() {
     let outline = s
         .call("get_outline", json!({"projectId":p,"depth":1}))
         .await;
-    assert_eq!(outline["truncated"], true, "depth cuts the outline page");
+    assert_eq!(
+        outline["truncated"], false,
+        "depth filters, it does not cut the page"
+    );
+    assert_eq!(
+        ids(&outline["nodes"]),
+        ["page-1", "hero", "page-2", "pricing", "footer"]
+    );
     let frames = find(&s, json!({"projectId":p,"kinds":["frame"]})).await;
     assert_eq!(ids(&frames["matches"]), ["hero", "pricing", "footer"]);
     assert_eq!(

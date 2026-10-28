@@ -47,8 +47,12 @@ pub(super) fn read(
     let compact = (context && req.compact == Some(true))
         .then(|| compact::Referenced::collect(s, ordered.iter().map(|(n, _)| *n)));
     let mut entries = Vec::new();
-    for (node, d) in &ordered {
-        let value = if name == "get_outline" {
+    // depth filters from the scope root (depth 0); omitted, it lists the whole scope.
+    for (node, d) in ordered
+        .iter()
+        .filter(|(_, d)| req.depth.is_none_or(|max| *d <= max))
+    {
+        let mut value = if name == "get_outline" {
             json!({"id":node.id,"parentId":node.parent_id,"kind":node.kind,"name":node.props["name"],"sortKey":node.sort_key})
         } else {
             let mut authored = (*node).clone();
@@ -76,9 +80,13 @@ pub(super) fn read(
             }
             value
         };
-        entries.push(("nodes".into(), value, *d));
+        let omitted = index.child_count(&node.id);
+        if req.depth == Some(*d) && omitted > 0 {
+            value["omittedChildren"] = json!(omitted);
+        }
+        entries.push(("nodes".into(), value));
     }
-    let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth.unwrap_or(8),"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
+    let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if context {
         response["theme"] = json!(theme);
         compact::mark(&mut response, compact.as_ref());
@@ -105,7 +113,7 @@ pub(super) fn read(
                 if field == "styles" {
                     item["resolvedValue"] = resolve_style(&item["value"], &tokens);
                 }
-                entries.push((field.into(), item, 0));
+                entries.push((field.into(), item));
             }
         }
     }
@@ -115,7 +123,6 @@ pub(super) fn read(
         offset,
         req.limit.unwrap_or(200),
         req.budget.unwrap_or(65536),
-        req.depth.unwrap_or(8),
         &scope,
     )
 }
