@@ -98,7 +98,7 @@ Ba luồng có thể làm song song. Các việc trong cùng một luồng sửa
 
 ## Nghiên cứu sâu thêm (02:44–02:55, theo yêu cầu người dùng)
 
-Các task này viết nhanh trong khoảng 10 phút, nên cần duyệt kỹ hơn các task ở bảng trên trước khi giao.
+Sáu task P24–P29 viết nhanh trong khoảng 10 phút, nên cần duyệt kỹ hơn các task ở bảng trên trước khi giao.
 
 | ID | Việc | Ưu tiên | Phút | File |
 | --- | --- | --- | --- | --- |
@@ -106,3 +106,5 @@ Các task này viết nhanh trong khoảng 10 phút, nên cần duyệt kỹ hơ
 | P24 | Component + instance tối thiểu: master frame `component`, kind `instance` + overrides phẳng, expand ở storage; `get_design_context` trả component một lần (20 hàng bảng 22 191 B → 6 018 B, −73 %; tools/list < +300 B) | P1 | 165 (P24a 90 + P24b 75) | `tasks/P24-components-instances.md` |
 | P25 | Workflow designer → coder đo theo byte: một vòng ~302 KB → ~108 KB sau các task trên; bước đắt nhất còn lại là `get_design_context` compact (39 %) và handshake (40 %); harness `workflow_budget.rs` + skill workflow + compact mặc định | P1 | 130 (P25a 60 + P25b 70) | `tasks/P25-agent-workflow-e2e.md` |
 | P28 | Responsive: width/height nhận `"50%"` theo content box của cha; `breakpoints` trên root frame `{maxWidth, overrides}`; `activeBreakpoint` trong `get_design_context` | P2 | 150 (P28a 70 + P28b 80) | `tasks/P28-responsive-percent-breakpoints.md` |
+| P27 | Trạng thái tương tác: `props.states` (hover/pressed/focus/disabled) ghi đè phẳng; `get_design_context` trả `resolvedStates` cho coder sinh `:hover`/`:disabled`; `render_frame state` | P1 | 150 (P27a 80 + P27b 70) | `tasks/P27-interaction-states.md` |
+| P29 | Lint thiết kế trong `scene.diagnostics`: tương phản WCAG, chữ < 11 px, vùng chạm < 24 px, text bị cắt, node ngoài frame; không thêm tool | P2 | 150 (P29a 90 + P29b 60) | `tasks/P29-design-lint-diagnostics.md` |
