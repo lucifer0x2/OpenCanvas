@@ -103,3 +103,5 @@ Các task này viết nhanh trong khoảng 10 phút, nên cần duyệt kỹ hơ
 | ID | Việc | Ưu tiên | Phút | File |
 | --- | --- | --- | --- | --- |
 | P26 | `update_matching`: sửa đồng loạt theo bộ chọn trong `apply_batch` (300 lần `update_node` 25 200 B → 1 op 148 B; tools/list ~+500 B) | P2 | 110 (P26a 70 + P26b 40) | `tasks/P26-bulk-update-by-selector.md` |
+| P24 | Component + instance tối thiểu: master frame `component`, kind `instance` + overrides phẳng, expand ở storage; `get_design_context` trả component một lần (20 hàng bảng 22 191 B → 6 018 B, −73 %; tools/list < +300 B) | P1 | 165 (P24a 90 + P24b 75) | `tasks/P24-components-instances.md` |
+| P25 | Workflow designer → coder đo theo byte: một vòng ~302 KB → ~108 KB sau các task trên; bước đắt nhất còn lại là `get_design_context` compact (39 %) và handshake (40 %); harness `workflow_budget.rs` + skill workflow + compact mặc định | P1 | 130 (P25a 60 + P25b 70) | `tasks/P25-agent-workflow-e2e.md` |
