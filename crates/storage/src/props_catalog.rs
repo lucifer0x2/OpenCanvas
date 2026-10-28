@@ -9,6 +9,10 @@ pub enum PropScope {
     Any,
     /// Every kind except page: nodes that draw pixels.
     Rendered,
+    /// Every kind except page.
+    Layer,
+    /// Frames only.
+    Frame,
     Container,
     Text,
     Image,
@@ -21,6 +25,8 @@ impl PropScope {
         match self {
             Self::Any => true,
             Self::Rendered => *kind != NodeKind::Page,
+            Self::Layer => *kind != NodeKind::Page,
+            Self::Frame => *kind == NodeKind::Frame,
             Self::Container => kind.container(),
             Self::Text => *kind == NodeKind::Text,
             Self::Image => *kind == NodeKind::Image,
@@ -31,6 +37,8 @@ impl PropScope {
         match self {
             Self::Any => "all",
             Self::Rendered => "frame, group, rectangle, text, image",
+            Self::Layer => "frame, group, rectangle, text, image",
+            Self::Frame => "frame",
             Self::Container => "page, frame, group",
             Self::Text => "text",
             Self::Image => "image",
@@ -42,6 +50,8 @@ impl PropScope {
         match self {
             Self::Any => "Property is supported on every node kind",
             Self::Rendered => "Pages cannot be exported",
+            Self::Layer => "Pages cannot carry links; put them on a node inside a frame",
+            Self::Frame => "Only frames support flowStart",
             Self::Container => "Only containers support layout",
             Self::Text => "Text properties require a text node",
             Self::Image => "Image properties require an image node",
@@ -78,7 +88,7 @@ const fn prop(
     }
 }
 
-use PropScope::{Any, Container, Image, Rendered, Text};
+use PropScope::{Any, Container, Frame, Image, Layer, Rendered, Text};
 
 pub const PROPS: &[PropSpec] = &[
     prop("name", Any, false, "string, at most 256 bytes", &["title"]),
@@ -105,6 +115,8 @@ pub const PROPS: &[PropSpec] = &[
     prop("fit", Image, false, "\"fit\" (stretch to bounds, CSS object-fit: fill), \"contain\" (default, whole image inside) or \"cover\" (fill bounds, crop); the same names appear in resolvedProps and scenes", &["objectFit", "scaleMode", "resize"]),
     prop("crop", Image, false, "object {x, y, width, height} normalized 0..1, staying inside the source image", &["cropRect", "sourceRect"]),
     prop("exportSettings", Rendered, false, "array of 0..8 {format?: \"png\", scale?: 0.01..4 | width?: 1..16384 | height?: 1..16384 (only one), suffix?: string} marking the node as an image asset to export (export_nodes); suffix defaults to \"@<scale>x\" when scale is not 1; [] clears it", &["exports", "export", "exportSetting"]),
+    prop("links", Layer, false, "array of {to?, on?: \"click\" (default) | \"hover\", action?: \"navigate\" (default) | \"overlay\" | \"back\" | \"close\"}; to = a root frame ID, required for navigate/overlay, absent for back/close; one link per on; hover needs overlay; [] = none", &["reactions", "interactions", "prototype", "onClick", "href", "link", "navigation"]),
+    prop("flowStart", Frame, false, "flow name 1–64 bytes, unique in the project; marks this root frame as the first screen of that flow", &["startingPoint", "flowStartingPoint", "start", "entry", "initialRoute"]),
 ];
 
 pub fn prop_spec(key: &str) -> Option<&'static PropSpec> {

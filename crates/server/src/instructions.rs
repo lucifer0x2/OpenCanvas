@@ -42,10 +42,14 @@ not a responsive specification: heed NO_REFLOW_INFORMATION, state assumptions or
 do not silently consider absolute positioning complete. Read skill://opencanvas/implement-frame.md \
 or skill://opencanvas/author-frame.md through resources/read for detailed checklists. \
 Only interaction state 'default' is supported; named token themes may be requested. \
-The design says nothing about interaction, animation, routing or data; ask rather \
-than invent those. Notes: put intent props cannot carry (behavior, constraints, unsupported \
+Navigation is the one interaction a design declares: props.links on a node ({on: click|hover, \
+action: navigate|overlay with to = a root frame ID, or back|close}) and flowStart on a root frame; \
+get_design_context returns them as navigation {out, in}. Implement declared links as routes and \
+overlays. Transitions, animation, route paths, overlay placement and data are not in the design: \
+ask rather than invent. Notes: put intent props cannot carry (behavior, constraints, unsupported \
 effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
-descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. To check an implementation, render_frame at the same revision and viewport and \
+descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. \
+To check an implementation, render_frame at the same revision and viewport and \
 compare it with inspect_layout bounds and text lines for that job's scene key. Poll a pending \
 job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed. \
 A node with exportSettings is an image asset: get its PNG files with export_nodes and download \

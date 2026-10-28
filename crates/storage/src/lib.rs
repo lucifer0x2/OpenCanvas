@@ -3,6 +3,7 @@
 mod error;
 mod export_settings;
 mod image_fit;
+mod links;
 mod model;
 mod props_catalog;
 mod props_suggest;
@@ -12,6 +13,9 @@ pub use export_settings::{
     check_export_settings, export_format, export_suffix, EXPORT_FORMATS, MAX_EXPORT_SETTINGS,
 };
 pub use image_fit::IMAGE_FITS;
+pub use links::{
+    flow_start, node_links, Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME,
+};
 pub use model::*;
 pub use props_catalog::{
     allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,

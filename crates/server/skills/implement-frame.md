@@ -76,12 +76,19 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 - Check horizontal overflow and content wrapping. Row wrap is available; column
   wrap, percent dimensions and media-query breakpoints remain unsupported. Ask about required behavior when the
   authored rules cannot express it; do not invent design intent.
-- Interaction, routing, animation and real data require user requirements. Only
-  the default interaction state is supported; named token themes may be requested.
 - A node whose authored props carry `exportSettings` is an image asset: call
   `export_nodes {projectId, nodeIds}` and download each file `url` over HTTP
   right away instead of rebuilding it in code or cropping a frame PNG. Pass
   `settings` (e.g. `[{"scale":2}]`) to export any other node the same way.
+- Navigation is declared: `get_design_context.navigation` lists `out` links (from
+  nodes in the frame) and `in` links (from other screens), plus `flowStart`.
+  `navigate` → go to the route built from frame `to`; `overlay` → a modal or
+  popover built from frame `to`; `back` → history back; `close` → close the
+  enclosing overlay. `in` tells you where a screen opens from, so choose route
+  or overlay. A `flowStart` frame is the initial route of that flow.
+- Route paths, transitions, guards, animation and real data are not in the
+  design and require user requirements. Only the default interaction state is
+  supported; named token themes may be requested.
 
 ## Finding nodes
 

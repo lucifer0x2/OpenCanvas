@@ -240,6 +240,48 @@ compact resources alone resolve the frame to identical values for every theme, a
 dropping any one of them fails validation. Measured savings are in
 `TASK07-REPORT.md` (07C).
 
+## Navigation links
+
+Navigation is the one interaction a design declares, as authored props (no
+migration, no new tool):
+
+- `links` on any non-page node: an array of `{to?, on?, action?}`. `on` is
+  `click` (default, includes tap) or `hover`; `action` is `navigate` (default),
+  `overlay`, `back` or `close`. `to` is a root frame ID (a direct child of any
+  page), required for navigate/overlay and absent for back/close. One link per
+  `on`; `hover` only opens an overlay; `[]` means none (`update_node` cannot
+  delete a key). A link is identified by `(nodeId, on)`.
+- `flowStart` on a root frame: a flow name of 1–64 bytes, unique in the project.
+  The default flow is the first by page order, then `sortKey`.
+
+Validation (`crates/storage/src/validate/{links,navigation}.rs`): shapes are
+checked per operation with `field` `links[i].<key>` (unknown link keys suggest
+`on`/`to`/`action`) and `opIndex`. Destinations and duplicate flow names are
+checked once at the end of the batch, so a node may link to a root frame created
+later in the same batch; those errors carry `field` `links[i].to` or `flowStart`
+and the source `nodeId`, without `opIndex`. A missing `to` that matches a root
+frame `name` suggests that frame's ID; a nested frame suggests its root frame.
+`reparent_node` that nests a link target or a `flowStart` frame fails.
+
+Delete cascade: before validation, links whose `to` was deleted in the same batch
+and not recreated are removed (an emptied `links` key is dropped) and their
+sources join `changedIds`, so `get_changes` reports them under `nodes`. Deleting
+and recreating a frame ID in one batch keeps links. A `to` that never existed
+still fails; committed snapshots and bundles never hold dangling links.
+
+`get_design_context` adds `navigation` on the first page when the frame has any
+outgoing link in its subtree, any incoming link or a `flowStart`:
+`{flowStart?, out?: [{from, on, action, to?, toName?}], in?: [{from, fromFrame,
+fromFrameName?, on, action}], truncated?}`. `out` is subtree preorder then array
+order; `in` is project order (page, screen, preorder). Defaults are always
+written out. Each list holds at most 50 entries; `truncated:true` says more
+exist. `compact:true` returns the same block. Frames without navigation have no
+key. Large link counts count against `budget` like other metadata.
+
+Layout and render ignore both props. A binary older than this change rejects
+every commit and context read of a project that already uses them
+(`VALIDATION_FAILED props.links`); roll back by removing the props first.
+
 ## Finding nodes: `find_nodes`
 
 Read-only search in one revision, for when the agent knows a name, visible copy,

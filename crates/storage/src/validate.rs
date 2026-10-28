@@ -1,6 +1,8 @@
 mod candidate;
 mod layout;
 mod layout_rule;
+mod links;
+mod navigation;
 mod node;
 mod notes;
 mod prop_keys;

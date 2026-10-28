@@ -86,7 +86,7 @@ fn build() -> Vec<Tool> {
         (
             "get_design_context",
             vec!["projectId", "frameId"],
-            "What implementing one frame needs: its subtree with authored props next to resolvedProps for the requested theme, plus the token and style values behind them. Write code against the authored reference and your own named token for it, so a design theme change stays one change in code; resolvedProps only say what that reference evaluates to today.",
+            "What implementing one frame needs: its subtree with authored props next to resolvedProps for the requested theme, plus the token and style values behind them. Write code against the authored reference and your own named token for it, so a design theme change stays one change in code; resolvedProps only say what that reference evaluates to today. When the frame has links or flowStart, the first page adds navigation {flowStart, out, in}.",
         ),
     ] {
         let mut properties = tree.clone();
