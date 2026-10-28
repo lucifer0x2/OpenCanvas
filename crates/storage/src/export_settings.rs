@@ -7,8 +7,15 @@ use serde_json::{Map, Value};
 /// Most settings on one node or in one export call.
 pub const MAX_EXPORT_SETTINGS: usize = 8;
 /// Formats an export setting may name; the first is the default.
-pub const EXPORT_FORMATS: &[&str] = &["png"];
-const KEYS: [&str; 5] = ["format", "scale", "width", "height", "suffix"];
+pub const EXPORT_FORMATS: &[&str] = &["png", "svg"];
+const KEYS: [&str; 6] = [
+    "format",
+    "scale",
+    "width",
+    "height",
+    "suffix",
+    "svgIdAttribute",
+];
 const MAX_SUFFIX_BYTES: usize = 64;
 const MAX_OUTPUT_PIXELS: u64 = 16_384;
 
@@ -62,6 +69,14 @@ fn check_setting(setting: &Map<String, Value>, at: &str) -> Result<()> {
             let message = format!("Supported export formats: {}", EXPORT_FORMATS.join(", "));
             return Err(StorageError::validation(&format!("{at}.format"), &message));
         }
+    }
+    if export_format(setting) == "svg" {
+        check_svg(setting, at)?;
+    } else if setting.contains_key("svgIdAttribute") {
+        return Err(StorageError::validation(
+            &format!("{at}.svgIdAttribute"),
+            "svgIdAttribute applies only to format \"svg\"",
+        ));
     }
     let sizes = ["scale", "width", "height"]
         .into_iter()
@@ -131,4 +146,27 @@ pub fn export_suffix(setting: &Map<String, Value>) -> String {
         Some(scale) if scale != 1.0 => format!("@{scale}x"),
         _ => String::new(),
     }
+}
+
+/// SVG is vector: no output size, and `svgIdAttribute` must be a boolean.
+fn check_svg(setting: &Map<String, Value>, at: &str) -> Result<()> {
+    if let Some(key) = ["scale", "width", "height"]
+        .into_iter()
+        .find(|key| setting.contains_key(*key))
+    {
+        return Err(StorageError::validation(
+            &format!("{at}.{key}"),
+            "SVG is resolution-independent; remove scale/width/height",
+        ));
+    }
+    if setting
+        .get("svgIdAttribute")
+        .is_some_and(|v| !v.is_boolean())
+    {
+        return Err(StorageError::validation(
+            &format!("{at}.svgIdAttribute"),
+            "svgIdAttribute must be true or false",
+        ));
+    }
+    Ok(())
 }

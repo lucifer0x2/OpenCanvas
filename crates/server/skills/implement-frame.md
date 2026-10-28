@@ -89,6 +89,9 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   `export_nodes {projectId, nodeIds}` and download each file `url` over HTTP
   right away instead of rebuilding it in code or cropping a frame PNG. Pass
   `settings` (e.g. `[{"scale":2}]`) to export any other node the same way.
+  Prefer `[{"format":"svg"}]` for icons, logos and shapes: one self-contained
+  vector file. Text in SVG is not outlined (`SVG_TEXT_NOT_OUTLINED`), so its
+  width depends on installed fonts; use PNG or real text for labels.
 - Navigation is declared: `get_design_context.navigation` lists `out` links (from
   nodes in the frame) and `in` links (from other screens), plus `flowStart`.
   `navigate` → go to the route built from frame `to`; `overlay` → a modal or

@@ -2,6 +2,7 @@
 //! shared worker process under the job deadline, and records the outcome.
 use super::{
     export::{self, Rendered},
+    export_svg::AssetSource,
     png,
     queue::Work,
     Jobs,
@@ -11,6 +12,7 @@ use crate::{
     state::Config,
     worker::Worker,
 };
+use opencanvas_storage::Store;
 use serde_json::{json, Value};
 use std::{
     sync::{Arc, Weak},
@@ -25,6 +27,7 @@ pub(super) fn spawn(
     mut doorbell: mpsc::Receiver<()>,
     config: Arc<Config>,
     events: broadcast::Sender<Value>,
+    store: Store,
 ) {
     tokio::spawn(async move {
         let mut worker: Option<Worker> = None;
@@ -38,7 +41,7 @@ pub(super) fn spawn(
                 };
                 drop(owner);
                 let started = Instant::now();
-                let result = run(&config, &mut worker, &work).await;
+                let result = run(&config, &store, &mut worker, &work).await;
                 let Some(owner) = jobs.upgrade() else {
                     break 'rings;
                 };
@@ -55,6 +58,7 @@ pub(super) fn spawn(
 
 async fn run(
     config: &Config,
+    store: &Store,
     worker: &mut Option<Worker>,
     work: &Work,
 ) -> Result<(Value, Result<Rendered>)> {
@@ -68,7 +72,11 @@ async fn run(
             .await?;
         computed["scene"]["provenance"]["sourceSceneKey"] = json!(work.key);
         if let Some(spec) = &work.export {
-            let rendered = export::render(w, &computed["scene"], spec).await;
+            let assets = AssetSource {
+                store: store.clone(),
+                project_id: work.frame.0.clone(),
+            };
+            let rendered = export::render(w, &assets, &computed, spec).await;
             return Ok((computed, rendered));
         }
         let rendered = w
