@@ -27,7 +27,10 @@
 | `layout.mode: "row"` | `display:flex; flex-direction:row` |
 | `layout.mode: "column"` | `display:flex; flex-direction:column` |
 | Row `layout.wrap:true` | `flex-wrap:wrap; align-content:flex-start; align-items:flex-start` |
-| `layout.padding`, `layout.gap` | Explicit padding and gap |
+| `layout.padding`, `layout.gap` | Explicit padding and gap; a padding list is the CSS shorthand (`[8,16]` → `padding:8px 16px`) |
+| `layout.align` | `align-items` (`start`/`end` → `flex-start`/`flex-end`; missing = `flex-start`, not CSS's stretch) |
+| `layout.justify` | `justify-content` (`space-between` keeps `gap` as the minimum spacing) |
+| Child of an `align:"stretch"` stack | Unset cross size → `auto` (stretches); `hug` → `fit-content` / `align-self:flex-start`; number → fixed |
 | Numeric width/height | Fixed dimension in the design's logical pixels |
 | `fill` on a stack's main axis | Flexible share of remaining space (`flex:1 1 0`) |
 | `fill` on the cross axis | Stretch to the available cross size |
@@ -36,8 +39,10 @@
 | Children of `free` | Authored x/y relative to that parent; useful for overlays |
 | `opacity` on a frame or group | CSS `opacity` on that element; the group fades as one image, so do not multiply it into children |
 
-These are starting rules, not a CSS equivalence guarantee. The engine defaults to
-start alignment and does not shrink fixed siblings. Respect explicit fixed sizes
+These are starting rules, not a CSS equivalence guarantee. Without `align`/`justify`
+the engine uses start alignment, and it never shrinks fixed siblings. Alignment
+overflow is unsafe like CSS: a centered child wider than its stack spills on both
+sides. `align`/`justify` move boxes, not the lines inside a text box. Respect explicit fixed sizes
 and test fill/min/max combinations rather than assuming browser flex defaults.
 In particular, text with `height:"hug"` grows as its authored width changes and
 lines wrap. Keep its height automatic; a measured line count is not a height rule.

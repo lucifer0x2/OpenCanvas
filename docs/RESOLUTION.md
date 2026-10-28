@@ -157,4 +157,12 @@ the backend to refresh startup pipeline fingerprint/job identity; wrap and resol
 sizing also participate in input identity. This task leaves real3847 untouched.
 Older backends reject wrap and older layout binaries may ignore unknown fields;
 there is no mixed-version, downgrade or runtime hot-replacement guarantee. No
-percentage sizing, breakpoint variants, column wrap, align API or dashboard redesign.
+percentage sizing, breakpoint variants, column wrap or dashboard redesign (align/justify: P08a below).
+
+## P08a: padding lists
+
+`layout.padding` may be a list of 1–4 items (CSS shorthand). Each item that is a
+`{"tokenId"}` resolves as a dimension in the requested theme, like scalar
+padding/gap; a non-dimension token in the list rejects with field
+`layout.padding`. Authored props keep the list and refs; `resolvedProps` hold the
+numbers, and `compact` `resources:"referenced"` still finds tokens inside the list.

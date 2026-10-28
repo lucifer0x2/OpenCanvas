@@ -42,6 +42,10 @@ export function measureBatch(
     context.font = fontCSS(font, r.fontSize);
     context.fontKerning = "normal";
     const maxWidth = r.width === null ? Infinity : Math.max(0, r.width);
+    // Fit on the same 1/64 grid as the reported width, so text laid out at its own
+    // measured max-content width does not wrap again.
+    const fits = (text: string) =>
+      round(context.measureText(text).width) <= maxWidth;
     const lines: TextLine[] = [];
     const add = (text: string) =>
       lines.push({
@@ -62,7 +66,7 @@ export function measureBatch(
       let line = "";
       for (const word of words) {
         const next = line ? `${line} ${word}` : word;
-        if (context.measureText(next).width <= maxWidth) {
+        if (fits(next)) {
           line = next;
           continue;
         }
@@ -70,7 +74,7 @@ export function measureBatch(
           add(line);
           line = "";
         }
-        if (context.measureText(word).width <= maxWidth) {
+        if (fits(word)) {
           line = word;
           continue;
         }
@@ -80,7 +84,7 @@ export function measureBatch(
         for (const part of parts) {
           if (
             line &&
-            context.measureText(line + part.segment).width > maxWidth
+            !fits(line + part.segment)
           ) {
             add(line);
             line = "";

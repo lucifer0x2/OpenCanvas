@@ -80,7 +80,7 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
         }
         if let Some(l) = &p.layout
             && (!["row", "column", "free"].contains(&l.mode.as_str())
-                || !finite(l.padding)
+                || !l.padding.edges().is_some_and(|e| e.into_iter().all(finite))
                 || !finite(l.gap))
         {
             return Err(err("Unsupported layout"));

@@ -1,4 +1,5 @@
 use crate::model::*;
+use crate::stack::{ALIGNS, JUSTIFIES};
 use crate::util::{err, is_fill};
 use std::collections::HashMap;
 
@@ -13,6 +14,9 @@ pub(super) fn properties(n: &AuthoredNode) -> Result<(), LayoutError> {
         && (!is_container(n) || p.layout.as_ref().unwrap().mode != "row")
     {
         return Err(err("layout.wrap requires a row container"));
+    }
+    if let Some(l) = &p.layout {
+        stack_rule(l)?;
     }
     Ok(())
 }
@@ -48,6 +52,25 @@ pub(super) fn relationships(
         return Err(err(
             "Wrapping row fill child requires explicit positive minWidth",
         ));
+    }
+    Ok(())
+}
+
+fn stack_rule(l: &LayoutRule) -> Result<(), LayoutError> {
+    let stack = matches!(l.mode.as_str(), "row" | "column");
+    for (key, value, allowed) in [
+        ("align", &l.align, &ALIGNS),
+        ("justify", &l.justify, &JUSTIFIES),
+    ] {
+        match value.as_deref() {
+            Some(_) if !stack => {
+                return Err(err(format!("layout.{key} requires mode row or column")));
+            }
+            Some(v) if !allowed.contains(&v) => {
+                return Err(err(format!("Unsupported layout.{key}")));
+            }
+            _ => {}
+        }
     }
     Ok(())
 }

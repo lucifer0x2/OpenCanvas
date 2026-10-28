@@ -1,6 +1,11 @@
 //! Synchronous Taffy layout with external batched browser measurement.
 mod engine;
 mod model;
+mod stack;
+#[cfg(test)]
+mod stack_tests;
+#[cfg(test)]
+mod stretch_tests;
 #[cfg(test)]
 mod tests;
 mod tree;

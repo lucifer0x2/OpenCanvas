@@ -31,7 +31,7 @@ props (resolvedPropsMode differing; the rest equal authored, without styleId) an
 tokens/styles/fonts/assets only those the frame references (resources referenced).
 
 Build the structure the design declares, not the pixels it measures. A container's layout mode \
-says it: 'row' and 'column' are stacks with padding and gap, so implement them as stacks; 'free' \
+says it: 'row' and 'column' are stacks with padding, gap, align and justify, so implement them as stacks; 'free' \
 positions children at authored x/y. Sizing is authored width/height with min/max, which may be a \
 fixed number, fill or hug. Computed bounds and text lines are measurements of one viewport, already \
 wrapped, so use them to check an implementation rather than to derive it. Request viewports \
