@@ -1,6 +1,7 @@
 import { useRef } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect } from "react-konva";
+import { Stage, Layer, Shape, Rect } from "react-konva";
 import type Konva from "konva";
+import { paintScene } from "../../../renderer/index";
 import { hitTest } from "../canvasHitTest";
 import { CanvasChrome } from "./CanvasChrome";
 import { CanvasMessage } from "./CanvasMessage";
@@ -8,7 +9,6 @@ import {
   useCanvasTransform,
   wheelZoomFactor,
 } from "../hooks/useCanvasTransform";
-import { useDisplayRaster } from "../hooks/useDisplayRaster";
 import type { SceneView } from "../hooks/useScene";
 
 // A click that moves further than this is a pan, not a selection.
@@ -30,13 +30,13 @@ export function CanvasView({
   const stage = useRef<Konva.Stage>(null);
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
+  const resources = view.resources;
   const selected = scene?.nodes.find((node) => node.id === selectedId);
   const viewport = scene?.provenance.viewport;
   const { host, size, transform, zoom, fit, moveTo, handleKeyDown, STEP } =
     useCanvasTransform(viewport, scene?.provenance.frameId);
   const pixelRatio = window.devicePixelRatio || 1;
-  const bitmap = useDisplayRaster(view, transform.scale, pixelRatio);
-  // Whole device pixels, so a raster drawn at the display scale is not resampled by the offset.
+  // Whole device pixels, so panning does not shift the painted scene by subpixel amounts.
   const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio;
 
   return (
@@ -48,7 +48,7 @@ export function CanvasView({
         aria-label="Canvas. Drag to pan. Plus and minus to zoom. F to fit. Select layers in the layers panel."
         onKeyDown={handleKeyDown}
       >
-        {scene && bitmap && (
+        {scene && resources && (
           <Stage
             ref={stage}
             width={size.width}
@@ -102,10 +102,13 @@ export function CanvasView({
                 shadowOffsetY={5}
                 shadowOpacity={0.12}
               />
-              <KonvaImage
-                image={bitmap}
-                width={viewport!.width}
-                height={viewport!.height}
+              {/* Vectors under the stage transform each draw: sharp at every zoom, no raster. */}
+              <Shape
+                listening={false}
+                sceneFunc={(context) => {
+                  context._context.imageSmoothingQuality = "high";
+                  paintScene(context._context, scene, resources);
+                }}
               />
               {selected && (
                 <Rect

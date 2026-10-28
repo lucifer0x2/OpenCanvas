@@ -3,3 +3,4 @@ export * from "./error";
 export * from "./resources";
 export * from "./measurement";
 export * from "./drawing";
+export * from "./paint";

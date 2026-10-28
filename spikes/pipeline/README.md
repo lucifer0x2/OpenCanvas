@@ -46,7 +46,7 @@ try {
 
 `node worker/cli.mjs` uses one JSON object per input/output line. Requests: `{id,op:"compute",input,strict?}`, `{id,op:"render",scene,scale?,strict?}` or `{id,op:"compute_render",input,scale?}`. Success includes `status:"ready"`; failure includes `status:"failed",code,message`. Render returns PNG `base64`, MIME type, dimensions and provenance, which backend exposes as a bounded resource. CLI remains sequential; backend may terminate its process to cancel. Programmatic `cancel()` rejects the active job and closes the page; restart that worker before another job.
 
-Viewer imports `loadResources(fonts,assets,{strict:false})` and `drawScene(canvas,scene,resources,{strict:false})`. Mount that canvas in a Konva.Image, with Konva selection/highlight rectangles over computed bounds. This Canvas2D drawing decision permits byte-identical worker/viewer rasterization without Konva internals or Konva.Text wrapping. Konva supplies the UI stage, transforms and interaction overlays. It does not compute design layout.
+Viewer imports `loadResources(fonts,assets,{strict:false})` and `drawScene(canvas,scene,resources,{strict:false})` once at 1:1 as the parity canvas, then paints the scene with the same `paintScene` from a Konva.Shape `sceneFunc` under the stage zoom, with Konva selection/highlight rectangles over computed bounds. This Canvas2D drawing decision permits byte-identical worker/viewer rasterization without Konva internals or Konva.Text wrapping. Konva supplies the UI stage, transforms and interaction overlays. It does not compute design layout.
 
 ## Batched cache and convergence
 
