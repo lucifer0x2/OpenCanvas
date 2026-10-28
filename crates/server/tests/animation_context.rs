@@ -133,9 +133,10 @@ async fn props_reference_instructions_and_skills_declare_animations() {
         }
     };
     let props = read("skill://opencanvas/props.md").await;
-    for line in props.lines().filter(|l| l.starts_with("- `")) {
-        let page = line.starts_with("- `page`");
-        assert_eq!(line.contains("`animations`"), !page, "{line}");
+    for kind in ["page", "frame", "group", "rectangle", "text", "image"] {
+        let head = format!("- `{kind}`: ");
+        let line = props.lines().find(|l| l.starts_with(&head)).unwrap();
+        assert_eq!(line.contains("`animations`"), kind != "page", "{line}");
     }
     assert!(props.contains("## Animations"));
     assert!(props.contains("| `translateY` |"));
