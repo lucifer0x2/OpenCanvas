@@ -41,7 +41,27 @@ fn invalid_settings_name_the_failing_item_and_key() {
         (json!([{"scale":0}]), "exportSettings[0].scale"),
         (json!([{"scale":1},{"scale":5}]), "exportSettings[1].scale"),
         (json!([{"scale":2,"width":10}]), "exportSettings[0]"),
-        (json!([{"format":"svg"}]), "exportSettings[0].format"),
+        (json!([{"format":"pdf"}]), "exportSettings[0].format"),
+        (
+            json!([{"format":"svg","scale":2}]),
+            "exportSettings[0].scale",
+        ),
+        (
+            json!([{"format":"svg","width":24}]),
+            "exportSettings[0].width",
+        ),
+        (
+            json!([{"format":"svg","svgIdAttribute":"yes"}]),
+            "exportSettings[0].svgIdAttribute",
+        ),
+        (
+            json!([{"svgIdAttribute":true}]),
+            "exportSettings[0].svgIdAttribute",
+        ),
+        (
+            json!([{"format":"svg"},{"format":"svg"}]),
+            "exportSettings[1]",
+        ),
         (
             json!([{"constraint":{"type":"SCALE","value":2}}]),
             "exportSettings[0].constraint",
@@ -98,4 +118,32 @@ fn suffix_defaults_follow_the_scale() {
     assert_eq!(suffix(json!({"width":96})), "");
     assert_eq!(suffix(json!({"scale":3,"suffix":"-hi"})), "-hi");
     assert!(check_export_settings(&json!([{"scale":2},{"scale":3}]), "settings").is_ok());
+}
+
+#[test]
+fn svg_settings_sit_beside_png_ones() {
+    let (_temp, _store, p) = setup();
+    p.apply_batch(request(&p, 0, "initial", initial())).unwrap();
+    let cases = [
+        json!([{"format":"svg"}]),
+        json!([{"format":"svg","svgIdAttribute":true},{"scale":2}]),
+        json!([{"format":"svg"},{"scale":1}]),
+    ];
+    for (index, settings) in cases.into_iter().enumerate() {
+        let key = format!("svg-{index}");
+        p.apply_batch(request(
+            &p,
+            index as u64 + 1,
+            &key,
+            vec![update("rect", settings)],
+        ))
+        .unwrap();
+    }
+    let error =
+        check_export_settings(&json!([{"format":"svg","scale":2}]), "settings").unwrap_err();
+    assert!(
+        error.message.contains("resolution-independent"),
+        "{}",
+        error.message
+    );
 }

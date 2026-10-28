@@ -1,7 +1,7 @@
 //! Export jobs: compute the node's root frame like a render, then rasterize only the node's
-//! subtree once per setting. The record keeps the files' bytes for `/api/v1/jobs/{job}/files/{i}`
+//! subtree once per PNG setting, or write it as SVG (`export_svg`). The record keeps the files' bytes for `/api/v1/jobs/{job}/files/{i}`
 //! and their metadata, never the scene.
-use super::{png, subtree, Entry, Jobs};
+use super::{export_svg, export_svg::AssetSource, png, subtree, Entry, Jobs};
 use crate::{
     error::{ApiError, Result},
     worker::Worker,
@@ -20,7 +20,7 @@ pub struct ExportSpec {
     pub settings: Vec<ExportSetting>,
 }
 
-/// One output file: a fixed scale or a target width/height in pixels.
+/// One output file: a PNG at a fixed scale or a target width/height in pixels, or an SVG.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSetting {
@@ -29,6 +29,7 @@ pub struct ExportSetting {
     pub width: Option<u64>,
     pub height: Option<u64>,
     pub file_name: String,
+    pub svg_id_attribute: bool,
 }
 
 /// What a job produced after its compute: a frame PNG or a node's export files.
@@ -79,32 +80,55 @@ pub fn keeps_worker(error: &ApiError) -> bool {
     )
 }
 
-pub async fn render(worker: &mut Worker, frame: &Value, spec: &ExportSpec) -> Result<Rendered> {
-    let scene = subtree::scene(frame, &spec.node_id)?;
-    let viewport = &scene["provenance"]["viewport"];
-    let (width, height) = (
-        viewport["width"].as_f64().unwrap_or_default(),
-        viewport["height"].as_f64().unwrap_or_default(),
-    );
+/// Files of one node from its computed root frame: PNGs from the worker, SVGs in Rust.
+pub async fn render(
+    worker: &mut Worker,
+    assets: &AssetSource,
+    computed: &Value,
+    spec: &ExportSpec,
+) -> Result<Rendered> {
+    let scene = subtree::scene(&computed["scene"], &spec.node_id)?;
+    let mut images = None;
     let mut files = Vec::with_capacity(spec.settings.len());
     let mut total = 0;
     for setting in &spec.settings {
-        let (scale, render) = setting.scales(width, height)?;
-        let result = worker
-            .call(json!({"op":"render","scene":scene,"scale":render,"strict":true}))
-            .await?;
-        let bytes = png::decode(&result)?;
-        total += bytes.len();
+        let file = if setting.format == "svg" {
+            if images.is_none() {
+                images = Some(export_svg::images(assets, &scene, &computed["readiness"]).await?);
+            }
+            export_svg::file(&scene, images.as_ref().unwrap(), setting)?
+        } else {
+            png_file(worker, &scene, setting).await?
+        };
+        total += file.bytes.len();
         if total > MAX_JOB_BYTES {
             return Err(ApiError::new(
                 "PIXEL_BUDGET",
                 "Export files exceed 48 MiB for one node; use fewer or smaller settings",
             ));
         }
-        let meta = json!({"fileName":setting.file_name,"format":setting.format,"mimeType":"image/png","scale":scale,"width":result["width"],"height":result["height"],"bytes":bytes.len()});
-        files.push(StoredFile { meta, bytes });
+        files.push(file);
     }
     Ok(Rendered::Export(files))
+}
+
+async fn png_file(
+    worker: &mut Worker,
+    scene: &Value,
+    setting: &ExportSetting,
+) -> Result<StoredFile> {
+    let viewport = &scene["provenance"]["viewport"];
+    let (width, height) = (
+        viewport["width"].as_f64().unwrap_or_default(),
+        viewport["height"].as_f64().unwrap_or_default(),
+    );
+    let (scale, render) = setting.scales(width, height)?;
+    let result = worker
+        .call(json!({"op":"render","scene":scene,"scale":render,"strict":true}))
+        .await?;
+    let bytes = png::decode(&result)?;
+    let meta = json!({"fileName":setting.file_name,"format":setting.format,"mimeType":"image/png","scale":scale,"width":result["width"],"height":result["height"],"bytes":bytes.len()});
+    Ok(StoredFile { meta, bytes })
 }
 
 /// Fills a finished export record: file metadata with download URLs, no scene.

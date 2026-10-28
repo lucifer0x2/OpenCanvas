@@ -100,12 +100,14 @@ fn setting(item: &Map<String, Value>, stem: &str) -> ExportSetting {
     let file_name = format!("{stem}{}.{format}", export_suffix(item));
     let scale = item.get("scale").and_then(Value::as_f64);
     let (width, height) = (item.get("width"), item.get("height"));
+    let raster = format != "svg" && width.is_none() && height.is_none();
     ExportSetting {
-        format,
-        scale: scale.or((width.is_none() && height.is_none()).then_some(1.0)),
+        scale: scale.or(raster.then_some(1.0)),
         width: width.and_then(Value::as_u64),
         height: height.and_then(Value::as_u64),
         file_name,
+        svg_id_attribute: item.get("svgIdAttribute") == Some(&Value::Bool(true)),
+        format,
     }
 }
 

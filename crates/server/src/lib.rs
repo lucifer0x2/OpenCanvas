@@ -15,6 +15,7 @@ mod render_response;
 mod resources;
 mod schemas;
 mod state;
+mod svg;
 mod worker;
 mod workspace_events;
 
