@@ -6,12 +6,12 @@ const base = (process.argv[2] ?? "http://127.0.0.1:3847").replace(/\/$/, "");
 const LEGACY = "2025-11-25";
 const MODERN = "2026-07-28";
 const ACCEPT = "application/json, text/event-stream";
-// Tools every image since the first release publishes. Newer images add more, so tools/list is
+// Tools this image must publish (export_nodes since P03a). Newer images add more, so tools/list is
 // checked by name, never by count.
 const CORE_TOOLS = [
   "list_projects", "create_project", "get_outline", "find_nodes", "get_subtree",
   "get_design_context", "list_tokens", "list_styles", "list_fonts", "list_assets",
-  "get_changes", "apply_batch", "import_asset", "render_frame", "inspect_layout",
+  "get_changes", "apply_batch", "import_asset", "render_frame", "export_nodes", "inspect_layout",
 ];
 const steps = [];
 let sequence = 0;
