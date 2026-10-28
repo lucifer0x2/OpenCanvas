@@ -3,6 +3,7 @@ mod pace;
 mod png;
 mod queue;
 mod record;
+mod retain;
 mod runner;
 mod wait;
 use crate::{
@@ -42,6 +43,8 @@ struct Entry {
     key: String,
     value: Value,
     png: Option<Vec<u8>>,
+    /// A requested render created or reused this job, so a caller may still read it by ID.
+    requested: bool,
 }
 /// Job records and the queue share one lock, so a queued job always has its record.
 #[derive(Default)]
@@ -110,29 +113,19 @@ impl Jobs {
         );
         let mut guard = self.table.lock().await;
         let table = &mut *guard;
-        if let Some(entry) = table.entries.iter().rev().find(|e| {
+        let direct = priority == Priority::Direct;
+        if let Some(entry) = table.entries.iter_mut().rev().find(|e| {
             e.key == key
-                && e.value["error"]["code"] != record::SUPERSEDED
                 && (!retry || (e.value["status"] != "failed" && e.value.get("error").is_none()))
         }) {
+            entry.requested |= direct;
             let value = entry.value.clone();
-            if priority == Priority::Direct && value["status"] == "pending" {
+            if direct && value["status"] == "pending" {
                 table
                     .queue
                     .promote(value["jobId"].as_str().unwrap_or_default());
             }
             return Ok(value);
-        }
-        while table.entries.len() >= 32 {
-            if let Some(index) = table
-                .entries
-                .iter()
-                .position(|e| e.value["status"] != "pending")
-            {
-                table.entries.remove(index);
-            } else {
-                return Err(table.pace.queue_full("Render job capacity reached"));
-            }
         }
         let id = format!("job_{}", uuid::Uuid::new_v4().simple());
         let value = json!({"jobId":id,"status":"pending","projectId":snapshot.project_id,"revision":snapshot.revision,"frameId":request.frame_id,"sceneKey":key});
@@ -143,24 +136,31 @@ impl Jobs {
             scale: request.scale,
             frame: (snapshot.project_id.clone(), request.frame_id.clone()),
         };
-        let mut dropped = Vec::new();
         match priority {
             Priority::Direct => {
+                table.make_room()?;
                 if !table.queue.push_direct(work) {
-                    return Err(table.pace.queue_full("Render queue is full; retry later"));
+                    // Every queued requested render plus the running job finish first.
+                    let ahead = table.queue.direct_len() + 1;
+                    return Err(table
+                        .pace
+                        .queue_full("Render queue is full; retry later", ahead));
                 }
             }
-            Priority::Background => dropped = table.queue.push_background(work),
+            Priority::Background => {
+                // Forget what this prerender replaces before counting records. At most
+                // 1 + 8 + 8 + 8 (promoted) jobs are pending, so room is always found.
+                let dropped = table.queue.push_background(work);
+                table.forget(&dropped);
+                table.make_room()?;
+            }
         }
         table.entries.push_back(Entry {
             key,
             value: value.clone(),
             png: None,
+            requested: direct,
         });
-        if !dropped.is_empty() {
-            table.supersede(dropped);
-            self.done.send_modify(|n| *n = n.wrapping_add(1));
-        }
         drop(guard);
         // Full means a ring is already pending; the loop drains the queue on it.
         let _ = self.doorbell.try_send(());

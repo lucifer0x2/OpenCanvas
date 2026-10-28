@@ -25,9 +25,10 @@ includes MIME, dimensions, scale and actual Node/Chromium versions. Cache keys
 bind immutable input, revision, concrete design theme/state, scale and a startup
 pipeline/runtime fingerprint. Restart after replacing runtime or pipeline files.
 Failed jobs remain inspectable by ID; a new enqueue can retry the same request.
-A queued commit prerender that never ran fails with retryable `SUPERSEDED` (and
-`supersededBy` when a newer prerender of the frame replaced it). `QUEUE_FULL`
-carries `retryAfterMs` and `hint`; prerenders never cause it for requested renders.
+A queued commit prerender that a newer one replaces is dropped without a record;
+retention evicts unrequested prerenders before requested jobs. `QUEUE_FULL`
+carries `retryAfterMs` (estimated time for the jobs ahead) and `hint`; prerenders
+never cause it for requested renders.
 Old completed jobs never overwrite another job or the viewer's chosen revision.
 
 ## Browser integration
