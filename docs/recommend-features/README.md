@@ -95,3 +95,11 @@ Ba luồng có thể làm song song. Các việc trong cùng một luồng sửa
   - Code Connect (P20 #2, cần khái niệm component);
   - P12c `fontVariationSettings`;
   - P18c (svg/img), P18d (compare cho importer).
+
+## Nghiên cứu sâu thêm (02:44–02:55, theo yêu cầu người dùng)
+
+Các task này viết nhanh trong khoảng 10 phút, nên cần duyệt kỹ hơn các task ở bảng trên trước khi giao.
+
+| ID | Việc | Ưu tiên | Phút | File |
+| --- | --- | --- | --- | --- |
+| P26 | `update_matching`: sửa đồng loạt theo bộ chọn trong `apply_batch` (300 lần `update_node` 25 200 B → 1 op 148 B; tools/list ~+500 B) | P2 | 110 (P26a 70 + P26b 40) | `tasks/P26-bulk-update-by-selector.md` |
