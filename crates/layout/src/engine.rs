@@ -157,6 +157,11 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
             clip: p.clip.unwrap_or(n.kind == "frame"),
             radius: p.radius.unwrap_or(0.0),
             crop: p.crop.clone(),
+            stroke: p
+                .stroke
+                .as_ref()
+                .filter(|_| n.kind != "text")
+                .and_then(StrokeInput::scene),
         });
     }
     if !misses.is_empty() {

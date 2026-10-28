@@ -1,5 +1,5 @@
-export const SCENE_VERSION = "scene-1";
-export const RENDERER_VERSION = "web-1";
+export const SCENE_VERSION = "scene-2";
+export const RENDERER_VERSION = "web-2";
 export const MAX_PIXELS = 16_000_000;
 export interface FontManifest {
   id: string;
@@ -60,6 +60,13 @@ export interface SceneNode {
   clip: boolean;
   radius: number;
   crop: { x: number; y: number; width: number; height: number } | null;
+  stroke?: SceneStroke;
+}
+/** Resolved stroke, sides in CSS order [top, right, bottom, left]. */
+export interface SceneStroke {
+  color: [string, string, string, string];
+  width: [number, number, number, number];
+  align: "inside" | "center" | "outside";
 }
 export interface Provenance {
   projectId: string;

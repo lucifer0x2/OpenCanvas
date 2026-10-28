@@ -6,3 +6,4 @@ export * from "./drawing";
 export * from "./paint";
 export * from "./scene-tree";
 export * from "./layers";
+export * from "./stroke";

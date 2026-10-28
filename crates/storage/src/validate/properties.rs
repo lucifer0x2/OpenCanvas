@@ -1,5 +1,6 @@
 use super::{
     prop_keys::{check_keys, check_required},
+    stroke::validate_stroke,
     values::*,
     Candidate,
 };
@@ -27,6 +28,7 @@ impl Candidate {
                 "opacity" => number(v, 0., 1., k)?,
                 "fill" => color(v)?,
                 "exportSettings" => crate::check_export_settings(v, "exportSettings")?,
+                "stroke" => validate_stroke(v)?,
                 "clip" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

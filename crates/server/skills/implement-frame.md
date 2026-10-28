@@ -38,6 +38,11 @@
 | `minWidth`/`maxWidth`, `minHeight`/`maxHeight` | Corresponding size constraints |
 | Children of `free` | Authored x/y relative to that parent; useful for overlays |
 | `opacity` on a frame or group | CSS `opacity` on that element; the group fades as one image, so do not multiply it into children |
+| `stroke` `align:"inside"` (default) | `border` (`box-sizing:border-box`); width/color arrays are [top, right, bottom, left] |
+| `stroke` `align:"outside"` or `"center"` | Paint only (`outline`/`box-shadow` spread); does not move children |
+
+A free child's x/y counts from its parent's outer edge; CSS absolute offsets count from
+the padding box, so subtract the parent's inside `border-left`/`border-top`.
 
 These are starting rules, not a CSS equivalence guarantee. Without `align`/`justify`
 the engine uses start alignment, and it never shrinks fixed siblings. Alignment

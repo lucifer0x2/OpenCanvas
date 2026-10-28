@@ -6,6 +6,7 @@ mod notes;
 mod prop_keys;
 mod properties;
 mod refs;
+mod stroke;
 mod token_graph;
 mod tokens;
 mod values;
