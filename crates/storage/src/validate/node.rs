@@ -103,7 +103,8 @@ impl Candidate {
                 }
             }
         }
-        self.properties(n)?;
+        self.properties(n)
+            .map_err(|e| e.on_node(&n.id, n.kind.as_str()))?;
         Ok(())
     }
 }

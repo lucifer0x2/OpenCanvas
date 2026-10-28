@@ -93,7 +93,7 @@ async fn discover_lifecycle_lists_and_reads_with_cache_hints() {
     }
     let resources = modern_result(&s, 3, "resources/list", json!({})).await;
     assert_hints(&resources, "resources/list");
-    assert_eq!(resources["resources"].as_array().unwrap().len(), 2);
+    assert_eq!(resources["resources"].as_array().unwrap().len(), 3);
     let templates = modern_result(&s, 4, "resources/templates/list", json!({})).await;
     assert_hints(&templates, "resources/templates/list");
     assert_eq!(templates["resourceTemplates"], json!([]));

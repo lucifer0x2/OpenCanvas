@@ -2,9 +2,15 @@
 //! inside a transaction. All public errors are safe for a client response.
 mod error;
 mod model;
+mod props_catalog;
+mod props_suggest;
 mod validate;
-pub use error::{Result, StorageError};
+pub use error::{NodeErrorContext, Result, StorageError};
 pub use model::*;
+pub use props_catalog::{
+    allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,
+};
+pub use props_suggest::suggest_prop;
 pub use validate::{
     resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme, validate_slug,
 };
