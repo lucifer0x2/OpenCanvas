@@ -76,6 +76,15 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 - Check horizontal overflow and content wrapping. Row wrap is available; column
   wrap, percent dimensions and media-query breakpoints remain unsupported. Ask about required behavior when the
   authored rules cannot express it; do not invent design intent.
+- Declared motion is `props.animations`; `get_design_context` lists every one in
+  `animated` (`{ref: "<nodeId>:<name>", on}`, absent when the frame has none). Map
+  each to CSS `@keyframes`/`animation` or `el.animate()`: keyframes are WAAPI-shaped
+  (`offset`, per-keyframe `easing`), times are milliseconds, `translateX/Y` is CSS
+  `translate` from the laid-out position, `scale`/`rotate` turn around the center,
+  and a missing 0/1 keyframe is the authored props. `fillMode` defaults to `both`
+  (CSS default is `none`), so write it out. `on:"hover"` is a transition to its one
+  keyframe while hovered; `on:"click"` restarts on each click. Use the token
+  reference in authored `animations`, not the resolved literal.
 - A node whose authored props carry `exportSettings` is an image asset: call
   `export_nodes {projectId, nodeIds}` and download each file `url` over HTTP
   right away instead of rebuilding it in code or cropping a frame PNG. Pass
@@ -86,7 +95,7 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   popover built from frame `to`; `back` → history back; `close` → close the
   enclosing overlay. `in` tells you where a screen opens from, so choose route
   or overlay. A `flowStart` frame is the initial route of that flow.
-- Route paths, transitions, guards, animation and real data are not in the
+- Route paths, transitions, guards, motion beyond `animations` and real data are not in the
   design and require user requirements. Only the default interaction state is
   supported; named token themes may be requested.
 

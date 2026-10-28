@@ -27,9 +27,12 @@ fn validator_accepts_exactly_the_catalog_keys_per_kind() {
         {
             let field = format!("props.{key}");
             let error = probe(&p, kind, key);
-            let key_error = error
-                .as_ref()
-                .filter(|e| e.field.as_deref() == Some(&field));
+            // A key error carries allowedKeys; a value error on the same field (for
+            // example a null `animations` array) is not one.
+            let key_error = error.as_ref().filter(|e| {
+                e.field.as_deref() == Some(&field)
+                    && e.node.as_ref().is_some_and(|n| n.allowed_keys.is_some())
+            });
             if allowed.contains(&key) {
                 assert!(key_error.is_none(), "{key} rejected on {kind:?}: {error:?}");
                 continue;

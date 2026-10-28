@@ -108,6 +108,9 @@ impl Candidate {
             if k == "stroke" {
                 self.resolve_stroke(v)?;
             }
+            if k == "animations" {
+                self.resolve_animations(v)?;
+            }
             if k == "layout" {
                 self.resolve_layout_refs(v)?;
             }

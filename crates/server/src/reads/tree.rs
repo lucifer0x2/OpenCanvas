@@ -1,6 +1,6 @@
 use super::{
-    compact, diagnostics, index::TreeIndex, navigation, notes, pagination, sanitize_asset,
-    viewports::Computed, ReadRequest,
+    animated, compact, diagnostics, index::TreeIndex, navigation, notes, pagination,
+    sanitize_asset, viewports::Computed, ReadRequest,
 };
 use crate::error::{ApiError, Result};
 use opencanvas_storage::{resolved_nodes_for_theme, resolved_tokens_for_theme, NodeKind, Snapshot};
@@ -101,6 +101,9 @@ pub(super) fn read(
             .and_then(|f| navigation::summary(&index, f))
         {
             response["navigation"] = nav;
+        }
+        if let Some(animated) = animated::summary(&ordered) {
+            response["animated"] = animated;
         }
         if let Some(computed) = computed {
             response["computed"] = computed.metadata;
