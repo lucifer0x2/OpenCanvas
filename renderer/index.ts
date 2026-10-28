@@ -4,3 +4,5 @@ export * from "./resources";
 export * from "./measurement";
 export * from "./drawing";
 export * from "./paint";
+export * from "./scene-tree";
+export * from "./layers";

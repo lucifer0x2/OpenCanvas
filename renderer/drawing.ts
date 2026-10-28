@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { PipelineError } from "./error";
 import { paintScene } from "./paint";
+import type { PaintStats } from "./layers";
 
 /** The worker PNG and the viewer's 1:1 parity canvas: validate, size the target, then paint. */
 export function drawScene(
@@ -14,7 +15,7 @@ export function drawScene(
   scene: Scene,
   resources: Resources,
   options: { scale?: number; strict?: boolean } = {},
-): { sourceSceneKey: string; drawnLines: number } {
+): { sourceSceneKey: string; drawnLines: number } & PaintStats {
   if (
     scene.provenance.rendererVersion !== RENDERER_VERSION ||
     scene.provenance.sceneVersion !== SCENE_VERSION
@@ -67,9 +68,10 @@ export function drawScene(
     throw new PipelineError("CANVAS_UNAVAILABLE", "Canvas2D unavailable");
   context.setTransform(scale, 0, 0, scale, 0, 0);
   context.clearRect(0, 0, viewport.width, viewport.height);
-  paintScene(context, scene, resources);
+  const stats = paintScene(context, scene, resources);
   return {
     sourceSceneKey: scene.provenance.sourceSceneKey,
     drawnLines: scene.nodes.reduce((count, n) => count + n.lines.length, 0),
+    ...stats,
   };
 }

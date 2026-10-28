@@ -46,6 +46,9 @@ Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
 - Use `height:"hug"` for wrapping text and content groups that should grow.
   Do not put fill on an axis whose parent's hug size depends on that fill child;
   the engine rejects ambiguous sizing cycles. Root frames require fixed numbers.
+- Fade a whole control (disabled button, keycap) with `opacity` on its group or
+  frame: like CSS, the group renders as one image and then fades, so overlapping
+  layers inside do not show through. Do not pre-mix colors layer by layer.
 - Prefer named typed tokens and styles for repeated values. Validate referenced
   records before use. Read back authored props and resolved values separately.
 - Opt in to wrapping with `layout:{mode:"row",wrap:true,gap:16}`. The row needs

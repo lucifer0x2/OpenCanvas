@@ -1,5 +1,5 @@
 import type { FontManifest, Resources, Scene, SceneNode } from "./types";
-import { PipelineError } from "./error";
+import { paintTree, type PaintStats } from "./layers";
 import { placeImage } from "./image-fit";
 
 const fontCSS = (font: FontManifest, size: number) =>
@@ -74,7 +74,7 @@ function paintImage(
 }
 
 /** One node's own paint, in scene units. Order: fill, then text or image content. */
-function paintNode(
+export function paintNode(
   context: CanvasRenderingContext2D,
   node: SceneNode,
   resources: Resources,
@@ -84,50 +84,15 @@ function paintNode(
   if (node.kind === "image") paintImage(context, node, resources);
 }
 
-/** Clips to every clipping ancestor and returns the node's effective opacity. */
-function enterAncestors(
-  context: CanvasRenderingContext2D,
-  node: SceneNode,
-  byId: Map<string, SceneNode>,
-  limit: number,
-): number {
-  let opacity = node.opacity;
-  let parent = node.parentId ? byId.get(node.parentId) : undefined;
-  let guard = 0;
-  while (parent) {
-    if (++guard > limit)
-      throw new PipelineError("SCENE_INVALID", "Scene cycle");
-    opacity *= parent.opacity;
-    if (parent.clip) {
-      const b = parent.bounds;
-      context.beginPath();
-      context.roundRect(b.x, b.y, b.width, b.height, parent.radius ?? 0);
-      context.clip();
-    }
-    parent = parent.parentId ? byId.get(parent.parentId) : undefined;
-  }
-  return opacity;
-}
-
 /**
- * Paints the scene in scene units under the context's current transform. Never resizes or clears
- * the target, so the worker PNG (via drawScene) and the viewer's zoomed Konva layer share it.
+ * Paints the scene in scene units under the context's current transform, with CSS group opacity
+ * (see paintTree). Never resizes or clears the target, so the worker PNG (via drawScene) and the
+ * viewer's zoomed Konva layer share it.
  */
 export function paintScene(
   context: CanvasRenderingContext2D,
   scene: Scene,
   resources: Resources,
-): void {
-  const byId = new Map(scene.nodes.map((n) => [n.id, n]));
-  for (const node of scene.nodes) {
-    context.save();
-    context.globalAlpha = enterAncestors(
-      context,
-      node,
-      byId,
-      scene.nodes.length,
-    );
-    paintNode(context, node, resources);
-    context.restore();
-  }
+): PaintStats {
+  return paintTree(context, scene, resources, paintNode);
 }

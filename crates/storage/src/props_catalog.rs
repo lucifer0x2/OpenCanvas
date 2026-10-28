@@ -87,7 +87,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("fontSize", Text, true, "number 1..10000 or dimension token; may come from a text style", &["size", "textSize"]),
     prop("lineHeight", Text, true, "number 1..10000 (pixels) or dimension token; may come from a text style", &["leading", "lineSpacing"]),
     prop("fill", Any, false, "#RGB, #RGBA, #RRGGBB or #RRGGBBAA, a color token {\"tokenId\"} or a fill style {\"styleId\"}; background of shapes and containers, glyph color of text", &["color", "textColor", "background", "backgroundColor", "fillColor", "bg"]),
-    prop("opacity", Any, false, "number 0..1 or number token", &["alpha"]),
+    prop("opacity", Any, false, "number 0..1 or number token; on a container, fades the subtree as one group (CSS opacity)", &["alpha"]),
     prop("clip", Any, false, "boolean; clips children to the node bounds", &["overflow", "clipsContent", "clipContent"]),
     prop("radius", Any, false, "number 0..100000 or dimension token; one radius for all corners", &["cornerRadius", "borderRadius", "corner_radius", "rx"]),
     prop("assetId", Image, true, "ID of an imported image asset (import_asset, list_assets)", &["asset", "src", "image", "imageId", "url"]),

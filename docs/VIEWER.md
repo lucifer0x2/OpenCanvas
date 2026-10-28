@@ -34,6 +34,21 @@ pipeline and stays byte-identical to the worker PNG, which is what the acceptanc
 `npm --prefix web run test:zoom` measures sharpness against a `drawScene` reference mid-gesture
 and at rest, canvas allocation, and frame cost on 800×600, 1440×900 and 2880×1800 fixtures.
 
+## Opacity
+
+`opacity` composites like CSS (`renderer/layers.ts`, `paintTree`): the scene is walked as a tree,
+and a node below opacity 1 whose subtree issues two or more paints renders into an offscreen layer
+at alpha 1, which is then drawn once at the accumulated opacity, so overlapping children do not
+show through each other. A single paint (a leaf, or a group with one painting child) folds the
+alpha instead, which is identical and keeps such scenes byte-identical to the old per-node alpha.
+A layer covers the device-pixel box of what its subtree paints (`renderer/scene-tree.ts`; text is
+padded for glyph overhang), clipped to the target and to clipping ancestors, offset only by whole
+pixels so antialiasing matches direct painting. Layers are `HTMLCanvasElement`s: Chromium's
+`OffscreenCanvas` clips without antialiasing. Live layers share a 16M-pixel budget; a group over it
+folds its alpha like before and counts in `opacityLayerFallbacks` of `drawScene`'s result, next to
+`opacityLayers`. The viewer allocates its layers on every draw (no pool): a 2880×1800 scene with
+56 opacity groups measured about 3.4 ms p95 per zoom frame against 1.6 ms without them.
+
 ## Consistency
 
 Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to a valid frame when a target disappears. A visible message explains removed frame/layer fallbacks.
