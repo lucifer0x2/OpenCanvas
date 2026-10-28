@@ -15,6 +15,7 @@ export async function renderSample(mcp, base, sample, viewport, artifacts) {
     const result = await mcp.call("render_frame", {
       projectId: sample.projectId,
       jobId: pending.jobId,
+      includeScene: true,
     });
     assert.notEqual(result.status, "failed", JSON.stringify(result));
     return result.status === "ready" ? result : null;

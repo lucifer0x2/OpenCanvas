@@ -5,17 +5,22 @@
 use super::{id, object, text, viewport};
 use serde_json::{json, Map, Value};
 
-pub const DESCRIPTION: &str = "Enqueue immutable exact-revision rendering; returns bounded job and HTTP PNG resource metadata when ready. Call it in one of two modes: enqueue with projectId, revision, frameId and viewport (theme, state and scale optional), or poll with projectId and jobId (waitMs optional); arguments mixing the two modes are rejected. Poll using jobId; pass waitMs (0–10000, default 0) to have the poll return as soon as the job leaves pending, or its current state when the wait expires, instead of polling in a tight loop. waitMs is only accepted with jobId. The PNG is the exact pixels the design has at that revision and viewport, so it is also how an implementation is compared against the design.";
+pub const DESCRIPTION: &str = "Enqueue immutable exact-revision rendering; returns bounded job and HTTP PNG resource metadata when ready. Call it in one of two modes: enqueue with projectId, revision, frameId and viewport (theme, state and scale optional), or poll with projectId and jobId (waitMs optional); arguments mixing the two modes are rejected. Poll using jobId; pass waitMs (0–10000, default 0) to have the poll return as soon as the job leaves pending, or its current state when the wait expires, instead of polling in a tight loop. waitMs is only accepted with jobId. The PNG is the exact pixels the design has at that revision and viewport, so it is also how an implementation is compared against the design. The response leaves out the computed scene (every node, line, font and asset; tens to hundreds of KB) and keeps status, sceneKey, imageUrl/image, provenance, diagnostics and readiness: read bounds and text lines with inspect_layout for that sceneKey, or pass includeScene:true (either mode) for the full scene inline.";
 const ENQUEUE_REQUIRED: [&str; 4] = ["projectId", "revision", "frameId", "viewport"];
 const POLL_REQUIRED: [&str; 2] = ["projectId", "jobId"];
 
+/// Shared by both modes: the response omits the computed scene unless this is true.
+fn include_scene() -> Value {
+    json!({"type":"boolean"})
+}
 fn enqueue() -> Map<String, Value> {
-    let properties = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4}});
+    let properties = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4},"includeScene":include_scene()});
     properties.as_object().unwrap().clone()
 }
 fn poll() -> Map<String, Value> {
     let wait = json!({"type":"integer","minimum":0,"maximum":crate::jobs::MAX_WAIT_MS});
-    let properties = json!({"projectId":id(),"jobId":id(),"waitMs":wait});
+    let properties =
+        json!({"projectId":id(),"jobId":id(),"waitMs":wait,"includeScene":include_scene()});
     properties.as_object().unwrap().clone()
 }
 /// What `tools/list` shows: every field of both modes, only `projectId` required.
@@ -66,6 +71,8 @@ mod tests {
             json!({"projectId":"p","jobId":"j"}),
             json!({"projectId":"p","jobId":"j","waitMs":0}),
             json!({"projectId":"p","jobId":"j","waitMs":10_000}),
+            json!({"projectId":"p","jobId":"j","includeScene":true}),
+            json!({"projectId":"p","revision":1,"frameId":"f","viewport":viewport,"includeScene":false}),
         ] {
             assert_eq!(check(accepted.clone()), Ok(()), "{accepted}");
         }
@@ -79,6 +86,8 @@ mod tests {
             json!({"projectId":"p","jobId":"j","extra":1}),
             json!({"projectId":"p","jobId":"j","waitMs":10_001}),
             json!({"projectId":"p","jobId":"j","waitMs":1.5}),
+            json!({"projectId":"p","jobId":"j","includeScene":"yes"}),
+            json!({"projectId":"p","includeScene":true}),
         ];
         for extra in [
             json!({"jobId":"j"}),

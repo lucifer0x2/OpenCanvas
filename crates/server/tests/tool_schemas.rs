@@ -34,6 +34,7 @@ async fn every_published_input_schema_is_a_plain_object() {
     fields.sort();
     let expected = [
         "frameId",
+        "includeScene",
         "jobId",
         "projectId",
         "revision",

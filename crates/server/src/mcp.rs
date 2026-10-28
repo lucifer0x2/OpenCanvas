@@ -119,7 +119,7 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
         "get_outline" | "get_subtree" | "get_design_context" | "find_nodes" | "list_tokens"
         | "list_styles" | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
         "get_changes" => reads::changes::read(state, args).await,
-        "render_frame" => render(state, args).await,
+        "render_frame" => crate::render_response::render(state, args).await,
         "inspect_layout" => crate::inspect::inspect(state, args).await,
         _ => Err(ApiError::new("UNKNOWN_TOOL", "Tool is not available")),
     }
@@ -132,7 +132,7 @@ pub(crate) async fn scene(
     let snapshot = state.snapshot(project).await?;
     state.jobs.enqueue(snapshot, request).await
 }
-async fn render(state: &AppState, mut args: Value) -> Result<Value> {
+pub(crate) async fn render(state: &AppState, mut args: Value) -> Result<Value> {
     let project = args["projectId"]
         .as_str()
         .ok_or_else(|| ApiError::invalid("projectId is required"))?

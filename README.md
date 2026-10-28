@@ -45,7 +45,7 @@ The surrounding configuration format depends on the client. The client initializ
 
 Use `list_projects`/`create_project`, then `get_outline` before scoped `get_subtree` or `get_design_context`. Resource metadata is available through `list_tokens`, `list_styles`, `list_assets` and `list_fonts`. `import_asset` accepts bounded base64 bytes, never filesystem paths. `apply_batch` takes a `projectId`, `expectedRevision`, stable `idempotencyKey` and ordered operations. Reuse the exact body/key after a lost response; read back after a revision conflict.
 
-Create a page, then a frame, then its descendants. Text must declare a valid font (the bundled font is `font_bundled`), size and line height, or obtain them from a valid text style. `render_frame` returns a job; poll it by `jobId`, inspect its exact revision/provenance and obtain the PNG through `imageUrl`. `inspect_layout` reads the bounds and text lines for that job's scene key. Available tools expose their schemas through `tools/list`.
+Create a page, then a frame, then its descendants. Text must declare a valid font (the bundled font is `font_bundled`), size and line height, or obtain them from a valid text style. `render_frame` returns a job; poll it by `jobId`, inspect its exact revision/provenance and obtain the PNG through `imageUrl`. The response omits the computed scene unless you pass `includeScene: true`; `inspect_layout` reads the bounds and text lines for that job's scene key. Available tools expose their schemas through `tools/list`.
 
 To implement an existing design in code rather than author one, read `get_outline` for the frame,
 then `get_design_context` for that `frameId`. Nodes carry authored `props` beside `resolvedProps`:

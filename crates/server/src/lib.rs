@@ -9,6 +9,7 @@ mod instructions;
 mod jobs;
 mod mcp;
 mod reads;
+mod render_response;
 mod resources;
 mod schemas;
 mod state;
