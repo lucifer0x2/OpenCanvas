@@ -23,7 +23,7 @@ pub use state::{AppState, Config};
 
 /// Names of the published MCP tools in `tools/list` order, so tests and tooling compare against
 /// the catalog instead of a hardcoded count.
-pub fn tool_names() -> Vec<String> {
+pub fn catalog_tool_names() -> Vec<String> {
     schemas::tools()
         .into_iter()
         .map(|t| t.name.to_string())
