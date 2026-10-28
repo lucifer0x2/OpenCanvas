@@ -151,3 +151,30 @@ async fn full_requested_tier_returns_retry_after_and_hint() {
         .unwrap();
     assert!((1..=10).contains(&seconds));
 }
+
+#[tokio::test]
+async fn ready_requested_job_outlives_a_long_run_of_commit_prerenders() {
+    let dir = worker(Some(5));
+    let s = slow_server(&dir).await;
+    let p = s.project().await;
+    s.batch(&p, 0, "seed", design()).await;
+    let job = s.call("render_frame", render_args(&p, 1, 640)).await;
+    let id = job["jobId"].as_str().unwrap().to_owned();
+    assert_eq!(s.wait_job(&id).await["status"], "ready");
+    // Each commit queues a prerender; superseded ones used to keep a record of the 32.
+    for revision in 1..=40 {
+        let edit =
+            json!([{"op":"update_node","id":"text","props":{"text":format!("Edit {revision}")}}]);
+        s.batch(&p, revision, &format!("edit-{revision}"), edit)
+            .await;
+    }
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    let read = s
+        .call("render_frame", json!({"projectId":p,"jobId":id}))
+        .await;
+    assert_eq!(read["status"], "ready", "{read}");
+    let image = reqwest::get(format!("{}/api/v1/jobs/{id}/image", s.url))
+        .await
+        .unwrap();
+    assert_eq!(image.status(), 200);
+}

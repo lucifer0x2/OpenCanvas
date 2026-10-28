@@ -17,7 +17,7 @@ impl ApiError {
         let mut error = StorageError::new(code, message);
         error.retryable = matches!(
             code,
-            "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED" | "SUPERSEDED"
+            "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED"
         );
         Self(Box::new(error), None)
     }

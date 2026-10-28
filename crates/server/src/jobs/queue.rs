@@ -1,7 +1,7 @@
 //! Two-tier render queue. Requested renders (`render_frame`, `get_design_context` viewports)
 //! always run before commit prerenders, and prerenders never take their slots. A queued prerender
 //! is superseded by a newer prerender of the same frame, or displaced when the prerender tier is
-//! full; the running job is never interrupted.
+//! full; the running job is never interrupted. Its record is then forgotten (`retain`).
 use serde_json::Value;
 use std::collections::VecDeque;
 
@@ -27,12 +27,6 @@ pub struct Work {
     pub frame: (String, String),
 }
 
-/// A queued job that left the queue without running, and the job that replaced it, if any.
-pub struct Dropped {
-    pub id: String,
-    pub by: Option<String>,
-}
-
 #[derive(Default)]
 pub struct Queue {
     direct: VecDeque<Work>,
@@ -48,17 +42,18 @@ impl Queue {
         self.direct.push_back(work);
         true
     }
-    /// Queues a prerender and returns the queued prerenders it removed: older ones of the same
-    /// frame (replaced by this job), then the oldest of other frames while the tier is over cap.
-    pub fn push_background(&mut self, work: Work) -> Vec<Dropped> {
+    /// Queued requested renders, not counting the running job.
+    pub fn direct_len(&self) -> usize {
+        self.direct.len()
+    }
+    /// Queues a prerender and returns the IDs of queued prerenders it removed: older ones of the
+    /// same frame (replaced by this job), then the oldest of other frames while the tier is full.
+    pub fn push_background(&mut self, work: Work) -> Vec<String> {
         let mut dropped = Vec::new();
         let mut kept = VecDeque::with_capacity(self.background.len() + 1);
         for queued in self.background.drain(..) {
             if queued.frame == work.frame {
-                dropped.push(Dropped {
-                    id: queued.id,
-                    by: Some(work.id.clone()),
-                });
+                dropped.push(queued.id);
             } else {
                 kept.push_back(queued);
             }
@@ -66,10 +61,7 @@ impl Queue {
         self.background = kept;
         while self.background.len() >= BACKGROUND_CAP {
             let oldest = self.background.pop_front().expect("tier is non-empty");
-            dropped.push(Dropped {
-                id: oldest.id,
-                by: None,
-            });
+            dropped.push(oldest.id);
         }
         self.background.push_back(work);
         dropped
@@ -128,10 +120,7 @@ mod tests {
         let mut queue = Queue::default();
         assert!(queue.push_background(work("r1", "a")).is_empty());
         assert!(queue.push_background(work("other", "b")).is_empty());
-        let dropped = queue.push_background(work("r2", "a"));
-        assert_eq!(dropped.len(), 1);
-        assert_eq!(dropped[0].id, "r1");
-        assert_eq!(dropped[0].by.as_deref(), Some("r2"));
+        assert_eq!(queue.push_background(work("r2", "a")), ["r1"]);
         assert_eq!(order(&mut queue), ["other", "r2"]);
     }
 
@@ -141,12 +130,7 @@ mod tests {
         for i in 0..BACKGROUND_CAP {
             queue.push_background(work(&format!("bg{i}"), &format!("f{i}")));
         }
-        let dropped = queue.push_background(work("new", "fresh"));
-        assert_eq!(dropped.len(), 1);
-        assert_eq!(
-            (dropped[0].id.as_str(), dropped[0].by.as_deref()),
-            ("bg0", None)
-        );
+        assert_eq!(queue.push_background(work("new", "fresh")), ["bg0"]);
     }
 
     #[test]
