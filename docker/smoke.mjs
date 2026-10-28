@@ -6,6 +6,13 @@ const base = (process.argv[2] ?? "http://127.0.0.1:3847").replace(/\/$/, "");
 const LEGACY = "2025-11-25";
 const MODERN = "2026-07-28";
 const ACCEPT = "application/json, text/event-stream";
+// Tools every image since the first release publishes. Newer images add more, so tools/list is
+// checked by name, never by count.
+const CORE_TOOLS = [
+  "list_projects", "create_project", "get_outline", "find_nodes", "get_subtree",
+  "get_design_context", "list_tokens", "list_styles", "list_fonts", "list_assets",
+  "get_changes", "apply_batch", "import_asset", "render_frame", "inspect_layout",
+];
 const steps = [];
 let sequence = 0;
 
@@ -18,6 +25,14 @@ async function step(name, run) {
     steps.push({ step: name, ok: false, error: String(error?.message ?? error) });
     throw error;
   }
+}
+
+/** Throws unless tool names are unique and include every core tool. */
+function checkTools(tools) {
+  const names = new Set(tools.map((tool) => tool.name));
+  check(names.size === tools.length, `duplicate or unnamed tools among ${tools.length}`);
+  const missing = CORE_TOOLS.filter((name) => !names.has(name));
+  check(missing.length === 0, `missing tools: ${missing.join(", ")}`);
 }
 
 function check(condition, message) {
@@ -113,7 +128,7 @@ async function main() {
     );
     check(ack.ok, `notifications/initialized: HTTP ${ack.status}`);
     const { result: list } = await legacy("tools/list");
-    check(list.tools.length === 15, `${list.tools.length} tools`);
+    checkTools(list.tools);
     return { protocolVersion: result.protocolVersion, tools: list.tools.length };
   });
   await step("2026 discover + tools/list", async () => {
@@ -121,7 +136,7 @@ async function main() {
     check(discover.supportedVersions?.includes(MODERN), "2026-07-28 not supported");
     const { response, result } = await modern("tools/list");
     check(!response.headers.get("mcp-session-id"), "2026 request opened a session");
-    check(result.tools.length === 15, `${result.tools.length} tools`);
+    checkTools(result.tools);
     check(Number.isInteger(result.ttlMs) && result.cacheScope, "ttlMs/cacheScope missing");
     return { tools: result.tools.length, ttlMs: result.ttlMs, cacheScope: result.cacheScope };
   });
