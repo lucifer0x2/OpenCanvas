@@ -1044,6 +1044,7 @@ name = "opencanvas-storage"
 version = "0.1.0"
 dependencies = [
  "fs2",
+ "opencanvas-layout",
  "rusqlite",
  "serde",
  "serde_json",

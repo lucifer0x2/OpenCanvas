@@ -50,11 +50,13 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
             let result = state
                 .project(id.clone(), move |p| p.import_asset(req))
                 .await;
-            serde_json::to_value(conflict::checked(state, &id, expected, result).await?)?
+            with_commit_fields(serde_json::to_value(
+                conflict::checked(state, &id, expected, result).await?,
+            )?)
         }
         _ => return Err(ApiError::invalid("Unknown mutation")),
     };
-    let committed = result.get("result").unwrap_or(&result);
+    let committed = &result;
     if committed["replayed"] != true {
         let event = json!({"event":"commit","projectId":committed["projectId"],"revision":committed["committedRevision"],"changedIds":committed["changedIds"]});
         let _ = state.events.send(event);
@@ -85,4 +87,16 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
         }
     }
     Ok(result)
+}
+
+/// import_asset answers like apply_batch, with the commit fields at the top level; `result`
+/// still carries them for clients written against the earlier nested shape.
+fn with_commit_fields(mut value: Value) -> Value {
+    let commit = value.get("result").and_then(Value::as_object).cloned();
+    if let (Some(commit), Some(top)) = (commit, value.as_object_mut()) {
+        for (key, field) in commit {
+            top.entry(key).or_insert(field);
+        }
+    }
+    value
 }

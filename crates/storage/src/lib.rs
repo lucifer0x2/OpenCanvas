@@ -1,11 +1,13 @@
 //! Durable, per-project serialized SQLite storage. No network or render work runs
 //! inside a transaction. All public errors are safe for a client response.
 mod error;
+mod image_fit;
 mod model;
 mod props_catalog;
 mod props_suggest;
 mod validate;
 pub use error::{NodeErrorContext, Result, StorageError};
+pub use image_fit::IMAGE_FITS;
 pub use model::*;
 pub use props_catalog::{
     allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,

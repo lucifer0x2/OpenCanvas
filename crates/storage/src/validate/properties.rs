@@ -78,14 +78,7 @@ impl Candidate {
                         ));
                     }
                 }
-                "fit" => {
-                    if !matches!(v.as_str(), Some("fit" | "contain" | "cover")) {
-                        return Err(StorageError::validation(
-                            k,
-                            "Only fit, contain and cover are supported",
-                        ));
-                    }
-                }
+                "fit" => crate::image_fit::check_fit(v)?,
                 "text" if v.as_str().is_none_or(|s| s.len() > 64 * 1024) => {
                     return Err(StorageError::validation(
                         k,

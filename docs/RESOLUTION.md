@@ -50,8 +50,8 @@ resolved_tokens_for_theme(&Snapshot, &str)
 ```
 
 The APIs leave snapshots and authored references unchanged. Resolved nodes use
-literal properties and retain the existing public `fit` to renderer `fill`
-conversion. Token readback returns literals keyed by token ID at the snapshot's
+literal properties; image `fit` keeps its authored name (no `fill` rename since
+B05, see "Mutation responses and image fit" in `docs/SERVER.md`). Token readback returns literals keyed by token ID at the snapshot's
 revision. A token update follows the existing atomic revision/idempotency path;
 callers must include revision and concrete theme in scene/cache keys. Scene jobs
 and design context must call the theme-aware APIs rather than silently default.

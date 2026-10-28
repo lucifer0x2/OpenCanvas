@@ -91,7 +91,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("clip", Any, false, "boolean; clips children to the node bounds", &["overflow", "clipsContent", "clipContent"]),
     prop("radius", Any, false, "number 0..100000 or dimension token; one radius for all corners", &["cornerRadius", "borderRadius", "corner_radius", "rx"]),
     prop("assetId", Image, true, "ID of an imported image asset (import_asset, list_assets)", &["asset", "src", "image", "imageId", "url"]),
-    prop("fit", Image, false, "\"fit\" (stretch to bounds), \"contain\" or \"cover\"", &["objectFit", "scaleMode", "resize"]),
+    prop("fit", Image, false, "\"fit\" (stretch to bounds, CSS object-fit: fill), \"contain\" (default, whole image inside) or \"cover\" (fill bounds, crop); the same names appear in resolvedProps and scenes", &["objectFit", "scaleMode", "resize"]),
     prop("crop", Image, false, "object {x, y, width, height} normalized 0..1, staying inside the source image", &["cropRect", "sourceRect"]),
 ];
 
