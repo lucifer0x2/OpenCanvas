@@ -2,6 +2,7 @@ mod cache_hints;
 mod domain;
 mod error;
 mod events;
+mod export;
 mod fingerprint;
 mod http;
 mod inspect;

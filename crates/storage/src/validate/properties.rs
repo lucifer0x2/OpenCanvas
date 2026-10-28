@@ -26,6 +26,7 @@ impl Candidate {
                 "fontSize" | "lineHeight" => number(v, 1., 10000., k)?,
                 "opacity" => number(v, 0., 1., k)?,
                 "fill" => color(v)?,
+                "exportSettings" => crate::check_export_settings(v, "exportSettings")?,
                 "clip" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

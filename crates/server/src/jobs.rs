@@ -1,3 +1,4 @@
+mod export;
 mod input;
 mod pace;
 mod png;
@@ -5,11 +6,13 @@ mod queue;
 mod record;
 mod retain;
 mod runner;
+mod subtree;
 mod wait;
 use crate::{
     error::{ApiError, Result},
     state::Config,
 };
+pub use export::{ExportSetting, ExportSpec};
 use opencanvas_storage::Snapshot;
 use queue::{Priority, Queue, Work};
 use serde::{Deserialize, Serialize};
@@ -45,6 +48,7 @@ struct Entry {
     png: Option<Vec<u8>>,
     /// A requested render created or reused this job, so a caller may still read it by ID.
     requested: bool,
+    files: Vec<export::StoredFile>,
 }
 /// Job records and the queue share one lock, so a queued job always has its record.
 #[derive(Default)]
@@ -74,7 +78,7 @@ impl Jobs {
         jobs
     }
     pub async fn enqueue(&self, snapshot: Snapshot, request: SceneRequest) -> Result<Value> {
-        self.enqueue_inner(snapshot, request, true, Priority::Direct)
+        self.enqueue_inner(snapshot, request, true, Priority::Direct, None)
             .await
     }
     /// Context reads retain failures for diagnosis. Explicit render_frame retries them.
@@ -83,7 +87,7 @@ impl Jobs {
         snapshot: Snapshot,
         request: SceneRequest,
     ) -> Result<Value> {
-        self.enqueue_inner(snapshot, request, false, Priority::Direct)
+        self.enqueue_inner(snapshot, request, false, Priority::Direct, None)
             .await
     }
     /// A commit prerender: queued behind requested renders, superseded by a newer prerender of
@@ -93,7 +97,17 @@ impl Jobs {
         snapshot: Snapshot,
         request: SceneRequest,
     ) -> Result<Value> {
-        self.enqueue_inner(snapshot, request, true, Priority::Background)
+        self.enqueue_inner(snapshot, request, true, Priority::Background, None)
+            .await
+    }
+    /// A requested export of one node, laid out in its root frame (`request`) at scale 1.
+    pub(crate) async fn export(
+        &self,
+        snapshot: Snapshot,
+        request: SceneRequest,
+        spec: ExportSpec,
+    ) -> Result<Value> {
+        self.enqueue_inner(snapshot, request, true, Priority::Direct, Some(spec))
             .await
     }
     async fn enqueue_inner(
@@ -102,15 +116,16 @@ impl Jobs {
         request: SceneRequest,
         retry: bool,
         priority: Priority,
+        export: Option<ExportSpec>,
     ) -> Result<Value> {
         input::check_request(&snapshot, &request)?;
         let input = input::make_input(&snapshot, &request, &self.config.base_url)?;
-        let key = format!(
-            "{:x}",
-            Sha256::digest(serde_json::to_vec(
-                &json!({"input":input,"scale":request.scale,"pipeline":self.config.pipeline_identity})
-            )?)
-        );
+        let mut basis =
+            json!({"input":input,"scale":request.scale,"pipeline":self.config.pipeline_identity});
+        if let Some(spec) = &export {
+            basis["export"] = json!(spec);
+        }
+        let key = format!("{:x}", Sha256::digest(serde_json::to_vec(&basis)?));
         let mut guard = self.table.lock().await;
         let table = &mut *guard;
         let direct = priority == Priority::Direct;
@@ -128,13 +143,18 @@ impl Jobs {
             return Ok(value);
         }
         let id = format!("job_{}", uuid::Uuid::new_v4().simple());
-        let value = json!({"jobId":id,"status":"pending","projectId":snapshot.project_id,"revision":snapshot.revision,"frameId":request.frame_id,"sceneKey":key});
+        let mut value = json!({"jobId":id,"status":"pending","projectId":snapshot.project_id,"revision":snapshot.revision,"frameId":request.frame_id,"sceneKey":key});
+        if let Some(spec) = &export {
+            value["kind"] = json!("export");
+            value["nodeId"] = json!(spec.node_id);
+        }
         let work = Work {
             id,
             key: key.clone(),
             input,
             scale: request.scale,
             frame: (snapshot.project_id.clone(), request.frame_id.clone()),
+            export,
         };
         match priority {
             Priority::Direct => {
@@ -160,6 +180,7 @@ impl Jobs {
             value: value.clone(),
             png: None,
             requested: direct,
+            files: Vec::new(),
         });
         drop(guard);
         // Full means a ring is already pending; the loop drains the queue on it.

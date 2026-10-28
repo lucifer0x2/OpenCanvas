@@ -15,10 +15,13 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
 - `GET /jobs/:jobId` → RenderJob.
 - `GET /jobs/:jobId/image` → PNG when ready, otherwise structured readiness error.
+- `GET /jobs/:jobId/files/:index` → one file of a ready export job (`export_nodes`) with its MIME type and an attachment `Content-Disposition`; `FILE_NOT_FOUND` 404 for a wrong index or a render job, `IMAGE_NOT_READY` 409 while pending/failed.
 - `GET /projects/:projectId/assets/:assetId` → verified project asset bytes and correct MIME type.
 - Bundled font endpoint `/api/v1/fonts/font_bundled` serves the exact licensed fixture font.
 
 RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, frameId, sceneKey?, scene?, provenance?, readiness?, diagnostics?, error?, imageUrl? }`. Ready `scene` conforms to `renderer/types.ts`; its provenance source revision is authoritative. Failure never returns success for strict PNG. Scene can be present with missing-resource diagnostics for labeled non-strict viewer placeholders, while strict export fails.
+
+ExportJob (same routes and job table): `{ jobId, kind: "export", nodeId, status, projectId, revision, frameId (the root frame), sceneKey, provenance?, readiness?, files?: [{ url, fileName, format, mimeType, scale, width, height, bytes }], error? }`; never `scene` or `imageUrl`. A failed export (for example `EMPTY_BOUNDS`, `PIXEL_BUDGET`, `EXPORT_SCALE_RANGE`) has `status: "failed"`. Details: `docs/SERVER.md`, "Exporting node images".
 
 `sceneKey` equals `scene.provenance.sourceSceneKey`. Successful PNG metadata also
 includes MIME, dimensions, scale and actual Node/Chromium versions. Cache keys
