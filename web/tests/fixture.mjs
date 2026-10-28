@@ -1,9 +1,11 @@
 import { fixtureData } from "./fixture-data.mjs";
+import { denseFixtureData } from "./fixture-dense.mjs";
 import { createServer } from "node:http";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-export async function startFixture() {
+/** `scene`: "light" (default, the 800x600 card), or the zoom fixtures "dense" and "stress". */
+export async function startFixture({ scene: kind = "light" } = {}) {
   const font = await readFile(
     new URL("../../renderer/fonts/NotoSans.ttf", import.meta.url),
   );
@@ -14,7 +16,10 @@ export async function startFixture() {
   let revision = 7;
   let mode = "ready";
   let deleted = false;
-  const { nodes, scene } = fixtureData(hash, () => ({ mode, deleted }));
+  const { nodes, scene, asset } =
+    kind === "light"
+      ? fixtureData(hash, () => ({ mode, deleted }))
+      : denseFixtureData(hash, kind);
   const server = createServer((req, res) => {
     requests.push({ method: req.method, url: req.url });
     const url = new URL(req.url, "http://fixture");
@@ -25,6 +30,11 @@ export async function startFixture() {
     if (url.pathname === "/api/v1/font") {
       res.writeHead(200, { "content-type": "font/ttf" });
       res.end(font);
+      return;
+    }
+    if (asset && url.pathname === "/api/v1/asset") {
+      res.writeHead(200, { "content-type": "image/png" });
+      res.end(asset);
       return;
     }
     if (url.pathname.endsWith("/events")) {

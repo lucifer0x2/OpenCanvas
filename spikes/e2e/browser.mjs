@@ -25,27 +25,28 @@ export async function openViewer(browser, base) {
       } catch {}
     }
   });
-  // Observe the real canvases the viewer rasterizes with the shared renderer, keyed by size, so
-  // the 1:1 one can be compared with the worker PNG while the viewer also draws the scene at its
-  // display scale. A canvas that has itself received a canvas copy is a derived target -- a Konva
-  // layer, or a zoom-out level -- and is skipped. This adds no app state or alternate renderer
-  // and leaves every draw unchanged.
+  // Observe the real canvases the viewer creates, so its 1:1 drawScene canvas -- the parity
+  // artifact that the zoomable vector layer never copies -- can be compared with the worker PNG.
+  // That canvas is offscreen and sized to the job viewport; Konva's layer canvas is in the DOM and
+  // its hit canvas asks for willReadFrequently, so both are skipped. No app state or draw changes.
   await page.addInitScript(() => {
-    const original = CanvasRenderingContext2D.prototype.drawImage;
-    const derived = new WeakSet();
-    globalThis.__liveCanvases = {};
-    CanvasRenderingContext2D.prototype.drawImage = function (image, ...args) {
-      if (image instanceof HTMLCanvasElement) {
-        if (image !== this.canvas && image.width > 1 && !derived.has(image)) {
-          try {
-            globalThis.__liveCanvases[`${image.width}x${image.height}`] =
-              image.toDataURL("image/png");
-          } catch {}
-        }
-        derived.add(this.canvas);
+    const original = HTMLCanvasElement.prototype.getContext;
+    const seen = new WeakSet();
+    globalThis.__canvases = [];
+    HTMLCanvasElement.prototype.getContext = function (kind, options) {
+      if (kind === "2d" && !options?.willReadFrequently && !seen.has(this)) {
+        seen.add(this);
+        globalThis.__canvases.push(this);
       }
-      return original.call(this, image, ...args);
+      return original.call(this, kind, options);
     };
+    globalThis.__liveCanvas = (width, height) =>
+      globalThis.__canvases.findLast(
+        (canvas) =>
+          !canvas.isConnected &&
+          canvas.width === width &&
+          canvas.height === height,
+      );
   });
   await page.goto(base);
   return { page, requests, errors, scenes };
@@ -60,10 +61,9 @@ export async function compareViewer(view, job) {
   const { page, scenes } = view;
   await ready(page, job.revision);
   const { width: vw, height: vh } = job.scene.provenance.viewport;
-  const key = `${vw}x${vh}`;
   await page.waitForFunction(
-    (size) => Boolean(globalThis.__liveCanvases[size]),
-    key,
+    ({ width, height }) => Boolean(globalThis.__liveCanvas(width, height)),
+    { width: vw, height: vh },
   );
   const scene = scenes.findLast(
     (candidate) => candidate.provenance.sourceSceneKey === job.sceneKey,
@@ -75,7 +75,7 @@ export async function compareViewer(view, job) {
     "viewer and MCP scene/lines/provenance match exactly",
   );
   const pixels = await page.evaluate(
-    async ({ url, key, width, height }) => {
+    async ({ url, width, height }) => {
       const decode = async (source) => {
         const image = new Image();
         image.src = source;
@@ -92,7 +92,9 @@ export async function compareViewer(view, job) {
             .getImageData(0, 0, image.width, image.height).data,
         };
       };
-      const actual = await decode(globalThis.__liveCanvases[key]);
+      const actual = await decode(
+        globalThis.__liveCanvas(width, height).toDataURL("image/png"),
+      );
       const expected = await decode(url);
       if (actual.width !== width || actual.height !== height)
         throw new Error(`Viewer source size ${actual.width}x${actual.height}`);
@@ -106,7 +108,7 @@ export async function compareViewer(view, job) {
         comparedChannels: actual.bytes.length,
       };
     },
-    { url: job.imageUrl, key, ...job.scene.provenance.viewport },
+    { url: job.imageUrl, ...job.scene.provenance.viewport },
   );
   assert.equal(pixels.differences, 0, "exact RGBA equality, no tolerance");
   assert.equal(pixels.width, job.image.width);

@@ -1,6 +1,6 @@
 # Read-only browser viewer
 
-The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage only the editor shell, local pan/zoom, and selection overlays. The browser never computes layout or wraps text; `Konva.Image` displays the canvas produced by shared `loadResources` and `drawScene` with precomputed text lines. A blue outline highlights selection without resize handles.
+The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage only the editor shell, local pan/zoom, and selection overlays. The browser never computes layout or wraps text; a Konva `Shape` paints the scene with the shared `paintScene` and the resources from `loadResources`, using precomputed text lines. A blue outline highlights selection without resize handles.
 
 ## Run
 
@@ -18,18 +18,21 @@ Drag to pan; wheel or the zoom buttons to zoom; Fit or `F` to fit. Wheel zoom is
 
 ## Zoom rendering
 
-Scaling one 1:1 bitmap to every zoom level softens text, so the viewer rasterizes the scene again
-at the displayed device scale (zoom times `devicePixelRatio`) about 140 ms after a zoom settles,
-through the same shared `drawScene`. A settled raster lands pixel for pixel on the display, and the
-stage origin is snapped to whole device pixels so no fractional offset resamples it. The scale is
-clamped to the renderer's 4x and pixel-budget limits. Past that cap the capped raster is still
-displayed, because scaling it up stays far sharper than scaling the 1:1 canvas; a refused render
-keeps the previous raster.
+The canvas paints the scene as vectors on every draw: a Konva `Shape` whose `sceneFunc` calls the
+shared `paintScene` under the stage transform (zoom times `devicePixelRatio`). Text and edges are
+therefore rasterized at the size they are shown, during a wheel or trackpad gesture as well as at
+rest, up to the 4x maximum zoom, and the picture does not change once a gesture stops. Nothing is
+re-rasterized or cached per zoom level: the Konva layer stays the size of the canvas pane, so a
+zoom allocates no canvas and costs one paint of the scene per frame (about 1.4 ms p95 for an
+857-node, 716-line scene in headless Chromium). Images are drawn with
+`imageSmoothingQuality = "high"`, which only affects the viewer, never the worker PNG.
 
-While a zoom gesture is in flight the viewer previews with half-size copies of the 1:1 canvas,
-because Canvas2D downscales in one bilinear step and speckles text at arbitrary ratios, and
-`imageSmoothingQuality` does not change that. The 1:1 canvas itself is never resampled and stays
-byte-identical to the worker PNG, which is what the acceptance run compares.
+`paintScene` is the same code the worker PNG runs through `drawScene`, which only validates the
+pipeline, sizes and clears the target and sets its scale before painting. The viewer still draws
+the scene once at 1:1 with `drawScene` when a job arrives: that offscreen canvas checks the
+pipeline and stays byte-identical to the worker PNG, which is what the acceptance run compares.
+`npm --prefix web run test:zoom` measures sharpness against a `drawScene` reference mid-gesture
+and at rest, canvas allocation, and frame cost on 800×600, 1440×900 and 2880×1800 fixtures.
 
 ## Consistency
 
