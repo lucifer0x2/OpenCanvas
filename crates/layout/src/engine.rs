@@ -144,7 +144,9 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                 }
             }),
             asset_id: p.asset_id.clone(),
-            fit: p.fit.clone().unwrap_or_else(|| "contain".into()),
+            fit: crate::scene_fit(p.fit.as_deref())
+                .unwrap_or("contain")
+                .into(),
             opacity: p.opacity.unwrap_or(1.0),
             clip: p.clip.unwrap_or(n.kind == "frame"),
             radius: p.radius.unwrap_or(0.0),

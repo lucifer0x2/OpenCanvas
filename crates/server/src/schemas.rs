@@ -131,7 +131,7 @@ fn build() -> Vec<Tool> {
     add("apply_batch","Atomically apply ordered operations. Replay the identical key/body after lost responses; a changed body requires a new key. A REVISION_CONFLICT carries changedSince, the IDs changed after your expectedRevision: rebase on them or read back.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
     add(
         "import_asset",
-        "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted.".into(),
+        "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted. Returns asset plus, as apply_batch does, committedRevision, changedIds, renderStatus and replayed at the top level (result repeats them).".into(),
         object(
             json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"mediaType":{"enum":["image/png","image/jpeg","image/webp","font/ttf","font/otf","font/woff2"]},"base64":{"type":"string","minLength":4,"maxLength":13981016},"font":object(json!({"id":id(),"family":text(256),"weight":{"type":"integer","minimum":1,"maximum":1000},"style":{"enum":["normal","italic"]},"license":{"type":["string","null"],"maxLength":1024}}),&["id","family","weight","style"])}),
             &[

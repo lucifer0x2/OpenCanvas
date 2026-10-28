@@ -370,6 +370,28 @@ A restricted sandbox may need permission to bind loopback for the integration co
 
 Versioned backup/export/import/restore are public **storage APIs**, documented in `docs/BACKUP.md`. This server does not add backup MCP tools or client filesystem access. Live database main-file copies are not backups; use the storage bundle implementation which captures a consistent database and matching resource manifest/binaries.
 
+## Mutation responses and image fit
+
+`apply_batch` and `import_asset` answer with the same top-level commit fields:
+`projectId`, `committedRevision`, `changedIds`, `renderStatus` and `replayed`.
+`import_asset` adds `asset` (the stored metadata) and still repeats the commit
+fields under `result`, the earlier nested shape, so existing clients keep working.
+Read `committedRevision` at the top level for the next `expectedRevision`
+(`tests/image_fit.rs`).
+
+Image `fit` has one vocabulary, `IMAGE_FITS` in `crates/storage/src/image_fit.rs`:
+`fit` stretches the image to its bounds (CSS `object-fit: fill`), `contain` (the
+default) shows the whole image inside them, and `cover` fills them and crops.
+Authored props, `resolvedProps` and scene nodes all carry the authored name;
+resolution no longer renames `fit` to `fill`. Any other value returns
+`VALIDATION_FAILED` with `field: "fit"`, and the message points CSS/Figma names at
+their match (`fill`/`stretch` → `fit`, `none`/`scale-down` → `contain`). Stored
+designs never held another value, because the validator always rejected it. The
+layout engine accepts the same list (a storage test compares the two constants)
+and still reads `fill`, the former scene name, as `fit`; the browser renderer
+(`renderer/image-fit.ts`, `npm run test:renderer`) also draws `fill` like `fit`
+for scenes cached before the change.
+
 ## Task04 row-wrap contract
 
 `apply_batch` supports literal boolean `props.layout.wrap`, default false. True

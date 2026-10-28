@@ -8,6 +8,7 @@ import {
   type SceneNode,
 } from "./types";
 import { PipelineError } from "./error";
+import { placeImage } from "./image-fit";
 
 const fontCSS = (font: FontManifest, size: number) =>
   `${font.style} ${font.weight} ${size}px "${font.family}"`;
@@ -56,23 +57,17 @@ function paintNode(
     const crop = node.crop ?? { x: 0, y: 0, width: 1, height: 1 };
     const sw = image.naturalWidth * crop.width,
       sh = image.naturalHeight * crop.height;
-    const ratio =
-      node.fit === "cover"
-        ? Math.max(b.width / sw, b.height / sh)
-        : Math.min(b.width / sw, b.height / sh);
-    const stretch = node.fit === "fill" || node.fit === "fit";
-    const w = stretch ? b.width : sw * ratio,
-      h = stretch ? b.height : sh * ratio;
+    const at = placeImage(node.fit, b, { width: sw, height: sh });
     context.drawImage(
       image,
       image.naturalWidth * crop.x,
       image.naturalHeight * crop.y,
       sw,
       sh,
-      b.x + (b.width - w) / 2,
-      b.y + (b.height - h) / 2,
-      w,
-      h,
+      b.x + at.x,
+      b.y + at.y,
+      at.width,
+      at.height,
     );
     context.restore();
   }

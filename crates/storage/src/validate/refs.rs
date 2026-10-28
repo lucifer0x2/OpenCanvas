@@ -134,12 +134,8 @@ pub fn resolved_nodes_for_theme(snapshot: &Snapshot, theme: &str) -> Result<Vec<
         .iter()
         .map(|n| {
             let mut n = n.clone();
+            // `fit` keeps its authored name: resolved props and scenes share IMAGE_FITS.
             n.props = c.resolve_props(&n)?;
-            // Public authored 'fit' is the stretch mode named 'fill' by the
-            // browser renderer. Preserve authored intent in persistence.
-            if n.props.get("fit").and_then(Value::as_str) == Some("fit") {
-                n.props["fit"] = Value::String("fill".into());
-            }
             Ok(n)
         })
         .collect()
