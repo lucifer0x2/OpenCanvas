@@ -3,6 +3,7 @@ mod compact;
 mod diagnostics;
 mod find;
 mod index;
+mod navigation;
 mod notes;
 pub(crate) mod pagination;
 pub(crate) mod targets;

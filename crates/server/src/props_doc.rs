@@ -53,6 +53,8 @@ fn render() -> String {
          - Root frames (direct children of a page) need numeric `width` and `height`.\n\
          - Text color is `fill`; a container's background is `fill`; corner rounding is `radius`.\n\
          - `update_node` replaces the whole `layout` object: resend `mode` with the other layout keys.\n\
+         - `links` targets are root frame IDs checked at the end of the batch; `flowStart` goes on \
+         a root frame. `get_design_context` summarizes both as `navigation`.\n\
          - Not supported: per-corner radius, stroke, shadow, gradient, blur, letter spacing, text \
          alignment, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
     );

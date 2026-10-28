@@ -62,6 +62,7 @@ Design context keeps authored `props` and adds `resolvedProps`, plus authored
 token/style values and `resolvedValue` for the requested concrete design theme.
 The node `props` field is never computed geometry. Theme aliases and fallback
 rules are specified in `RESOLUTION.md`. Interaction state supports `default`.
+Navigation links (`props.links`, `flowStart`) are authored data; `get_design_context.navigation` summarizes them.
 The viewer currently requests the default design theme; its light UI theme is
 independent. Snapshot database `schemaVersion:2` is separate from scene/API
 representation schema 1.

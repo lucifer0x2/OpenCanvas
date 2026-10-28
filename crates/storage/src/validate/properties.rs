@@ -1,4 +1,5 @@
 use super::{
+    links::check_links,
     prop_keys::{check_keys, check_required},
     stroke::validate_stroke,
     values::*,
@@ -29,6 +30,8 @@ impl Candidate {
                 "fill" => color(v)?,
                 "exportSettings" => crate::check_export_settings(v, "exportSettings")?,
                 "stroke" => validate_stroke(v)?,
+                "links" => check_links(v)?,
+                "flowStart" => self.check_flow_start(n, v)?,
                 "clip" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

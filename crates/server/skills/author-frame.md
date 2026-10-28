@@ -89,6 +89,16 @@ layout key with the one you change.
   `Search@2x.png` from the node name); `[]` clears it. `export_nodes` returns
   them as transparent PNGs cropped to the node's bounds.
 
+## Links between screens
+
+- Put `links:[{to:"<root frame ID>"}]` on the clickable node (button, row), not on
+  the whole frame unless the entire screen is clickable. One link per `on`.
+- Menus, dialogs and sheets are their own root frames, opened with
+  `action:"overlay"`; `on:"hover"` only opens an overlay. Back buttons use
+  `action:"back"`, dismiss buttons `action:"close"` (no `to`).
+- Mark the first screen of a flow with `flowStart:"Main"` on its root frame.
+- Deleting a target frame removes links to it; their sources are in `changedIds`.
+
 ## Read back and check
 
 - Read `get_design_context` for the complete frame, following pagination. An
