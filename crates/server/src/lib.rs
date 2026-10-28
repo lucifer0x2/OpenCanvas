@@ -10,6 +10,7 @@ mod jobs;
 mod mcp;
 mod props_doc;
 mod reads;
+mod render_response;
 mod resources;
 mod schemas;
 mod state;

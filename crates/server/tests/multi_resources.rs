@@ -95,7 +95,7 @@ async fn cold_text_measurement_is_async_and_uses_the_same_scene_cache_as_render(
         let render = s
             .call(
                 "render_frame",
-                json!({"projectId":p,"frameId":"frame","revision":1,"viewport":item["viewport"]}),
+                json!({"projectId":p,"frameId":"frame","revision":1,"viewport":item["viewport"],"includeScene":true}),
             )
             .await;
         assert_eq!(render["jobId"], item["jobId"]);

@@ -54,7 +54,10 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   come from font metrics. Avoid copying line y values into CSS or offsetting text
   by eye to compensate for an unloaded/different font.
 - Render at the same revision, viewport, theme and state; compare `render_frame`
-  pixels with `inspect_layout` bounds/text lines for that scene key. Wait for a
+  pixels with `inspect_layout` bounds/text lines for that scene key. The
+  `render_frame` response omits the computed scene to stay small; read it through
+  `inspect_layout` (paged, `fields:["bounds"]` is smallest) rather than passing
+  `includeScene:true`, which returns the whole scene inline. Wait for a
   pending job with `render_frame {jobId, waitMs}` (up to 10000) instead of
   polling in a tight loop; it returns as soon as the job is ready or failed. Use a
   second viewport to check declared stacks. Their presence alone does not promise that

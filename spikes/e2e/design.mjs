@@ -152,10 +152,19 @@ export async function render(
     job.scene.provenance.assetManifestHash,
   );
   assert.ok(job.readiness.every((resource) => resource.status === "ready"));
+  // MCP omits the computed scene by default; includeScene:true returns the full record.
+  const { scene, ...withoutScene } = job;
   const polled = await mcp.call("render_frame", {
     projectId,
     jobId: job.jobId,
   });
-  assert.deepEqual(polled, job);
+  assert.deepEqual(polled, withoutScene);
+  assert.ok(scene);
+  const full = await mcp.call("render_frame", {
+    projectId,
+    jobId: job.jobId,
+    includeScene: true,
+  });
+  assert.deepEqual(full, job);
   return job;
 }
