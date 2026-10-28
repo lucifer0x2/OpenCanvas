@@ -105,6 +105,9 @@ impl Candidate {
                     *v = self.resolve_value(v, expected)?;
                 }
             }
+            if k == "stroke" {
+                self.resolve_stroke(v)?;
+            }
             if k == "layout" {
                 self.resolve_layout_refs(v)?;
             }

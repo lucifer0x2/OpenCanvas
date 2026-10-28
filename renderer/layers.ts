@@ -49,15 +49,17 @@ function toDevice(rect: LogicalRect, m: DOMMatrix, clip: LogicalRect) {
  * a node below opacity 1 whose subtree issues two or more paints renders into a layer at alpha 1,
  * composited once at its accumulated opacity. Otherwise its alpha folds into its own paint and its
  * children, which is identical for a single paint. Layers are HTMLCanvasElements because
- * OffscreenCanvas clips without antialiasing in Chromium.
+ * OffscreenCanvas clips without antialiasing in Chromium. `paintOver` (the stroke) paints after
+ * the node's children, outside its own clip but inside its layer.
  */
 export function paintTree(
   context: CanvasRenderingContext2D,
   scene: Scene,
   resources: Resources,
   paintNode: PaintNode,
-  options: { maxLayerPixels?: number } = {},
+  options: { maxLayerPixels?: number; paintOver?: PaintNode } = {},
 ): PaintStats {
+  const { paintOver } = options;
   const tree = indexScene(scene, resources);
   const budget = options.maxLayerPixels ?? MAX_LAYER_PIXELS;
   const stats: PaintStats = { opacityLayers: 0, opacityLayerFallbacks: 0 };
@@ -130,6 +132,7 @@ export function paintTree(
     paintNode(ctx, node, resources);
     const children = tree.children.get(node.id);
     if (children) {
+      ctx.save();
       let inner: LogicalRect | null = clip;
       if (node.clip) {
         const b = node.bounds;
@@ -139,7 +142,9 @@ export function paintTree(
         ctx.clip();
       }
       if (inner) for (const child of children) draw(ctx, child, alpha, inner);
+      ctx.restore();
     }
+    paintOver?.(ctx, node, resources);
     ctx.restore();
   };
 

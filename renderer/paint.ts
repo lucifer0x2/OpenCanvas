@@ -1,6 +1,7 @@
 import type { FontManifest, Resources, Scene, SceneNode } from "./types";
 import { paintTree, type PaintStats } from "./layers";
 import { placeImage } from "./image-fit";
+import { paintStroke } from "./stroke";
 
 const fontCSS = (font: FontManifest, size: number) =>
   `${font.style} ${font.weight} ${size}px "${font.family}"`;
@@ -94,5 +95,9 @@ export function paintScene(
   scene: Scene,
   resources: Resources,
 ): PaintStats {
-  return paintTree(context, scene, resources, paintNode);
+  // A stroke paints after the node's subtree, above its descendants: its own clip never cuts it;
+  // ancestor clips and opacity (including its own group layer) do, as for its fill.
+  return paintTree(context, scene, resources, paintNode, {
+    paintOver: paintStroke,
+  });
 }

@@ -1,5 +1,6 @@
 import type { Bounds, Resources, Scene, SceneNode } from "./types";
 import { PipelineError } from "./error";
+import { strokeOuter } from "./stroke";
 
 /** An axis-aligned rectangle by its edges; in scene units or device pixels depending on use. */
 export interface LogicalRect {
@@ -13,7 +14,7 @@ export interface LogicalRect {
 export interface SceneTree {
   roots: SceneNode[];
   children: Map<string, SceneNode[]>;
-  /** Paint commands a layer would merge: the node's own paint plus each child subtree that paints. */
+  /** Paint commands a layer would merge: own fill/content, own stroke, each child subtree that paints. */
   units: Map<string, number>;
   /** Scene-unit bounds of everything the subtree paints; null when it paints nothing. */
   extent: Map<string, LogicalRect | null>;
@@ -115,8 +116,10 @@ export function indexScene(scene: Scene, resources: Resources): SceneTree {
   }
   // Depth is validated at 128 upstream, so recursion is bounded.
   const visit = (n: SceneNode): LogicalRect | null => {
-    let units = paintsItself(n) ? 1 : 0;
-    let extent = ownExtent(n, resources);
+    const stroke = strokeOuter(n);
+    let units = (paintsItself(n) ? 1 : 0) + (stroke ? 1 : 0);
+    // The node's own clip cuts its children, never its stroke.
+    let extent = union(ownExtent(n, resources), stroke && rectOf(stroke));
     for (const child of tree.children.get(n.id) ?? []) {
       const inner = visit(child);
       if (inner) units++;

@@ -12,6 +12,8 @@ pub enum PropScope {
     Container,
     Text,
     Image,
+    /// Nodes with a painted box: frame, group, rectangle, image.
+    Box,
 }
 
 impl PropScope {
@@ -22,6 +24,7 @@ impl PropScope {
             Self::Container => kind.container(),
             Self::Text => *kind == NodeKind::Text,
             Self::Image => *kind == NodeKind::Image,
+            Self::Box => !matches!(kind, NodeKind::Page | NodeKind::Text),
         }
     }
     pub fn label(self) -> &'static str {
@@ -31,6 +34,7 @@ impl PropScope {
             Self::Container => "page, frame, group",
             Self::Text => "text",
             Self::Image => "image",
+            Self::Box => "frame, group, rectangle, image",
         }
     }
     /// The validation message when a key is authored on a kind outside this scope.
@@ -41,6 +45,7 @@ impl PropScope {
             Self::Container => "Only containers support layout",
             Self::Text => "Text properties require a text node",
             Self::Image => "Image properties require an image node",
+            Self::Box => "Stroke requires a frame, group, rectangle or image node; wrap text in a frame to give it a border",
         }
     }
 }
@@ -95,6 +100,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("opacity", Any, false, "number 0..1 or number token; on a container, fades the subtree as one group (CSS opacity)", &["alpha"]),
     prop("clip", Any, false, "boolean; clips children to the node bounds", &["overflow", "clipsContent", "clipContent"]),
     prop("radius", Any, false, "number 0..100000 or dimension token; one radius for all corners", &["cornerRadius", "borderRadius", "corner_radius", "rx"]),
+    prop("stroke", PropScope::Box, false, "object {color, width?, align?}: color is a hex, color token or fill style, or exactly 4 of them [top, right, bottom, left]; width (default 1) a number 0..100000 or dimension token, or exactly 4 of them; align \"inside\" (default, takes layout space like a CSS border), \"center\" or \"outside\" (painted only). Painted above children", &["border", "borderColor", "borderWidth", "borderTop", "borderRight", "borderBottom", "borderLeft", "strokes", "strokeWidth", "strokeWeight", "strokeColor", "strokeAlign", "outline"]),
     prop("assetId", Image, true, "ID of an imported image asset (import_asset, list_assets)", &["asset", "src", "image", "imageId", "url"]),
     prop("fit", Image, false, "\"fit\" (stretch to bounds, CSS object-fit: fill), \"contain\" (default, whole image inside) or \"cover\" (fill bounds, crop); the same names appear in resolvedProps and scenes", &["objectFit", "scaleMode", "resize"]),
     prop("crop", Image, false, "object {x, y, width, height} normalized 0..1, staying inside the source image", &["cropRect", "sourceRect"]),

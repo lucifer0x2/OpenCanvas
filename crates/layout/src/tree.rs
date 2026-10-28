@@ -49,7 +49,12 @@ pub(crate) fn build(
         style.flex_basis = length(0.0);
     }
     if let Some(layout) = &p.layout {
-        stack::apply(&mut style, layout, [0.0; 4]);
+        // An inside stroke takes space in a stack like a CSS border; free children keep x/y.
+        let insets = match (&p.stroke, mode) {
+            (Some(stroke), "row" | "column") => stroke.inside_insets(),
+            _ => [0.0; 4],
+        };
+        stack::apply(&mut style, layout, insets);
     }
     if root {
         style.size = Size {

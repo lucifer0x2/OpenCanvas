@@ -26,6 +26,10 @@
    rounding is `radius`. A wrong key returns `VALIDATION_FAILED` with
    `field: "props.<key>"`, `nodeId`, `nodeKind`, `allowedKeys` and, when close,
    `suggestion`; fix that key instead of bisecting the batch.
+   Borders are one `stroke` prop (`{"color":"#D0D5DD"}`; per side
+   `{"color":[t,r,b,l],"width":[1,1,2,1]}`, CSS order); never fake a border with
+   stacked or edge rectangles. An `inside` stroke (default) takes stack space like a
+   CSS border; use `align:"outside"` to keep layout unchanged. Text cannot carry one.
 
 ## Stack template
 

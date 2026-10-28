@@ -31,6 +31,9 @@ zoom allocates no canvas and costs one paint of the scene per frame (about 1.4 m
 pipeline, sizes and clears the target and sets its scale before painting. The viewer still draws
 the scene once at 1:1 with `drawScene` when a job arrives: that offscreen canvas checks the
 pipeline and stays byte-identical to the worker PNG, which is what the acceptance run compares.
+Each node paints fill, then image or text; a node's `stroke` paints after its whole subtree
+(`renderer/stroke.ts`), under ancestor clips and opacity but not its own clip, so an outside
+stroke of a clipping frame stays visible.
 `npm --prefix web run test:zoom` measures sharpness against a `drawScene` reference mid-gesture
 and at rest, canvas allocation, and frame cost on 800×600, 1440×900 and 2880×1800 fixtures.
 
@@ -39,10 +42,12 @@ and at rest, canvas allocation, and frame cost on 800×600, 1440×900 and 2880×
 `opacity` composites like CSS (`renderer/layers.ts`, `paintTree`): the scene is walked as a tree,
 and a node below opacity 1 whose subtree issues two or more paints renders into an offscreen layer
 at alpha 1, which is then drawn once at the accumulated opacity, so overlapping children do not
-show through each other. A single paint (a leaf, or a group with one painting child) folds the
+show through each other. A node's fill and its stroke count as two paints, so a faded stroked box
+fades as one image like a CSS border. A single paint (a leaf, or a group with one painting child) folds the
 alpha instead, which is identical and keeps such scenes byte-identical to the old per-node alpha.
 A layer covers the device-pixel box of what its subtree paints (`renderer/scene-tree.ts`; text is
-padded for glyph overhang), clipped to the target and to clipping ancestors, offset only by whole
+padded for glyph overhang; outside/center strokes widen it past bounds, and a node's own clip never
+cuts its own stroke), clipped to the target and to clipping ancestors, offset only by whole
 pixels so antialiasing matches direct painting. Layers are `HTMLCanvasElement`s: Chromium's
 `OffscreenCanvas` clips without antialiasing. Live layers share a 16M-pixel budget; a group over it
 folds its alpha like before and counts in `opacityLayerFallbacks` of `drawScene`'s result, next to

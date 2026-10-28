@@ -19,7 +19,7 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
 - `GET /projects/:projectId/assets/:assetId` → verified project asset bytes and correct MIME type.
 - Bundled font endpoint `/api/v1/fonts/font_bundled` serves the exact licensed fixture font.
 
-RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, frameId, sceneKey?, scene?, provenance?, readiness?, diagnostics?, error?, imageUrl? }`. Ready `scene` conforms to `renderer/types.ts`; its provenance source revision is authoritative. Failure never returns success for strict PNG. Scene can be present with missing-resource diagnostics for labeled non-strict viewer placeholders, while strict export fails.
+RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, frameId, sceneKey?, scene?, provenance?, readiness?, diagnostics?, error?, imageUrl? }`. Ready `scene` conforms to `renderer/types.ts`; scene nodes may carry `stroke {color[4], width[4], align}` (sides [top, right, bottom, left], present only when a side is wider than 0; `scene-2`/`web-2`); its provenance source revision is authoritative. Failure never returns success for strict PNG. Scene can be present with missing-resource diagnostics for labeled non-strict viewer placeholders, while strict export fails.
 
 ExportJob (same routes and job table): `{ jobId, kind: "export", nodeId, status, projectId, revision, frameId (the root frame), sceneKey, provenance?, readiness?, files?: [{ url, fileName, format, mimeType, scale, width, height, bytes }], error? }`; never `scene` or `imageUrl`. A failed export (for example `EMPTY_BOUNDS`, `PIXEL_BUDGET`, `EXPORT_SCALE_RANGE`) has `status: "failed"`. Details: `docs/SERVER.md`, "Exporting node images".
 

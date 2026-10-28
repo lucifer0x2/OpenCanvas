@@ -18,6 +18,9 @@ pub(super) fn properties(n: &AuthoredNode) -> Result<(), LayoutError> {
     if let Some(l) = &p.layout {
         stack_rule(l)?;
     }
+    if let Some(stroke) = &p.stroke {
+        stroke.check()?;
+    }
     Ok(())
 }
 
