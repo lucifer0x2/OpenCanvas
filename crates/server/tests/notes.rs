@@ -149,8 +149,32 @@ async fn a_notes_only_commit_enqueues_no_prerender() {
 async fn note_operations_cost_little_in_tools_list() {
     let s = Server::start().await;
     let tools = s.rpc("tools/list", json!({})).await;
-    let bytes = serde_json::to_vec(&tools).unwrap().len();
-    // tools/list at night/integration 51f6368, before notes; notes may add at most 2 000 bytes.
-    assert!(bytes <= TOOLS_LIST_BASELINE + 2000, "{bytes}");
+    let tools = tools["tools"].as_array().unwrap();
+    let tool = |name: &str| tools.iter().find(|t| t["name"] == name).unwrap();
+    let size = |v: &Value| serde_json::to_vec(v).unwrap().len();
+    // Only what notes add is measured (whole sentences that name notes, so it errs high), so other
+    // tools growing does not move the budget.
+    let ops = tool("apply_batch")["inputSchema"]["properties"]["operations"]["items"]["oneOf"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|v| {
+            v["properties"]["op"]["const"]
+                .as_str()
+                .unwrap()
+                .ends_with("_note")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(ops.len(), 4);
+    let filter = &tool("get_design_context")["inputSchema"]["properties"]["notes"];
+    assert!(filter.is_object());
+    let prose: usize = tools
+        .iter()
+        .flat_map(|t| t["description"].as_str().unwrap().split(". "))
+        .filter(|sentence| sentence.contains("note"))
+        .map(str::len)
+        .sum();
+    let bytes = ops.iter().map(|v| size(v) + 1).sum::<usize>() + size(filter) + prose;
+    // AC12: notes may add at most 2 000 bytes to tools/list.
+    assert!(bytes <= 2000, "{bytes}");
 }
-const TOOLS_LIST_BASELINE: usize = 20_513;
