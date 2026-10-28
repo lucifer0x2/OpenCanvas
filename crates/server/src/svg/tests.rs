@@ -75,7 +75,11 @@ fn root_and_element_counts_follow_the_scene() {
         .find(|n| n.attribute("rx") == Some("6"))
         .unwrap();
     assert!(rect.ancestors().any(|a| a.attribute("clip-path").is_some()));
-    assert_eq!(rect.attribute("opacity"), Some("0.4"), "0.8 × group 0.5");
+    assert_eq!(rect.attribute("opacity"), Some("0.8"));
+    let group_opacity = rect
+        .ancestors()
+        .find_map(|a| a.attribute("opacity").filter(|_| a.has_tag_name("g")));
+    assert_eq!(group_opacity, Some("0.5"), "the group composites once");
 }
 
 #[test]

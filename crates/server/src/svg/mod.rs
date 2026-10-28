@@ -1,14 +1,15 @@
 //! SVG markup of a computed scene, without a browser. It follows the renderer's paint rules
 //! (`renderer/paint.ts`): scene order, fill then text or image, clip by every clipping ancestor,
-//! and each node painted at the product of its own and its ancestors' opacity. Text keeps the
-//! scene's measured lines and is not outlined; images embed their original bytes.
+//! and CSS group opacity (`renderer/layers.ts`). Text keeps the scene's measured lines and is not
+//! outlined; images embed their original bytes.
+mod elements;
 mod image_meta;
 mod markup;
 #[cfg(test)]
 mod tests;
 use crate::error::{ApiError, Result};
 pub use image_meta::Image;
-use markup::{attr, color, num, rect};
+use markup::{attr, num, rect};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{collections::HashMap, fmt::Write};
@@ -105,7 +106,7 @@ pub fn scene_to_svg(
         has_text: false,
         depth: nodes.len(),
     };
-    writer.node(&mut out, root, 1.0, 0)?;
+    writer.node(&mut out, root, 0)?;
     out.push_str("</svg>");
     Ok(Svg {
         markup: out,
@@ -124,13 +125,20 @@ struct Writer<'a> {
 }
 
 impl Writer<'_> {
-    fn node(&mut self, out: &mut String, node: &Node, parent: f64, depth: usize) -> Result<()> {
+    fn node(&mut self, out: &mut String, node: &Node, depth: usize) -> Result<()> {
         if depth > self.depth {
             return Err(ApiError::new("SCENE_INVALID", "Scene cycle"));
         }
-        let opacity = parent * node.opacity;
+        let children = self.children.get(node.id.as_str()).cloned();
+        // CSS group opacity, as the renderer composites it: a node with children wraps its
+        // subtree in one `<g opacity>`; a leaf carries its opacity on its own elements.
+        let group = node.opacity < 1.0 && children.as_ref().is_some_and(|c| !c.is_empty());
+        let opacity = if group { 1.0 } else { node.opacity };
         if self.id_attribute {
             let _ = write!(out, "<g id=\"{}\">", attr(&node.id));
+        }
+        if group {
+            let _ = write!(out, "<g opacity=\"{}\">", num(node.opacity));
         }
         if node.kind != "text" && node.fill != "transparent" {
             out.push_str(&rect(node.bounds, node.radius, Some((&node.fill, opacity))));
@@ -140,7 +148,6 @@ impl Writer<'_> {
             "image" => self.image(out, node, opacity)?,
             _ => {}
         }
-        let children = self.children.get(node.id.as_str()).cloned();
         if let Some(children) = children.filter(|c| !c.is_empty()) {
             let clip = node
                 .clip
@@ -149,11 +156,14 @@ impl Writer<'_> {
                 let _ = write!(out, "<g clip-path=\"url(#{id})\">");
             }
             for child in children {
-                self.node(out, child, opacity, depth + 1)?;
+                self.node(out, child, depth + 1)?;
             }
             if clip.is_some() {
                 out.push_str("</g>");
             }
+        }
+        if group {
+            out.push_str("</g>");
         }
         if self.id_attribute {
             out.push_str("</g>");
@@ -171,91 +181,5 @@ impl Writer<'_> {
             rect(bounds, radius, None)
         );
         id
-    }
-
-    fn text(&mut self, out: &mut String, node: &Node, opacity: f64) {
-        let font = node.font_id.as_deref().and_then(|id| self.fonts.get(id));
-        let mut style = String::new();
-        if let Some(font) = font {
-            let family: String = font
-                .family
-                .chars()
-                .filter(|c| !"'\"\\<>&".contains(*c))
-                .collect();
-            let _ = write!(style, " font-family=\"'{family}', sans-serif\"");
-            let _ = write!(style, " font-weight=\"{}\"", attr(&font.weight.to_string()));
-            if font.style != "normal" {
-                let _ = write!(style, " font-style=\"{}\"", attr(&font.style));
-            }
-        } else {
-            style.push_str(" font-family=\"sans-serif\"");
-        }
-        let _ = write!(
-            style,
-            " font-size=\"{}\"{}",
-            num(node.font_size),
-            color(&node.fill, opacity)
-        );
-        for line in &node.lines {
-            self.has_text = true;
-            let (x, y) = (num(node.bounds.x + line.x), num(node.bounds.y + line.y));
-            let text = attr(&line.text);
-            let _ = write!(
-                out,
-                "<text x=\"{x}\" y=\"{y}\"{style} xml:space=\"preserve\">{text}</text>"
-            );
-        }
-    }
-
-    fn image(&mut self, out: &mut String, node: &Node, opacity: f64) -> Result<()> {
-        let image = node
-            .asset_id
-            .as_ref()
-            .and_then(|id| self.images.get(id))
-            .ok_or_else(|| ApiError::new("RESOURCE_NOT_READY", "Image asset is not loaded"))?;
-        // The image viewport already clips to the bounds; a radius needs a rounded clip.
-        let clip = (node.radius > 0.0).then(|| self.clip_path(out, node.bounds, node.radius));
-        out.push_str("<g");
-        if let Some(clip) = clip {
-            let _ = write!(out, " clip-path=\"url(#{clip})\"");
-        }
-        if opacity < 1.0 {
-            let _ = write!(out, " opacity=\"{}\"", num(opacity));
-        }
-        out.push('>');
-        let fit = match node.fit.as_str() {
-            "cover" => "xMidYMid slice",
-            "fit" | "fill" => "none",
-            _ => "xMidYMid meet",
-        };
-        let b = node.bounds;
-        let place = format!(
-            "x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"{fit}\"",
-            num(b.x),
-            num(b.y),
-            num(b.width),
-            num(b.height)
-        );
-        let href = image.data_uri();
-        match node.crop {
-            None => {
-                let _ = write!(out, "<image {place} href=\"{href}\"/>");
-            }
-            Some(c) => {
-                let (w, h) = (f64::from(image.width), f64::from(image.height));
-                let _ = write!(
-                    out,
-                    "<svg {place} viewBox=\"{} {} {} {}\"><image width=\"{}\" height=\"{}\" href=\"{href}\"/></svg>",
-                    num(c.x * w),
-                    num(c.y * h),
-                    num(c.width * w),
-                    num(c.height * h),
-                    num(w),
-                    num(h)
-                );
-            }
-        }
-        out.push_str("</g>");
-        Ok(())
     }
 }

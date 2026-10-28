@@ -60,3 +60,9 @@ workspace → create/commit/select across projects, restart reconnect, follow-ag
 one `EventSource` per tab, GET-only); `live-tab.mjs` owns the per-tab EventSource/request
 counters. `run.mjs` only calls it and records `liveWorkspace` evidence. See
 `docs/TASK08-REPORT.md`.
+
+`export-svg.mjs` (P03b) is a standalone fidelity check, not part of `run.mjs`: it
+starts its own temporary server, exports one text-free frame (fills, clipped group
+with opacity, cropped rounded image) as 1x PNG and SVG, rasterizes the SVG through
+`<img>` in Chromium and fails when more than 0.5 % of pixels differ by more than 16
+in any channel. Build `renderer/dist` first (`npm run build:renderer`).
