@@ -5,6 +5,7 @@
 // `root`, `state`, `project`, `batch`, `get`, `wait_job` and `design` are unused here.
 #[allow(dead_code)]
 mod support;
+mod tool_support;
 use serde_json::{json, Value};
 use support::Server;
 
@@ -86,9 +87,7 @@ async fn discover_lifecycle_lists_and_reads_with_cache_hints() {
         .contains(&json!(MODERN)));
     let tools = modern_result(&s, 2, "tools/list", json!({})).await;
     assert_hints(&tools, "tools/list");
-    let tools = tools["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 15);
-    for tool in tools {
+    for tool in tool_support::assert_catalog(&tools) {
         assert_eq!(tool["inputSchema"]["type"], "object", "{}", tool["name"]);
     }
     let resources = modern_result(&s, 3, "resources/list", json!({})).await;

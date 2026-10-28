@@ -6,7 +6,15 @@ const base = (process.argv[2] ?? "http://127.0.0.1:3847").replace(/\/$/, "");
 const LEGACY = "2025-11-25";
 const MODERN = "2026-07-28";
 const ACCEPT = "application/json, text/event-stream";
+// Tools that must stay published. New tools need no change here: the check is "contains these,
+// no duplicates", never a count.
+const REQUIRED_TOOLS = [
+  "list_projects", "create_project", "get_outline", "find_nodes", "get_subtree",
+  "get_design_context", "get_changes", "list_tokens", "list_styles", "list_assets",
+  "list_fonts", "import_asset", "apply_batch", "render_frame", "inspect_layout",
+];
 const steps = [];
+let legacyTools;
 let sequence = 0;
 
 async function step(name, run) {
@@ -22,6 +30,15 @@ async function step(name, run) {
 
 function check(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+/** Checks a tools/list result and returns its tool names plus its compact JSON size. */
+function checkTools(list) {
+  const names = list.tools.map((tool) => tool.name);
+  check(new Set(names).size === names.length, `duplicate tools: ${names}`);
+  const missing = REQUIRED_TOOLS.filter((name) => !names.includes(name));
+  check(missing.length === 0, `missing tools: ${missing}`);
+  return { tools: names.length, toolsBytes: Buffer.byteLength(JSON.stringify(list.tools)), names };
 }
 
 /** One JSON-RPC message from a JSON or SSE body (SSE opens with an empty priming event). */
@@ -113,17 +130,19 @@ async function main() {
     );
     check(ack.ok, `notifications/initialized: HTTP ${ack.status}`);
     const { result: list } = await legacy("tools/list");
-    check(list.tools.length === 15, `${list.tools.length} tools`);
-    return { protocolVersion: result.protocolVersion, tools: list.tools.length };
+    const { names, ...summary } = checkTools(list);
+    legacyTools = names;
+    return { protocolVersion: result.protocolVersion, ...summary };
   });
   await step("2026 discover + tools/list", async () => {
     const { result: discover } = await modern("server/discover");
     check(discover.supportedVersions?.includes(MODERN), "2026-07-28 not supported");
     const { response, result } = await modern("tools/list");
     check(!response.headers.get("mcp-session-id"), "2026 request opened a session");
-    check(result.tools.length === 15, `${result.tools.length} tools`);
+    const { names, ...summary } = checkTools(result);
+    check(names.join() === legacyTools?.join(), "2026 and legacy tools/list differ");
     check(Number.isInteger(result.ttlMs) && result.cacheScope, "ttlMs/cacheScope missing");
-    return { tools: result.tools.length, ttlMs: result.ttlMs, cacheScope: result.cacheScope };
+    return { ...summary, ttlMs: result.ttlMs, cacheScope: result.cacheScope };
   });
   let projectId;
   await step("create_project", async () => {

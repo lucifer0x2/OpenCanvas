@@ -1,4 +1,5 @@
 mod support;
+mod tool_support;
 use serde_json::{json, Value};
 use support::Server;
 
@@ -71,7 +72,7 @@ async fn resources_are_advertised_embedded_and_read_only_with_tool_compatibility
     assert_eq!(missing["error"]["code"], -32002);
     assert!(missing["result"].is_null());
     let tools = s.rpc("tools/list", json!({})).await;
-    assert_eq!(tools["tools"].as_array().unwrap().len(), 15);
+    tool_support::assert_catalog(&tools);
     let p = s.project().await;
     assert!(s.call("list_projects", json!({})).await["projects"]
         .as_array()

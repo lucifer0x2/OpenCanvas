@@ -4,6 +4,7 @@
 //! runtime. No browser is needed: accepted calls stop at a later, non-schema error.
 #[allow(dead_code)] // `root`, `state`, `batch`, `get`, `wait_job` and `design` are unused here.
 mod support;
+mod tool_support;
 use serde_json::{json, Value};
 use support::Server;
 
@@ -14,8 +15,7 @@ const INVALID: &str =
 async fn every_published_input_schema_is_a_plain_object() {
     let s = Server::start().await;
     let tools = s.rpc("tools/list", json!({})).await;
-    let tools = tools["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 15);
+    let tools = tool_support::assert_catalog(&tools);
     for tool in tools {
         let schema = tool["inputSchema"].as_object().unwrap();
         let name = &tool["name"];
