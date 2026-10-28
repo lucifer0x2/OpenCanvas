@@ -1,5 +1,5 @@
 use axum::{
-    http::StatusCode,
+    http::{header, StatusCode},
     response::{IntoResponse, Response},
     Json,
 };
@@ -17,7 +17,7 @@ impl ApiError {
         let mut error = StorageError::new(code, message);
         error.retryable = matches!(
             code,
-            "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED"
+            "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED" | "SUPERSEDED"
         );
         Self(Box::new(error), None)
     }
@@ -61,6 +61,14 @@ impl IntoResponse for ApiError {
             "IMAGE_NOT_READY" => StatusCode::CONFLICT,
             _ => StatusCode::BAD_REQUEST,
         };
-        (status, Json(self.value())).into_response()
+        let body = self.value();
+        // HTTP clients get the same retry guidance as a header, in whole seconds.
+        match body["error"]["retryAfterMs"].as_u64() {
+            Some(ms) => {
+                let seconds = ms.div_ceil(1000).to_string();
+                (status, [(header::RETRY_AFTER, seconds)], Json(body)).into_response()
+            }
+            None => (status, Json(body)).into_response(),
+        }
     }
 }

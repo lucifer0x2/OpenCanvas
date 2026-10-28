@@ -79,7 +79,7 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
                         state: "default".into(),
                         scale: 1.0,
                     };
-                    let _ = state.jobs.enqueue(snapshot.clone(), request).await;
+                    let _ = state.jobs.prerender(snapshot.clone(), request).await;
                 }
             }
         }

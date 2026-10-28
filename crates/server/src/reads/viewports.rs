@@ -65,7 +65,9 @@ pub(super) async fn compute(
         };
         let job = match state.jobs.for_context(snapshot.clone(), request).await {
             Ok(job) => job,
-            Err(e) if e.0.code == "QUEUE_FULL" => json!({"status":"failed","error":e.0}),
+            Err(e) if e.0.code == "QUEUE_FULL" => {
+                json!({"status":"failed","error":e.value()["error"]})
+            }
             Err(e) => return Err(e),
         };
         let mut item = json!({"viewport":viewport,"jobId":job["jobId"],"sceneKey":job["sceneKey"],"status":job["status"]});
