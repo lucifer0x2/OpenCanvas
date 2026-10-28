@@ -1,28 +1,27 @@
 //! `page` must cut exactly where the pre-07F algorithm cut, which re-serialized the whole
-//! response after every entry. `page_v1` is a verbatim copy of that algorithm (oracle).
+//! response after every entry. `page_v1` is a verbatim copy of that algorithm (oracle), minus the
+//! per-page depth rule that B03 removed from both: tree reads now filter depth before paging.
 use super::*;
 
 fn page_v1(
     mut response: Value,
-    entries: Vec<(String, Value, usize)>,
+    entries: Vec<(String, Value)>,
     offset: usize,
     limit: usize,
     budget: usize,
-    depth: usize,
     scope: &str,
 ) -> Result<Value> {
     if offset > entries.len() {
         return Err(invalid());
     }
     let mut next = offset;
-    let base_depth = entries.get(offset).map_or(0, |e| e.2);
     response["truncated"] = json!(false);
     response["nextCursor"] = Value::Null;
     if serde_json::to_vec(&response)?.len() > budget {
         return Err(ApiError::new("CONTEXT_ITEM_TOO_LARGE", "Context metadata exceeds the response budget; request fewer viewports or a larger budget"));
     }
-    while let Some((field, value, d)) = entries.get(next) {
-        if next - offset >= limit || *d > base_depth + depth {
+    while let Some((field, value)) = entries.get(next) {
+        if next - offset >= limit {
             break;
         }
         if field != "nodes"
@@ -57,8 +56,8 @@ fn page_v1(
     Ok(response)
 }
 
-/// Deterministic entries of varied size: escapes, non-ASCII text, floats, nesting, depths.
-fn mixed_entries(count: usize) -> Vec<(String, Value, usize)> {
+/// Deterministic entries of varied size: escapes, non-ASCII text, floats, nesting.
+fn mixed_entries(count: usize) -> Vec<(String, Value)> {
     let texts = [
         "a",
         "Tổng quan \"đã\" xong",
@@ -79,7 +78,7 @@ fn mixed_entries(count: usize) -> Vec<(String, Value, usize)> {
                 "x": i as f64 * 1.37,
                 "props": {"width": i * 3, "nested": [i, null, true]},
             });
-            (field.to_owned(), value, i % 5)
+            (field.to_owned(), value)
         })
         .collect()
 }
@@ -116,28 +115,12 @@ fn cumulative_page_matches_v1_over_many_budgets_and_whole_reads() {
     budgets.extend([65_536, usize::MAX]);
     let mut pages = 0;
     for budget in budgets {
-        for (limit, depth) in [(200, 8), (13, 8), (200, 1), (1, 0)] {
+        for limit in [200, 13, 1] {
             let mut offset = Some(0);
             while let Some(at) = offset {
-                let label = format!("budget {budget} limit {limit} depth {depth} offset {at}");
-                let v1 = page_v1(
-                    response.clone(),
-                    entries.clone(),
-                    at,
-                    limit,
-                    budget,
-                    depth,
-                    "s",
-                );
-                let new = page(
-                    response.clone(),
-                    entries.clone(),
-                    at,
-                    limit,
-                    budget,
-                    depth,
-                    "s",
-                );
+                let label = format!("budget {budget} limit {limit} offset {at}");
+                let v1 = page_v1(response.clone(), entries.clone(), at, limit, budget, "s");
+                let new = page(response.clone(), entries.clone(), at, limit, budget, "s");
                 offset = same(v1, new, &label);
                 pages += 1;
             }
@@ -145,14 +128,14 @@ fn cumulative_page_matches_v1_over_many_budgets_and_whole_reads() {
     }
     assert!(pages > 500, "{pages} pages compared");
     // The 100-item cap on non-`nodes` arrays ends the first unbudgeted page.
-    let first = page(response, entries, 0, 200, usize::MAX, 8, "s").unwrap();
+    let first = page(response, entries, 0, 200, usize::MAX, "s").unwrap();
     assert_eq!(first["tokens"].as_array().unwrap().len(), 100);
 }
 
 #[test]
 fn cumulative_page_matches_v1_where_cursor_digits_and_base64_length_change() {
     let entries: Vec<_> = (0..1_105)
-        .map(|i| ("nodes".to_owned(), json!({"id":format!("n{i}")}), 0))
+        .map(|i| ("nodes".to_owned(), json!({"id":format!("n{i}")})))
         .collect();
     let response = json!({"schemaVersion":1,"nodes":[]});
     let scope = "a".repeat(64);
@@ -170,7 +153,6 @@ fn cumulative_page_matches_v1_where_cursor_digits_and_base64_length_change() {
                     offset,
                     limit,
                     budget,
-                    0,
                     &scope,
                 );
                 let new = page(
@@ -179,7 +161,6 @@ fn cumulative_page_matches_v1_where_cursor_digits_and_base64_length_change() {
                     offset,
                     limit,
                     budget,
-                    0,
                     &scope,
                 );
                 same(v1, new, &label);
@@ -195,7 +176,7 @@ fn unbudgeted_page_is_a_count_slice() {
         .collect();
     let entries: Vec<_> = items
         .iter()
-        .map(|v| ("nodes".to_owned(), v.clone(), 0))
+        .map(|v| ("nodes".to_owned(), v.clone()))
         .collect();
     let response = json!({"schemaVersion":1,"nodes":[],"status":"ready"});
     for limit in [1, 5, 22, 23, 200] {
@@ -206,7 +187,6 @@ fn unbudgeted_page_is_a_count_slice() {
                 offset,
                 limit,
                 usize::MAX,
-                0,
                 "s",
             );
             let page = page.unwrap();
@@ -215,6 +195,6 @@ fn unbudgeted_page_is_a_count_slice() {
             assert_eq!(page["truncated"], json!(end < items.len()));
         }
     }
-    let past = page(response, entries, 24, 5, usize::MAX, 0, "s");
+    let past = page(response, entries, 24, 5, usize::MAX, "s");
     assert_eq!(past.unwrap_err().0.code, "INVALID_CURSOR");
 }

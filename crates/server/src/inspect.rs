@@ -72,12 +72,9 @@ pub(crate) async fn inspect(state: &AppState, args: Value) -> Result<Value> {
         .map(|n| project(n, &fields))
         .collect();
     let response = json!({"schemaVersion":1,"projectId":job["projectId"],"revision":job["revision"],"sceneKey":job["sceneKey"],"status":job["status"],"nodes":[],"diagnostics":job["diagnostics"]});
-    let entries = entries
-        .into_iter()
-        .map(|n| ("nodes".into(), n, 0))
-        .collect();
+    let entries = entries.into_iter().map(|n| ("nodes".into(), n)).collect();
     let budget = req.budget.unwrap_or(usize::MAX);
-    let mut page = pagination::page(response, entries, offset, limit, budget, 0, &scope)?;
+    let mut page = pagination::page(response, entries, offset, limit, budget, &scope)?;
     // A complete read keeps the v1 shape: nextCursor appears only with truncated:true.
     if page["nextCursor"].is_null() {
         page.as_object_mut().unwrap().remove("nextCursor");

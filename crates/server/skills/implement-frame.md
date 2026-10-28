@@ -2,8 +2,10 @@
 
 1. Choose the frame: `find_nodes` with `kinds:["frame"]`, a `nameContains` or a
    `textContains` when you know what to look for; `get_outline` when you need the
-   structure. Then read `get_design_context` for that frame. Follow every
-   `nextCursor` using identical parameters; one page is not the whole design.
+   structure (`depth:1` on a page lists its root frames; `find_nodes {parentId:<page>,
+   kinds:["frame"]}` does the same). Then read `get_design_context` for that frame
+   without `depth`: a depth leaves deeper nodes out (cut nodes carry `omittedChildren`).
+   Follow every `nextCursor` using identical parameters; one page is not the whole design.
 2. Keep authored `props` distinct from `resolvedProps`. Map token/style IDs to named
    code tokens; resolved values describe the requested theme at this revision.
    `compact:true` makes the read smaller: with `resolvedPropsMode:"differing"` a
@@ -65,8 +67,8 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 
 ## Finding nodes
 
-- `find_nodes` ANDs `kinds`, `nameContains`, `textContains` and `ids`; at least one
-  is required. Matching is case-insensitive substring without accent folding, so
+- `find_nodes` ANDs `kinds`, `nameContains`, `textContains`, `ids` and `parentId`
+  (direct children of that node only); at least one is required. Matching is case-insensitive substring without accent folding, so
   "Tong quan" does not find "Tổng quan"; search with the accents the design uses.
 - `totalMatches: 0` with `matches: []` means nothing matched; it is not an error.
   `truncated: true` with `nextCursor` means more pages of matches.

@@ -96,7 +96,7 @@ async fn context_diagnostic_uses_complete_authored_frame_scope_on_every_page() {
     ])).await;
     assert_eq!(result["committedRevision"], 1, "{result}");
     let request = json!({"projectId":p,"frameId":"free","viewport":{"width":320,"height":480},
-        "properties":["name"],"limit":1,"depth":0});
+        "properties":["name"],"limit":1});
     let first = s.call("get_design_context", request.clone()).await;
     let diagnostic = &first["diagnostics"][0];
     assert_eq!(first["diagnostics"].as_array().unwrap().len(), 1);

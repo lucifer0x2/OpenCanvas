@@ -36,6 +36,8 @@ pub(super) struct ReadRequest {
     name_contains: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     text_contains: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    parent_id: Option<String>,
     // get_design_context only; false is normalized to absent so the default scope hash holds.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     compact: Option<bool>,
@@ -69,7 +71,7 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
         })
         .cloned()
         .map(sanitize_asset)
-        .map(|v| ("items".into(), v, 0))
+        .map(|v| ("items".into(), v))
         .collect();
     let response =
         json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"items":[]});
@@ -79,7 +81,6 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
         offset,
         req.limit.unwrap_or(100),
         65536,
-        8,
         &scope,
     )
 }

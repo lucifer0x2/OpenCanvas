@@ -62,18 +62,16 @@ fn cursor(scope: &str, offset: usize) -> String {
 /// are the same as measuring the full response after every entry (`pagination_tests.rs`).
 pub fn page(
     mut response: Value,
-    entries: Vec<(String, Value, usize)>,
+    entries: Vec<(String, Value)>,
     offset: usize,
     limit: usize,
     budget: usize,
-    depth: usize,
     scope: &str,
 ) -> Result<Value> {
     if offset > entries.len() {
         return Err(invalid());
     }
     let mut next = offset;
-    let base_depth = entries.get(offset).map_or(0, |e| e.2);
     response["truncated"] = json!(false);
     response["nextCursor"] = Value::Null;
     let base = json_len(&response)?;
@@ -83,8 +81,8 @@ pub fn page(
     // While a page is open it is measured as truncated:true with the cursor after the last
     // entry: `false`→`true` is −1 byte and `null`→`"<cursor>"` is +len−2, hence `len − 3`.
     let mut added = 0;
-    while let Some((field, value, d)) = entries.get(next) {
-        if next - offset >= limit || *d > base_depth + depth {
+    while let Some((field, value)) = entries.get(next) {
+        if next - offset >= limit {
             break;
         }
         if field != "nodes"

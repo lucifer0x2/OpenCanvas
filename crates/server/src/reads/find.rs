@@ -18,6 +18,7 @@ struct Criteria<'r> {
     name: Option<String>,
     text: Option<String>,
     ids: Option<HashSet<&'r str>>,
+    parent: Option<&'r str>,
 }
 
 impl<'r> Criteria<'r> {
@@ -30,14 +31,16 @@ impl<'r> Criteria<'r> {
                 .ids
                 .as_ref()
                 .map(|ids| ids.iter().map(String::as_str).collect()),
+            parent: req.parent_id.as_deref(),
         };
         if criteria.kinds.is_none()
             && criteria.name.is_none()
             && criteria.text.is_none()
             && criteria.ids.is_none()
+            && criteria.parent.is_none()
         {
             return Err(ApiError::invalid(
-                "find_nodes needs at least one of kinds, nameContains, textContains or ids",
+                "find_nodes needs at least one of kinds, nameContains, textContains, ids or parentId",
             ));
         }
         Ok(criteria)
@@ -73,6 +76,10 @@ impl<'r> Criteria<'r> {
             ids.contains(node.id.as_str()).then_some(())?;
             on.push("id");
         }
+        if let Some(parent) = self.parent {
+            (node.parent_id.as_deref() == Some(parent)).then_some(())?;
+            on.push("parent");
+        }
         Some(on)
     }
 }
@@ -99,8 +106,7 @@ pub(super) fn read(s: &Snapshot, req: ReadRequest) -> Result<Value> {
         .filter_map(|(node, depth)| {
             let on = criteria.matched_on(node)?;
             let value = entry(&index, root, node, *depth, on, &criteria, &req);
-            // Depth 0 on every entry: the flat list never stops a page on the depth rule.
-            Some(("nodes".to_owned(), value, 0))
+            Some(("nodes".to_owned(), value))
         })
         .collect();
     let limit = req.limit.unwrap_or(50);
@@ -112,7 +118,6 @@ pub(super) fn read(s: &Snapshot, req: ReadRequest) -> Result<Value> {
         offset,
         limit,
         budget - RENAME_BYTES,
-        0,
         &scope,
     )?;
     let matches = page.as_object_mut().and_then(|o| o.remove("nodes"));
@@ -169,7 +174,7 @@ fn preview(text: &str, needle: &str) -> String {
 /// Criteria as requested; ids are echoed as a count so a 200-ID lookup does not repeat on
 /// every page.
 fn echo(req: &ReadRequest) -> Value {
-    let mut out = json!({"kinds":req.kinds,"nameContains":req.name_contains,"textContains":req.text_contains,"idCount":req.ids.as_ref().map(Vec::len)});
+    let mut out = json!({"kinds":req.kinds,"nameContains":req.name_contains,"textContains":req.text_contains,"idCount":req.ids.as_ref().map(Vec::len),"parentId":req.parent_id});
     if let Some(fields) = out.as_object_mut() {
         fields.retain(|_, v| !v.is_null());
     }
