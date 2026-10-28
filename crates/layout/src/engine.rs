@@ -23,7 +23,13 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
     let mut ids = HashMap::new();
     let mut order = Vec::new();
     let root = build(
-        root_idx, input, &mut tree, &mut ids, &mut order, "free", true,
+        root_idx,
+        input,
+        &mut tree,
+        &mut ids,
+        &mut order,
+        crate::stack::Parent::ROOT,
+        true,
     )?;
     let mut misses = BTreeMap::new();
     let mut callback_error = None;

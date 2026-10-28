@@ -1,6 +1,20 @@
-use super::{values::number, Candidate};
+use super::{layout_rule::validate_layout_rule, values::number, Candidate};
 use crate::{error::*, model::*};
 use serde_json::{Map, Value};
+
+/// Fill in a hug axis has no size to fill; on the cross axis, stretch says what was meant.
+fn fill_in_hug(key: &str, parent: &Value) -> StorageError {
+    let mut message = "Fill inside a hug axis is ambiguous and unsupported".to_string();
+    let cross = match parent.pointer("/layout/mode").and_then(Value::as_str) {
+        Some("column") => "width",
+        Some("row") => "height",
+        _ => "",
+    };
+    if key == cross {
+        message += &format!("; to size children to the widest one, set the parent's layout.align to \"stretch\" and omit the child's {key}");
+    }
+    StorageError::validation(key, &message)
+}
 
 impl Candidate {
     pub(super) fn layout_properties(&self, n: &Node, p: &Map<String, Value>) -> Result<()> {
@@ -13,10 +27,7 @@ impl Candidate {
                     if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
                         let props = self.resolve_props(parent)?;
                         if props.get(key).is_none() || props.get(key).is_some_and(|v| v == "hug") {
-                            return Err(StorageError::validation(
-                                key,
-                                "Fill inside a hug axis is ambiguous and unsupported",
-                            ));
+                            return Err(fill_in_hug(key, &props));
                         }
                     }
                 }
@@ -50,34 +61,7 @@ impl Candidate {
             let l = v
                 .as_object()
                 .ok_or_else(|| StorageError::validation("layout", "Layout must be an object"))?;
-            if !matches!(
-                l.get("mode").and_then(Value::as_str),
-                Some("row" | "column" | "free")
-            ) {
-                return Err(StorageError::validation(
-                    "layout.mode",
-                    "Only row, column and free layout are supported",
-                ));
-            }
-            for (key, value) in l {
-                match key.as_str() {
-                    "mode" => {}
-                    "padding" | "gap" => number(value, 0., 100_000., key)?,
-                    "wrap" if value.is_boolean() => {}
-                    "wrap" => {
-                        return Err(StorageError::validation(
-                            "layout.wrap",
-                            "Wrap must be a literal boolean",
-                        ))
-                    }
-                    _ => {
-                        return Err(StorageError::validation(
-                            "layout",
-                            "Unsupported layout property",
-                        ))
-                    }
-                }
-            }
+            validate_layout_rule(l)?;
             if l.get("wrap") == Some(&Value::Bool(true)) {
                 if l.get("mode").and_then(Value::as_str) != Some("row") {
                     return Err(StorageError::validation(

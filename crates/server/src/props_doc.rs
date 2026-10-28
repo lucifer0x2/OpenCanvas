@@ -52,8 +52,9 @@ fn render() -> String {
          - \"Required\" keys may come from a text style through `styleId` instead of being authored.\n\
          - Root frames (direct children of a page) need numeric `width` and `height`.\n\
          - Text color is `fill`; a container's background is `fill`; corner rounding is `radius`.\n\
+         - `update_node` replaces the whole `layout` object: resend `mode` with the other layout keys.\n\
          - Not supported: per-corner radius, stroke, shadow, gradient, blur, letter spacing, text \
-         alignment, per-side padding, align/justify. Do not invent keys for them.\n",
+         alignment, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
     );
     out
 }

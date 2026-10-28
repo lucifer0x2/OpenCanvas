@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 mod layout;
-pub use layout::{LayoutRule, Sizing};
+pub use layout::{LayoutRule, Padding, Sizing};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

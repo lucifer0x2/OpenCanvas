@@ -37,6 +37,23 @@ an icon, fill for the flexible content area, hug for content-driven dimensions.
 Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
 `lineHeight`, or a valid text style providing those fields.
 
+Stacks align like CSS flexbox, so centering and right edges need no x/y math:
+
+- Centered content: `{"mode":"column","padding":[24,32],"gap":16,"align":"center","justify":"center"}`.
+- Toolbar, label … shortcut row: `{"width":"fill","height":48,"layout":{"mode":"row","padding":[0,12],"gap":8,"align":"center","justify":"space-between"}}`.
+- Menu whose items match the widest: `{"width":"hug","height":"hug","layout":{"mode":"column","padding":4,"align":"stretch"}}`,
+  items `{"height":28,"layout":{"mode":"row","padding":[0,8],"align":"center"}}` with **no** `width`.
+
+`padding` is a number or a CSS shorthand list (`[all]`, `[vertical, horizontal]`,
+`[top, horizontal, bottom]`, `[top, right, bottom, left]`). `align` (cross axis:
+start, center, end, stretch) and `justify` (main axis: start, center, end,
+space-between) default to start and need row or column. `stretch` sizes only
+children whose cross size is unset; numbers and `hug` keep their size. With
+`space-between`, `gap` is the minimum spacing. Centered content wider than its
+stack overflows both sides (clipped by frames); use start when it may not fit.
+`update_node` replaces the whole layout object: resend `mode` and every other
+layout key with the one you change.
+
 ## Constraints and limitations
 
 - `minWidth`/`maxWidth` and the height equivalents are finite numeric bounds.
@@ -45,7 +62,8 @@ Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
   it is not evidence of responsiveness by itself.
 - Use `height:"hug"` for wrapping text and content groups that should grow.
   Do not put fill on an axis whose parent's hug size depends on that fill child;
-  the engine rejects ambiguous sizing cycles. Root frames require fixed numbers.
+  the engine rejects ambiguous sizing cycles; for equal-width items in a hug
+  column use the parent's `align:"stretch"` instead. Root frames require fixed numbers.
 - Fade a whole control (disabled button, keycap) with `opacity` on its group or
   frame: like CSS, the group renders as one image and then fades, so overlapping
   layers inside do not show through. Do not pre-mix colors layer by layer.
@@ -58,8 +76,9 @@ Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
   Use row/card height hug for content-driven rows. Gap applies between rows too;
   the last fill card may expand across the entire row. Oversized minima overflow.
 - Missing/false wrap preserves no-wrap. True is only for row containers; wrap
-  must be a literal boolean. No column wrap, percentage dimensions, breakpoint
-  variants, align API or general CSS/Grid. A fixed sidebar/body minimum still
+  must be a literal boolean. In a wrapping row `justify` and `align` apply per
+  line. No column wrap, percentage dimensions, breakpoint variants, `alignSelf`,
+  `space-around`/`space-evenly` or general CSS/Grid. A fixed sidebar/body minimum still
   needs deliberate authoring; row wrap alone does not make a dashboard mobile.
 
 ## Read back and check

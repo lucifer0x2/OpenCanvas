@@ -106,15 +106,7 @@ impl Candidate {
                 }
             }
             if k == "layout" {
-                if let Some(layout) = v.as_object_mut() {
-                    for key in ["padding", "gap"] {
-                        if let Some(x) = layout.get_mut(key) {
-                            if x.is_object() {
-                                *x = self.resolve_value(x, "dimension")?;
-                            }
-                        }
-                    }
-                }
+                self.resolve_layout_refs(v)?;
             }
         }
         Ok(Value::Object(out))

@@ -43,7 +43,7 @@ Nếu spike không đạt, dừng mở rộng layout và ghi quyết định tha
 Phần viewer chỉ đọc và contract dữ liệu không phụ thuộc việc đã khóa engine layout hay chưa.
 
 MVP hỗ trợ page, frame, group, rectangle, text và image; group dùng layout hoặc tọa độ tự do.
-Layout gồm row/column, padding, gap, fixed/fill/hug, min/max và row wrap opt-in đã duyệt ngày 2026-10-28.
+Layout gồm row/column, padding (một số hoặc 1–4 cạnh kiểu CSS), gap, `align`/`justify` (P08a), fixed/fill/hug, min/max và row wrap opt-in đã duyệt ngày 2026-10-28.
 Frame gốc có kích thước cố định; không hỗ trợ chu kỳ phần trăm hoặc fill trong trục hug mơ hồ.
 Text dùng một font/style mỗi node, plain text, line height tường minh và wrap theo chiều rộng.
 Image chỉ cần fit/contain/cover, crop đơn giản, opacity và clip theo frame.
@@ -98,7 +98,7 @@ Scene/job key gồm resolved input và startup pipeline fingerprint; build layou
 restart backend mới đổi cache identity. Backend/layout phải nâng cùng nhau; engine cũ
 có thể bỏ unknown field, không hứa mixed-version/downgrade/hot replacement. Task không
 restart3847, không đổi renderer/web behavior, real demo hoặc no-wrap golden.
-Không thêm %/breakpoint/column-wrap/wrap-reverse/align API. Wrap không tự sửa dashboard:
+Không thêm %/breakpoint/column-wrap/wrap-reverse (align/justify thêm sau ở P08a). Wrap không tự sửa dashboard:
 sidebar/body minima, fixed chart/progress và fixed text heights vẫn cần author riêng.
 
 Ngoài phạm vi: user editing, drag/drop sửa node, undo UI, chat, terminal và AI provider API.

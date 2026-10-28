@@ -452,4 +452,27 @@ backend for the startup pipeline fingerprint to change. Real3847 was not
 restarted by Task04 and still serves its older loaded code. Props JSON is additive,
 with no DB migration or snapshot/API/scene version bump. An old layout binary can
 ignore unknown fields; mixed-version/downgrade and hot replacement are unsupported.
-No percentage/breakpoint/column-wrap/align API or changes to existing dashboard data.
+No percentage/breakpoint/column-wrap or changes to existing dashboard data (stack align/justify came later with P08a).
+
+## P08a stack alignment and per-side padding
+
+`props.layout` of a row/column container also takes `align` (cross axis:
+`start` default, `center`, `end`, `stretch`) and `justify` (main axis: `start`
+default, `center`, `end`, `space-between`), mapped 1:1 to CSS `align-items` and
+`justify-content`. `padding` is a number or a 1–4 item list with CSS shorthand
+meaning; each item is 0..100000 or a dimension token. `stretch` sizes children
+whose cross size is unset; numeric and `hug` sizes are kept (`hug` = CSS
+`fit-content`), which also makes a hug column of equal-width items expressible.
+With `space-between`, `gap` is the minimum spacing; alignment overflow is unsafe
+like CSS. Free containers reject `align`/`justify`; free children still use x/y
+from the parent's outer edge.
+
+Errors stay `VALIDATION_FAILED` with a precise `field`: `layout.padding`,
+`layout.align`, `layout.justify`, `layout.mode` (a missing mode explains that
+`update_node` replaces the whole layout object) and `layout.<key>` for unknown
+layout keys, with `node.suggestion` for CSS/Figma spellings (`alignItems` →
+`align`, `flex-start` → `start`, `SPACE_BETWEEN` → `space-between`, `paddingLeft`
+→ `padding`). Authored lists and token refs read back verbatim; `resolvedProps`
+hold numbers. `tools/list`, scene schema and renderer are unchanged; existing
+layouts serialize and lay out exactly as before. Upgrade backend and layout-step
+together: an older layout binary cannot deserialize a padding list.
