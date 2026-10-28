@@ -1,0 +1,229 @@
+@import "./canvas.css";
+.workspace {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.left-panel {
+  width: 234px;
+  flex-shrink: 0;
+  background: white;
+  border-right: 1px solid var(--line);
+  overflow: auto;
+}
+.layers-content {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.section-heading {
+  min-height: 45px;
+  padding: 15px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+}
+.section-heading .subtle,
+.readonly-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--subtle);
+}
+.layers-list,
+.layers-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.layer-row {
+  display: flex;
+  align-items: center;
+  min-height: 33px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+}
+.layer-row:hover {
+  background: #f4f6f8;
+}
+.layer-row.is-selected {
+  background: #eaf3ff;
+  border-color: #dbeafe;
+  color: #145fbd;
+}
+.layer-select {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+  padding: 6px 8px 6px 3px;
+  background: transparent !important;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  gap: 8px;
+  font-size: 11px;
+}
+.layer-select[aria-pressed="true"] {
+  color: inherit;
+}
+.layer-select span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.disclosure {
+  width: 18px;
+  min-height: 25px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #697380;
+}
+.disclosure svg {
+  transition: transform 150ms;
+}
+.disclosure.is-open svg {
+  transform: rotate(90deg);
+}
+.disclosure-spacer {
+  width: 18px;
+  flex-shrink: 0;
+}
+.panel-footer {
+  margin-top: auto;
+  padding: 22px 16px 16px;
+  color: #616975;
+  font-size: 10px;
+  line-height: 1.65;
+  max-width: 220px;
+}
+.panel-empty {
+  color: var(--subtle);
+  padding: 12px 16px;
+  line-height: 1.7;
+  max-width: 260px;
+}
+.inspector {
+  width: 268px;
+  flex-shrink: 0;
+  background: white;
+  border-left: 1px solid var(--line);
+  overflow: auto;
+}
+.inspector > .section-heading {
+  border-bottom: 1px solid var(--line);
+}
+.inspector-identity {
+  display: flex;
+  gap: 10px;
+  padding: 20px 16px;
+  align-items: center;
+}
+.node-icon {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 6px;
+  background: #f1f4f7;
+  color: #5f6e80;
+  flex-shrink: 0;
+}
+.inspector-identity h2 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+.inspector-identity .subtle {
+  font-size: 10px;
+  text-transform: capitalize;
+}
+.inspect-section {
+  border-top: 1px solid var(--line);
+  padding: 17px 16px;
+}
+.inspect-section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 13px;
+}
+.inspect-section dl {
+  margin: 0;
+}
+.property {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.property dt {
+  color: var(--subtle);
+  overflow-wrap: anywhere;
+}
+.property dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-variant-numeric: tabular-nums;
+}
+.bounds-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 16px;
+}
+.bounds-grid .property {
+  grid-template-columns: 1fr;
+  gap: 3px;
+  background: #f6f7f9;
+  padding: 8px 9px;
+  border-radius: 4px;
+}
+.bounds-grid .property dd {
+  font-size: 12px;
+}
+.section-note {
+  font-size: 10px;
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+@media (max-width: 1100px) {
+  .left-panel {
+    width: 210px;
+  }
+  .inspector {
+    width: 238px;
+  }
+}
+@media (max-width: 800px) {
+  .left-panel,
+  .inspector {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 220px;
+    box-shadow: 3px 0 12px #26394b0c;
+  }
+  .left-panel {
+    left: 0;
+  }
+  .inspector {
+    right: 0;
+    box-shadow: -3px 0 12px #26394b0c;
+  }
+}
+@media (max-width: 560px) {
+  .left-panel,
+  .inspector {
+    width: 190px;
+  }
+  .section-heading {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

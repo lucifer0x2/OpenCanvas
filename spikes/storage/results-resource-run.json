@@ -1,0 +1,642 @@
+{
+  "elapsedSeconds": 13.609054959,
+  "fixtures": [
+    {
+      "checkpoint": {
+        "beforeFiles": {
+          "mainBytes": 540672,
+          "shmBytes": 32768,
+          "walBytes": 4128272
+        },
+        "held": {
+          "busy": 0,
+          "checkpointedPages": 918,
+          "walPages": 1134
+        },
+        "heldFiles": {
+          "mainBytes": 651264,
+          "shmBytes": 32768,
+          "walBytes": 4672112
+        },
+        "pinnedRevision": 381,
+        "released": {
+          "busy": 0,
+          "checkpointedPages": 1134,
+          "walPages": 1134
+        },
+        "releasedFiles": {
+          "mainBytes": 684032,
+          "shmBytes": 32768,
+          "walBytes": 4672112
+        }
+      },
+      "contention": [
+        {
+          "clients": 1,
+          "metrics": {
+            "commitUs": {
+              "max": 4186,
+              "p50": 3475,
+              "p95": 4170
+            },
+            "logicalRequestBytes": 18330,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 421,
+              "p50": 242,
+              "p95": 414
+            },
+            "sqlWriteUs": {
+              "max": 407,
+              "p50": 224,
+              "p95": 395
+            },
+            "totalUs": {
+              "max": 5782,
+              "p50": 4417,
+              "p95": 5481
+            },
+            "validateUs": {
+              "max": 704,
+              "p50": 355,
+              "p95": 684
+            }
+          },
+          "readUs": {
+            "max": 1463,
+            "p50": 698,
+            "p95": 1318
+          },
+          "readerSamples": 16,
+          "revisionConflicts": 0,
+          "serializationUs": {
+            "max": 100,
+            "p50": 53,
+            "p95": 97
+          },
+          "successfulBatches": 20
+        },
+        {
+          "clients": 4,
+          "metrics": {
+            "commitUs": {
+              "max": 9034,
+              "p50": 3182,
+              "p95": 4277
+            },
+            "logicalRequestBytes": 73320,
+            "queueWaitUs": {
+              "max": 317,
+              "p50": 0,
+              "p95": 148
+            },
+            "readUs": {
+              "max": 546,
+              "p50": 155,
+              "p95": 389
+            },
+            "sqlWriteUs": {
+              "max": 515,
+              "p50": 100,
+              "p95": 339
+            },
+            "totalUs": {
+              "max": 9557,
+              "p50": 3773,
+              "p95": 5874
+            },
+            "validateUs": {
+              "max": 1119,
+              "p50": 197,
+              "p95": 610
+            }
+          },
+          "readUs": {
+            "max": 2957,
+            "p50": 337,
+            "p95": 1751
+          },
+          "readerSamples": 57,
+          "revisionConflicts": 128,
+          "serializationUs": {
+            "max": 99,
+            "p50": 26,
+            "p95": 62
+          },
+          "successfulBatches": 80
+        },
+        {
+          "clients": 8,
+          "metrics": {
+            "commitUs": {
+              "max": 8076,
+              "p50": 3479,
+              "p95": 4190
+            },
+            "logicalRequestBytes": 146640,
+            "queueWaitUs": {
+              "max": 1217,
+              "p50": 112,
+              "p95": 1122
+            },
+            "readUs": {
+              "max": 499,
+              "p50": 224,
+              "p95": 431
+            },
+            "sqlWriteUs": {
+              "max": 670,
+              "p50": 161,
+              "p95": 390
+            },
+            "totalUs": {
+              "max": 9284,
+              "p50": 4623,
+              "p95": 5639
+            },
+            "validateUs": {
+              "max": 722,
+              "p50": 288,
+              "p95": 668
+            }
+          },
+          "readUs": {
+            "max": 2006,
+            "p50": 554,
+            "p95": 1458
+          },
+          "readerSamples": 130,
+          "revisionConflicts": 573,
+          "serializationUs": {
+            "max": 95,
+            "p50": 33,
+            "p95": 87
+          },
+          "successfulBatches": 160
+        }
+      ],
+      "engineBaseline": {
+        "commitUs": {
+          "max": 5018,
+          "p50": 3924,
+          "p95": 4927
+        },
+        "note": "10 raw rows, 128-byte values, WAL/FULL/fullfsync; isolates minimal engine overhead, not an equivalent project mutation",
+        "samples": 30,
+        "sqlWriteUs": {
+          "max": 109,
+          "p50": 74,
+          "p95": 100
+        }
+      },
+      "finalFiles": {
+        "mainBytes": 684032,
+        "shmBytes": 32768,
+        "walBytes": 4672112
+      },
+      "nodes": 100,
+      "seedFiles": {
+        "mainBytes": 4096,
+        "shmBytes": 32768,
+        "walBytes": 160712
+      },
+      "sequential": [
+        {
+          "kind": "create",
+          "metrics": {
+            "commitUs": {
+              "max": 5027,
+              "p50": 4154,
+              "p95": 4750
+            },
+            "logicalRequestBytes": 45365,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 407,
+              "p50": 157,
+              "p95": 400
+            },
+            "sqlWriteUs": {
+              "max": 359,
+              "p50": 145,
+              "p95": 341
+            },
+            "totalUs": {
+              "max": 6852,
+              "p50": 4946,
+              "p95": 5893
+            },
+            "validateUs": {
+              "max": 946,
+              "p50": 332,
+              "p95": 918
+            }
+          },
+          "samples": 30
+        },
+        {
+          "kind": "update",
+          "metrics": {
+            "commitUs": {
+              "max": 5120,
+              "p50": 4057,
+              "p95": 5072
+            },
+            "logicalRequestBytes": 27070,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 446,
+              "p50": 397,
+              "p95": 423
+            },
+            "sqlWriteUs": {
+              "max": 437,
+              "p50": 371,
+              "p95": 426
+            },
+            "totalUs": {
+              "max": 6934,
+              "p50": 5825,
+              "p95": 6885
+            },
+            "validateUs": {
+              "max": 701,
+              "p50": 667,
+              "p95": 683
+            }
+          },
+          "samples": 30
+        },
+        {
+          "kind": "reparent",
+          "metrics": {
+            "commitUs": {
+              "max": 8694,
+              "p50": 3867,
+              "p95": 4891
+            },
+            "logicalRequestBytes": 24851,
+            "queueWaitUs": {
+              "max": 1,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 450,
+              "p50": 407,
+              "p95": 436
+            },
+            "sqlWriteUs": {
+              "max": 664,
+              "p50": 374,
+              "p95": 441
+            },
+            "totalUs": {
+              "max": 9921,
+              "p50": 5821,
+              "p95": 6857
+            },
+            "validateUs": {
+              "max": 929,
+              "p50": 863,
+              "p95": 906
+            }
+          },
+          "samples": 30
+        }
+      ],
+      "snapshotBytes": 18381
+    },
+    {
+      "checkpoint": {
+        "beforeFiles": {
+          "mainBytes": 2797568,
+          "shmBytes": 32768,
+          "walBytes": 4383712
+        },
+        "held": {
+          "busy": 0,
+          "checkpointedPages": 827,
+          "walPages": 1227
+        },
+        "heldFiles": {
+          "mainBytes": 2850816,
+          "shmBytes": 32768,
+          "walBytes": 5055272
+        },
+        "pinnedRevision": 391,
+        "released": {
+          "busy": 0,
+          "checkpointedPages": 1227,
+          "walPages": 1227
+        },
+        "releasedFiles": {
+          "mainBytes": 2883584,
+          "shmBytes": 32768,
+          "walBytes": 5055272
+        }
+      },
+      "contention": [
+        {
+          "clients": 1,
+          "metrics": {
+            "commitUs": {
+              "max": 5699,
+              "p50": 3300,
+              "p95": 5684
+            },
+            "logicalRequestBytes": 18330,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 4573,
+              "p50": 2505,
+              "p95": 4488
+            },
+            "sqlWriteUs": {
+              "max": 2706,
+              "p50": 2262,
+              "p95": 2649
+            },
+            "totalUs": {
+              "max": 17059,
+              "p50": 14940,
+              "p95": 16688
+            },
+            "validateUs": {
+              "max": 6409,
+              "p50": 5231,
+              "p95": 6164
+            }
+          },
+          "readUs": {
+            "max": 5922,
+            "p50": 4259,
+            "p95": 5683
+          },
+          "readerSamples": 33,
+          "revisionConflicts": 0,
+          "serializationUs": {
+            "max": 1005,
+            "p50": 830,
+            "p95": 943
+          },
+          "successfulBatches": 20
+        },
+        {
+          "clients": 4,
+          "metrics": {
+            "commitUs": {
+              "max": 8248,
+              "p50": 3518,
+              "p95": 4713
+            },
+            "logicalRequestBytes": 73320,
+            "queueWaitUs": {
+              "max": 8610,
+              "p50": 0,
+              "p95": 8531
+            },
+            "readUs": {
+              "max": 5336,
+              "p50": 3779,
+              "p95": 4144
+            },
+            "sqlWriteUs": {
+              "max": 2712,
+              "p50": 2052,
+              "p95": 2446
+            },
+            "totalUs": {
+              "max": 25807,
+              "p50": 17967,
+              "p95": 24492
+            },
+            "validateUs": {
+              "max": 5931,
+              "p50": 5172,
+              "p95": 5800
+            }
+          },
+          "readUs": {
+            "max": 6693,
+            "p50": 3952,
+            "p95": 5195
+          },
+          "readerSamples": 163,
+          "revisionConflicts": 120,
+          "serializationUs": {
+            "max": 1147,
+            "p50": 735,
+            "p95": 803
+          },
+          "successfulBatches": 80
+        },
+        {
+          "clients": 8,
+          "metrics": {
+            "commitUs": {
+              "max": 7940,
+              "p50": 3578,
+              "p95": 4601
+            },
+            "logicalRequestBytes": 146640,
+            "queueWaitUs": {
+              "max": 31233,
+              "p50": 8622,
+              "p95": 28849
+            },
+            "readUs": {
+              "max": 6409,
+              "p50": 3901,
+              "p95": 4328
+            },
+            "sqlWriteUs": {
+              "max": 3200,
+              "p50": 2134,
+              "p95": 2596
+            },
+            "totalUs": {
+              "max": 49716,
+              "p50": 24922,
+              "p95": 45279
+            },
+            "validateUs": {
+              "max": 6477,
+              "p50": 5268,
+              "p95": 5918
+            }
+          },
+          "readUs": {
+            "max": 9167,
+            "p50": 4849,
+            "p95": 5509
+          },
+          "readerSamples": 433,
+          "revisionConflicts": 562,
+          "serializationUs": {
+            "max": 5288,
+            "p50": 765,
+            "p95": 943
+          },
+          "successfulBatches": 160
+        }
+      ],
+      "engineBaseline": {
+        "commitUs": {
+          "max": 4989,
+          "p50": 3962,
+          "p95": 4916
+        },
+        "note": "10 raw rows, 128-byte values, WAL/FULL/fullfsync; isolates minimal engine overhead, not an equivalent project mutation",
+        "samples": 30,
+        "sqlWriteUs": {
+          "max": 26,
+          "p50": 15,
+          "p95": 22
+        }
+      },
+      "finalFiles": {
+        "mainBytes": 2883584,
+        "shmBytes": 32768,
+        "walBytes": 5055272
+      },
+      "nodes": 5000,
+      "seedFiles": {
+        "mainBytes": 4096,
+        "shmBytes": 32768,
+        "walBytes": 2974672
+      },
+      "sequential": [
+        {
+          "kind": "create",
+          "metrics": {
+            "commitUs": {
+              "max": 6464,
+              "p50": 3590,
+              "p95": 4778
+            },
+            "logicalRequestBytes": 45370,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 2656,
+              "p50": 2422,
+              "p95": 2484
+            },
+            "sqlWriteUs": {
+              "max": 2240,
+              "p50": 1807,
+              "p95": 1981
+            },
+            "totalUs": {
+              "max": 18623,
+              "p50": 15601,
+              "p95": 16686
+            },
+            "validateUs": {
+              "max": 7303,
+              "p50": 6949,
+              "p95": 7226
+            }
+          },
+          "samples": 30
+        },
+        {
+          "kind": "update",
+          "metrics": {
+            "commitUs": {
+              "max": 4006,
+              "p50": 3047,
+              "p95": 3913
+            },
+            "logicalRequestBytes": 27071,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 2538,
+              "p50": 2409,
+              "p95": 2468
+            },
+            "sqlWriteUs": {
+              "max": 2131,
+              "p50": 1916,
+              "p95": 1989
+            },
+            "totalUs": {
+              "max": 13795,
+              "p50": 12787,
+              "p95": 13724
+            },
+            "validateUs": {
+              "max": 5023,
+              "p50": 4758,
+              "p95": 4902
+            }
+          },
+          "samples": 30
+        },
+        {
+          "kind": "reparent",
+          "metrics": {
+            "commitUs": {
+              "max": 9440,
+              "p50": 3422,
+              "p95": 4745
+            },
+            "logicalRequestBytes": 24860,
+            "queueWaitUs": {
+              "max": 0,
+              "p50": 0,
+              "p95": 0
+            },
+            "readUs": {
+              "max": 2478,
+              "p50": 2411,
+              "p95": 2472
+            },
+            "sqlWriteUs": {
+              "max": 6479,
+              "p50": 1802,
+              "p95": 1943
+            },
+            "totalUs": {
+              "max": 27121,
+              "p50": 14955,
+              "p95": 16604
+            },
+            "validateUs": {
+              "max": 7954,
+              "p50": 6825,
+              "p95": 7010
+            }
+          },
+          "samples": 30
+        }
+      ],
+      "snapshotBytes": 923569
+    }
+  ],
+  "sqliteVersion": "3.54.1"
+}

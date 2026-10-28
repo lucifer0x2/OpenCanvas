@@ -1,0 +1,14 @@
+{
+  "id": "font_bundled",
+  "family": "OpenCanvas Noto Sans",
+  "file": "NotoSans.ttf",
+  "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+  "weight": 400,
+  "style": "normal",
+  "source": "https://github.com/google/fonts/blob/main/ofl/notosans/NotoSans%5Bwdth,wght%5D.ttf",
+  "retrieved": "2026-10-28",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "OFL.txt",
+  "copyright": "Copyright 2022 The Noto Project Authors",
+  "fixtureCoverage": "Latin and Vietnamese including ă â đ ê ô ơ ư and composed diacritics"
+}
