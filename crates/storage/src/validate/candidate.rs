@@ -9,6 +9,7 @@ pub(crate) struct Candidate {
     pub styles: BTreeMap<String, Style>,
     pub assets: BTreeMap<String, Asset>,
     pub fonts: BTreeMap<String, Font>,
+    pub notes: BTreeMap<String, Note>,
 }
 impl Candidate {
     pub fn from_snapshot(s: &Snapshot) -> Self {
@@ -34,6 +35,7 @@ impl Candidate {
                 .map(|x| (x.id.clone(), x))
                 .collect(),
             fonts: s.fonts.iter().cloned().map(|x| (x.id.clone(), x)).collect(),
+            notes: s.notes.iter().cloned().map(|x| (x.id.clone(), x)).collect(),
         }
     }
 }
@@ -45,6 +47,7 @@ impl Candidate {
                 "Project exceeds 20000 authored nodes",
             ));
         }
+        self.validate_notes()?;
         let themes = self.validate_tokens()?;
         for theme in themes {
             let mut themed = self.clone();
@@ -106,6 +109,12 @@ impl Candidate {
                 id(key)?;
                 if self.nodes.contains_key(key) {
                     return Err(StorageError::validation("id", "Node ID already exists"));
+                }
+                if self.notes.contains_key(key) {
+                    return Err(StorageError::validation(
+                        "id",
+                        "ID already belongs to a note",
+                    ));
                 }
                 self.nodes.insert(
                     key.clone(),
@@ -177,6 +186,7 @@ impl Candidate {
                     }
                     remove.extend(children);
                 }
+                self.cascade_notes(&remove, changed);
                 for key in remove {
                     self.nodes.remove(&key);
                     changed.insert(key);
@@ -193,6 +203,10 @@ impl Candidate {
                 self.styles.insert(style.id.clone(), style.clone());
                 changed.insert(style.id.clone());
             }
+            Operation::CreateNote { .. }
+            | Operation::ReplyNote { .. }
+            | Operation::UpdateNote { .. }
+            | Operation::DeleteNote { .. } => self.apply_note(op, changed)?,
         }
         Ok(())
     }

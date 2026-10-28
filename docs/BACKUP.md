@@ -77,17 +77,21 @@ retain specific codes. Errors contain no private paths.
 
 ## Migration policy
 
-Internal database schema 2 is separate from layout input schema 1. Opening an
-on-disk schema-1 project upgrades before writer setup. Adding `retention_metadata`
-and changing project metadata/PRAGMA versions is one transaction. Authored IDs,
+Internal database schema 3 is separate from layout input schema 1. Opening an
+on-disk schema-1 or schema-2 project upgrades before writer setup. Every step
+(schema 2 adds `retention_metadata`, schema 3 adds the `notes` table) and the
+project metadata/PRAGMA version change run in one transaction. Authored IDs,
 revision, binary references and idempotency history stay intact. Supported
 retention is commits from 1 and lifetime idempotency, without expiration.
 
 SQL failure returns `MIGRATION_FAILED` and rolls back DDL/data/version changes.
 Resolve the failure before reopening; do not bypass it by editing versions.
 Future versions or disagreeing PRAGMA/metadata versions return
-`SCHEMA_UNSUPPORTED`. Bundle v1 accepts schema-2 databases only; migrate a local
-v1 project before export. No downgrade or overwrite restore is provided.
+`SCHEMA_UNSUPPORTED`. Bundle v1 accepts schema-3 databases only; open (and so
+migrate) a local older project before export. A schema-2 bundle is rejected; there
+is no public bundle route yet. Note rows are bounded (5000), their JSON `id` must
+equal the row and each note must anchor to an existing node. Schema 3 is one-way:
+an older binary reports `SCHEMA_UNSUPPORTED` rather than reading it. No downgrade or overwrite restore is provided.
 
 ## Executed verification
 

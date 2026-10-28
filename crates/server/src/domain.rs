@@ -20,6 +20,8 @@ struct ImportRequest {
     font: Option<FontRegistration>,
 }
 pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> {
+    // A commit that only touches notes changes no rendered pixel: skip its prerender.
+    let notes_only = opencanvas_storage::is_note_batch(&args["operations"]);
     let result = match name {
         "apply_batch" => {
             let req: BatchRequest = serde_json::from_value(args)?;
@@ -60,7 +62,7 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
     if committed["replayed"] != true {
         let event = json!({"event":"commit","projectId":committed["projectId"],"revision":committed["committedRevision"],"changedIds":committed["changedIds"]});
         let _ = state.events.send(event);
-        if let Some(project) = committed["projectId"].as_str() {
+        if let Some(project) = committed["projectId"].as_str().filter(|_| !notes_only) {
             if let Ok(snapshot) = state.snapshot(project.into()).await {
                 // Frames holding changed nodes; token/style-only changes keep the first four.
                 let changed: Vec<&str> = committed["changedIds"]

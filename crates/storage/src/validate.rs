@@ -1,6 +1,7 @@
 mod candidate;
 mod layout;
 mod node;
+mod notes;
 mod prop_keys;
 mod properties;
 mod refs;

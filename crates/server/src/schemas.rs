@@ -93,6 +93,8 @@ fn build() -> Vec<Tool> {
         if name == "get_design_context" {
             properties["viewports"] = json!({"type":"array","minItems":1,"maxItems":4,"items":viewport()});
             properties["compact"] = json!({"type":"boolean"});
+            properties["notes"] = json!({"enum":["open","all","none"]});
+            description.push_str(" notes lists the intent notes on the frame, its descendants and ancestors: open (default), all (adds resolved:true ones) or none; absent when there are none.");
             description.push_str(" compact:true (default false) shrinks the read: resolvedProps keep only keys whose resolved value differs from authored (resolvedPropsMode:\"differing\"; the full value is authored props without styleId overlaid with them), and tokens/styles/assets/fonts are only those the frame references, closed over style and alias/theme references (resources:\"referenced\"). Diagnostics and reflow still cover the whole frame.");
             description.push_str(" Optional viewports (1–4, mutually exclusive with viewport, total 16M pixels) enqueue cached render jobs without waiting. Repeat the same read when computed.status is pending; ready nodes include computedBounds in viewport order and reflow compares all descendants, excluding the root. Pending/failed comparisons return reflow:null.");
         }
@@ -122,13 +124,13 @@ fn build() -> Vec<Tool> {
     }
     add(
         "get_changes",
-        "Commits after sinceRevision from the durable log: each revision with its changedIds (operations with includeOperations:true), and their union grouped at currentRevision into nodes/tokens/styles/assets/fonts, or removed when gone. Use it to catch up or to rebase after REVISION_CONFLICT; re-read nodes with find_nodes ids. Up to limit (max 100) whole commits within budget per page; truncated:true means repeat with sinceRevision:nextRevision. Ahead of the project or missing history returns RESET_REQUIRED: re-read the snapshot.".into(),
+        "Commits after sinceRevision from the durable log: each revision with its changedIds (operations with includeOperations:true), and their union grouped at currentRevision into nodes/tokens/styles/assets/fonts/notes, or removed when gone. Use it to catch up or to rebase after REVISION_CONFLICT; re-read nodes with find_nodes ids. Up to limit (max 100) whole commits within budget per page; truncated:true means repeat with sinceRevision:nextRevision. Ahead of the project or missing history returns RESET_REQUIRED: re-read the snapshot.".into(),
         object(
             json!({"projectId":id(),"sinceRevision":{"type":"integer","minimum":0},"limit":count(100),"includeOperations":{"type":"boolean"},"budget":{"type":"integer","minimum":1024,"maximum":65536}}),
             &["projectId", "sinceRevision"],
         ),
     );
-    add("apply_batch","Atomically apply ordered operations. Replay the identical key/body after lost responses; a changed body requires a new key. A REVISION_CONFLICT carries changedSince, the IDs changed after your expectedRevision: rebase on them or read back.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
+    add("apply_batch","Atomically apply ordered operations; *_note ops keep design intent on a node (delete_subtree drops its notes). Replay the identical key/body after lost responses; a changed body requires a new key. A REVISION_CONFLICT carries changedSince, the IDs changed after your expectedRevision: rebase on them or read back.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
     add(
         "import_asset",
         "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted. Returns asset plus, as apply_batch does, committedRevision, changedIds, renderStatus and replayed at the top level (result repeats them).".into(),

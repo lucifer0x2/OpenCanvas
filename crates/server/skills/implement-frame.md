@@ -78,3 +78,9 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 - Position ("the card on the right") is not searchable. Narrow candidates by name,
   text or kind, then compare bounds from `get_design_context` `viewports` or
   `inspect_layout` `nodeIds`.
+
+## Notes
+
+- `get_design_context` lists the open `notes` of the frame, its descendants and its
+  ancestors; read them with the props. After implementing one, `reply_note` how, then
+  `update_note {resolved:true}`. Do not resolve a question nobody has answered.

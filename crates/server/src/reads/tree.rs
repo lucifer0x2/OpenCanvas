@@ -1,5 +1,5 @@
 use super::{
-    compact, diagnostics, index::TreeIndex, pagination, sanitize_asset, viewports::Computed,
+    compact, diagnostics, index::TreeIndex, notes, pagination, sanitize_asset, viewports::Computed,
     ReadRequest,
 };
 use crate::error::{ApiError, Result};
@@ -85,6 +85,9 @@ pub(super) fn read(
             value["omittedChildren"] = json!(omitted);
         }
         entries.push(("nodes".into(), value));
+    }
+    if let (true, Some(frame)) = (context, root) {
+        entries.extend(notes::entries(s, &index, frame, &ordered, req.notes));
     }
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if context {
