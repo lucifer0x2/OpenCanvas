@@ -192,3 +192,13 @@ fn xml_invalid_control_characters_are_dropped() {
     let doc = roxmltree::Document::parse(&markup).unwrap();
     assert_eq!(named(&doc, "text")[0].text(), Some("ctrl:\tok\u{7f}"));
 }
+
+#[test]
+fn xml_invalid_characters_are_dropped_from_font_family() {
+    let mut scene = scene();
+    scene["fonts"][0]["family"] = json!("Fam\u{1}ily\u{1b}\u{ffff}");
+    let markup = scene_to_svg(&scene, &images(), false).unwrap().markup;
+    let doc = roxmltree::Document::parse(&markup).unwrap();
+    let family = named(&doc, "text")[0].attribute("font-family");
+    assert_eq!(family, Some("'Family', sans-serif"));
+}

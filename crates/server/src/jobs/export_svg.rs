@@ -87,8 +87,17 @@ pub fn file(
     let viewport = &scene["provenance"]["viewport"];
     let bytes = svg.markup.into_bytes();
     let mut meta = json!({"fileName":setting.file_name,"format":"svg","mimeType":"image/svg+xml","width":viewport["width"],"height":viewport["height"],"bytes":bytes.len()});
+    let mut diagnostics = Vec::new();
     if svg.has_text {
-        meta["diagnostics"] = json!(["SVG_TEXT_NOT_OUTLINED"]);
+        diagnostics.push("SVG_TEXT_NOT_OUTLINED");
+    }
+    // Strokes are not drawn in SVG yet; say so rather than drop them silently.
+    let mut nodes = scene["nodes"].as_array().into_iter().flatten();
+    if nodes.any(|n| !n["stroke"].is_null()) {
+        diagnostics.push("SVG_STROKE_NOT_EXPORTED");
+    }
+    if !diagnostics.is_empty() {
+        meta["diagnostics"] = json!(diagnostics);
     }
     Ok(StoredFile { meta, bytes })
 }

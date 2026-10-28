@@ -14,6 +14,7 @@ impl Writer<'_> {
                 .chars()
                 .filter(|c| !"'\"\\<>&".contains(*c))
                 .collect();
+            let family = attr(&family);
             let _ = write!(style, " font-family=\"'{family}', sans-serif\"");
             let _ = write!(style, " font-weight=\"{}\"", attr(&font.weight.to_string()));
             if font.style != "normal" {
