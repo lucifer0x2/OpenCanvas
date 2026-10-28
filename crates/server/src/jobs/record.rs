@@ -1,5 +1,5 @@
 //! Job record transitions out of `pending` when a run finishes. Every transition wakes `wait`.
-use super::Jobs;
+use super::{export::Rendered, Jobs};
 use crate::error::Result;
 use serde_json::{json, Value};
 use std::time::Duration;
@@ -9,7 +9,7 @@ impl Jobs {
     pub(super) async fn finish(
         &self,
         id: String,
-        result: Result<(Value, Result<Value>)>,
+        result: Result<(Value, Result<Rendered>)>,
         elapsed: Duration,
         events: &broadcast::Sender<Value>,
     ) {
@@ -25,6 +25,9 @@ impl Jobs {
                 entry.value["status"] = json!("failed");
                 entry.value["error"] = json!(error.0);
             }
+            Ok((computed, rendered)) if entry.value["kind"] == "export" => {
+                super::export::finish(entry, &self.config.base_url, &computed, rendered);
+            }
             Ok((computed, rendered)) => {
                 entry.value["status"] = json!("ready");
                 entry.value["scene"] = computed["scene"].clone();
@@ -32,7 +35,7 @@ impl Jobs {
                 entry.value["diagnostics"] = computed["scene"]["diagnostics"].clone();
                 entry.value["readiness"] = computed["readiness"].clone();
                 match rendered {
-                    Ok(png) => {
+                    Ok(Rendered::Frame(png)) => {
                         entry.png = super::png::decode(&png).ok();
                         entry.value["imageUrl"] =
                             json!(format!("{}/api/v1/jobs/{id}/image", self.config.base_url));
@@ -43,6 +46,7 @@ impl Jobs {
                             entry.value["provenance"][field] = png["provenance"][field].clone();
                         }
                     }
+                    Ok(Rendered::Export(_)) => {}
                     Err(error) => {
                         entry.value["error"] = json!(error.0);
                     }

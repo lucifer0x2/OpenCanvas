@@ -1,6 +1,7 @@
 use rmcp::model::Tool;
 use serde_json::{json, Value};
 use std::{collections::HashMap, sync::OnceLock};
+mod export;
 mod operations;
 mod render;
 mod validation;
@@ -150,6 +151,7 @@ fn build() -> Vec<Tool> {
         render::DESCRIPTION.into(),
         render::published(),
     );
+    add("export_nodes", export::DESCRIPTION.into(), export::schema());
     add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
     tools
 }

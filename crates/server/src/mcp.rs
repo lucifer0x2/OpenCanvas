@@ -121,6 +121,7 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
         "get_changes" => reads::changes::read(state, args).await,
         "render_frame" => crate::render_response::render(state, args).await,
         "inspect_layout" => crate::inspect::inspect(state, args).await,
+        "export_nodes" => crate::export::export_nodes(state, args).await,
         _ => Err(ApiError::new("UNKNOWN_TOOL", "Tool is not available")),
     }
 }

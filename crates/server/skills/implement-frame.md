@@ -68,6 +68,10 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   authored rules cannot express it; do not invent design intent.
 - Interaction, routing, animation and real data require user requirements. Only
   the default interaction state is supported; named token themes may be requested.
+- A node whose authored props carry `exportSettings` is an image asset: call
+  `export_nodes {projectId, nodeIds}` and download each file `url` over HTTP
+  right away instead of rebuilding it in code or cropping a frame PNG. Pass
+  `settings` (e.g. `[{"scale":2}]`) to export any other node the same way.
 
 ## Finding nodes
 

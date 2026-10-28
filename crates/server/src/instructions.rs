@@ -47,4 +47,6 @@ than invent those. Notes: put intent props cannot carry (behavior, constraints, 
 effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
 descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. To check an implementation, render_frame at the same revision and viewport and \
 compare it with inspect_layout bounds and text lines for that job's scene key. Poll a pending \
-job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed.";
+job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed. \
+A node with exportSettings is an image asset: get its PNG files with export_nodes and download \
+each url, instead of rebuilding it in code.";

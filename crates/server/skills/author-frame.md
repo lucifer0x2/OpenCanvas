@@ -61,6 +61,10 @@ Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
   must be a literal boolean. No column wrap, percentage dimensions, breakpoint
   variants, align API or general CSS/Grid. A fixed sidebar/body minimum still
   needs deliberate authoring; row wrap alone does not make a dashboard mobile.
+- Mark icons and illustrations that code should use as files with
+  `exportSettings`, e.g. `[{"scale":1},{"scale":2}]` (`Search.png`,
+  `Search@2x.png` from the node name); `[]` clears it. `export_nodes` returns
+  them as transparent PNGs cropped to the node's bounds.
 
 ## Read back and check
 

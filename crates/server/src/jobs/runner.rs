@@ -1,6 +1,11 @@
 //! The single render loop: takes the next queued job (requested tier first), runs it on the
 //! shared worker process under the job deadline, and records the outcome.
-use super::{png, queue::Work, Jobs};
+use super::{
+    export::{self, Rendered},
+    png,
+    queue::Work,
+    Jobs,
+};
 use crate::{
     error::{ApiError, Result},
     state::Config,
@@ -52,7 +57,7 @@ async fn run(
     config: &Config,
     worker: &mut Option<Worker>,
     work: &Work,
-) -> Result<(Value, Result<Value>)> {
+) -> Result<(Value, Result<Rendered>)> {
     let result = tokio::time::timeout(config.job_timeout, async {
         if worker.is_none() {
             *worker = Some(Worker::start(config)?);
@@ -62,12 +67,16 @@ async fn run(
             .call(json!({"op":"compute","input":work.input,"strict":false}))
             .await?;
         computed["scene"]["provenance"]["sourceSceneKey"] = json!(work.key);
+        if let Some(spec) = &work.export {
+            let rendered = export::render(w, &computed["scene"], spec).await;
+            return Ok((computed, rendered));
+        }
         let rendered = w
             .call(json!({"op":"render","scene":computed["scene"],"scale":work.scale,"strict":true}))
             .await
             .and_then(|result| {
                 png::decode(&result)?;
-                Ok(result)
+                Ok(Rendered::Frame(result))
             });
         Ok::<_, ApiError>((computed, rendered))
     })
@@ -78,8 +87,11 @@ async fn run(
             "Render job exceeded its deadline",
         ))
     });
-    // Restart after any failure, including a strict export/resource failure.
-    let unhealthy = result.as_ref().map_or(true, |(_, r)| r.is_err());
+    // Restart after any failure, including a strict export/resource failure, except an export
+    // rejected for its node size or scale.
+    let unhealthy = result.as_ref().map_or(true, |(_, r)| {
+        r.as_ref().is_err_and(|e| !export::keeps_worker(e))
+    });
     if unhealthy {
         if let Some(mut w) = worker.take() {
             w.stop().await;

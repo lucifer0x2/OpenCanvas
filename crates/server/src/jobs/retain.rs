@@ -46,6 +46,7 @@ mod tests {
             value: json!({"jobId":id,"status":status}),
             png: None,
             requested,
+            files: Vec::new(),
         }
     }
     fn ids(table: &Table) -> Vec<String> {

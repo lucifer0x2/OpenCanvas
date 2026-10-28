@@ -25,6 +25,8 @@ pub struct Work {
     pub scale: f64,
     /// Supersede scope: the prerender of one frame in one project.
     pub frame: (String, String),
+    /// Set for an export job: render this node's files instead of the frame PNG.
+    pub export: Option<super::ExportSpec>,
 }
 
 #[derive(Default)]
@@ -96,6 +98,7 @@ mod tests {
             input: json!({}),
             scale: 1.0,
             frame: ("p".into(), frame.into()),
+            export: None,
         }
     }
     fn order(queue: &mut Queue) -> Vec<String> {
