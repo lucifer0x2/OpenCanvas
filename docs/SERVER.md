@@ -82,13 +82,38 @@ scene order; following `nextCursor` returns every selected node exactly once.
 ## MCP skill resources and context diagnostics
 
 The initialization capabilities advertise both tools and resources. `resources/list`
-returns exactly two embedded Markdown documents (`text/markdown`), available without
+returns exactly three embedded Markdown documents (`text/markdown`), available without
 project creation or filesystem access through `resources/read`:
 
 - `skill://opencanvas/implement-frame.md`: context-to-code checklist, stack/sizing
   mapping, text baseline cautions, and when to state assumptions or ask the user.
 - `skill://opencanvas/author-frame.md`: stack-first `apply_batch` authoring,
   fill/hug/min/max choices, and verification at two viewports.
+- `skill://opencanvas/props.md`: every authored `props` key by node kind, with
+  value ranges, required keys and common wrong names. It is rendered at startup
+  (`src/props_doc.rs`) from the storage validator's property table
+  (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+
+### Property validation errors
+
+The validator checks every authored (and style-resolved) key against that table
+before checking values. An unknown key, or a key on the wrong kind (text metrics
+outside `text`, `assetId`/`fit`/`crop` outside `image`, `layout` outside
+page/frame/group), returns `VALIDATION_FAILED` with these added `error` fields:
+
+```json
+{"code":"VALIDATION_FAILED","message":"Unsupported authored property 'cornerRadius' on rectangle node; did you mean 'radius'?",
+ "retryable":false,"opIndex":3,"field":"props.cornerRadius","nodeId":"card","nodeKind":"rectangle",
+ "allowedKeys":["name","styleId","x","y","width","height","minWidth","maxWidth","minHeight","maxHeight","fill","opacity","clip","radius"],
+ "suggestion":"radius"}
+```
+
+`suggestion` (a known alias such as `color`→`fill`, a case-insensitive match, or a
+key within two edits) is omitted when nothing is close or the key is merely on the
+wrong kind. Value errors keep their existing `field` (for example `opacity`,
+`layout.wrap`, `fontId`) and gain only `nodeId`/`nodeKind`. All fields are
+additive; `code`, `message`, `retryable`, `opIndex` and `currentRevision` keep
+their meaning.
 
 Unknown resource URIs return MCP resource-not-found (`-32002`) for protocol
 2025-11-25; rmcp maps this to invalid params (`-32602`) for 2026-07-28 and newer.

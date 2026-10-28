@@ -15,7 +15,8 @@ replay the exact body after a lost response. A REVISION_CONFLICT carries changed
 node you edit or one of its ancestors, resend with expectedRevision toRevision and a new \
 idempotencyKey (the body changed); otherwise re-read those IDs with find_nodes ids, or catch up \
 with get_changes, before rebuilding the batch. The server validates every batch again, so a wrong \
-rebase fails rather than corrupting data. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
+rebase fails rather than corrupting data. Node props accept only the keys listed per kind in \
+skill://opencanvas/props.md; a wrong key fails with field props.<key>, allowedKeys and a suggestion. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
 authored revision.
 
 Implementing a design in code: find_nodes kinds [frame] or get_outline for the frame, then \

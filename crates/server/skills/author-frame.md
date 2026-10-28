@@ -19,6 +19,12 @@
    `get_changes {sinceRevision}`) and rebuild the batch. Every batch is validated
    again, so a wrong rebase returns `VALIDATION_FAILED`, never corrupt data.
 
+5. Author only the `props` keys that `skill://opencanvas/props.md` lists for the
+   node's kind (generated from the validator). Text color is `fill`, corner
+   rounding is `radius`. A wrong key returns `VALIDATION_FAILED` with
+   `field: "props.<key>"`, `nodeId`, `nodeKind`, `allowedKeys` and, when close,
+   `suggestion`; fix that key instead of bisecting the batch.
+
 ## Stack template
 
 Under an existing page, create a root frame with numeric `width` and `height`,

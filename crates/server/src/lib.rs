@@ -8,6 +8,7 @@ mod inspect;
 mod instructions;
 mod jobs;
 mod mcp;
+mod props_doc;
 mod reads;
 mod resources;
 mod schemas;

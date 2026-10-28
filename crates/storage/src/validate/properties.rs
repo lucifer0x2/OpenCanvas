@@ -1,41 +1,17 @@
-use super::{values::*, Candidate};
+use super::{
+    prop_keys::{check_keys, check_required},
+    values::*,
+    Candidate,
+};
 use crate::{error::*, model::*};
 use serde_json::Value;
 impl Candidate {
     pub(super) fn properties(&self, n: &Node) -> Result<()> {
         let props = self.resolve_props(n)?;
         let p = props.as_object().unwrap();
+        check_keys(&n.kind, p)?;
         self.layout_properties(n, p)?;
-        let allowed = [
-            "name",
-            "x",
-            "y",
-            "width",
-            "height",
-            "minWidth",
-            "maxWidth",
-            "minHeight",
-            "maxHeight",
-            "layout",
-            "text",
-            "fontId",
-            "fontSize",
-            "lineHeight",
-            "fill",
-            "assetId",
-            "fit",
-            "opacity",
-            "clip",
-            "radius",
-            "crop",
-        ];
         for (k, v) in p {
-            if !allowed.contains(&k.as_str()) {
-                return Err(StorageError::validation(
-                    "props",
-                    "Unsupported authored property",
-                ));
-            }
             match k.as_str() {
                 "name" => {
                     if v.as_str().is_none_or(|s| s.len() > 256) {
@@ -119,21 +95,7 @@ impl Candidate {
                 _ => {}
             }
         }
-        if n.kind == NodeKind::Text {
-            for key in ["text", "fontId", "fontSize", "lineHeight"] {
-                if !p.contains_key(key) {
-                    return Err(StorageError::validation(key,"Text requires explicit text, fontId, fontSize and lineHeight (or a text style)"));
-                }
-            }
-        } else if p
-            .keys()
-            .any(|k| ["text", "fontId", "fontSize", "lineHeight"].contains(&k.as_str()))
-        {
-            return Err(StorageError::validation(
-                "props",
-                "Text properties require a text node",
-            ));
-        }
+        check_required(&n.kind, p)?;
         if n.kind == NodeKind::Image {
             let asset = p
                 .get("assetId")
@@ -148,11 +110,6 @@ impl Candidate {
                     "Image requires an image asset",
                 ));
             }
-        } else if p.contains_key("assetId") || p.contains_key("fit") || p.contains_key("crop") {
-            return Err(StorageError::validation(
-                "props",
-                "Image properties require an image node",
-            ));
         }
         if n.kind == NodeKind::Frame
             && n.parent_id

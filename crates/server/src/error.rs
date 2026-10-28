@@ -10,7 +10,7 @@ use serde_json::{json, Map, Value};
 /// `REVISION_CONFLICT`). Details are merged into the `error` object; they never replace the
 /// storage fields, so `code`, `message`, `retryable` and `currentRevision` stay as storage set them.
 #[derive(Debug, Clone)]
-pub struct ApiError(pub StorageError, Option<Box<Map<String, Value>>>);
+pub struct ApiError(pub Box<StorageError>, Option<Box<Map<String, Value>>>);
 pub type Result<T> = std::result::Result<T, ApiError>;
 impl ApiError {
     pub fn new(code: &str, message: &str) -> Self {
@@ -19,7 +19,7 @@ impl ApiError {
             code,
             "QUEUE_FULL" | "JOB_TIMEOUT" | "WORKER_UNAVAILABLE" | "WORKER_FAILED"
         );
-        Self(error, None)
+        Self(Box::new(error), None)
     }
     pub fn invalid(message: &str) -> Self {
         Self::new("INVALID_REQUEST", message)
@@ -41,7 +41,7 @@ impl ApiError {
 }
 impl From<StorageError> for ApiError {
     fn from(e: StorageError) -> Self {
-        Self(e, None)
+        Self(Box::new(e), None)
     }
 }
 impl From<serde_json::Error> for ApiError {

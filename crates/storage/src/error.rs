@@ -12,6 +12,25 @@ pub struct StorageError {
     pub op_index: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub field: Option<String>,
+    /// Node detail of a property validation error, flattened into the error object.
+    /// Boxed so the common error stays small.
+    #[serde(default, flatten, skip_serializing_if = "Option::is_none")]
+    pub node: Option<Box<NodeErrorContext>>,
+}
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NodeErrorContext {
+    /// Node whose authored properties failed validation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node_kind: Option<String>,
+    /// Every property key that node kind accepts (see skill://opencanvas/props.md).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allowed_keys: Option<Vec<String>>,
+    /// The supported key an unsupported one most likely meant.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suggestion: Option<String>,
 }
 pub type Result<T> = std::result::Result<T, StorageError>;
 impl StorageError {
@@ -23,6 +42,7 @@ impl StorageError {
             current_revision: None,
             op_index: None,
             field: None,
+            node: None,
         }
     }
     pub fn validation(field: &str, message: &str) -> Self {
@@ -41,6 +61,16 @@ impl StorageError {
     pub fn at(mut self, index: usize) -> Self {
         self.op_index = Some(index);
         self
+    }
+    /// Names the node a validation error belongs to, keeping any node already named.
+    pub fn on_node(mut self, id: &str, kind: &str) -> Self {
+        let node = self.node_context();
+        node.node_id.get_or_insert_with(|| id.into());
+        node.node_kind.get_or_insert_with(|| kind.into());
+        self
+    }
+    pub fn node_context(&mut self) -> &mut NodeErrorContext {
+        self.node.get_or_insert_default()
     }
 }
 impl std::fmt::Display for StorageError {
