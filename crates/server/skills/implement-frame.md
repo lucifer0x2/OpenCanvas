@@ -34,6 +34,7 @@
 | `hug` | Content-driven size; do not freeze the measured bound |
 | `minWidth`/`maxWidth`, `minHeight`/`maxHeight` | Corresponding size constraints |
 | Children of `free` | Authored x/y relative to that parent; useful for overlays |
+| `opacity` on a frame or group | CSS `opacity` on that element; the group fades as one image, so do not multiply it into children |
 
 These are starting rules, not a CSS equivalence guarantee. The engine defaults to
 start alignment and does not shrink fixed siblings. Respect explicit fixed sizes
