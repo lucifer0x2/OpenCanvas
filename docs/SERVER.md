@@ -304,7 +304,7 @@ model, idempotency or the SSE cursor.
 ```text
 schemaVersion, projectId, fromRevision (= sinceRevision), currentRevision
 commits[]   {revision, changedIds, operations?}   in revision order, whole commits only
-changed     {nodes, tokens, styles, assets, fonts, removed}   union of this page's changedIds
+changed     {nodes, tokens, styles, assets, fonts, notes, removed}   union of this page's changedIds
 truncated, nextRevision, limits {commits, bytes}
 ```
 
@@ -340,9 +340,45 @@ resend with `expectedRevision: toRevision` and a **new** `idempotencyKey` (the b
 otherwise re-read those IDs with `find_nodes {ids}`. Storage validates every batch again, so a
 wrong rebase fails with `VALIDATION_FAILED` rather than writing bad data.
 
+## Notes
+
+Design intent the props cannot carry (behavior, constraints, effects the renderer lacks) is a
+**note** anchored to a node. Notes are part of the revisioned document: they are written by
+`apply_batch` operations, so idempotent replay, `expectedRevision`, `changedSince`,
+`get_changes`, the SSE `commit` event and bundles cover them unchanged. Stored JSON equals the
+JSON read back; defaults are omitted:
+
+```json
+{"id":"note-cta","nodeId":"cta","text":"CTA sticks to the bottom while scrolling.","author":"designer",
+ "resolved":true,"replies":[{"text":"Done with position: sticky.","author":"coder"}]}
+```
+
+| Operation | Rule (failures are `VALIDATION_FAILED` with `field` and `opIndex`) |
+| --- | --- |
+| `create_note {id,nodeId,text,author?}` | `id` new and not a node ID (`id`); `nodeId` an existing page, frame or descendant (`nodeId`). |
+| `reply_note {id,text,author?}` | Appends to `replies`; the note must exist (`id`); at most 100 replies (`replies`: create a new note). |
+| `update_note {id,text?,resolved?,nodeId?}` | At least one field (`update_note`); `resolved:false` reopens; `nodeId` re-anchors. |
+| `delete_note {id}` | The note must exist (`id`). |
+
+- `text` is 1–2000 characters, `author` (self-declared, unauthenticated) 1–64; at most 5000
+  notes per project. `create_node` rejects an ID held by a note.
+- `delete_subtree` also deletes the notes anchored to every deleted node; their IDs are in
+  `changedIds` and in `get_changes` `removed`. History stays readable with
+  `get_changes includeOperations`.
+- `changedIds` of a note operation is the note ID; `get_changes` groups live ones as `notes`.
+- A commit whose operations are all note operations enqueues no prerender (its `commit` event
+  is still sent). It still advances the revision, so older scene keys and cursors go stale.
+- `get_design_context` takes `notes: "open"` (default), `"all"` (adds resolved notes, which
+  carry `resolved:true`) or `"none"`. It lists, after `nodes`, the notes anchored to the
+  frame's ancestors (outermost first), then to the frame and its descendants in preorder,
+  each node's notes by ID. They share the 100-items-per-field page cap and the byte budget.
+  With no note in scope the `notes` key is absent and the response is byte-identical to before.
+- `GET /snapshot` carries every note in `notes`. Viewer display (P02b) and a project-wide
+  `list_notes` (P02c) are later phases.
+
 ## Consistency and limits
 
-- HTTP snapshot is authored data at one revision; its database schema version is currently 2. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
+- HTTP snapshot is authored data at one revision; its database schema version is currently 3. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
 - Scene input is an owned immutable snapshot, with the scoped frame detached from its authored page for layout. Its source revision and scene key remain fixed if a later mutation commits. Old completed jobs remain readable by job ID until eviction; a new request for an authored revision no longer available returns `REVISION_UNAVAILABLE`.
 - Scene cache identity includes project, revision, frame, viewport, theme, state, scale and a startup fingerprint of pipeline artifacts, actual Node version, installed Playwright and the browser executable identity. The cache is process-local. Restart the backend after changing Node, Chromium, layout binary or renderer/worker artifacts. PNG provenance records actual runtime versions, not guessed pins.
 - Named design themes come from token declarations; unknown themes return `UNSUPPORTED_THEME`. Only the default interaction state is supported. Literal, typed token references, aliases and default/themes envelopes are resolved by storage. Authored node `props` remain intact in context; `resolvedProps`, token/style `resolvedValue` carry concrete-theme values separately.

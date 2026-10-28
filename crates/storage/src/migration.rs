@@ -13,14 +13,21 @@ pub(crate) fn migrate(conn: &mut Connection) -> Result<()> {
     if version == SCHEMA_VERSION {
         return read_retention(conn).map(|_| ());
     }
-    // All schema/data changes are transactional. Any failure rolls back both the
-    // DDL and metadata. No asset I/O occurs while this transaction is active.
+    // Every step runs in one transaction. Any failure rolls back all DDL and the
+    // metadata. No asset I/O occurs while this transaction is active.
     let result = (|| -> Result<()> {
         let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        tx.execute_batch("CREATE TABLE retention_metadata(singleton INTEGER PRIMARY KEY CHECK(singleton=1),oldest_commit_revision INTEGER NOT NULL CHECK(oldest_commit_revision>=1),idempotency_policy TEXT NOT NULL);
-            INSERT INTO retention_metadata VALUES(1,1,'Retained for project lifetime; no expiration');
-            UPDATE project_meta SET schema_version=2 WHERE singleton=1;
-            PRAGMA user_version=2;")?;
+        if version < 2 {
+            tx.execute_batch("CREATE TABLE retention_metadata(singleton INTEGER PRIMARY KEY CHECK(singleton=1),oldest_commit_revision INTEGER NOT NULL CHECK(oldest_commit_revision>=1),idempotency_policy TEXT NOT NULL);
+                INSERT INTO retention_metadata VALUES(1,1,'Retained for project lifetime; no expiration');")?;
+        }
+        if version < 3 {
+            tx.execute_batch("CREATE TABLE notes(id TEXT PRIMARY KEY,data_json TEXT NOT NULL);")?;
+        }
+        tx.execute_batch(&format!(
+            "UPDATE project_meta SET schema_version={SCHEMA_VERSION} WHERE singleton=1;
+            PRAGMA user_version={SCHEMA_VERSION};"
+        ))?;
         tx.commit()?;
         Ok(())
     })();

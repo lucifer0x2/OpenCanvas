@@ -84,6 +84,7 @@ mod tests {
             styles,
             assets,
             fonts,
+            notes: vec![],
             retention,
         }
     }

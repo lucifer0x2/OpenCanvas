@@ -41,6 +41,24 @@ pub fn schema() -> Value {
         json!({"style":object(json!({"id":id(),"name":text(256),"kind":{"enum":["fill","text"]},"value":{"oneOf":[{"type":"string","maxLength":16},{"type":"object","maxProperties":50}]}}),&["id","name","kind","value"])}),
         &["style"],
     );
+    let note = text(2000);
+    let author = text(64);
+    add(
+        "create_note",
+        json!({"id":id(),"nodeId":id(),"text":note,"author":author}),
+        &["id", "nodeId", "text"],
+    );
+    add(
+        "reply_note",
+        json!({"id":id(),"text":note,"author":author}),
+        &["id", "text"],
+    );
+    add(
+        "update_note",
+        json!({"id":id(),"text":note,"resolved":{"type":"boolean"},"nodeId":id()}),
+        &["id"],
+    );
+    add("delete_note", json!({"id":id()}), &["id"]);
     json!({"oneOf":variants})
 }
 fn token_value() -> Value {

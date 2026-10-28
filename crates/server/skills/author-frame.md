@@ -72,3 +72,9 @@ Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
 - A stack somewhere in the tree suppresses the all-free diagnostic but does not
   certify responsive behavior. Record which widths were checked and any fixed
   sizes or overflows that remain intentional.
+
+## Notes for intent the props cannot carry
+
+- Put behavior (sticky, hover, scroll), constraints ("fixed width per spec") and effects the
+  renderer lacks (blur, gradient) in `create_note` on the node they concern; never as a text node.
+- Notes are revisioned like nodes: `delete_subtree` drops the notes of deleted nodes.

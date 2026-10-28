@@ -71,6 +71,7 @@ pub(crate) fn read_snapshot(conn: &mut Connection) -> Result<Snapshot> {
     let styles = json_rows(&tx, "styles")?;
     let assets = json_rows(&tx, "assets")?;
     let fonts = json_rows(&tx, "fonts")?;
+    let notes = json_rows(&tx, "notes")?;
     let retention = migration::read_retention(&tx)?;
     tx.commit()?;
     Ok(Snapshot {
@@ -84,6 +85,7 @@ pub(crate) fn read_snapshot(conn: &mut Connection) -> Result<Snapshot> {
         styles,
         assets,
         fonts,
+        notes,
         retention,
     })
 }

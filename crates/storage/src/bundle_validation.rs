@@ -40,7 +40,7 @@ pub(crate) fn database(path: &Path, manifest: &BundleManifest) -> Result<Snapsho
     {
         return Err(invalid("Database exceeds resource or revision bounds"));
     }
-    for table in ["tokens", "styles", "assets", "fonts"] {
+    for table in ["tokens", "styles", "assets", "fonts", "notes"] {
         let mut stmt = conn.prepare(&format!("SELECT id,data_json FROM {table}"))?;
         let mut rows = stmt.query([])?;
         while let Some(row) = rows.next()? {

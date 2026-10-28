@@ -43,6 +43,8 @@ do not silently consider absolute positioning complete. Read skill://opencanvas/
 or skill://opencanvas/author-frame.md through resources/read for detailed checklists. \
 Only interaction state 'default' is supported; named token themes may be requested. \
 The design says nothing about interaction, animation, routing or data; ask rather \
-than invent those. To check an implementation, render_frame at the same revision and viewport and \
+than invent those. Notes: put intent props cannot carry (behavior, constraints, unsupported \
+effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
+descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. To check an implementation, render_frame at the same revision and viewport and \
 compare it with inspect_layout bounds and text lines for that job's scene key. Poll a pending \
 job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed.";

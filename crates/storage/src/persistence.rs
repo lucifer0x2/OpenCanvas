@@ -67,6 +67,16 @@ impl Project {
         {
             tx.execute("INSERT INTO fonts(id,data_json) VALUES(?1,?2) ON CONFLICT(id) DO UPDATE SET data_json=excluded.data_json",params![f.id,serde_json::to_string(f)?])?;
         }
+        for id in old.notes.keys().filter(|id| !after.notes.contains_key(*id)) {
+            tx.execute("DELETE FROM notes WHERE id=?1", [id])?;
+        }
+        for n in after
+            .notes
+            .values()
+            .filter(|n| old.notes.get(&n.id) != Some(*n))
+        {
+            tx.execute("INSERT INTO notes(id,data_json) VALUES(?1,?2) ON CONFLICT(id) DO UPDATE SET data_json=excluded.data_json",params![n.id,serde_json::to_string(n)?])?;
+        }
         tx.execute("UPDATE project_meta SET current_revision=?1,updated_at=CURRENT_TIMESTAMP WHERE singleton=1",[result.committed_revision as i64])?;
         tx.execute("INSERT INTO commits(revision,base_revision,batch_id,ops_json,summary_json) VALUES(?1,?2,?3,?4,?5)",params![result.committed_revision as i64,before.revision as i64,key,serde_json::to_string(ops)?,serde_json::to_string(&result.changed_ids)?])?;
         tx.execute("INSERT INTO idempotency(key,request_hash,committed_revision,response_json) VALUES(?1,?2,?3,?4)",params![key,request_hash,result.committed_revision as i64,serde_json::to_string(result)?])?;
