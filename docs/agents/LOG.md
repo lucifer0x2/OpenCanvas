@@ -62,3 +62,17 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Root nghiệm thu độc lập: storage states/refs/style aliases 8 pass, states/catalog/stroke 12 pass sau sửa Page gate; server integration 13, tools budget 1, library 35 pass (gồm golden bytes cũ). Clippy nghiêm ngặt, fmt và diff-check sạch. Tools/list tăng 195 B; mọi file sửa ≤350 dòng, mã Rust ≤216 dòng. Server guide 344 dòng được tách operations riêng.
 - Điểm dừng: main local và origin/main cùng `a0d7743`, checkout vẫn `codex/p27-interaction-states`. Chưa commit/push; không restart server thật, không ghi dữ liệu thật. Không chạy full workspace suite/viewer E2E.
 - Người dùng tiếp tục yêu cầu push nhánh P27. Root rà lại phạm vi thay đổi và diff-check sạch; chốt nội dung đã nghiệm thu để commit và push lên `origin/codex/p27-interaction-states`, không merge main.
+
+### Điều tra animation QueryNest trên P24 — 2026-10-29
+
+- Người dùng hỏi page có animation do Codex design sai hay preview render sai. Root đọc project `querynest-faithful-ui-motion` rev61 trên server 3847 (chỉ đọc). Kết luận: nhánh chỉ có P07a (dữ liệu); renderer/viewer/`render_frame` chưa đọc `animations` (P07c/P07d chưa làm), nên preview luôn vẽ trạng thái nghỉ, đúng thiết kế. Dữ liệu Codex hợp lệ và theo đúng hướng dẫn `author-frame.md`; ghi chú nhỏ: `tab-close` opacity 0 không có cách hiện ra, row-reveal ở page 03 không stagger. Không sửa mã.
+
+### Motion preview trong viewer — 2026-10-29
+
+- Người dùng chọn làm nhanh trang preview chính thức trong app (thay preview tạm Codex ở `/private/tmp/querynest-motion`, cổng 3848, hiểu sai `fillMode` mặc định và để style inline đè states). Worktree `../OpenCanvas-motion-preview`, nhánh `claude/motion-preview` từ `30cc7ff`, symlink node_modules/.runtime từ checkout chính. Giao fresh worker; không push, không chạm server 3847/`~/.opencanvas`.
+- Nhận kết quả: `c7d532a` trên `claude/motion-preview` — route `/preview`, nút Preview, `web/src/preview/` 14 module (≤203 dòng), shared `sceneJob.ts`; báo cáo `docs/MOTION-PREVIEW-REPORT.md`. Root kiểm độc lập: `npm --prefix web test` 20/20, `test:preview` 8/8 (server tạm, data tạm). Kiểm tay bằng Vite dev worktree (cổng 5179, proxy GET tới 3847) trên project QueryNest: 7 load animation chạy, hover giữ translateY -1 + fill state, rời chuột trả về, link sang Table Data đúng. Chưa merge vào nhánh P24, không push.
+- Người dùng yêu cầu merge vào P24: fast-forward `codex/p24-components-instances` 30cc7ff → `c7d532a`, không push. Root kiểm lại trên checkout chính: `npm --prefix web test` 20/20; server 3847 phục vụ `web/dist` mới không cần restart, `/preview` với QueryNest dựng 192 node, không lỗi console (SPA fallback trả HTTP 404, đã biết). Đã dừng Vite 5179, gỡ symlink và worktree `../OpenCanvas-motion-preview`; giữ nhánh `claude/motion-preview`.
+
+### Bỏ theo dõi web/dist — 2026-10-29
+
+- `web/dist` (bản build Vite) được track từ Initial commit, không tài liệu nào ghi lý do; build scripts, README và Dockerfile đều tự build nó. Người dùng yêu cầu bỏ theo dõi: thêm `web/dist/` vào `.gitignore`, `git rm --cached` (file trên đĩa giữ nguyên, 3847 vẫn phục vụ). Commit trên `codex/p24-components-instances`, không push. Clone mới cần `npm run build` trước `npm start` như README.
