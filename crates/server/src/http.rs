@@ -44,6 +44,7 @@ pub fn router(state: AppState) -> Router {
         .route("/api/v1/fonts/font_bundled", get(font))
         .route("/api/v1/jobs/{job}", get(job))
         .route("/api/v1/jobs/{job}/image", get(image))
+        .route("/api/v1/jobs/{job}/files/{index}", get(crate::export::file))
         .nest_service("/mcp", service)
         .fallback_service(
             ServeDir::new(&dist).not_found_service(ServeFile::new(dist.join("index.html"))),

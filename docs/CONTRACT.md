@@ -8,23 +8,30 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
 
 - `GET /projects` → `{ projects: ProjectRef[], nextCursor?: string|null }`. ProjectRef: `{ projectId, slug, name, revision, schemaVersion? }`.
 - `POST /projects` with `{slug,name}` → ProjectRef. The browser viewer does not call mutation routes.
-- `GET /projects/:projectId/snapshot` → storage Snapshot with `schemaVersion`, `projectId`, `slug`, `name`, `revision`, `nodes`, `tokens`, `styles`, `assets`, `fonts`, `retention`, `truncated:false`. Nodes: `{id,parentId,sortKey,kind,props}`; `sortKey` is a number (integer sibling index), not a string. Authored data is not replaced by computed data.
+- `GET /projects/:projectId/snapshot` → storage Snapshot with `schemaVersion`, `projectId`, `slug`, `name`, `revision`, `nodes`, `tokens`, `styles`, `assets`, `fonts`, `notes`, `retention`, `truncated:false`. Notes: `{id,nodeId,text,author?,resolved?,replies?}` (see `docs/SERVER.md` "Notes"). Nodes: `{id,parentId,sortKey,kind,props}`; `sortKey` is a number (integer sibling index), not a string. Authored data is not replaced by computed data.
 - `GET /projects/:projectId/events?cursor=<projectId>:<revision>` → SSE. Durable `commit` event data `{projectId,revision,changedIds}`, SSE id `<projectId>:<revision>`. `reset_required` data `{projectId,currentRevision,reason}`. `scene_ready` includes `{projectId,revision,sceneKey,jobId}`. Heartbeats are comments. Last-Event-ID also accepted. Register before snapshot/read durable log to avoid a gap; replay after cursor.
   The same stream also carries two **non-durable workspace hints** without an SSE `id`, so they never move the commit cursor: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Neither reads the durable log; only a commit of the streamed project replays it. Hints are not replayed after a reconnect or `reset_required`: clients refetch `GET /projects`, which is the source of truth, on every (re)open.
 - `GET /events` → SSE workspace stream for a client that has no project to follow yet (an empty workspace). It carries only `project_created` and `project_activity` with the data above, heartbeat comments every 10 s, and ends on server shutdown. No cursor, no replay, no query parameters (`INVALID_REQUEST` otherwise); a broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream. Same loopback Host/Origin guard as every route.
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
 - `GET /jobs/:jobId` → RenderJob.
 - `GET /jobs/:jobId/image` → PNG when ready, otherwise structured readiness error.
+- `GET /jobs/:jobId/files/:index` → one file of a ready export job (`export_nodes`) with its MIME type and an attachment `Content-Disposition`; `FILE_NOT_FOUND` 404 for a wrong index or a render job, `IMAGE_NOT_READY` 409 while pending/failed.
 - `GET /projects/:projectId/assets/:assetId` → verified project asset bytes and correct MIME type.
 - Bundled font endpoint `/api/v1/fonts/font_bundled` serves the exact licensed fixture font.
 
-RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, frameId, sceneKey?, scene?, provenance?, readiness?, diagnostics?, error?, imageUrl? }`. Ready `scene` conforms to `renderer/types.ts`; its provenance source revision is authoritative. Failure never returns success for strict PNG. Scene can be present with missing-resource diagnostics for labeled non-strict viewer placeholders, while strict export fails.
+RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, frameId, sceneKey?, scene?, provenance?, readiness?, diagnostics?, error?, imageUrl? }`. Ready `scene` conforms to `renderer/types.ts`; scene nodes may carry `stroke {color[4], width[4], align}` (sides [top, right, bottom, left], present only when a side is wider than 0; `scene-2`/`web-2`); its provenance source revision is authoritative. Failure never returns success for strict PNG. Scene can be present with missing-resource diagnostics for labeled non-strict viewer placeholders, while strict export fails.
+
+ExportJob (same routes and job table): `{ jobId, kind: "export", nodeId, status, projectId, revision, frameId (the root frame), sceneKey, provenance?, readiness?, files?: [{ url, fileName, format, mimeType, scale, width, height, bytes }], error? }`; never `scene` or `imageUrl`. A failed export (for example `EMPTY_BOUNDS`, `PIXEL_BUDGET`, `EXPORT_SCALE_RANGE`) has `status: "failed"`. Details: `docs/SERVER.md`, "Exporting node images".
 
 `sceneKey` equals `scene.provenance.sourceSceneKey`. Successful PNG metadata also
 includes MIME, dimensions, scale and actual Node/Chromium versions. Cache keys
 bind immutable input, revision, concrete design theme/state, scale and a startup
 pipeline/runtime fingerprint. Restart after replacing runtime or pipeline files.
 Failed jobs remain inspectable by ID; a new enqueue can retry the same request.
+A queued commit prerender that a newer one replaces is dropped without a record;
+retention evicts unrequested prerenders before requested jobs. `QUEUE_FULL`
+carries `retryAfterMs` (estimated time for the jobs ahead) and `hint`; prerenders
+never cause it for requested renders.
 Old completed jobs never overwrite another job or the viewer's chosen revision.
 
 ## Browser integration
@@ -45,14 +52,17 @@ Tree/context/resource reads return one authored revision, `truncated` and
 changing scope or advancing revision requires restarting pagination. A response
 budget never silently discards a complete item. An item exceeding the byte
 budget returns `CONTEXT_ITEM_TOO_LARGE`; callers can use a property filter.
-Each page is capped at 200 tree entries, depth 8 and 64 KiB, with at most 100
-items per resource kind. Continuation may start at a deeper tree node; depth is
-relative to that page's first entry. Resource-only continuation pages are valid.
+Each page is capped at 200 tree entries and 64 KiB, with at most 100 items per
+resource kind. `depth` (0–8) filters nodes by distance from the scope root (depth 0);
+deeper nodes are never listed, and a node whose children were cut carries
+`omittedChildren`. Without `depth` the whole scope is listed (`limits.depth: null`).
+Resource-only continuation pages are valid.
 
 Design context keeps authored `props` and adds `resolvedProps`, plus authored
 token/style values and `resolvedValue` for the requested concrete design theme.
 The node `props` field is never computed geometry. Theme aliases and fallback
 rules are specified in `RESOLUTION.md`. Interaction state supports `default`.
+Navigation links (`props.links`, `flowStart`) are authored data; `get_design_context.navigation` summarizes them.
 The viewer currently requests the default design theme; its light UI theme is
 independent. Snapshot database `schemaVersion:2` is separate from scene/API
 representation schema 1.

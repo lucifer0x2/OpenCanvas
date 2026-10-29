@@ -100,6 +100,7 @@ impl Project {
         for (index, op) in request.operations.iter().enumerate() {
             candidate.apply(op, &mut changed).map_err(|e| e.at(index))?;
         }
+        candidate.prune_links(&mut changed);
         candidate.validate()?;
         metrics.validate_us = us(time);
         let result = BatchResult {

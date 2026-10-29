@@ -1,0 +1,39 @@
+# OpenCanvas in Docker: `docker compose up -d`, then open http://127.0.0.1:3847 (MCP: /mcp).
+# OPENCANVAS_PORT (default 3847) sets the host and container port together, so the server's own
+# URLs (render imageUrl, Origin check) match the address the host uses.
+services:
+  opencanvas:
+    build: .
+    image: opencanvas:local
+    init: true
+    restart: unless-stopped
+    command:
+      - opencanvas-server
+      - --workspace
+      - /app
+      - --data-root
+      - /data
+      - --host
+      - 0.0.0.0
+      - --port
+      - "${OPENCANVAS_PORT:-3847}"
+    ports:
+      # Loopback only: the API has no authentication.
+      - "127.0.0.1:${OPENCANVAS_PORT:-3847}:${OPENCANVAS_PORT:-3847}"
+    volumes:
+      - opencanvas-data:/data
+    # Chromium renders through /dev/shm; Docker's 64 MB default is tight for large frames.
+    shm_size: 512m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:${OPENCANVAS_PORT:-3847}/api/v1/projects').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  opencanvas-data:

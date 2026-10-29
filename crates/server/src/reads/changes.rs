@@ -14,7 +14,9 @@ use std::collections::HashSet;
 const MAX_LIMIT: usize = 100;
 const MAX_BUDGET: usize = 65_536;
 /// Response groups for changed IDs; an ID absent from the current snapshot is `removed`.
-const GROUPS: [&str; 6] = ["nodes", "tokens", "styles", "assets", "fonts", "removed"];
+const GROUPS: [&str; 7] = [
+    "nodes", "tokens", "styles", "assets", "fonts", "notes", "removed",
+];
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -88,7 +90,7 @@ fn page(
         return Err(too_large());
     }
     let kinds = Kinds::of(s);
-    let mut groups: [Vec<&str>; 6] = Default::default();
+    let mut groups: [Vec<&str>; 7] = Default::default();
     let mut seen = HashSet::new();
     let mut entries = Vec::new();
     for commit in &commits {
@@ -159,7 +161,7 @@ fn len<T: serde::Serialize + ?Sized>(value: &T) -> Result<usize> {
 }
 
 /// IDs of every resource kind in the snapshot, to group changed IDs by what they are now.
-struct Kinds<'a>([HashSet<&'a str>; 5]);
+struct Kinds<'a>([HashSet<&'a str>; 6]);
 impl<'a> Kinds<'a> {
     fn of(s: &'a Snapshot) -> Self {
         Self([
@@ -168,10 +170,11 @@ impl<'a> Kinds<'a> {
             s.styles.iter().map(|t| t.id.as_str()).collect(),
             s.assets.iter().map(|t| t.id.as_str()).collect(),
             s.fonts.iter().map(|t| t.id.as_str()).collect(),
+            s.notes.iter().map(|t| t.id.as_str()).collect(),
         ])
     }
     /// Index into `GROUPS`: the first kind holding `id`, else `removed`.
     fn group(&self, id: &str) -> usize {
-        self.0.iter().position(|set| set.contains(id)).unwrap_or(5)
+        self.0.iter().position(|set| set.contains(id)).unwrap_or(6)
     }
 }

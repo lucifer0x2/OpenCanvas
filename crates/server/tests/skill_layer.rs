@@ -1,4 +1,5 @@
 mod support;
+mod tool_names;
 use serde_json::{json, Value};
 use support::Server;
 
@@ -39,7 +40,7 @@ async fn resources_are_advertised_embedded_and_read_only_with_tool_compatibility
         .contains("NO_REFLOW_INFORMATION"));
     let resources = s.rpc("resources/list", json!({})).await;
     let listed = resources["resources"].as_array().unwrap();
-    assert_eq!(listed.len(), 2);
+    assert_eq!(listed.len(), 3);
     assert!(resources["nextCursor"].is_null());
     for (index, (uri, expected)) in [
         (
@@ -71,7 +72,7 @@ async fn resources_are_advertised_embedded_and_read_only_with_tool_compatibility
     assert_eq!(missing["error"]["code"], -32002);
     assert!(missing["result"].is_null());
     let tools = s.rpc("tools/list", json!({})).await;
-    assert_eq!(tools["tools"].as_array().unwrap().len(), 15);
+    tool_names::assert_listed(tools["tools"].as_array().unwrap());
     let p = s.project().await;
     assert!(s.call("list_projects", json!({})).await["projects"]
         .as_array()
@@ -96,7 +97,7 @@ async fn context_diagnostic_uses_complete_authored_frame_scope_on_every_page() {
     ])).await;
     assert_eq!(result["committedRevision"], 1, "{result}");
     let request = json!({"projectId":p,"frameId":"free","viewport":{"width":320,"height":480},
-        "properties":["name"],"limit":1,"depth":0});
+        "properties":["name"],"limit":1});
     let first = s.call("get_design_context", request.clone()).await;
     let diagnostic = &first["diagnostics"][0];
     assert_eq!(first["diagnostics"].as_array().unwrap().len(), 1);

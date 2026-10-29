@@ -29,3 +29,16 @@ fn rejects_cycles_and_non_finite_geometry() {
     input.viewport.width = f32::NAN;
     assert!(compute(&input, &MeasureCache::new()).is_err());
 }
+#[test]
+fn image_fit_scene_values_match_the_authored_vocabulary() {
+    for fit in IMAGE_FITS {
+        assert_eq!(scene_fit(Some(fit)), Some(fit));
+    }
+    assert_eq!(scene_fit(None), Some("contain"));
+    assert_eq!(scene_fit(Some("fill")), Some("fit"), "legacy scene name");
+    assert_eq!(scene_fit(Some("stretch")), None);
+    let mut input = fixture();
+    input.nodes.push(serde_json::from_value(serde_json::json!({"id":"i","parentId":"f","kind":"image","props":{"width":10,"height":10,"assetId":"a","fit":"stretch"}})).unwrap());
+    let error = compute(&input, &MeasureCache::new()).unwrap_err();
+    assert_eq!(error.message, "Unsupported image fit");
+}

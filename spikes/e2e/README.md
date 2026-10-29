@@ -25,7 +25,7 @@ The run now records **15 check groups**, preserving the original 12. Focused bou
 
 Pixel equality at a narrow viewport proves repeatable rasterization on this runtime. It does not prove horizontal fit, descendant reflow or mobile usability: identical clipping can hide identical missing content. Viewer shell scrollWidth is a separate assertion about the viewer UI. The fixed welcome frame is expected to report **no reflow**, with 0/21/52 FRAME overflows at 1040/800/390. Stacks reports reflow, with 0/0/104 FRAME overflows; at 800 it also has 10 CARD overflows from its fixed chart plot, including chart-grid-0 at 212px. Its 390px body minimum makes the whole frame require 656px; body overflow is 266px. Text overlap vertically remains outside the horizontal-fit check. Neither sample is accepted as a mobile design.
 
-`browser.mjs` only observes the existing `drawImage` call by copying the real source canvases to PNG data URLs, keyed by size. It preserves the original draw call. A canvas that has itself received a canvas copy is a derived target — a Konva layer, or a zoom-out preview level — and is skipped. The viewer also rasterizes the scene at its current display scale, so the comparison selects the 1:1 canvas by the job's viewport size; that canvas is the shared renderer's unscaled output. This checks the shared image before viewport pan/zoom, shadows and selection overlays; those shell decorations are deliberately outside exported-design pixel equality.
+`browser.mjs` only observes `getContext` to register the real canvases the viewer creates; it changes no draw call. The on-screen layer paints the scene as vectors at the current zoom, so the comparison reads the viewer's 1:1 `drawScene` canvas instead: the most recently registered canvas that is not in the DOM and matches the job's viewport size. Konva's layer canvas is in the DOM and its hit canvas requests `willReadFrequently`, so neither is selected. That canvas is the shared renderer's unscaled output. This checks the shared image before viewport pan/zoom, shadows and selection overlays; those shell decorations are deliberately outside exported-design pixel equality.
 
 ## Recorded result — 2026-10-28
 
@@ -60,3 +60,9 @@ workspace → create/commit/select across projects, restart reconnect, follow-ag
 one `EventSource` per tab, GET-only); `live-tab.mjs` owns the per-tab EventSource/request
 counters. `run.mjs` only calls it and records `liveWorkspace` evidence. See
 `docs/TASK08-REPORT.md`.
+
+`export-svg.mjs` (P03b) is a standalone fidelity check, not part of `run.mjs`: it
+starts its own temporary server, exports one text-free frame (fills, clipped group
+with opacity, cropped rounded image) as 1x PNG and SVG, rasterizes the SVG through
+`<img>` in Chromium and fails when more than 0.5 % of pixels differ by more than 16
+in any channel. Build `renderer/dist` first (`npm run build:renderer`).

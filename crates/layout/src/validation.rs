@@ -66,10 +66,7 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
         if text_bytes > 1024 * 1024 {
             return Err(err("Frame text exceeds 1 MiB budget"));
         }
-        if p.fit
-            .as_ref()
-            .is_some_and(|f| !["fit", "contain", "cover", "fill"].contains(&f.as_str()))
-        {
+        if crate::scene_fit(p.fit.as_deref()).is_none() {
             return Err(err("Unsupported image fit"));
         }
         if let Some(c) = &p.crop
@@ -83,7 +80,7 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
         }
         if let Some(l) = &p.layout
             && (!["row", "column", "free"].contains(&l.mode.as_str())
-                || !finite(l.padding)
+                || !l.padding.edges().is_some_and(|e| e.into_iter().all(finite))
                 || !finite(l.gap))
         {
             return Err(err("Unsupported layout"));

@@ -42,7 +42,7 @@ impl AppState {
     pub fn new(store: Store, config: Config) -> Self {
         let (events, _) = broadcast::channel(128);
         let config = Arc::new(config);
-        let jobs = Jobs::start(config.clone(), events.clone());
+        let jobs = Jobs::start(config.clone(), events.clone(), store.clone());
         Self {
             store,
             config,

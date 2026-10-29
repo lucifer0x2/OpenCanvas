@@ -1,41 +1,20 @@
-use super::{values::*, Candidate};
+use super::{
+    animations::check_animations,
+    links::check_links,
+    prop_keys::{check_keys, check_required},
+    stroke::validate_stroke,
+    values::*,
+    Candidate,
+};
 use crate::{error::*, model::*};
 use serde_json::Value;
 impl Candidate {
     pub(super) fn properties(&self, n: &Node) -> Result<()> {
         let props = self.resolve_props(n)?;
         let p = props.as_object().unwrap();
+        check_keys(&n.kind, p)?;
         self.layout_properties(n, p)?;
-        let allowed = [
-            "name",
-            "x",
-            "y",
-            "width",
-            "height",
-            "minWidth",
-            "maxWidth",
-            "minHeight",
-            "maxHeight",
-            "layout",
-            "text",
-            "fontId",
-            "fontSize",
-            "lineHeight",
-            "fill",
-            "assetId",
-            "fit",
-            "opacity",
-            "clip",
-            "radius",
-            "crop",
-        ];
         for (k, v) in p {
-            if !allowed.contains(&k.as_str()) {
-                return Err(StorageError::validation(
-                    "props",
-                    "Unsupported authored property",
-                ));
-            }
             match k.as_str() {
                 "name" => {
                     if v.as_str().is_none_or(|s| s.len() > 256) {
@@ -50,6 +29,11 @@ impl Candidate {
                 "fontSize" | "lineHeight" => number(v, 1., 10000., k)?,
                 "opacity" => number(v, 0., 1., k)?,
                 "fill" => color(v)?,
+                "exportSettings" => crate::check_export_settings(v, "exportSettings")?,
+                "stroke" => validate_stroke(v)?,
+                "links" => check_links(v)?,
+                "flowStart" => self.check_flow_start(n, v)?,
+                "animations" => check_animations(v)?,
                 "clip" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));
@@ -102,14 +86,7 @@ impl Candidate {
                         ));
                     }
                 }
-                "fit" => {
-                    if !matches!(v.as_str(), Some("fit" | "contain" | "cover")) {
-                        return Err(StorageError::validation(
-                            k,
-                            "Only fit, contain and cover are supported",
-                        ));
-                    }
-                }
+                "fit" => crate::image_fit::check_fit(v)?,
                 "text" if v.as_str().is_none_or(|s| s.len() > 64 * 1024) => {
                     return Err(StorageError::validation(
                         k,
@@ -119,21 +96,7 @@ impl Candidate {
                 _ => {}
             }
         }
-        if n.kind == NodeKind::Text {
-            for key in ["text", "fontId", "fontSize", "lineHeight"] {
-                if !p.contains_key(key) {
-                    return Err(StorageError::validation(key,"Text requires explicit text, fontId, fontSize and lineHeight (or a text style)"));
-                }
-            }
-        } else if p
-            .keys()
-            .any(|k| ["text", "fontId", "fontSize", "lineHeight"].contains(&k.as_str()))
-        {
-            return Err(StorageError::validation(
-                "props",
-                "Text properties require a text node",
-            ));
-        }
+        check_required(&n.kind, p)?;
         if n.kind == NodeKind::Image {
             let asset = p
                 .get("assetId")
@@ -148,11 +111,6 @@ impl Candidate {
                     "Image requires an image asset",
                 ));
             }
-        } else if p.contains_key("assetId") || p.contains_key("fit") || p.contains_key("crop") {
-            return Err(StorageError::validation(
-                "props",
-                "Image properties require an image node",
-            ));
         }
         if n.kind == NodeKind::Frame
             && n.parent_id

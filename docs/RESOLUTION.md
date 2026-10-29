@@ -50,8 +50,8 @@ resolved_tokens_for_theme(&Snapshot, &str)
 ```
 
 The APIs leave snapshots and authored references unchanged. Resolved nodes use
-literal properties and retain the existing public `fit` to renderer `fill`
-conversion. Token readback returns literals keyed by token ID at the snapshot's
+literal properties; image `fit` keeps its authored name (no `fill` rename since
+B05, see "Mutation responses and image fit" in `docs/SERVER.md`). Token readback returns literals keyed by token ID at the snapshot's
 revision. A token update follows the existing atomic revision/idempotency path;
 callers must include revision and concrete theme in scene/cache keys. Scene jobs
 and design context must call the theme-aware APIs rather than silently default.
@@ -157,4 +157,12 @@ the backend to refresh startup pipeline fingerprint/job identity; wrap and resol
 sizing also participate in input identity. This task leaves real3847 untouched.
 Older backends reject wrap and older layout binaries may ignore unknown fields;
 there is no mixed-version, downgrade or runtime hot-replacement guarantee. No
-percentage sizing, breakpoint variants, column wrap, align API or dashboard redesign.
+percentage sizing, breakpoint variants, column wrap or dashboard redesign (align/justify: P08a below).
+
+## P08a: padding lists
+
+`layout.padding` may be a list of 1–4 items (CSS shorthand). Each item that is a
+`{"tokenId"}` resolves as a dimension in the requested theme, like scalar
+padding/gap; a non-dimension token in the list rejects with field
+`layout.padding`. Authored props keep the list and refs; `resolvedProps` hold the
+numbers, and `compact` `resources:"referenced"` still finds tokens inside the list.

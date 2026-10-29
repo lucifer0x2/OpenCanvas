@@ -19,6 +19,7 @@ async function collect(mcp, base, sample, artifacts) {
     const job = await mcp.call("render_frame", {
       projectId: sample.projectId,
       jobId: result.jobId,
+      includeScene: true,
     });
     checkWrapJob(job, i);
     for (const node of job.scene.nodes) {

@@ -35,6 +35,32 @@ pub enum Operation {
     UpsertStyle {
         style: Style,
     },
+    CreateNote {
+        id: String,
+        #[serde(rename = "nodeId")]
+        node_id: String,
+        text: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        author: Option<String>,
+    },
+    ReplyNote {
+        id: String,
+        text: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        author: Option<String>,
+    },
+    UpdateNote {
+        id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        text: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        resolved: Option<bool>,
+        #[serde(default, rename = "nodeId", skip_serializing_if = "Option::is_none")]
+        node_id: Option<String>,
+    },
+    DeleteNote {
+        id: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

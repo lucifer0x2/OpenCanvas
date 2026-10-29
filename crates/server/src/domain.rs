@@ -20,6 +20,8 @@ struct ImportRequest {
     font: Option<FontRegistration>,
 }
 pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> {
+    // A commit that only touches notes changes no rendered pixel: skip its prerender.
+    let notes_only = opencanvas_storage::is_note_batch(&args["operations"]);
     let result = match name {
         "apply_batch" => {
             let req: BatchRequest = serde_json::from_value(args)?;
@@ -50,15 +52,17 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
             let result = state
                 .project(id.clone(), move |p| p.import_asset(req))
                 .await;
-            serde_json::to_value(conflict::checked(state, &id, expected, result).await?)?
+            with_commit_fields(serde_json::to_value(
+                conflict::checked(state, &id, expected, result).await?,
+            )?)
         }
         _ => return Err(ApiError::invalid("Unknown mutation")),
     };
-    let committed = result.get("result").unwrap_or(&result);
+    let committed = &result;
     if committed["replayed"] != true {
         let event = json!({"event":"commit","projectId":committed["projectId"],"revision":committed["committedRevision"],"changedIds":committed["changedIds"]});
         let _ = state.events.send(event);
-        if let Some(project) = committed["projectId"].as_str() {
+        if let Some(project) = committed["projectId"].as_str().filter(|_| !notes_only) {
             if let Ok(snapshot) = state.snapshot(project.into()).await {
                 // Frames holding changed nodes; token/style-only changes keep the first four.
                 let changed: Vec<&str> = committed["changedIds"]
@@ -79,10 +83,22 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
                         state: "default".into(),
                         scale: 1.0,
                     };
-                    let _ = state.jobs.enqueue(snapshot.clone(), request).await;
+                    let _ = state.jobs.prerender(snapshot.clone(), request).await;
                 }
             }
         }
     }
     Ok(result)
+}
+
+/// import_asset answers like apply_batch, with the commit fields at the top level; `result`
+/// still carries them for clients written against the earlier nested shape.
+fn with_commit_fields(mut value: Value) -> Value {
+    let commit = value.get("result").and_then(Value::as_object).cloned();
+    if let (Some(commit), Some(top)) = (commit, value.as_object_mut()) {
+        for (key, field) in commit {
+            top.entry(key).or_insert(field);
+        }
+    }
+    value
 }

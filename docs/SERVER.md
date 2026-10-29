@@ -27,6 +27,8 @@ target/debug/opencanvas-server --data-root "$OPENCANVAS_TEST_ROOT" --workspace "
 
 Visit `http://127.0.0.1:3847`. `--port 0` selects a random loopback port and prints the actual URL. `--data-root` also accepts `OPENCANVAS_DATA_ROOT`; the CLI flag wins. With neither option the production default is `~/.opencanvas`. Tests always use temporary roots and random ports. Stop the process with Ctrl-C; a second process using the same data root receives a lock error. Keep the selected root when restarting to retain project IDs, revisions, nodes and resources.
 
+`--host` takes `127.0.0.1` (default) or `0.0.0.0`, which listens on every interface for a container whose port is published on host loopback only; Host/Origin checks are unchanged, and worker callbacks and `imageUrl` still use `http://127.0.0.1:<port>`, so no other address is accepted. See "Docker" in `README.md`.
+
 The backend serves the built viewer. For frontend development, `npm --prefix web run dev` proxies `/api` to port 3847. No frontend call mutates design data.
 
 ## Connect an MCP client
@@ -37,11 +39,17 @@ Configure a Streamable HTTP server URL, for example the following client-neutral
 {"type":"http","url":"http://127.0.0.1:3847/mcp"}
 ```
 
-Clients initialize the MCP session, send `notifications/initialized`, retain the returned `Mcp-Session-Id`, and use `tools/list` / `tools/call`. The SDK transport supports JSON and SSE results; SSE starts with an empty priming event which is not a JSONRPC result. Concurrent JSONRPC requests must use distinct IDs. The server advertises 15 tools with explicit schemas and validates those schemas at runtime. Domain failures are tool results with `isError:true` and `structuredContent.error`; protocol failures remain MCP JSONRPC errors.
+Clients initialize the MCP session, send `notifications/initialized`, retain the returned `Mcp-Session-Id`, and use `tools/list` / `tools/call`. The SDK transport supports JSON and SSE results; SSE starts with an empty priming event which is not a JSONRPC result. Concurrent JSONRPC requests must use distinct IDs. The server advertises its tools with explicit schemas and validates those schemas at runtime. The tool count grows between releases, so `tests/tool_names` and `docker/smoke.mjs` check `tools/list` by name, never by count. Every published `inputSchema` is a plain top-level `"type":"object"` with no top-level `oneOf`/`anyOf`/`allOf`/`not`: MCP requires the object type and the Anthropic API rejects top-level combinators, so one such schema makes clients like Claude Code drop the whole tool list (`tests/tool_schemas.rs` guards this). Domain failures are tool results with `isError:true` and `structuredContent.error`; protocol failures remain MCP JSONRPC errors.
 
-Start with `create_project`, then `apply_batch`, and read `get_outline` before requesting a scoped `get_subtree` or `get_design_context`. Use `find_nodes` to locate a node by name, text, kind or ID in one call. Text requires explicit font/style properties as described by storage validation; the bundled font ID is `font_bundled`. Mutations require `expectedRevision`, a stable `idempotencyKey`, and ordered operations. Retry exactly the original body after a lost response. A changed body with the same key receives `IDEMPOTENCY_KEY_REUSED`; a stale revision with a new key receives `REVISION_CONFLICT` and `currentRevision`, plus `changedSince` (see "Changes since a revision" below).
+Protocol 2026-07-28 is also supported (`server/discover` lists every version rmcp knows). It has no `initialize` and no session: each POST carries the `MCP-Protocol-Version: 2026-07-28` and `Mcp-Method` headers (plus `Mcp-Name` with the tool name or resource URI for `tools/call` and `resources/read`) and `params._meta` with `io.modelcontextprotocol/protocolVersion` and `io.modelcontextprotocol/clientCapabilities`. That revision requires SEP-2549 cache hints on list and read results, and clients such as Claude Code reject the whole catalog without them. `tools/list`, `resources/list`, `resources/templates/list` (always empty) and `resources/read` therefore return `ttlMs: 300000` and `cacheScope: "private"` (`src/cache_hints.rs`): the catalog is fixed for the process lifetime and the server answers one local user, so a client may reuse it for five minutes. The hints are sent on every protocol version, because older revisions accept extra result fields; rmcp still strips `resultType` for them (`tests/protocol_2026.rs`).
 
-`render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId,waitMs?}` for polling. Render responses include a job ID and status.
+Every session pays for the whole `tools/list` before its first call. `tests/tools_budget.rs` is the one size budget for it (total and per tool, both printed with `--nocapture`) and also checks that `tools/list` publishes exactly the catalog (`opencanvas_server::catalog_tool_names()`). A change that adds or grows a tool records the bytes before and after; feature tests measure only what their feature adds.
+
+Start with `create_project`, then `apply_batch`, and read `get_outline` before requesting a scoped `get_subtree` or `get_design_context`. Use `find_nodes` to locate a node by name, text, kind, ID or parent in one call; `get_outline {nodeId:<page>, depth:1}` or `find_nodes {parentId:<page>, kinds:["frame"]}` lists a page's root frames in one call. Text requires explicit font/style properties as described by storage validation; the bundled font ID is `font_bundled`. Mutations require `expectedRevision`, a stable `idempotencyKey`, and ordered operations. Retry exactly the original body after a lost response. A changed body with the same key receives `IDEMPOTENCY_KEY_REUSED`; a stale revision with a new key receives `REVISION_CONFLICT` and `currentRevision`, plus `changedSince` (see "Changes since a revision" below).
+
+`render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId,waitMs?}` for polling. Its published `inputSchema` is the flat union of both shapes with only `projectId` required; the server still validates the strict two-mode form, so mixing fields of both modes, `waitMs` without `jobId`, neither mode or an unknown field returns `INVALID_REQUEST`. Render responses include a job ID and status.
+
+Scene is opt-in (`src/render_response.rs`): the MCP response is the job record without `scene`, the computed node/line/font/asset tree that is tens to hundreds of KB for a real frame. It keeps `jobId`, `status`, `projectId`, `revision`, `frameId`, `sceneKey`, and once the job has left `pending`, `provenance`, `diagnostics`, `readiness`, `imageUrl`/`image` (PNG dimensions) or `error`. Its size grows with fonts, assets and diagnostics, not with node count (a 300-node frame: about 3.6 KB for the whole `tools/call` result, against 88 KB with the scene; `tests/render_response.rs`). Read bounds and text lines with `inspect_layout` for that `sceneKey`, which pages and selects fields. Alternatively, pass `includeScene: true` (boolean, accepted in both modes, default `false`) to receive the full record exactly as before. `includeScene` is the only field added to the published schema. The job table, `get_design_context` and `inspect_layout` are unaffected, and the HTTP `/api/v1/jobs/:id` route that the viewer reads still returns the full record.
 
 Bounded wait on a poll: `waitMs` (integer 0–10,000, default 0) is accepted only with `jobId`; on the enqueue form, or out of range or not an integer, the call returns `INVALID_REQUEST`. Absent or 0 returns the job record immediately, byte for byte as before. Otherwise the call returns as soon as the job leaves `pending` (`ready` or `failed`), or the record as it is when `waitMs` elapses (still `pending`; poll again). The response has the same shape either way; there is no extra field telling a timed-out wait apart. The project check and `JOB_NOT_FOUND` happen before waiting, and a record evicted during the wait returns `JOB_NOT_FOUND`. Waiting parks on an in-process completion signal: it holds no storage handle, read transaction, blocking thread or job-table lock, so reads and commits proceed meanwhile. A server shutdown ends every wait at once with the current record. Use `waitMs` instead of tight polling, including on the job IDs that `get_design_context` returns; the context read itself still never waits. The HTTP `/api/v1/jobs/:id` route is unchanged and does not wait. Ready PNG metadata includes HTTP URI, MIME, pixel dimensions and actual Node/Chromium versions. No project filesystem paths are returned. `inspect_layout` reads bounds and line lists from a job/scene key; it does not recompute layout or provide a deeper rule explanation. Its paging and field selection are described in the next section.
 
@@ -75,16 +83,52 @@ scene order; following `nextCursor` returns every selected node exactly once.
 - `diagnostics` is repeated on every page. `fields:["bounds"]` drops the text line lists;
   on the stacks sample it is ~25% smaller per viewport (`TASK07-REPORT.md`, 07B).
 
+## Exporting node images: `export_nodes`
+
+`export_nodes {projectId, nodeIds (1–8), settings?, theme?, revision?, waitMs?}` returns image files of nodes (not a backup bundle; see `docs/BACKUP.md` for those). Each node is one export job in the requested queue tier: its root frame (the page's child that contains it) is computed once at authored width/height for `theme`, scale 1, then the node's subtree alone is rasterized once per setting. The crop is the node's layout bounds (children overflowing it are cut, like Figma `use_absolute_bounds`), the background is transparent, and the node is drawn without ancestors: its own opacity applies, ancestor clip and opacity do not.
+
+- Settings come from the call's `settings` (applied to every node), else the node's `exportSettings` prop, else one PNG at 1x. A PNG setting is `{format?:"png", scale?:0.01–4 | width?:1–16384 | height?:1–16384, suffix?}`, at most one of the three sizes. A target width/height derives the scale from the node bounds; outside 0.01–4 the item fails with `EXPORT_SCALE_RANGE`. The file name is the node `name` (else its ID, with `/ \ : * ? " < > |` and control characters replaced by `_`, cut to 100 bytes) + suffix + `.png`; the suffix defaults to `@<scale>x` when scale is not 1, else empty. An invalid `settings` argument fails the whole call with `VALIDATION_FAILED` and `field` such as `settings[1].scale`, by the same rules as the prop (`skill://opencanvas/props.md`).
+- `exportSettings` is a node prop (every kind except page): an array of 0–8 settings. `[]` clears it (`update_node` merges keys, so a key cannot be removed). Two settings yielding the same file name, unknown keys (`constraint` → use scale/width/height, `type` → `format`) and formats other than `png` and `svg` are rejected with `field` `exportSettings[i]…`.
+- SVG: `{format:"svg", suffix?, svgIdAttribute?}` takes no scale, width or height (rejected at `…scale` etc.: SVG is resolution-independent); the file is `<name><suffix>.svg`, `mimeType:"image/svg+xml"`, `width`/`height` the node's CSS-pixel size, no `scale`. It is built in Rust from the same subtree scene, without the worker: fills as `<rect rx>` (8-digit hex split into `fill` + `fill-opacity`), clip as `<clipPath>` (`oc-clip-N` IDs), CSS group opacity as `<g opacity>` like the renderer, images as `<image>` with the asset's original bytes in a `data:` URI (crop through a nested `viewBox` of natural pixels, read from the PNG/JPEG/WebP header). The file is self-contained: no server URL. Text stays live `<text>` per measured line with the font family/weight/size, not outlined and with no embedded font, so line widths depend on the viewer's fonts; such a file carries `diagnostics:["SVG_TEXT_NOT_OUTLINED"]`. Strokes (box `stroke`, uniform or per-side) are not drawn in SVG yet: a subtree with any stroked node exports without them and carries `SVG_STROKE_NOT_EXPORTED`; export PNG for those. `svgIdAttribute:true` wraps each node's elements in `<g id="<nodeId>">`. Resources are strict: a failed font or asset, or image bytes missing or no longer matching the scene's manifest hash, fail the item with `RESOURCE_NOT_READY` rather than a partial SVG. JPEG EXIF orientation is not applied.
+- The call waits up to `waitMs` (default and max 10,000) for all jobs, then returns `{projectId, revision, exports:[{nodeId, jobId, status, files?, error?}]}`. A ready item lists `files[]` `{url, fileName, format, mimeType, scale, width, height, bytes}`; no scene and no base64. A pending item: repeat the identical call, which reuses the same `jobId` while the record is retained, or poll `render_frame {jobId, waitMs}`.
+- Per-item errors leave the other nodes running: `NODE_NOT_FOUND`, `EXPORT_UNSUPPORTED` (page, or a node outside a root frame), `QUEUE_FULL` (retryable, `retryAfterMs`), and at run time `EMPTY_BOUNDS` (zero width or height), `PIXEL_BUDGET` (16M pixels per file, 48 MiB per job), `EXPORT_SCALE_RANGE`, `RESOURCE_NOT_READY`. Whole-call errors: `INVALID_REQUEST`, `VALIDATION_FAILED` (settings), `REVISION_UNAVAILABLE` (`revision` other than head), `PROJECT_NOT_FOUND`.
+- `GET /api/v1/jobs/{job}/files/{index}` serves a file with its MIME type and `Content-Disposition: attachment; filename="<ascii>"; filename*=UTF-8''<encoded>`; `FILE_NOT_FOUND` (404) for a wrong index or a render job, `IMAGE_NOT_READY` (409) while pending or failed, `JOB_NOT_FOUND` (404) once evicted. `GET /api/v1/jobs/{job}` returns the export record (`kind:"export"`, `nodeId`, `files`, `provenance`, `readiness`; no `scene`, no `imageUrl`). Export records share the 32 retained job records with renders and prerenders, so download right away; a later identical call recreates evicted files. No filesystem path is returned or accepted.
+
 ## MCP skill resources and context diagnostics
 
 The initialization capabilities advertise both tools and resources. `resources/list`
-returns exactly two embedded Markdown documents (`text/markdown`), available without
+returns exactly three embedded Markdown documents (`text/markdown`), available without
 project creation or filesystem access through `resources/read`:
 
 - `skill://opencanvas/implement-frame.md`: context-to-code checklist, stack/sizing
   mapping, text baseline cautions, and when to state assumptions or ask the user.
 - `skill://opencanvas/author-frame.md`: stack-first `apply_batch` authoring,
   fill/hug/min/max choices, and verification at two viewports.
+- `skill://opencanvas/props.md`: every authored `props` key by node kind, with
+  value ranges, required keys and common wrong names. It is rendered at startup
+  (`src/props_doc.rs`) from the storage validator's property table
+  (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+
+### Property validation errors
+
+The validator checks every authored (and style-resolved) key against that table
+before checking values. An unknown key, or a key on the wrong kind (text metrics
+outside `text`, `assetId`/`fit`/`crop` outside `image`, `layout` outside
+page/frame/group), returns `VALIDATION_FAILED` with these added `error` fields:
+
+```json
+{"code":"VALIDATION_FAILED","message":"Unsupported authored property 'cornerRadius' on rectangle node; did you mean 'radius'?",
+ "retryable":false,"opIndex":3,"field":"props.cornerRadius","nodeId":"card","nodeKind":"rectangle",
+ "allowedKeys":["name","styleId","x","y","width","height","minWidth","maxWidth","minHeight","maxHeight","fill","opacity","clip","radius"],
+ "suggestion":"radius"}
+```
+
+`suggestion` (a known alias such as `color`→`fill`, a case-insensitive match, or a
+key within two edits) is omitted when nothing is close or the key is merely on the
+wrong kind. Value errors keep their existing `field` (for example `opacity`,
+`layout.wrap`, `fontId`) and gain only `nodeId`/`nodeKind`. All fields are
+additive; `code`, `message`, `retryable`, `opIndex` and `currentRevision` keep
+their meaning.
 
 Unknown resource URIs return MCP resource-not-found (`-32002`) for protocol
 2025-11-25; rmcp maps this to invalid params (`-32602`) for 2026-07-28 and newer.
@@ -124,7 +168,7 @@ for worker/Chromium completion. In addition to the existing context fields:
 - `computed.status`: `pending`, `ready` or `failed` (failure takes precedence).
 - `computed.coordinateSpace: "frame-local"`; `computed.viewports` preserves request
   order. Each item has `viewport`, `status`, `jobId`, `sceneKey` and optional `error`.
-  Queue rejection has null job/scene IDs and retryable `QUEUE_FULL`.
+  Queue rejection has null job/scene IDs and retryable `QUEUE_FULL` with `retryAfterMs` and `hint`.
 - Each returned node has `computedBounds: [Bounds|null, ...]` in that same order.
   `Bounds` is `{x,y,width,height}` in logical pixels. A pending or failed viewport
   contributes null, even when a non-strict scene exists with a strict PNG error.
@@ -197,6 +241,48 @@ compact resources alone resolve the frame to identical values for every theme, a
 dropping any one of them fails validation. Measured savings are in
 `TASK07-REPORT.md` (07C).
 
+## Navigation links
+
+Navigation is the one interaction a design declares, as authored props (no
+migration, no new tool):
+
+- `links` on any non-page node: an array of `{to?, on?, action?}`. `on` is
+  `click` (default, includes tap) or `hover`; `action` is `navigate` (default),
+  `overlay`, `back` or `close`. `to` is a root frame ID (a direct child of any
+  page), required for navigate/overlay and absent for back/close. One link per
+  `on`; `hover` only opens an overlay; `[]` means none (`update_node` cannot
+  delete a key). A link is identified by `(nodeId, on)`.
+- `flowStart` on a root frame: a flow name of 1–64 bytes, unique in the project.
+  The default flow is the first by page order, then `sortKey`.
+
+Validation (`crates/storage/src/validate/{links,navigation}.rs`): shapes are
+checked per operation with `field` `links[i].<key>` (unknown link keys suggest
+`on`/`to`/`action`) and `opIndex`. Destinations and duplicate flow names are
+checked once at the end of the batch, so a node may link to a root frame created
+later in the same batch; those errors carry `field` `links[i].to` or `flowStart`
+and the source `nodeId`, without `opIndex`. A missing `to` that matches a root
+frame `name` suggests that frame's ID; a nested frame suggests its root frame.
+`reparent_node` that nests a link target or a `flowStart` frame fails.
+
+Delete cascade: before validation, links whose `to` was deleted in the same batch
+and not recreated are removed (an emptied `links` key is dropped) and their
+sources join `changedIds`, so `get_changes` reports them under `nodes`. Deleting
+and recreating a frame ID in one batch keeps links. A `to` that never existed
+still fails; committed snapshots and bundles never hold dangling links.
+
+`get_design_context` adds `navigation` on the first page when the frame has any
+outgoing link in its subtree, any incoming link or a `flowStart`:
+`{flowStart?, out?: [{from, on, action, to?, toName?}], in?: [{from, fromFrame,
+fromFrameName?, on, action}], truncated?}`. `out` is subtree preorder then array
+order; `in` is project order (page, screen, preorder). Defaults are always
+written out. Each list holds at most 50 entries; `truncated:true` says more
+exist. `compact:true` returns the same block. Frames without navigation have no
+key. Large link counts count against `budget` like other metadata.
+
+Layout and render ignore both props. A binary older than this change rejects
+every commit and context read of a project that already uses them
+(`VALIDATION_FAILED props.links`); roll back by removing the props first.
+
 ## Finding nodes: `find_nodes`
 
 Read-only search in one revision, for when the agent knows a name, visible copy,
@@ -215,10 +301,11 @@ reads: outline, subtree and context keep their schemas and responses.
 | `nameContains` | 1–128 characters, against `props.name`; nodes without a string name never match. |
 | `textContains` | 1–256 characters, against `props.text` of text nodes only. |
 | `ids` | 1–200 exact node IDs, for batch reads by ID. |
+| `parentId` | One node ID; matches its direct children only (not deeper descendants). `parentId:<pageId>` with `kinds:["frame"]` lists the page's root frames. An unknown ID matches nothing. |
 | `properties` | ≤20 authored prop keys to attach to every match, same column filter as `get_subtree`; omitted means no `props`. |
 | `limit`, `budget`, `cursor`, `revision` | 1–200 matches per page (default 50), 1,024–65,536 bytes (default 65,536), and the usual cursor/revision. No `depth`, `theme` or `viewport`. |
 
-At least one of `kinds`, `nameContains`, `textContains`, `ids` is required, otherwise
+At least one of `kinds`, `nameContains`, `textContains`, `ids`, `parentId` is required, otherwise
 `INVALID_REQUEST`; criteria are ANDed. Matching lowercases both sides with
 `str::to_lowercase` and tests substring containment. There is **no accent folding and
 no Unicode normalization** (NFC/NFD): "Tong quan" does not find "Tổng quan", and text
@@ -231,7 +318,7 @@ schemaVersion, projectId, revision, scope (root ID or null)
 criteria      the requested criteria; ids are echoed as idCount
 scannedNodes  nodes in scope, totalMatches  matches in scope (both before paging)
 matches[]     {id, kind, name, parentId, depth, path:[{id,kind,name}], pathTruncated?,
-               matchedOn:["name"|"text"|"kind"|"id"], textPreview?, props?}
+               matchedOn:["name"|"text"|"kind"|"id"|"parent"], textPreview?, props?}
 truncated, nextCursor, limits {nodes, bytes}
 ```
 
@@ -272,7 +359,7 @@ model, idempotency or the SSE cursor.
 ```text
 schemaVersion, projectId, fromRevision (= sinceRevision), currentRevision
 commits[]   {revision, changedIds, operations?}   in revision order, whole commits only
-changed     {nodes, tokens, styles, assets, fonts, removed}   union of this page's changedIds
+changed     {nodes, tokens, styles, assets, fonts, notes, removed}   union of this page's changedIds
 truncated, nextRevision, limits {commits, bytes}
 ```
 
@@ -308,17 +395,53 @@ resend with `expectedRevision: toRevision` and a **new** `idempotencyKey` (the b
 otherwise re-read those IDs with `find_nodes {ids}`. Storage validates every batch again, so a
 wrong rebase fails with `VALIDATION_FAILED` rather than writing bad data.
 
+## Notes
+
+Design intent the props cannot carry (behavior, constraints, effects the renderer lacks) is a
+**note** anchored to a node. Notes are part of the revisioned document: they are written by
+`apply_batch` operations, so idempotent replay, `expectedRevision`, `changedSince`,
+`get_changes`, the SSE `commit` event and bundles cover them unchanged. Stored JSON equals the
+JSON read back; defaults are omitted:
+
+```json
+{"id":"note-cta","nodeId":"cta","text":"CTA sticks to the bottom while scrolling.","author":"designer",
+ "resolved":true,"replies":[{"text":"Done with position: sticky.","author":"coder"}]}
+```
+
+| Operation | Rule (failures are `VALIDATION_FAILED` with `field` and `opIndex`) |
+| --- | --- |
+| `create_note {id,nodeId,text,author?}` | `id` new and not a node ID (`id`); `nodeId` an existing page, frame or descendant (`nodeId`). |
+| `reply_note {id,text,author?}` | Appends to `replies`; the note must exist (`id`); at most 100 replies (`replies`: create a new note). |
+| `update_note {id,text?,resolved?,nodeId?}` | At least one field (`update_note`); `resolved:false` reopens; `nodeId` re-anchors. |
+| `delete_note {id}` | The note must exist (`id`). |
+
+- `text` is 1–2000 characters, `author` (self-declared, unauthenticated) 1–64; at most 5000
+  notes per project. `create_node` rejects an ID held by a note.
+- `delete_subtree` also deletes the notes anchored to every deleted node; their IDs are in
+  `changedIds` and in `get_changes` `removed`. History stays readable with
+  `get_changes includeOperations`.
+- `changedIds` of a note operation is the note ID; `get_changes` groups live ones as `notes`.
+- A commit whose operations are all note operations enqueues no prerender (its `commit` event
+  is still sent). It still advances the revision, so older scene keys and cursors go stale.
+- `get_design_context` takes `notes: "open"` (default), `"all"` (adds resolved notes, which
+  carry `resolved:true`) or `"none"`. It lists, after `nodes`, the notes anchored to the
+  frame's ancestors (outermost first), then to the frame and its descendants in preorder,
+  each node's notes by ID. They share the 100-items-per-field page cap and the byte budget.
+  With no note in scope the `notes` key is absent and the response is byte-identical to before.
+- `GET /snapshot` carries every note in `notes`. Viewer display (P02b) and a project-wide
+  `list_notes` (P02c) are later phases.
+
 ## Consistency and limits
 
-- HTTP snapshot is authored data at one revision; its database schema version is currently 2. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
+- HTTP snapshot is authored data at one revision; its database schema version is currently 3. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
 - Scene input is an owned immutable snapshot, with the scoped frame detached from its authored page for layout. Its source revision and scene key remain fixed if a later mutation commits. Old completed jobs remain readable by job ID until eviction; a new request for an authored revision no longer available returns `REVISION_UNAVAILABLE`.
 - Scene cache identity includes project, revision, frame, viewport, theme, state, scale and a startup fingerprint of pipeline artifacts, actual Node version, installed Playwright and the browser executable identity. The cache is process-local. Restart the backend after changing Node, Chromium, layout binary or renderer/worker artifacts. PNG provenance records actual runtime versions, not guessed pins.
 - Named design themes come from token declarations; unknown themes return `UNSUPPORTED_THEME`. Only the default interaction state is supported. Literal, typed token references, aliases and default/themes envelopes are resolved by storage. Authored node `props` remain intact in context; `resolvedProps`, token/style `resolvedValue` carry concrete-theme values separately.
-- Tree/context pages contain at most 200 entries and 64 KiB. `depth` is 0–8 and limits descent relative to the first node of each continuation page. `nextCursor` continues a stable preorder traversal, including deeper nodes, then resource metadata, without dropping budget-trimmed entries. Each page includes scope, revision, limits and `truncated`; resource arrays are capped at 100 items per page. Resource-list tools cap the whole page at 100 items. One indivisible item exceeding the requested budget returns `CONTEXT_ITEM_TOO_LARGE`; use a property filter or larger budget.
+- Tree/context pages contain at most 200 entries and 64 KiB. `depth` (0–8) is a filter counted from the scope root, which is depth 0: with no `nodeId`/`frameId` pages are 0 and their root frames 1, so `get_outline {depth:1}` lists every page and root frame, and `{nodeId:<page>, depth:1}` one page's root frames. Nodes deeper than `depth` are left out of every page (a continuation never descends further); a listed node whose children were left out carries `omittedChildren` (its direct child count), so read it again as the scope root to go deeper. Without `depth` the read covers the whole scope and `limits.depth` is `null`. `depth` does not narrow `get_design_context` diagnostics, reflow or `compact` resources, which cover the whole frame. `nextCursor` continues a stable preorder traversal of the listed nodes, then resource metadata, without dropping budget-trimmed entries. Each page includes scope, revision, limits and `truncated`; resource arrays are capped at 100 items per page. Resource-list tools cap the whole page at 100 items. One indivisible item exceeding the requested budget returns `CONTEXT_ITEM_TOO_LARGE`; use a property filter or larger budget.
 - Cursors bind project, revision, tool, scope, filters, theme and page parameters. Repeat the same parameters with `cursor`. A concurrent mutation or changed query rejects the cursor with `INVALID_CURSOR`; restart from the outline. An explicit unavailable read revision returns `REVISION_UNAVAILABLE`.
 - Mutation batches cap at 500 operations; assets cap at 10 MiB decoded and 13,981,016 base64 characters. The transport body cap is 15 MiB, including the nested MCP service. Asset import accepts bounded bytes and media metadata, never arbitrary paths or URLs.
-- Rendering caps at 2,048 scoped nodes, 16 million scaled pixels, scale at most 4, one active job plus eight queued jobs, 32 retained job records and 48 MiB per worker response. Backend jobs have a 45-second deadline; the shared worker also enforces its own 30-second operation and resource deadlines. `QUEUE_FULL` is retryable. Failed jobs and ready scenes with a strict-PNG error do not become permanent cache hits: retry creates a new job while old failure readback is retained.
-- After a non-replayed commit the backend prerenders, at authored size, default theme and scale 1, the frames that contain the commit's changed nodes: for each changed node the outermost enclosing frame (the one the viewer lists), at most four, in storage order. When no changed ID resolves to a frame (token/style-only changes, deletions, page edits) it prerenders the first four frames in storage order, as before. Prerender jobs share the render queue and are never awaited.
+- Rendering caps at 2,048 scoped nodes, 16 million scaled pixels, scale at most 4, one active job plus eight queued requested renders and eight queued commit prerenders, 32 retained job records and 48 MiB per worker response. When the record table is full, the oldest finished prerender that no requested render reused goes first, then the oldest finished record of any kind, so a run of commits does not evict a ready `render_frame` job. Backend jobs have a 45-second deadline; the shared worker also enforces its own 30-second operation and resource deadlines. `QUEUE_FULL` is retryable and carries `retryAfterMs` (a moving average of recent successful job durations times the jobs that would still run first: the queued requested renders plus the running one; 100–10,000) and a `hint`; HTTP routes also send `Retry-After` in whole seconds. Failed jobs and ready scenes with a strict-PNG error do not become permanent cache hits: retry creates a new job while old failure readback is retained.
+- After a non-replayed commit the backend prerenders, at authored size, default theme and scale 1, the frames that contain the commit's changed nodes: for each changed node the outermost enclosing frame (the one the viewer lists), at most four, in storage order. When no changed ID resolves to a frame (token/style-only changes, deletions, page edits) it prerenders the first four frames in storage order, as before. Prerender jobs are never awaited and run on the same worker, but in a lower queue tier: requested renders (`render_frame`, `get_design_context` viewports, HTTP scene) always run first and never get `QUEUE_FULL` because of prerenders. A newer prerender of the same frame supersedes one still queued, and a full prerender tier drops its oldest; a dropped prerender never ran and nobody holds its job ID, so its record is removed at once and takes no retained slot. A running job is never interrupted. A requested render whose scene key matches a queued prerender reuses that job and moves it into the requested tier, so it can no longer be superseded.
 - The backend keeps every project it has opened open for its lifetime (one SQLite writer each; after 128 pinned IDs and slugs the set is released and reopened on demand), so reads by ID or slug do not scan the data root. Storage path checks still run on every open. A project directory removed or replaced outside the backend while it runs is unsupported; reads then report `PROJECT_NOT_FOUND` for the old identity rather than another project's data, but a write sent by the old ID before any read can still land in the removed database.
 - A non-strict viewer scene may contain a labeled missing-image diagnostic. Strict PNG must then fail and has no image URI; `/jobs/:id/image` returns `IMAGE_NOT_READY`. Missing fonts cannot produce fabricated text measurements. Worker exit, invalid protocol or timeout fails the representation and restarts the process for subsequent jobs.
 - Host is limited to loopback names and mutation origins to the configured backend origin. Only read-only asset/font routes allow random `http://127.0.0.1:<port>` origins for the headless worker. Binary routes verify storage assets and use `nosniff`.
@@ -337,6 +460,28 @@ cargo fmt -p opencanvas-server --check
 A restricted sandbox may need permission to bind loopback for the integration command. See `docs/checkpoints/m1-server.md` for commands and measured results. Browser viewer/restart E2E is a separate acceptance seam; backend tests alone do not claim that browser flow.
 
 Versioned backup/export/import/restore are public **storage APIs**, documented in `docs/BACKUP.md`. This server does not add backup MCP tools or client filesystem access. Live database main-file copies are not backups; use the storage bundle implementation which captures a consistent database and matching resource manifest/binaries.
+
+## Mutation responses and image fit
+
+`apply_batch` and `import_asset` answer with the same top-level commit fields:
+`projectId`, `committedRevision`, `changedIds`, `renderStatus` and `replayed`.
+`import_asset` adds `asset` (the stored metadata) and still repeats the commit
+fields under `result`, the earlier nested shape, so existing clients keep working.
+Read `committedRevision` at the top level for the next `expectedRevision`
+(`tests/image_fit.rs`).
+
+Image `fit` has one vocabulary, `IMAGE_FITS` in `crates/storage/src/image_fit.rs`:
+`fit` stretches the image to its bounds (CSS `object-fit: fill`), `contain` (the
+default) shows the whole image inside them, and `cover` fills them and crops.
+Authored props, `resolvedProps` and scene nodes all carry the authored name;
+resolution no longer renames `fit` to `fill`. Any other value returns
+`VALIDATION_FAILED` with `field: "fit"`, and the message points CSS/Figma names at
+their match (`fill`/`stretch` → `fit`, `none`/`scale-down` → `contain`). Stored
+designs never held another value, because the validator always rejected it. The
+layout engine accepts the same list (a storage test compares the two constants)
+and still reads `fill`, the former scene name, as `fit`; the browser renderer
+(`renderer/image-fit.ts`, `npm run test:renderer`) also draws `fill` like `fit`
+for scenes cached before the change.
 
 ## Task04 row-wrap contract
 
@@ -360,4 +505,31 @@ backend for the startup pipeline fingerprint to change. Real3847 was not
 restarted by Task04 and still serves its older loaded code. Props JSON is additive,
 with no DB migration or snapshot/API/scene version bump. An old layout binary can
 ignore unknown fields; mixed-version/downgrade and hot replacement are unsupported.
-No percentage/breakpoint/column-wrap/align API or changes to existing dashboard data.
+No percentage/breakpoint/column-wrap or changes to existing dashboard data (stack align/justify came later with P08a).
+
+## P08a stack alignment and per-side padding
+
+`props.layout` of a row/column container also takes `align` (cross axis:
+`start` default, `center`, `end`, `stretch`) and `justify` (main axis: `start`
+default, `center`, `end`, `space-between`), mapped 1:1 to CSS `align-items` and
+`justify-content`. `padding` is a number or a 1–4 item list with CSS shorthand
+meaning; each item is 0..100000 or a dimension token. `stretch` sizes children
+whose cross size is unset; numeric and `hug` sizes are kept (`hug` = CSS
+`fit-content`), which also makes a hug column of equal-width items expressible.
+With `space-between`, `gap` is the minimum spacing; alignment overflow is unsafe
+like CSS. Free containers reject `align`/`justify`; free children still use x/y
+from the parent's outer edge.
+
+Errors stay `VALIDATION_FAILED` with a precise `field`: `layout.padding`,
+`layout.align`, `layout.justify`, `layout.mode` (a missing mode explains that
+`update_node` replaces the whole layout object) and `layout.<key>` for unknown
+layout keys, with `node.suggestion` for CSS/Figma spellings (`alignItems` →
+`align`, `flex-start` → `start`, `SPACE_BETWEEN` → `space-between`, `paddingLeft`
+→ `padding`). Authored lists and token refs read back verbatim; `resolvedProps`
+hold numbers. `tools/list`, scene schema and renderer are unchanged; existing
+layouts serialize and lay out exactly as before. Upgrade backend and layout-step
+together: an older layout binary cannot deserialize a padding list.
+
+## Declared animations: `props.animations`
+
+Layer nodes (not pages) may author `animations`: up to 8 `{name, on?, duration, delay?, easing?, iterations?, direction?, fillMode?, keyframes}` with 1..16 WAAPI-shaped keyframes of `opacity`, `translateX`, `translateY`, `scale`, `rotate` and `fill`. Times are milliseconds; `fillMode` defaults to `both`; missing 0/1 keyframes take the authored (resting) props. Errors are `VALIDATION_FAILED` with the full path (`props.animations[0].keyframes[1].offset`), `nodeId`, `nodeKind`, and `allowedKeys`/`suggestion` for unknown keys. Number tokens resolve in timing and numeric keyframe values, color tokens and fill styles in `fill`; `resolvedProps.animations` holds theme literals. `get_design_context` adds `animated: [{ref:"<nodeId>:<name>", on}]` over the whole scope (same on every page), absent when the frame has none. Static renders ignore animations (resting state). Full key table: `skill://opencanvas/props.md`. `tools/list` is unchanged (props schema is a free object).

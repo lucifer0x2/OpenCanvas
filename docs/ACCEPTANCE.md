@@ -16,7 +16,7 @@ viewer GET-only0 browser errors, scene/PNG0 differences ở1040×844 và390×844
 Ảnh tại `artifacts/e2e/wrap-{1040,640,390}.png` và `wrap-viewer-{1040,390}.png`.
 Root và worker đã xem PNG desktop/mobile thật. Giới hạn cũ của welcome dashboards vẫn giữ:
 không author lại sidebar/body minima, fixed chart/progress hoặc fixed text heights.
-Không %/breakpoint/column wrap/align API; backend/layout cần nâng đồng bộ. Real3847
+Không %/breakpoint/column wrap (align/justify thêm sau ở P08a); backend/layout cần nâng đồng bộ. Real3847
 không bị chạm; temp process/data được cleanup. Báo cáo chi tiết có lệnh và lint caveat.
 
 Nguồn yêu cầu: `PLAN.md`. Tài liệu này do phiên điều phối quản lý. Nghiệm thu
@@ -170,4 +170,11 @@ tương thích. Chi phí và contract tại `docs/TASK03-REPORT.md`, `docs/SERVE
 - Không lấy ảnh đẹp làm bằng chứng persistence/events. Scene line lists và provenance phải kiểm riêng.
 - Root data tests tạm, không dùng project thật trong `~/.opencanvas`.
 - Phân biệt chưa triển khai, chưa kiểm, thất bại và đã đạt. Không ghi toàn bộ milestone đạt chỉ vì một happy path xanh.
-- Ghi command, runtime, fixture, kết quả, giới hạn vào báo cáo của task; giữ nhật ký tóm tắt trong `AGENTS.md`.
+- Ghi command, runtime, fixture, kết quả, giới hạn vào báo cáo của task; giữ nhật ký tóm tắt trong `docs/agents/LOG.md`.
+
+### Bổ sung P08a — stack align/justify, padding từng cạnh (đợt đêm 2026-10-28)
+
+AC trong `.night/proposals/P08a-stack-align-padding.md`. Kiểm: `cargo test -p opencanvas-layout`
+(`stack_tests`, `stretch_tests`), `-p opencanvas-storage --test stack_layout`, `-p opencanvas-server
+--test stack_context`, `npm run test:pipeline` (`stack-align.test.mjs`). Không `alignSelf`,
+`space-around/evenly`, baseline, margin, %/breakpoint/column wrap (P08b và sau).

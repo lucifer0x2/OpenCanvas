@@ -23,7 +23,13 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
     let mut ids = HashMap::new();
     let mut order = Vec::new();
     let root = build(
-        root_idx, input, &mut tree, &mut ids, &mut order, "free", true,
+        root_idx,
+        input,
+        &mut tree,
+        &mut ids,
+        &mut order,
+        crate::stack::Parent::ROOT,
+        true,
     )?;
     let mut misses = BTreeMap::new();
     let mut callback_error = None;
@@ -144,11 +150,18 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                 }
             }),
             asset_id: p.asset_id.clone(),
-            fit: p.fit.clone().unwrap_or_else(|| "contain".into()),
+            fit: crate::scene_fit(p.fit.as_deref())
+                .unwrap_or("contain")
+                .into(),
             opacity: p.opacity.unwrap_or(1.0),
             clip: p.clip.unwrap_or(n.kind == "frame"),
             radius: p.radius.unwrap_or(0.0),
             crop: p.crop.clone(),
+            stroke: p
+                .stroke
+                .as_ref()
+                .filter(|_| n.kind != "text")
+                .and_then(StrokeInput::scene),
         });
     }
     if !misses.is_empty() {

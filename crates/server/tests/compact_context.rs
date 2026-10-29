@@ -80,7 +80,8 @@ async fn compact_keeps_only_differing_props_and_referenced_resources() {
             assert_eq!(Value::Object(rebuilt), f["resolvedProps"], "{}", c["id"]);
         }
         let by_id = |id: &str| compact_nodes.iter().find(|n| n["id"] == id).unwrap();
-        assert_eq!(by_id("photo")["resolvedProps"], json!({"fit":"fill"}));
+        // Resolved fit keeps its authored name, so nothing differs (B05).
+        assert_eq!(by_id("photo")["resolvedProps"], json!({}));
         assert!(by_id("title")["resolvedProps"]["fontId"] == "font_bundled");
         let fill = if theme == "night" {
             "#223344"

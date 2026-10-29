@@ -45,7 +45,7 @@ The surrounding configuration format depends on the client. The client initializ
 
 Use `list_projects`/`create_project`, then `get_outline` before scoped `get_subtree` or `get_design_context`. Resource metadata is available through `list_tokens`, `list_styles`, `list_assets` and `list_fonts`. `import_asset` accepts bounded base64 bytes, never filesystem paths. `apply_batch` takes a `projectId`, `expectedRevision`, stable `idempotencyKey` and ordered operations. Reuse the exact body/key after a lost response; read back after a revision conflict.
 
-Create a page, then a frame, then its descendants. Text must declare a valid font (the bundled font is `font_bundled`), size and line height, or obtain them from a valid text style. `render_frame` returns a job; poll it by `jobId`, inspect its exact revision/provenance and obtain the PNG through `imageUrl`. `inspect_layout` reads the bounds and text lines for that job's scene key. Available tools expose their schemas through `tools/list`.
+Create a page, then a frame, then its descendants. Text must declare a valid font (the bundled font is `font_bundled`), size and line height, or obtain them from a valid text style. `render_frame` returns a job; poll it by `jobId`, inspect its exact revision/provenance and obtain the PNG through `imageUrl`. The response omits the computed scene unless you pass `includeScene: true`; `inspect_layout` reads the bounds and text lines for that job's scene key. Available tools expose their schemas through `tools/list`.
 
 To implement an existing design in code rather than author one, read `get_outline` for the frame,
 then `get_design_context` for that `frameId`. Nodes carry authored `props` beside `resolvedProps`:
@@ -57,6 +57,20 @@ and the wrapped text lines belong to one viewport and are there to check the res
 covers theme `default` and state `default` and states nothing about interaction, animation or
 data. The connect-time MCP instructions repeat this, so a client sees it without reading this
 file.
+
+## Docker
+
+The image bundles the release server, layout-step, worker, renderer, viewer and Playwright's Chromium headless shell (Rust 1.99.1 and Node 24.21.0 on Debian trixie); no local toolchain is needed:
+
+```sh
+docker build -t opencanvas:local .
+docker compose up -d
+node docker/smoke.mjs http://127.0.0.1:3847   # optional: creates a project smoke-<time>
+```
+
+The viewer is at `http://127.0.0.1:3847` and MCP at `http://127.0.0.1:3847/mcp`. Projects live in the named volume `opencanvas-data` mounted at `/data`; the container never sees `~/.opencanvas`. To keep them in a host directory instead, replace `opencanvas-data:/data` in `compose.yaml` with a bind mount such as `./opencanvas-data:/data`, writable by uid 1000 (the image's `node` user). `docker compose stop` sends SIGINT, which shuts the server down gracefully.
+
+Inside the container the server listens on `0.0.0.0` (`--host 0.0.0.0`), and `compose.yaml` publishes it on `127.0.0.1` only. Keep it that way: the API has no authentication, and the loopback Host check stops browsers, not other machines. `OPENCANVAS_PORT=3850 docker compose up -d` moves the host and container port together, so `imageUrl` and the Origin check match the address you use. With plain `docker run`, use `--init -p 127.0.0.1:3847:3847 -v opencanvas-data:/data --shm-size 512m`. Do not run the native server and the container on the same data root at the same time: the data-root lock is not guaranteed to work across a bind mount.
 
 ## Verification
 

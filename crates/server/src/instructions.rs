@@ -3,8 +3,9 @@
 pub const CONNECT: &str = "Versioned design tools over a local design store. Every read is one \
 consistent revision.
 
-Finding: when you know a node's name, visible text, kind or ID, call find_nodes; use get_outline \
-when you need structure. totalMatches 0 means nothing matched, not an error. Position ('the card on \
+Finding: when you know a node's name, visible text, kind, ID or parent (parentId lists direct \
+children), call find_nodes; use get_outline when you need structure: depth counts from the scope \
+root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \
 the right') is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds.
 
 Authoring: get_outline first, then scoped reads. Create a page, then a frame, then its \
@@ -15,7 +16,8 @@ replay the exact body after a lost response. A REVISION_CONFLICT carries changed
 node you edit or one of its ancestors, resend with expectedRevision toRevision and a new \
 idempotencyKey (the body changed); otherwise re-read those IDs with find_nodes ids, or catch up \
 with get_changes, before rebuilding the batch. The server validates every batch again, so a wrong \
-rebase fails rather than corrupting data. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
+rebase fails rather than corrupting data. Node props accept only the keys listed per kind in \
+skill://opencanvas/props.md; a wrong key fails with field props.<key>, allowedKeys and a suggestion. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
 authored revision.
 
 Implementing a design in code: find_nodes kinds [frame] or get_outline for the frame, then \
@@ -29,7 +31,7 @@ props (resolvedPropsMode differing; the rest equal authored, without styleId) an
 tokens/styles/fonts/assets only those the frame references (resources referenced).
 
 Build the structure the design declares, not the pixels it measures. A container's layout mode \
-says it: 'row' and 'column' are stacks with padding and gap, so implement them as stacks; 'free' \
+says it: 'row' and 'column' are stacks with padding, gap, align and justify, so implement them as stacks; 'free' \
 positions children at authored x/y. Sizing is authored width/height with min/max, which may be a \
 fixed number, fill or hug. Computed bounds and text lines are measurements of one viewport, already \
 wrapped, so use them to check an implementation rather than to derive it. Request viewports \
@@ -40,7 +42,17 @@ not a responsive specification: heed NO_REFLOW_INFORMATION, state assumptions or
 do not silently consider absolute positioning complete. Read skill://opencanvas/implement-frame.md \
 or skill://opencanvas/author-frame.md through resources/read for detailed checklists. \
 Only interaction state 'default' is supported; named token themes may be requested. \
-The design says nothing about interaction, animation, routing or data; ask rather \
-than invent those. To check an implementation, render_frame at the same revision and viewport and \
+Navigation is the one interaction a design declares: props.links on a node ({on: click|hover, \
+action: navigate|overlay with to = a root frame ID, or back|close}) and flowStart on a root frame; \
+get_design_context returns them as navigation {out, in}. Implement declared links as routes and \
+overlays. Motion a design declares is props.animations on a node: CSS-like keyframes of opacity, \
+translateX/Y, scale, rotate and fill, played on load, hover or click; get_design_context lists \
+them in animated. Implement exactly those. Screen transitions, route paths, overlay placement and \
+data are not in the design: ask rather than invent. Notes: put intent props cannot carry (behavior, constraints, unsupported \
+effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
+descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. \
+To check an implementation, render_frame at the same revision and viewport and \
 compare it with inspect_layout bounds and text lines for that job's scene key. Poll a pending \
-job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed.";
+job with waitMs rather than in a tight loop: it returns as soon as the job is ready or failed. \
+A node with exportSettings is an image asset: get its PNG files with export_nodes and download \
+each url, instead of rebuilding it in code.";

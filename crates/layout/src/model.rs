@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 mod layout;
-pub use layout::{LayoutRule, Sizing};
+mod stroke;
+pub use layout::{LayoutRule, Padding, Sizing};
+pub use stroke::{SceneStroke, Sides, StrokeInput};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,6 +76,8 @@ pub struct Props {
     pub clip: Option<bool>,
     pub radius: Option<f32>,
     pub crop: Option<Crop>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stroke: Option<StrokeInput>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -160,6 +164,8 @@ pub struct SceneNode {
     pub clip: bool,
     pub radius: f32,
     pub crop: Option<Crop>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stroke: Option<SceneStroke>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -105,16 +105,14 @@ impl Candidate {
                     *v = self.resolve_value(v, expected)?;
                 }
             }
+            if k == "stroke" {
+                self.resolve_stroke(v)?;
+            }
+            if k == "animations" {
+                self.resolve_animations(v)?;
+            }
             if k == "layout" {
-                if let Some(layout) = v.as_object_mut() {
-                    for key in ["padding", "gap"] {
-                        if let Some(x) = layout.get_mut(key) {
-                            if x.is_object() {
-                                *x = self.resolve_value(x, "dimension")?;
-                            }
-                        }
-                    }
-                }
+                self.resolve_layout_refs(v)?;
             }
         }
         Ok(Value::Object(out))
@@ -134,12 +132,8 @@ pub fn resolved_nodes_for_theme(snapshot: &Snapshot, theme: &str) -> Result<Vec<
         .iter()
         .map(|n| {
             let mut n = n.clone();
+            // `fit` keeps its authored name: resolved props and scenes share IMAGE_FITS.
             n.props = c.resolve_props(&n)?;
-            // Public authored 'fit' is the stretch mode named 'fill' by the
-            // browser renderer. Preserve authored intent in persistence.
-            if n.props.get("fit").and_then(Value::as_str) == Some("fit") {
-                n.props["fit"] = Value::String("fill".into());
-            }
             Ok(n)
         })
         .collect()

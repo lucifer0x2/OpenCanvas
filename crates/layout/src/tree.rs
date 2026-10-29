@@ -1,4 +1,5 @@
 use crate::model::*;
+use crate::stack::{self, Parent};
 use crate::util::{dim, err, is_fill};
 use std::collections::HashMap;
 use taffy::prelude::*;
@@ -9,11 +10,12 @@ pub(crate) fn build(
     tree: &mut TaffyTree<usize>,
     ids: &mut HashMap<usize, NodeId>,
     order: &mut Vec<usize>,
-    parent_mode: &str,
+    parent: Parent,
     root: bool,
 ) -> Result<NodeId, LayoutError> {
     let n = &input.nodes[idx];
     let p = &n.props;
+    let parent_mode = parent.mode;
     let mode = p.layout.as_ref().map(|l| l.mode.as_str()).unwrap_or("free");
     let mut style = Style {
         display: Display::Flex,
@@ -23,6 +25,7 @@ pub(crate) fn build(
             FlexDirection::Column
         },
         align_items: AlignItems::START,
+        align_self: stack::self_align(p, parent),
         flex_shrink: 0.0,
         size: Size {
             width: dim(&p.width, parent_mode != "row"),
@@ -46,20 +49,12 @@ pub(crate) fn build(
         style.flex_basis = length(0.0);
     }
     if let Some(layout) = &p.layout {
-        if layout.wrap {
-            style.flex_wrap = FlexWrap::Wrap;
-            style.align_content = AlignContent::START;
-        }
-        style.padding = Rect {
-            left: length(layout.padding),
-            right: length(layout.padding),
-            top: length(layout.padding),
-            bottom: length(layout.padding),
+        // An inside stroke takes space in a stack like a CSS border; free children keep x/y.
+        let insets = match (&p.stroke, mode) {
+            (Some(stroke), "row" | "column") => stroke.inside_insets(),
+            _ => [0.0; 4],
         };
-        style.gap = Size {
-            width: length(layout.gap),
-            height: length(layout.gap),
-        };
+        stack::apply(&mut style, layout, insets);
     }
     if root {
         style.size = Size {
@@ -80,8 +75,12 @@ pub(crate) fn build(
         .map(|(i, _)| i)
         .collect();
     let mut child_ids = Vec::new();
+    let this = Parent {
+        mode,
+        align: stack::align(p.layout.as_ref()),
+    };
     for child in children {
-        child_ids.push(build(child, input, tree, ids, order, mode, false)?);
+        child_ids.push(build(child, input, tree, ids, order, this, false)?);
     }
     let id = if n.kind == "text" {
         tree.new_leaf_with_context(style, idx)
