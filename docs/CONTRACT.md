@@ -64,8 +64,29 @@ The node `props` field is never computed geometry. Theme aliases and fallback
 rules are specified in `RESOLUTION.md`. Interaction state supports `default`.
 Navigation links (`props.links`, `flowStart`) are authored data; `get_design_context.navigation` summarizes them.
 The viewer currently requests the default design theme; its light UI theme is
-independent. Snapshot database `schemaVersion:2` is separate from scene/API
+independent. Snapshot database `schemaVersion:4` is separate from scene/API
 representation schema 1.
+
+Components are authored `frame` nodes with `props.component:{name}`. An authored
+`instance` is a leaf with `componentId`, optional sizing/position/name/visibility,
+and flat descendant-ID `overrides` (`text`, `fill`, `visible`, `styleId`, `assetId`,
+`name` only). Storage expands these references before resolution/layout; the engine
+and renderer receive ordinary frames and stable virtual children
+`<instanceId>/<masterChildId>`. Virtual children are read-only. Snapshot and bundle
+data always retain authored references, never the expanded tree.
+
+`get_design_context` defaults to `instances:"reference"`: scoped instances remain
+leaves, `components` contains the transitive referenced master definitions once on
+the first page, and optional instance `computed.children` maps virtual IDs to bounds
+and lines. `instances:"expand"` returns the virtual tree and its computed bounds.
+The mode is part of cursor identity. Compact resources include dependencies of both
+master definitions and placed overrides. Outline/subtree expose reference leaves
+with `componentId` and expanded `childCount`; virtual IDs can be read directly.
+`find_nodes` retains authored instance kinds and searches effective child text.
+Cycles, nesting beyond 8 levels and an expanded project above 20,000 nodes fail
+before commit. `COMPONENT_IN_USE` returns `count` and at most 20 `instanceIds`;
+virtual mutations return `INSTANCE_CHILD_READONLY`. Component subtrees cannot use
+links, flow starts or animations. Master updates invalidate scenes at the new revision.
 
 ### Multi-viewport context (additive)
 

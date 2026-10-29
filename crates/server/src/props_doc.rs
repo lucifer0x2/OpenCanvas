@@ -1,6 +1,7 @@
 //! `skill://opencanvas/props.md`, rendered from the storage validator's property table so
 //! the published keys are exactly the keys a commit accepts.
 mod animations;
+mod instances;
 
 use opencanvas_storage::{allowed_props, NODE_KINDS, PROPS};
 use std::{fmt::Write, sync::OnceLock};
@@ -61,6 +62,7 @@ fn render() -> String {
          alignment, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
     );
     out.push_str(&animations::section());
+    out.push_str(instances::section());
     out
 }
 

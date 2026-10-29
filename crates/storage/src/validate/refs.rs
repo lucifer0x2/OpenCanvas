@@ -124,16 +124,29 @@ pub fn resolved_nodes(snapshot: &Snapshot) -> Result<Vec<Node>> {
 }
 /// Resolve a concrete design theme; authored snapshot properties stay intact.
 pub fn resolved_nodes_for_theme(snapshot: &Snapshot, theme: &str) -> Result<Vec<Node>> {
+    resolve_nodes(snapshot, theme, false)
+}
+/// Compute boundary: references are expanded before style/token resolution.
+pub fn resolved_expanded_nodes(snapshot: &Snapshot, theme: &str) -> Result<Vec<Node>> {
+    resolve_nodes(snapshot, theme, true)
+}
+fn resolve_nodes(snapshot: &Snapshot, theme: &str, expanded: bool) -> Result<Vec<Node>> {
     let mut c = Candidate::from_snapshot(snapshot);
     c.validate()?;
     c.select_theme(theme)?;
-    snapshot
-        .nodes
-        .iter()
-        .map(|n| {
-            let mut n = n.clone();
+    let nodes = if expanded {
+        crate::instances::expand(&snapshot.nodes)?
+    } else {
+        snapshot.nodes.clone()
+    };
+    nodes
+        .into_iter()
+        .map(|mut n| {
             // `fit` keeps its authored name: resolved props and scenes share IMAGE_FITS.
             n.props = c.resolve_props(&n)?;
+            if expanded && n.props["visible"] == false {
+                n.props["opacity"] = serde_json::json!(0);
+            }
             Ok(n)
         })
         .collect()

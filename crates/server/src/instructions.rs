@@ -3,6 +3,8 @@
 pub const CONNECT: &str = "Versioned design tools over a local design store. Every read is one \
 consistent revision.
 
+Reuse frame props.component masters with kind instance, componentId and flat overrides. Context defaults to references; instances:expand reads virtual children.
+
 Finding: when you know a node's name, visible text, kind, ID or parent (parentId lists direct \
 children), call find_nodes; use get_outline when you need structure: depth counts from the scope \
 root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \

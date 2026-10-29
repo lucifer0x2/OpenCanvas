@@ -4,6 +4,7 @@ mod compact;
 mod diagnostics;
 mod find;
 mod index;
+mod instances;
 mod navigation;
 mod notes;
 pub(crate) mod pagination;
@@ -47,11 +48,14 @@ pub(super) struct ReadRequest {
     // get_design_context only; "open" (the default) is normalized to absent, like compact.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     notes: Option<notes::Filter>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    instances: Option<String>,
 }
 pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
     let mut req: ReadRequest = serde_json::from_value(args)?;
     req.compact = req.compact.filter(|on| *on);
     req.notes = req.notes.filter(|f| *f != notes::Filter::Open);
+    req.instances = req.instances.filter(|mode| mode != "reference");
     let s = state.snapshot(req.project_id.clone()).await?;
     if name == "find_nodes" {
         return find::read(&s, req);

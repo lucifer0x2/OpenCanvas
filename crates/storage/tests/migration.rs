@@ -39,7 +39,10 @@ fn v2_upgrade_adds_empty_notes_and_keeps_history() {
     let store = Store::open(temp.path()).unwrap();
     let p = store.open_project("fixture").unwrap();
     let after = p.snapshot().unwrap();
-    assert_eq!((after.schema_version, after.revision), (3, before.revision));
+    assert_eq!(
+        (after.schema_version, after.revision),
+        (SCHEMA_VERSION, before.revision)
+    );
     assert_eq!(after.nodes, before.nodes);
     assert!(after.notes.is_empty());
     assert!(p.apply_batch(req).unwrap().replayed);
@@ -67,7 +70,7 @@ fn v1_upgrade_preserves_authored_revision_and_replay() {
     let store = Store::open(temp.path()).unwrap();
     let p = store.open_project("fixture").unwrap();
     let after = p.snapshot().unwrap();
-    assert_eq!(after.schema_version, 3);
+    assert_eq!(after.schema_version, SCHEMA_VERSION);
     assert_eq!(after.project_id, before.project_id);
     assert_eq!(after.revision, before.revision);
     assert_eq!(after.nodes, before.nodes);

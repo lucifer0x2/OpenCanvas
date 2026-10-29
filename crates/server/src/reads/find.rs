@@ -90,7 +90,20 @@ pub(super) fn read(s: &Snapshot, req: ReadRequest) -> Result<Value> {
         return Err(ApiError::invalid("Choose one scope ID"));
     }
     let (scope, offset) = pagination::scope(s, "find_nodes", &req)?;
-    let index = TreeIndex::new(&s.nodes);
+    let mut nodes = opencanvas_storage::instances::expand(&s.nodes)?;
+    // Instances keep their authored identity; their children are searchable virtual nodes.
+    let instances: std::collections::HashMap<_, _> = s
+        .nodes
+        .iter()
+        .filter(|n| n.kind == NodeKind::Instance)
+        .map(|n| (n.id.as_str(), n))
+        .collect();
+    for root in &mut nodes {
+        if let Some(node) = instances.get(root.id.as_str()) {
+            *root = (*node).clone();
+        }
+    }
+    let index = TreeIndex::new(&nodes);
     let root = req.node_id.as_deref().or(req.frame_id.as_deref());
     if let Some(id) = root {
         let node = index

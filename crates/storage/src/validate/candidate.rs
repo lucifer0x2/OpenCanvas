@@ -58,6 +58,7 @@ impl Candidate {
             themed.theme = theme;
             themed.validate_content()?;
         }
+        self.validate_instances()?;
         Ok(())
     }
     fn validate_content(&self) -> Result<()> {
@@ -102,6 +103,7 @@ impl Candidate {
         Ok(())
     }
     pub fn apply(&mut self, op: &Operation, changed: &mut BTreeSet<String>) -> Result<()> {
+        self.instance_write_guard(op)?;
         match op {
             Operation::CreateNode {
                 id: key,
@@ -191,6 +193,7 @@ impl Candidate {
                     remove.extend(children);
                 }
                 self.cascade_notes(&remove, changed);
+                self.component_delete_guard(&remove)?;
                 self.deleted.extend(remove.iter().cloned());
                 for key in remove {
                     self.nodes.remove(&key);

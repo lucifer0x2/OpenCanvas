@@ -49,6 +49,27 @@ Start with `create_project`, then `apply_batch`, and read `get_outline` before r
 
 `render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId,waitMs?}` for polling. Its published `inputSchema` is the flat union of both shapes with only `projectId` required; the server still validates the strict two-mode form, so mixing fields of both modes, `waitMs` without `jobId`, neither mode or an unknown field returns `INVALID_REQUEST`. Render responses include a job ID and status.
 
+Reusable components use a frame with `component:{name}` and ordinary authored
+children. Place an `instance` leaf with `componentId` and optional flat `overrides`
+keyed by master child ID. Allowed overrides are `text`, `fill`, `visible`, `styleId`,
+`assetId`, `name`; layout and structure remain inherited. Full authoring rules are
+in `skill://opencanvas/props.md`. Render, inspect and image export use expanded nodes
+with stable virtual IDs such as `row3/cmpRow-q`; writes to those IDs fail with
+`INSTANCE_CHILD_READONLY`. Change the instance's whole `props.overrides` object.
+
+`get_design_context` defaults to `instances:"reference"`: each referenced master
+appears once in first-page `components` (including nested dependencies), while
+instance leaves expose `componentId`, `overrides`, `childCount` and, when computed,
+`computed:{bounds,children:{"row3/cmpRow-q":{bounds,lines}}}`. Choose
+`instances:"expand"` for all virtual nodes. Compact resources cover definitions and
+overrides, including style/token/font/asset dependencies across themes. Outline and
+subtree keep instances as leaves; a virtual-child scope reads that child directly.
+`find_nodes` supports `kinds:["instance"]`, `properties:["componentId"]` and effective
+overridden child text. Snapshot/bundle storage remains authored. Cycles/depth >8,
+invalid override kinds/refs and an expanded project >20,000 nodes are rejected
+atomically; deleting an in-use master returns `COMPONENT_IN_USE` with `count` and
+up to 20 `instanceIds`. No new MCP tool is added.
+
 Scene is opt-in (`src/render_response.rs`): the MCP response is the job record without `scene`, the computed node/line/font/asset tree that is tens to hundreds of KB for a real frame. It keeps `jobId`, `status`, `projectId`, `revision`, `frameId`, `sceneKey`, and once the job has left `pending`, `provenance`, `diagnostics`, `readiness`, `imageUrl`/`image` (PNG dimensions) or `error`. Its size grows with fonts, assets and diagnostics, not with node count (a 300-node frame: about 3.6 KB for the whole `tools/call` result, against 88 KB with the scene; `tests/render_response.rs`). Read bounds and text lines with `inspect_layout` for that `sceneKey`, which pages and selects fields. Alternatively, pass `includeScene: true` (boolean, accepted in both modes, default `false`) to receive the full record exactly as before. `includeScene` is the only field added to the published schema. The job table, `get_design_context` and `inspect_layout` are unaffected, and the HTTP `/api/v1/jobs/:id` route that the viewer reads still returns the full record.
 
 Bounded wait on a poll: `waitMs` (integer 0–10,000, default 0) is accepted only with `jobId`; on the enqueue form, or out of range or not an integer, the call returns `INVALID_REQUEST`. Absent or 0 returns the job record immediately, byte for byte as before. Otherwise the call returns as soon as the job leaves `pending` (`ready` or `failed`), or the record as it is when `waitMs` elapses (still `pending`; poll again). The response has the same shape either way; there is no extra field telling a timed-out wait apart. The project check and `JOB_NOT_FOUND` happen before waiting, and a record evicted during the wait returns `JOB_NOT_FOUND`. Waiting parks on an in-process completion signal: it holds no storage handle, read transaction, blocking thread or job-table lock, so reads and commits proceed meanwhile. A server shutdown ends every wait at once with the current record. Use `waitMs` instead of tight polling, including on the job IDs that `get_design_context` returns; the context read itself still never waits. The HTTP `/api/v1/jobs/:id` route is unchanged and does not wait. Ready PNG metadata includes HTTP URI, MIME, pixel dimensions and actual Node/Chromium versions. No project filesystem paths are returned. `inspect_layout` reads bounds and line lists from a job/scene key; it does not recompute layout or provide a deeper rule explanation. Its paging and field selection are described in the next section.
@@ -433,7 +454,7 @@ JSON read back; defaults are omitted:
 
 ## Consistency and limits
 
-- HTTP snapshot is authored data at one revision; its database schema version is currently 3. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
+- HTTP snapshot is authored data at one revision; its database schema version is currently 4. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
 - Scene input is an owned immutable snapshot, with the scoped frame detached from its authored page for layout. Its source revision and scene key remain fixed if a later mutation commits. Old completed jobs remain readable by job ID until eviction; a new request for an authored revision no longer available returns `REVISION_UNAVAILABLE`.
 - Scene cache identity includes project, revision, frame, viewport, theme, state, scale and a startup fingerprint of pipeline artifacts, actual Node version, installed Playwright and the browser executable identity. The cache is process-local. Restart the backend after changing Node, Chromium, layout binary or renderer/worker artifacts. PNG provenance records actual runtime versions, not guessed pins.
 - Named design themes come from token declarations; unknown themes return `UNSUPPORTED_THEME`. Only the default interaction state is supported. Literal, typed token references, aliases and default/themes envelopes are resolved by storage. Authored node `props` remain intact in context; `resolvedProps`, token/style `resolvedValue` carry concrete-theme values separately.

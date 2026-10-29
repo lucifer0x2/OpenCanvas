@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
 
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 pub const MAX_BATCH_OPS: usize = 500;
 pub const MAX_BATCH_BYTES: usize = 2 * 1024 * 1024;
 pub const MAX_ASSET_BYTES: usize = 10 * 1024 * 1024;
@@ -17,6 +17,7 @@ pub enum NodeKind {
     Rectangle,
     Text,
     Image,
+    Instance,
 }
 impl NodeKind {
     pub fn as_str(&self) -> &'static str {
@@ -27,6 +28,7 @@ impl NodeKind {
             Self::Rectangle => "rectangle",
             Self::Text => "text",
             Self::Image => "image",
+            Self::Instance => "instance",
         }
     }
     pub fn container(&self) -> bool {

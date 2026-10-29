@@ -1,5 +1,7 @@
 # P24 — Component + instance tối thiểu (giảm token ghi, nền cho Code Connect)
 
+Trạng thái 2026-10-29: đã triển khai và kiểm chứng trên nhánh `codex/p24-components-instances`, chưa merge/push. Báo cáo và bằng chứng: [P24-REPORT.md](../../P24-REPORT.md). Schema DB thực tế tăng 3 → 4 vì main đã dùng schema 3 cho notes.
+
 Ưu tiên P1 · Kích cỡ ~165 phút → P24a storage/validate/expand (~90) + P24b reads/MCP (~75) · Phụ thuộc: không cứng; P20 (Code Connect, khoảng trống #2) phụ thuộc P24; nên làm sau P19 (tools-list diet) để tính byte chung.
 
 ## Vấn đề

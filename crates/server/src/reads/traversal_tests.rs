@@ -61,6 +61,7 @@ fn computed(s: &Snapshot) -> Computed {
     Computed {
         metadata: json!({"status":"ready","viewports":[]}),
         bounds,
+        lines: BTreeMap::new(),
         reflow: Some(false),
     }
 }

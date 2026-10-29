@@ -1,5 +1,14 @@
 # Nhật ký điều phối OpenCanvas
 
+### P24 — 2026-10-29
+
+- Người dùng yêu cầu triển khai P24 sau khi lấy main mới, trên nhánh riêng. Đã fetch `origin/main` @ `a0d7743`, tạo worktree riêng và nhánh `codex/p24-components-instances`; giữ nguyên checkout P27 có thay đổi đang làm.
+- Giao fresh worker triển khai P24a+b theo `docs/recommend-features/tasks/P24-components-instances.md`, gồm storage/expand, MCP reads và kiểm AC. Root điều phối và kiểm chứng; không push, không chạm dữ liệu/server thật.
+- Worker báo MCP/Chromium kiểm pixel, master invalidation, byte budgets và virtual reads đạt; root storage instances 4/4 pass, migration 2/4 còn assertion cũ schema3 cần cập nhật4 (base main đã dùng3 cho notes). Baseline MCP context6900 nodes đã đo trên main. Worker bị ngắt do model capacity, đã yêu cầu tiếp tục cùng task để hoàn tất kiểm và report.
+- Root kiểm độc lập MCP/Chromium P24 3/3 pass. Worker tiếp tục bị capacity lần hai; giao fresh worker hoàn tất regression/migration/docs/lint/report từ diff hiện có, giữ nguyên nhánh/worktree.
+- Nhận kết quả hoàn tất: `docs/P24-REPORT.md` và `artifacts/p24/` ghi đủ AC, schema4/legacy compatibility, pixel equality, byte budgets và hai workload latency. Root kiểm độc lập 22 storage tests (qua các lượt), MCP cuối 4/4, fmt/diff và benchmark mở rộng thực 6.900 descendants đạt; worker kiểm thêm server liên quan 19/19, unit/golden 35/35 và strict library Clippy.
+- Chốt nghiệm thu P24 trên `codex/p24-components-instances`, lưu benchmark tái lập trong `spikes/p24/context-benchmark.mjs`; dọn các symlink dependency tạm, commit nhánh riêng, không push. Không đổi main, checkout P27 hoặc server/data thật.
+
 Append-only. Cách ghi theo `AGENTS.md` mục "Nhật ký và memory": mỗi task một heading có ngày, mỗi lần ghi vài dòng (quyết định, kết quả cuối, blocker, link báo cáo).
 Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/2026-10-28.md`.
 

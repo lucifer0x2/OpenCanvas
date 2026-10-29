@@ -20,6 +20,10 @@ pub struct StorageError {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeErrorContext {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instance_ids: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub count: Option<usize>,
     /// Node whose authored properties failed validation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub node_id: Option<String>,

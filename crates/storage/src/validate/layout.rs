@@ -23,7 +23,7 @@ impl Candidate {
                 if !matches!(v.as_str(), Some("fill" | "hug")) {
                     number(v, 0., 100_000., key)?;
                 }
-                if v == "fill" {
+                if v == "fill" && n.props.get("component").is_none() {
                     if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
                         let props = self.resolve_props(parent)?;
                         if props.get(key).is_none() || props.get(key).is_some_and(|v| v == "hug") {
