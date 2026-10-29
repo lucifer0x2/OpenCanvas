@@ -13,25 +13,31 @@ npm ci
 npm --prefix web ci
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/browsers"
 npx playwright install chromium
-npm run build:renderer
-cargo build -p opencanvas-layout -p opencanvas-server
-npm --prefix web run build
 ```
 
-The first installation needs registry/network access. With dependencies cached, the Cargo build also works with `--offline`. The production build currently reports a JavaScript chunk-size warning of about 575 kB.
+The first installation needs registry/network access. Build and launch the whole app with either profile:
 
-Start the production server from the repository root:
+| Profile | Build the renderer, Rust server/layout and viewer | Launch the existing build |
+| --- | --- | --- |
+| Debug | `npm run build` | `npm run dev` |
+| Release (optimized Rust binaries) | `npm run build:release` | `npm start` |
+
+Both launch commands run the Rust server and serve the compiled `web/dist` viewer. They reuse existing artifacts without rebuilding. A missing artifact reports the matching build command. The build commands require the installed root/web Node dependencies and Rust toolchain; they never install dependencies or Chromium. With Cargo dependencies cached, append `-- --offline` to either build command. The viewer build may report a JavaScript chunk-size warning.
+
+For example, build and run the optimized app with an isolated data root and a free port:
 
 ```sh
-export PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/browsers"
-./target/debug/opencanvas-server --workspace "$PWD"
+npm run build:release
+npm start -- --port 0 --data-root /path/to/separate-data
 ```
 
-Open [the local viewer](http://127.0.0.1:3847). The backend serves `web/dist`, launches the Node/Chromium rendering worker when needed and listens only on loopback. Stop it with Ctrl-C: open event streams are told to end, and a second Ctrl-C (or three seconds) leaves immediately. Keep the repository's built renderer, layout binary, worker and browser installation available while running.
+By default, open [the local viewer](http://127.0.0.1:3847); with `--port 0`, use the URL printed at startup. The backend launches the Node/Chromium rendering worker when needed and listens only on loopback. Stop it with Ctrl-C: open event streams are told to end, and a second Ctrl-C (or three seconds) leaves immediately. Keep the repository's built renderer, layout binary, worker and browser installation available while running.
+
+`CARGO_TARGET_DIR` selects the Cargo output directory for both building and launching; set it consistently for both commands. Relative values resolve from the repository root. Launchers select the server and layout worker from the same `debug` or `release` directory and pass the layout binary through `OPENCANVAS_LAYOUT_BIN`. They default `PLAYWRIGHT_BROWSERS_PATH` to the repository's `.runtime/browsers`; an explicit environment value wins. The viewer and renderer bundles are shared by both profiles, so rebuilding either profile refreshes these bundles.
 
 The default data root is `~/.opencanvas`; `OPENCANVAS_DATA_ROOT` or `--data-root DIR` overrides it. `--port NUMBER` changes the port, and `--port 0` chooses a free port printed at startup. Each project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for experiments and tests.
 
-For frontend development, keep the backend running and run `npm --prefix web run dev`. Its `/api` proxy defaults to port 3847; set `OPENCANVAS_API_URL` for another backend URL. See [viewer behavior](docs/VIEWER.md) and the [HTTP contract](docs/CONTRACT.md).
+For optional frontend hot reload, keep the backend running and run `npm --prefix web run dev` separately. Its `/api` proxy defaults to port 3847; set `OPENCANVAS_API_URL` for another backend URL. See [viewer behavior](docs/VIEWER.md) and the [HTTP contract](docs/CONTRACT.md).
 
 ## Connect an agent
 

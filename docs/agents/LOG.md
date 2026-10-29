@@ -1,5 +1,12 @@
 # Nhật ký điều phối OpenCanvas
 
+### Build toàn bộ app và launch scripts — 2026-10-29
+
+- Người dùng yêu cầu root `package.json`: `build` toàn app debug, `build:release` toàn app release, `dev` chạy kết quả build debug và `start` chạy kết quả build release. Không dùng dev server FE cho hai lệnh chạy này.
+- Giao fresh worker thêm scripts và runtime profile wiring cần thiết (layout worker/fingerprint đang mặc định debug), cập nhật README và kiểm debug/release trên server/data tạm. Giữ nhánh P24 hiện tại, không push hoặc chạm server/data thật.
+- Nhận kết quả: 4 scripts build/run toàn app, launcher pin server/layout cùng profile và fingerprint băm layout được chọn. Worker chạy đủ hai build, hai live smoke, CLI/error/shutdown probes và Clippy/format đạt; chi tiết ở `docs/APP-BUILD-REPORT.md`.
+- Root kiểm độc lập `dev` và `start` với target tạm chỉ có đúng profile: compiled viewer/assets HTTP200, MCP text → PNG320×200 đạt, data/process tạm đã dọn. Dọn symlink dependency QA, commit trên nhánh hiện tại, không push.
+
 ### P24 merge main — 2026-10-29
 
 - Fetch `origin/main` @ `f901a31` (merge P27); rebase gặp conflicts. Theo yêu cầu mới của người dùng, đã abort rebase hoàn toàn, giữ commit P24 `236d116`, chuyển sang merge `origin/main` trên nhánh `codex/p24-components-instances`; không rebase tiếp.
