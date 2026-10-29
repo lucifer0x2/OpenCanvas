@@ -15,7 +15,10 @@ pub(super) fn apply(scene: &mut Value, input: &Value) {
         .filter_map(|node| {
             Some((
                 node["id"].as_str()?,
-                node["props"]["states"][state].as_object()?,
+                (
+                    node["props"]["states"][state].as_object()?,
+                    node["props"]["visible"] == false,
+                ),
             ))
         })
         .collect();
@@ -26,7 +29,7 @@ pub(super) fn apply(scene: &mut Value, input: &Value) {
             .push(json!("STATE_NOT_DECLARED"));
     }
     for node in scene["nodes"].as_array_mut().unwrap() {
-        let Some(overrides) = variants.get(node["id"].as_str().unwrap()) else {
+        let Some((overrides, hidden)) = variants.get(node["id"].as_str().unwrap()) else {
             continue;
         };
         for (key, value) in *overrides {
@@ -41,6 +44,10 @@ pub(super) fn apply(scene: &mut Value, input: &Value) {
             } else {
                 node[key] = value.clone();
             }
+        }
+        // Expansion encodes visible:false as opacity zero; a variant must not unhide it.
+        if *hidden {
+            node["opacity"] = json!(0);
         }
     }
 }

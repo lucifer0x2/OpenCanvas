@@ -62,6 +62,11 @@ pub fn validate(schema: &Value, value: &Value) -> Result<()> {
         }
         if let Some(pattern) = schema["pattern"].as_str() {
             let valid = match pattern {
+                "^[A-Za-z0-9_/-]+$" => {
+                    !s.is_empty()
+                        && s.bytes()
+                            .all(|b| b.is_ascii_alphanumeric() || b"_/-".contains(&b))
+                }
                 "^[A-Za-z0-9_-]+$" => {
                     !s.is_empty()
                         && s.bytes()

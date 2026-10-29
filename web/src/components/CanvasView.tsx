@@ -10,6 +10,7 @@ import {
   wheelZoomFactor,
 } from "../hooks/useCanvasTransform";
 import type { SceneView } from "../hooks/useScene";
+import { useNodeActions } from "./NodeActionsProvider";
 
 // A click that moves further than this is a pan, not a selection.
 const CLICK_SLOP = 5;
@@ -28,6 +29,7 @@ export function CanvasView({
   frameName: string;
 }) {
   const stage = useRef<Konva.Stage>(null);
+  const actions = useNodeActions();
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
   const resources = view.resources;
@@ -38,6 +40,11 @@ export function CanvasView({
   const pixelRatio = window.devicePixelRatio || 1;
   // Whole device pixels, so panning does not shift the painted scene by subpixel amounts.
   const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio;
+  const isBackground = (target: EventTarget, current: EventTarget) =>
+    target === current ||
+    ((!scene || !resources) &&
+      target instanceof Element &&
+      !target.closest("button, a, input, textarea, [role=button]"));
 
   return (
     <main className="canvas-pane" aria-label="Design canvas">
@@ -47,6 +54,30 @@ export function CanvasView({
         tabIndex={0}
         aria-label="Canvas. Drag to pan. Plus and minus to zoom. F to fit. Select layers in the layers panel."
         onKeyDown={handleKeyDown}
+        onPointerDown={(event) => {
+          if (
+            isBackground(event.target, event.currentTarget) &&
+            event.button === 0
+          )
+            pointerStart.current = { x: event.clientX, y: event.clientY };
+        }}
+        onPointerUp={(event) => {
+          if (
+            !isBackground(event.target, event.currentTarget) ||
+            event.button !== 0
+          )
+            return;
+          if (
+            Math.hypot(
+              event.clientX - pointerStart.current.x,
+              event.clientY - pointerStart.current.y,
+            ) > CLICK_SLOP
+          )
+            return;
+          select("");
+          if (document.activeElement instanceof HTMLElement)
+            document.activeElement.blur();
+        }}
       >
         {scene && resources && (
           <Stage
@@ -68,7 +99,8 @@ export function CanvasView({
                 y: 0,
               };
             }}
-            onPointerUp={() => {
+            onPointerUp={(event) => {
+              if (event.evt.button !== 0) return;
               const point = stage.current?.getPointerPosition();
               if (
                 !point ||
@@ -83,7 +115,22 @@ export function CanvasView({
                 (point.x - transform.x) / transform.scale,
                 (point.y - transform.y) / transform.scale,
               );
-              if (found) select(found.id);
+              select(found?.id ?? "");
+              if (!found && document.activeElement instanceof HTMLElement)
+                document.activeElement.blur();
+            }}
+            onContextMenu={(event) => {
+              const point = stage.current?.getPointerPosition();
+              if (!point) return;
+              const found = hitTest(
+                scene,
+                (point.x - transform.x) / transform.scale,
+                (point.y - transform.y) / transform.scale,
+              );
+              if (found && actions) {
+                event.evt.preventDefault();
+                actions.open(found.id, event.evt.clientX, event.evt.clientY);
+              }
             }}
             onWheel={(event) => {
               event.evt.preventDefault();

@@ -1,9 +1,9 @@
 use super::{
-    animated, compact, diagnostics, index::TreeIndex, navigation, notes, pagination,
+    animated, compact, diagnostics, index::TreeIndex, instances, navigation, notes, pagination,
     sanitize_asset, viewports::Computed, ReadRequest,
 };
 use crate::error::{ApiError, Result};
-use opencanvas_storage::{resolved_nodes_for_theme, resolved_tokens_for_theme, NodeKind, Snapshot};
+use opencanvas_storage::{resolved_expanded_nodes, resolved_tokens_for_theme, NodeKind, Snapshot};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
@@ -26,7 +26,19 @@ pub(super) fn read(
     if req.node_id.is_some() && req.frame_id.is_some() {
         return Err(ApiError::invalid("Choose one scope ID"));
     }
-    let index = TreeIndex::new(&s.nodes);
+    let context = name == "get_design_context";
+    let expanded = if s.nodes.iter().any(|n| n.kind == NodeKind::Instance) {
+        std::borrow::Cow::Owned(opencanvas_storage::instances::expand(&s.nodes)?)
+    } else {
+        std::borrow::Cow::Borrowed(s.nodes.as_slice())
+    };
+    let expanded_index = TreeIndex::new(&expanded);
+    let expand = context && req.instances.as_deref() == Some("expand");
+    let index = TreeIndex::new(if expand || root.is_some_and(|id| id.contains('/')) {
+        &expanded
+    } else {
+        &s.nodes
+    });
     if let Some(id) = root {
         let node = index
             .get(id)
@@ -35,17 +47,24 @@ pub(super) fn read(
             return Err(ApiError::invalid("frameId must identify a frame"));
         }
     }
-    let context = name == "get_design_context";
     let theme = req.theme.as_deref().unwrap_or("default");
     let resolved = if context {
-        resolved_nodes_for_theme(s, theme)?
+        resolved_expanded_nodes(s, theme)?
     } else {
         Vec::new()
     };
     let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
     let ordered = index.preorder(root.map(String::as_str));
-    let compact = (context && req.compact == Some(true))
-        .then(|| compact::Referenced::collect(s, ordered.iter().map(|(n, _)| *n)));
+    let compact = (context && req.compact == Some(true)).then(|| {
+        compact::Referenced::collect(
+            s,
+            expanded_index
+                .preorder(root.map(String::as_str))
+                .iter()
+                .map(|(n, _)| *n)
+                .chain(instances::definition_nodes(s, &ordered)),
+        )
+    });
     let mut entries = Vec::new();
     // depth filters from the scope root (depth 0); omitted, it lists the whole scope.
     for (node, d) in ordered
@@ -66,12 +85,7 @@ pub(super) fn read(
             let mut value = json!(authored);
             if context {
                 let mut props = by_id[node.id.as_str()].props.clone();
-                if req.states_mode.as_deref() == Some("resolved")
-                    && req
-                        .properties
-                        .as_ref()
-                        .is_none_or(|f| f.iter().any(|k| k == "states"))
-                {
+                if super::states::requested(&req) {
                     if let Some(states) = super::states::differing(&props, &node.kind) {
                         value["resolvedStates"] = states;
                     }
@@ -85,11 +99,14 @@ pub(super) fn read(
                 value["resolvedProps"] =
                     compact::resolved_props(compact.is_some(), &authored.props, props);
                 if let Some(computed) = &computed {
-                    value["computedBounds"] = json!(computed.bounds[&node.id]);
+                    value["computedBounds"] = json!(computed.bounds.get(&node.id));
                 }
             }
             value
         };
+        if !expand {
+            instances::reference(node, &mut value, &expanded_index, computed.as_ref());
+        }
         let omitted = index.child_count(&node.id);
         if req.depth == Some(*d) && omitted > 0 {
             value["omittedChildren"] = json!(omitted);
@@ -101,6 +118,18 @@ pub(super) fn read(
     }
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if context {
+        if !expand && offset == 0 {
+            let definitions = instances::definitions(
+                s,
+                &ordered,
+                &by_id,
+                compact.is_some(),
+                super::states::requested(&req),
+            );
+            if definitions.as_object().is_some_and(|o| !o.is_empty()) {
+                response["components"] = definitions;
+            }
+        }
         response["theme"] = json!(theme);
         compact::mark(&mut response, compact.as_ref());
         response["viewport"] = json!(req.viewport);

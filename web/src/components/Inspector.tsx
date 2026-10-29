@@ -2,6 +2,7 @@ import type { Scene } from "../../../renderer/types";
 import { nodeName } from "../state";
 import type { DesignNode } from "../types";
 import { Icon } from "./Icon";
+import { useNodeActions } from "./NodeActionsProvider";
 
 function Property({ name, value }: { name: string; value: unknown }) {
   const display =
@@ -22,6 +23,7 @@ export function Inspector({
   scene?: Scene;
 }) {
   const computed = scene?.nodes.find((entry) => entry.id === node?.id);
+  const actions = useNodeActions();
   return (
     <aside className="inspector" aria-label="Read-only inspector">
       <div className="section-heading">
@@ -38,6 +40,23 @@ export function Inspector({
               <span className="subtle">{node.kind}</span>
             </div>
           </div>
+          {actions && (
+            <div className="node-actions" aria-label="Element actions">
+              <button onClick={() => actions.copy()}>Copy link</button>
+              <button
+                disabled={actions.busy || node.kind === "page"}
+                onClick={() => actions.image("png")}
+              >
+                Export PNG
+              </button>
+              <button
+                disabled={actions.busy || node.kind === "page"}
+                onClick={() => actions.image("svg")}
+              >
+                Export SVG
+              </button>
+            </div>
+          )}
           <section className="inspect-section">
             <h3>Authored properties</h3>
             <dl>

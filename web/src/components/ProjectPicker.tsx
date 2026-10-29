@@ -1,4 +1,5 @@
 import type { ProjectRef } from "../types";
+import { CustomSelect } from "./CustomSelect";
 
 interface Props {
   projects: ProjectRef[];
@@ -20,29 +21,24 @@ export function ProjectPicker(props: Props) {
     <>
       <label className="project-picker">
         <span className="sr-only">Project</span>
-        <select
-          aria-label="Project"
+        <CustomSelect
+          label="Project"
           value={selected}
-          onChange={(event) => props.select(event.target.value)}
+          onChange={props.select}
           disabled={!projects.length}
-        >
-          {!projects.length && (
-            <option value="">
-              {props.loading
-                ? "Loading projects…"
-                : props.failed
-                  ? "Projects unavailable"
-                  : "No projects yet"}
-            </option>
-          )}
-          {projects.map((entry) => (
-            <option key={entry.projectId} value={entry.projectId}>
-              {activity.includes(entry.projectId)
-                ? `● ${entry.name}`
-                : entry.name}
-            </option>
-          ))}
-        </select>
+          placeholder={
+            props.loading
+              ? "Loading projects…"
+              : props.failed
+                ? "Projects unavailable"
+                : "No projects yet"
+          }
+          options={projects.map((entry) => ({
+            value: entry.projectId,
+            label: entry.name,
+            activity: activity.includes(entry.projectId),
+          }))}
+        />
       </label>
       {changed > 0 && (
         <span

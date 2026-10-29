@@ -35,7 +35,7 @@ impl Candidate {
                 "flowStart" => self.check_flow_start(n, v)?,
                 "animations" => check_animations(v)?,
                 "states" => self.check_states(&n.kind, v)?,
-                "clip" => {
+                "clip" | "visible" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));
                     }
@@ -114,6 +114,7 @@ impl Candidate {
             }
         }
         if n.kind == NodeKind::Frame
+            && n.props.get("component").is_none()
             && n.parent_id
                 .as_ref()
                 .and_then(|p| self.nodes.get(p))

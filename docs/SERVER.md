@@ -8,28 +8,27 @@ The Rust process owns one data-root lock and serves the official `rmcp` 3.4.0 St
 
 ## Build and launch
 
-From the repository root, install the locked Node dependencies and Chromium once, then build the three local artifacts:
+From the repository root, install the locked Node dependencies and Chromium once, then build the app:
 
 ```sh
 npm ci
-PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/browsers" npx playwright install chromium
-npm run build:renderer
-cargo build --offline -p opencanvas-layout --bin layout-step
 npm --prefix web ci
-npm --prefix web run build
-cargo build --offline -p opencanvas-server
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/browsers" npx playwright install chromium
+npm run build -- --offline
 ```
 
-`--offline` assumes Cargo dependencies were fetched already; use `cargo fetch` when setting up a new machine. Rust, Node and Chromium are intentional dependencies. The worker is a persistent NDJSON Node child and launches one headless Chromium. The Rust layout-step executable handles layout; the shared renderer handles text measurement and pixels.
+`--offline` assumes Cargo dependencies were fetched already; omit it or use `cargo fetch` when setting up a new machine. `npm run build` builds renderer, debug server/layout and viewer; `npm run build:release` builds the optimized Rust profile with the same bundles. Rust, Node and Chromium are intentional dependencies. The worker is a persistent NDJSON Node child and launches one headless Chromium. The Rust layout-step executable handles layout; the shared renderer handles text measurement and pixels.
 
 For an isolated project root:
 
 ```sh
 OPENCANVAS_TEST_ROOT="$(mktemp -d)"
-target/debug/opencanvas-server --data-root "$OPENCANVAS_TEST_ROOT" --workspace "$PWD" --port 3847
+npm run dev -- --data-root "$OPENCANVAS_TEST_ROOT" --port 0
 ```
 
-Visit `http://127.0.0.1:3847`. `--port 0` selects a random loopback port and prints the actual URL. `--data-root` also accepts `OPENCANVAS_DATA_ROOT`; the CLI flag wins. With neither option the production default is `~/.opencanvas`. Tests always use temporary roots and random ports. Stop the process with Ctrl-C; a second process using the same data root receives a lock error. Keep the selected root when restarting to retain project IDs, revisions, nodes and resources.
+Use the printed URL. `npm run dev` launches the existing debug build; `npm start` launches the existing release build. Both serve compiled viewer files, forward server options, and never rebuild. `CARGO_TARGET_DIR` must match the build environment; relative paths resolve from the repository root. The launcher passes that profile's layout-step through `OPENCANVAS_LAYOUT_BIN`, also used by the startup pipeline fingerprint. Direct server and Docker invocation retain `target/debug/layout-step` as the default worker path.
+
+`--port 0` selects a random loopback port and prints the actual URL. `--data-root` also accepts `OPENCANVAS_DATA_ROOT`; the CLI flag wins. With neither option the production default is `~/.opencanvas`. Tests always use temporary roots and random ports. Stop the process with Ctrl-C; a second process using the same data root receives a lock error. Keep the selected root when restarting to retain project IDs, revisions, nodes and resources.
 
 `--host` takes `127.0.0.1` (default) or `0.0.0.0`, which listens on every interface for a container whose port is published on host loopback only; Host/Origin checks are unchanged, and worker callbacks and `imageUrl` still use `http://127.0.0.1:<port>`, so no other address is accepted. See "Docker" in `README.md`.
 
@@ -52,6 +51,9 @@ Every session pays for the whole `tools/list` before its first call. `tests/tool
 Start with `create_project`, then `apply_batch`, and read `get_outline` before requesting a scoped `get_subtree` or `get_design_context`. Use `find_nodes` to locate a node by name, text, kind, ID or parent in one call; `get_outline {nodeId:<page>, depth:1}` or `find_nodes {parentId:<page>, kinds:["frame"]}` lists a page's root frames in one call. Text requires explicit font/style properties as described by storage validation; the bundled font ID is `font_bundled`. Mutations require `expectedRevision`, a stable `idempotencyKey`, and ordered operations. Retry exactly the original body after a lost response. A changed body with the same key receives `IDEMPOTENCY_KEY_REUSED`; a stale revision with a new key receives `REVISION_CONFLICT` and `currentRevision`, plus `changedSince` (see "Changes since a revision" below).
 
 `render_frame` accepts either `{projectId,revision,frameId,viewport,...}` or `{projectId,jobId,waitMs?}` for polling. Its published `inputSchema` is the flat union of both shapes with only `projectId` required; the server still validates the strict two-mode form, so mixing fields of both modes, `waitMs` without `jobId`, neither mode or an unknown field returns `INVALID_REQUEST`. Render responses include a job ID and status.
+
+Reusable masters, instance expansion, reference contexts and virtual read/write
+boundaries are specified in [Components and instances](COMPONENTS.md).
 
 Scene is opt-in (`src/render_response.rs`): the MCP response is the job record without `scene`, the computed node/line/font/asset tree that is tens to hundreds of KB for a real frame. It keeps `jobId`, `status`, `projectId`, `revision`, `frameId`, `sceneKey`, and once the job has left `pending`, `provenance`, `diagnostics`, `readiness`, `imageUrl`/`image` (PNG dimensions) or `error`. Its size grows with fonts, assets and diagnostics, not with node count (a 300-node frame: about 3.6 KB for the whole `tools/call` result, against 88 KB with the scene; `tests/render_response.rs`). Read bounds and text lines with `inspect_layout` for that `sceneKey`, which pages and selects fields. Alternatively, pass `includeScene: true` (boolean, accepted in both modes, default `false`) to receive the full record exactly as before. `includeScene` is the only field added to the published schema. The job table, `get_design_context` and `inspect_layout` are unaffected, and the HTTP `/api/v1/jobs/:id` route that the viewer reads still returns the full record.
 

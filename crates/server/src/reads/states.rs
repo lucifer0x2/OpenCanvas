@@ -1,6 +1,14 @@
 //! Context variants contain only keys that differ from the resting resolved value.
 use serde_json::{Map, Value};
 
+pub(super) fn requested(req: &super::ReadRequest) -> bool {
+    req.states_mode.as_deref() == Some("resolved")
+        && req
+            .properties
+            .as_ref()
+            .is_none_or(|f| f.iter().any(|k| k == "states"))
+}
+
 pub(super) fn differing(props: &Value, kind: &opencanvas_storage::NodeKind) -> Option<Value> {
     let states = props.get("states")?.as_object()?;
     Some(Value::Object(

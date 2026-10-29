@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { CanvasView } from "./components/CanvasView";
+import { CustomSelect } from "./components/CustomSelect";
 import { FollowToggle } from "./components/FollowToggle";
 import { Icon } from "./components/Icon";
 import { Inspector } from "./components/Inspector";
 import { Layers } from "./components/Layers";
+import { PreviewButton } from "./components/PreviewButton";
 import { ProjectPicker } from "./components/ProjectPicker";
+import { NodeActionsProvider } from "./components/NodeActionsProvider";
+import { selectionNode } from "./deepLink";
 import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
 import { children, nodeName } from "./state";
@@ -30,7 +34,7 @@ export function App() {
     (node) => node.kind === "frame",
   );
   const frame = nodes.find((node) => node.id === selection.frameId);
-  const selectedNode = nodes.find((node) => node.id === selection.nodeId);
+  const selectedNode = selectionNode(nodes, selection.nodeId);
   const viewport = PRESETS.find((entry) => entry.key === preset)!;
   const dimension = (value: unknown, fallback: number) =>
     typeof value === "number" && value > 0 ? value : fallback;
@@ -56,176 +60,182 @@ export function App() {
           : "No scene";
 
   return (
-    <div
-      className={`app-shell ${leftOpen ? "left-open" : ""} ${rightOpen ? "right-open" : ""}`}
+    <NodeActionsProvider
+      selection={selection}
+      revision={snapshot?.revision}
+      select={selectNode}
     >
-      <header className="topbar">
-        <a href="/" className="brand" aria-label="OpenCanvas home">
-          <span className="brand-mark">
-            <Icon name="frame" size={19} />
-          </span>
-          <span>OpenCanvas</span>
-        </a>
-        <span className="topbar-divider" />
-        <ProjectPicker
-          projects={project.projects}
-          selected={selection.projectId}
-          activity={project.activity}
-          loading={project.loadingProjects}
-          failed={!!project.error}
-          select={project.selectProject}
-        />
-        <span className="read-only-badge">Read only</span>
-        <div className="topbar-actions">
-          <button
-            aria-label={leftOpen ? "Hide layers panel" : "Show layers panel"}
-            aria-pressed={leftOpen}
-            onClick={() => setLeftOpen(!leftOpen)}
-          >
-            <Icon name="panelLeft" />
-          </button>
-          <button
-            aria-label={
-              rightOpen ? "Hide inspector panel" : "Show inspector panel"
-            }
-            aria-pressed={rightOpen}
-            onClick={() => setRightOpen(!rightOpen)}
-          >
-            <Icon name="panelRight" />
-          </button>
-        </div>
-      </header>
-      <div className="viewbar">
-        <div className="scope-controls">
-          <label>
-            <span>Page</span>
-            <select
-              aria-label="Page"
-              disabled={!pages.length}
-              value={selection.pageId}
-              onChange={(event) =>
-                project.selectScope({
-                  pageId: event.target.value,
-                  frameId: "",
-                  nodeId: "",
-                })
-              }
-            >
-              {!pages.length && <option value="">No pages</option>}
-              {pages.map((page) => (
-                <option key={page.id} value={page.id}>
-                  {nodeName(page)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="scope-slash">/</span>
-          <label>
-            <span>Frame</span>
-            <select
-              aria-label="Frame"
-              disabled={!frames.length}
-              value={selection.frameId}
-              onChange={(event) =>
-                project.selectScope({
-                  frameId: event.target.value,
-                  nodeId: event.target.value,
-                })
-              }
-            >
-              {!frames.length && <option value="">No frames</option>}
-              {frames.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {nodeName(entry)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <label className="viewport-picker">
-          <Icon name="frame" />
-          <span className="sr-only">Viewport</span>
-          <select
-            aria-label="Viewport"
-            value={preset}
-            disabled={!frame}
-            onChange={(event) => setPreset(event.target.value)}
-          >
-            {PRESETS.map((entry) => (
-              <option key={entry.key} value={entry.key}>
-                {entry.name}
-                {entry.width ? ` · ${entry.width} × ${entry.height}` : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="workspace">
-        {leftOpen && (
-          <aside className="left-panel">
-            <Layers
-              nodes={nodes}
-              frameId={selection.frameId}
-              selectedId={selection.nodeId}
-              select={selectNode}
+      <div
+        className={`app-shell ${leftOpen ? "left-open" : ""} ${rightOpen ? "right-open" : ""}`}
+      >
+        <header className="topbar">
+          <a href="/" className="brand" aria-label="OpenCanvas home">
+            <span className="brand-mark">
+              <Icon name="frame" size={19} />
+            </span>
+            <span>OpenCanvas</span>
+          </a>
+          <span className="topbar-divider" />
+          <ProjectPicker
+            projects={project.projects}
+            selected={selection.projectId}
+            activity={project.activity}
+            loading={project.loadingProjects}
+            failed={!!project.error}
+            select={project.selectProject}
+          />
+          <span className="read-only-badge">Read only</span>
+          <div className="topbar-actions">
+            <PreviewButton
+              projectId={snapshot && frame ? selection.projectId : ""}
+              frameId={frame?.id ?? ""}
             />
-          </aside>
-        )}
-        <CanvasView
-          view={view}
-          selectedId={selection.nodeId}
-          select={selectNode}
-          retry={() => setRetryKey((key) => key + 1)}
-          frameName={frame ? nodeName(frame) : ""}
-        />
-        {rightOpen && <Inspector node={selectedNode} scene={view.scene} />}
-      </div>
-      {(project.error ||
-        project.notice ||
-        view.missing.length > 0 ||
-        view.diagnostics.length > 0) && (
-        <div
-          className={`notice-bar ${project.error || view.missing.length ? "warning" : ""}`}
-          role="status"
-        >
-          <span>
-            {project.error ||
-              view.missing.join(" · ") ||
-              view.diagnostics.join(" · ") ||
-              project.notice}
-          </span>
-          {project.error && (
-            <button onClick={project.retry}>Retry connection</button>
+            <button
+              aria-label={leftOpen ? "Hide layers panel" : "Show layers panel"}
+              aria-pressed={leftOpen}
+              onClick={() => setLeftOpen(!leftOpen)}
+            >
+              <Icon name="panelLeft" />
+            </button>
+            <button
+              aria-label={
+                rightOpen ? "Hide inspector panel" : "Show inspector panel"
+              }
+              aria-pressed={rightOpen}
+              onClick={() => setRightOpen(!rightOpen)}
+            >
+              <Icon name="panelRight" />
+            </button>
+          </div>
+        </header>
+        <div className="viewbar">
+          <div className="scope-controls">
+            <label>
+              <span>Page</span>
+              <CustomSelect
+                label="Page"
+                disabled={!pages.length}
+                value={selection.pageId}
+                placeholder="No pages"
+                options={pages.map((page) => ({
+                  value: page.id,
+                  label: nodeName(page),
+                }))}
+                onChange={(pageId) =>
+                  project.selectScope({
+                    pageId,
+                    frameId: "",
+                    nodeId: "",
+                  })
+                }
+              />
+            </label>
+            <span className="scope-slash">/</span>
+            <label>
+              <span>Frame</span>
+              <CustomSelect
+                label="Frame"
+                disabled={!frames.length}
+                value={selection.frameId}
+                placeholder="No frames"
+                options={frames.map((entry) => ({
+                  value: entry.id,
+                  label: nodeName(entry),
+                }))}
+                onChange={(frameId) =>
+                  project.selectScope({
+                    frameId,
+                    nodeId: frameId,
+                  })
+                }
+              />
+            </label>
+          </div>
+          <label className="viewport-picker">
+            <Icon name="frame" />
+            <span className="sr-only">Viewport</span>
+            <CustomSelect
+              label="Viewport"
+              value={preset}
+              disabled={!frame}
+              onChange={setPreset}
+              options={PRESETS.map((entry) => ({
+                value: entry.key,
+                label: entry.name,
+                description: entry.width
+                  ? `${entry.width} × ${entry.height}`
+                  : undefined,
+              }))}
+            />
+          </label>
+        </div>
+        <div className="workspace">
+          {leftOpen && (
+            <aside className="left-panel">
+              <Layers
+                nodes={nodes}
+                frameId={selection.frameId}
+                selectedId={selection.nodeId}
+                select={selectNode}
+              />
+            </aside>
           )}
+          <CanvasView
+            view={view}
+            selectedId={selection.nodeId}
+            select={selectNode}
+            retry={() => setRetryKey((key) => key + 1)}
+            frameName={frame ? nodeName(frame) : ""}
+          />
+          {rightOpen && <Inspector node={selectedNode} scene={view.scene} />}
         </div>
-      )}
-      <footer className="statusbar">
-        <span className={`connection ${project.connection}`}>
-          <span className="status-dot" />
-          {selection.projectId
-            ? project.connection === "live"
-              ? "Live"
-              : project.connection === "reconnecting"
-                ? "Reconnecting…"
-                : "Connecting…"
-            : "Local viewer"}
-        </span>
-        <FollowToggle follow={project.follow} change={project.setFollow} />
-        <div>
-          <span>
-            {snapshot
-              ? `Authored r${snapshot.revision}`
-              : project.error
-                ? "Snapshot unavailable"
-                : selection.projectId
-                  ? "Loading snapshot…"
-                  : "No project selected"}
+        {(project.error ||
+          project.notice ||
+          view.missing.length > 0 ||
+          view.diagnostics.length > 0) && (
+          <div
+            className={`notice-bar ${project.error || view.missing.length ? "warning" : ""}`}
+            role="status"
+          >
+            <span>
+              {project.error ||
+                view.missing.join(" · ") ||
+                view.diagnostics.join(" · ") ||
+                project.notice}
+            </span>
+            {project.error && (
+              <button onClick={project.retry}>Retry connection</button>
+            )}
+          </div>
+        )}
+        <footer className="statusbar">
+          <span className={`connection ${project.connection}`}>
+            <span className="status-dot" />
+            {selection.projectId
+              ? project.connection === "live"
+                ? "Live"
+                : project.connection === "reconnecting"
+                  ? "Reconnecting…"
+                  : "Connecting…"
+              : "Local viewer"}
           </span>
-          <span className={view.status === "failed" ? "error-text" : ""}>
-            {sceneStatus}
-          </span>
-        </div>
-      </footer>
-    </div>
+          <FollowToggle follow={project.follow} change={project.setFollow} />
+          <div>
+            <span>
+              {snapshot
+                ? `Authored r${snapshot.revision}`
+                : project.error
+                  ? "Snapshot unavailable"
+                  : selection.projectId
+                    ? "Loading snapshot…"
+                    : "No project selected"}
+            </span>
+            <span className={view.status === "failed" ? "error-text" : ""}>
+              {sceneStatus}
+            </span>
+          </div>
+        </footer>
+      </div>
+    </NodeActionsProvider>
   );
 }

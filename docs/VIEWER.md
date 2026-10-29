@@ -16,6 +16,30 @@ Project → page → frame selectors use authored snapshots; layers are sorted b
 
 Drag to pan; wheel or the zoom buttons to zoom; Fit or `F` to fit. Wheel zoom is proportional to the wheel delta, so a mouse notch still steps about 1.1x while a trackpad glides in small increments. The frame name and zoom controls float over the canvas, which fills the pane edge to edge. Focus the canvas and use arrow keys to pan and `+`/`-` to zoom. Every layer is a keyboard accessible native button. The header buttons toggle layers and inspector, including at narrow widths. No editing, resizing, chat, terminal, theme toggle, or mutation request is provided.
 
+## Element actions and links
+
+Select an element to reveal **Copy link**, **Export PNG** and **Export SVG** in
+the Inspector. Right-click a canvas element or layer to select it and open the
+same small action menu. `Shift+F10`/the context-menu key works on layer buttons;
+arrow keys move through the menu, Escape closes it and restores focus, and an
+outside click dismisses it. Export uses authored frame dimensions and the existing
+strict node-export pipeline, independent of viewer zoom/viewport. Pending work,
+download completion and errors appear in an accessible status message. SVG keeps
+live text rather than outlining it. Export requests never change design revisions.
+
+`Cmd+C`/`Ctrl+C` copies the selected element's link. Native copying in text inputs,
+editable content and selected page text is preserved. Clicking empty canvas clears
+selection and input focus; a pan or right-click does not deselect. Empty selection
+survives snapshot reconciliation and live SSE refreshes.
+
+Links contain stable project/page/frame/node IDs (`/?project=…&page=…&frame=…&node=…`),
+including percent-encoded virtual instance child IDs. Opening one in a fresh tab
+overrides stored selection, restores scope and highlights the element at the latest
+revision. It encodes no viewport/cache/revision. The MCP connection instructions and
+`skill://opencanvas/implement-frame.md` teach AI clients to confirm the exact node ID
+with `find_nodes`, then read its `get_design_context`; deleted/moved IDs must be
+reported rather than guessed. A stale browser address displays a fallback notice.
+
 ## Zoom rendering
 
 The canvas paints the scene as vectors on every draw: a Konva `Shape` whose `sceneFunc` calls the
@@ -130,3 +154,71 @@ See `artifacts/e2e/evidence.json`, `spikes/e2e/README.md` and `docs/ACCEPTANCE.m
 for exact evidence and limits. The earlier fixture checks remain evidence for
 controlled stale-job/reconnect/failure UI scenarios; the live run does not claim
 cross-browser pixel equality or replace backend/storage failure suites.
+
+## Motion preview
+
+`/preview?project=<projectId>&frame=<frameId>[&width=&height=]` plays a frame's declared
+`props.animations`, `props.states` and `props.links` in the browser. The header's **Preview**
+button opens it for the selected frame in a new tab; the server's SPA fallback serves it, and
+`web/src/main.tsx` picks `PreviewApp` for paths under `/preview`. It is a DOM preview, not a
+time-sampled render (P07c/P07d stay out of scope), and it sends only GET requests.
+
+**Data.** The authored snapshot gives animations, links, states, tokens/styles and the root
+frame picker. The default-state scene (`state=default`, default theme) gives bounds, fill,
+opacity, radius, stroke, text lines, fonts and assets. For each state declared in the frame
+(including masters of its instances) the scene is also fetched with `state=<name>`; per-node
+differences against the default scene become the state visuals, so the server keeps owning
+theme/token resolution. Scene jobs share `fetchSceneJob` (`web/src/sceneJob.ts`) with
+`useScene`. Width/height default to the authored frame size (800×600 fallback).
+
+**DOM.** One absolutely positioned element per scene node (`.oc-node` → `.oc-box` for fill,
+radius, clip and children, then `.oc-stroke`, a border overlay outside the node's own clip,
+sized like `renderer/stroke.ts`). Text is SVG `<text>` at the scene's baseline positions, so the
+browser never re-wraps; images use the shared `placeImage` with crop. The 1:1 frame is scaled
+down to fit the window. At rest it differs from the worker PNG in under 1% of pixels (text
+antialiasing) on the smoke fixture.
+
+**Motion semantics** (`web/src/preview/keyframes.ts`, unit tested):
+
+- `fillMode` defaults to `both`; times are milliseconds; `"infinite"` iterations map to
+  `Infinity`. The effect is linear and each keyframe carries `easing ?? animation.easing ?? ease`
+  for the segment starting at it, as in CSS.
+- Offsets spread like WAAPI (lone keyframe without offset = 1). Every animated property missing
+  at offset 0 or 1 gets an explicit keyframe with the node's resting scene value.
+- `translateX/Y`, `scale`, `rotate` map to the CSS `translate`, `scale`, `rotate` properties
+  (around the bounds center), one CSS property per validator channel, so two animations on one
+  node animating different channels never clobber a shared `transform`.
+- `fill` animates `background-color` of shapes and `color` of text (SVG text uses
+  `currentColor`). `{tokenId}`/`{styleId}` resolve at the default theme from the snapshot; an
+  unresolvable reference skips that property and is listed under the stage as a warning.
+- `load` plays when the frame mounts; **Replay** resets every animation and restarts the load
+  ones. `hover` plays forward on `pointerenter` and reverses from its current time on
+  `pointerleave` (no snap). `click` restarts on every click.
+- **Reduced motion** starts from `prefers-reduced-motion` and can be toggled: triggers jump to
+  their end state (`finish()`), an infinite animation stays at rest, hover leave returns to rest.
+
+**States.** Rules are generated per declared state with `!important` on `:hover`, `:active`
+(pressed), `:focus-visible` (focus; such nodes get `tabindex=0`) and `[data-oc-disabled]`
+(the **Disabled state** toggle, shown only when declared). They therefore beat the resting
+inline styles. Animations own `translate`/`scale`/`rotate`; for `opacity` and `fill`, an active
+state that declares the property wins over the animated value, and the animation shows again
+when the state ends. A state stroke replaces the whole stroke overlay.
+
+**Links.** A click link `navigate` pushes `?frame=<to>` and shows that frame; `back` goes back
+through preview history (a toast when there is none). `overlay`/`close` show a "not supported in
+preview" toast; hover (overlay) links are listed as warnings.
+
+**Instances (P24).** Scene IDs of instance children are virtual (`<instanceId>/<masterChildId>`).
+State visuals come from the per-state scenes, so expanded master states work without ID
+mapping. Component subtrees and instances cannot author animations or links (storage rejects
+them), so there is nothing else to map.
+
+**Known limitations.** Default design theme only; no overlay/close navigation; states are
+plain CSS pseudo-classes (hovering a child also hovers its ancestors, focus needs keyboard
+focus); the preview loads one snapshot and does not follow live SSE commits (use Reload); a
+`width`/`height` in the URL is kept across link navigation.
+
+Tests: `npm --prefix web test` (keyframes, model and state-style units) and
+`npm --prefix web run test:preview`, a Playwright smoke against a temporary server
+(`target/debug` binaries, `renderer/dist`, `web/dist` must be built) with a temporary data root,
+which creates its fixture through MCP and removes everything afterwards.

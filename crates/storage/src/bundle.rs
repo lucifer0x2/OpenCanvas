@@ -182,7 +182,7 @@ fn decode_archive(bytes: &[u8]) -> Result<(BundleManifest, BTreeMap<String, Vec<
     )?;
     check_budget(&files)?;
     if manifest.bundle_version != 1
-        || manifest.database_schema_version != SCHEMA_VERSION
+        || !(1..=SCHEMA_VERSION).contains(&manifest.database_schema_version)
         || !validate::valid_id(&manifest.source_project_id)
         || manifest.source_revision > i64::MAX as u64
     {

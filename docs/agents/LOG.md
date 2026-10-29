@@ -1,7 +1,51 @@
 # Nhật ký điều phối OpenCanvas
 
+### Commit và push viewer/design memory — 2026-10-29
+
+- Người dùng cho phép commit/push nhánh hiện tại và yêu cầu ghi nhận contributor Codex. Chốt phạm vi viewer actions/custom select/export, nghiên cứu design rules và English design-memory instructions đã kiểm; commit có trailer `Co-authored-by: OpenAI Codex <noreply@openai.com>`. Giữ các ghi chú LOG đã có từ phiên khác ngoài commit, không sửa author Git hoặc lịch sử cũ. Diff whitespace sạch; các kiểm chứng và release build đã đạt ở hai mục task dưới đây.
+
+### Server instruction cho design memory — 2026-10-29
+
+- Người dùng chốt thêm instruction bằng tiếng Anh: `AGENTS.md` riêng theo project là memory cho đọc/chỉnh sửa design, không dùng cho code/build/test hoặc công việc khác. Giao fresh worker sửa instruction và tài liệu MCP trong phạm vi nhỏ; giữ các thay đổi viewer đang có, không commit/push hoặc chạm dữ liệu/server thật.
+- Nhận kết quả: CONNECT và hai skill MCP có policy English đọc/tạo/cập nhật memory từ quyết định design đã xác nhận, ưu tiên memory project trong phạm vi design. Không bịa công cụ memory MCP; khi không có authorized file access thì báo limitation. Worker kiểm MCP skill_layer/protocol_2026 4/4, rustfmt/diff sạch; ba file 86/168/157 dòng. Root đã đọc đối chiếu, đang kiểm độc lập và build release.
+- Điểm dừng: root chạy độc lập skill_layer/protocol_2026 4/4 đạt; release build thành công. `AGENTS.md` 64 dòng/7.861 byte, mọi file sửa task này dưới250 dòng. Chưa commit/push hoặc restart server3847; cần restart server và reconnect MCP để client nhận instruction mới.
+
+### Build toàn bộ app và launch scripts — 2026-10-29
+
+- Người dùng yêu cầu root `package.json`: `build` toàn app debug, `build:release` toàn app release, `dev` chạy kết quả build debug và `start` chạy kết quả build release. Không dùng dev server FE cho hai lệnh chạy này.
+- Giao fresh worker thêm scripts và runtime profile wiring cần thiết (layout worker/fingerprint đang mặc định debug), cập nhật README và kiểm debug/release trên server/data tạm. Giữ nhánh P24 hiện tại, không push hoặc chạm server/data thật.
+- Nhận kết quả: 4 scripts build/run toàn app, launcher pin server/layout cùng profile và fingerprint băm layout được chọn. Worker chạy đủ hai build, hai live smoke, CLI/error/shutdown probes và Clippy/format đạt; chi tiết ở `docs/APP-BUILD-REPORT.md`.
+- Root kiểm độc lập `dev` và `start` với target tạm chỉ có đúng profile: compiled viewer/assets HTTP200, MCP text → PNG320×200 đạt, data/process tạm đã dọn. Dọn symlink dependency QA, commit trên nhánh hiện tại, không push.
+
+### P24 merge main — 2026-10-29
+
+- Fetch `origin/main` @ `f901a31` (merge P27); rebase gặp conflicts. Theo yêu cầu mới của người dùng, đã abort rebase hoàn toàn, giữ commit P24 `236d116`, chuyển sang merge `origin/main` trên nhánh `codex/p24-components-instances`; không rebase tiếp.
+- Merge có 5 content conflicts; giao fresh worker xử lý và kiểm integration P24/P27, giữ cả instance và interaction states. Root điều phối/kiểm chứng; không push hoặc chạm server/data thật.
+- Nhận kết quả: giữ schema4/instance và P27 states; thêm regression và sửa `resolvedStates` trong component definitions, bảo toàn `visible:false` khi state đổi opacity. Root kiểm độc lập server44/44 và storage16/16; worker strict library Clippy/fmt đạt. Báo cáo: `docs/P24-MERGE-REPORT.md`.
+- Chốt merge `f901a31` vào nhánh P24, giữ lịch sử commit `236d116`, dọn 4 symlink dependency tạm, tạo merge commit; không rebase hoặc push.
+
+### P24 — 2026-10-29
+
+- Người dùng yêu cầu triển khai P24 sau khi lấy main mới, trên nhánh riêng. Đã fetch `origin/main` @ `a0d7743`, tạo worktree riêng và nhánh `codex/p24-components-instances`; giữ nguyên checkout P27 có thay đổi đang làm.
+- Giao fresh worker triển khai P24a+b theo `docs/recommend-features/tasks/P24-components-instances.md`, gồm storage/expand, MCP reads và kiểm AC. Root điều phối và kiểm chứng; không push, không chạm dữ liệu/server thật.
+- Worker báo MCP/Chromium kiểm pixel, master invalidation, byte budgets và virtual reads đạt; root storage instances 4/4 pass, migration 2/4 còn assertion cũ schema3 cần cập nhật4 (base main đã dùng3 cho notes). Baseline MCP context6900 nodes đã đo trên main. Worker bị ngắt do model capacity, đã yêu cầu tiếp tục cùng task để hoàn tất kiểm và report.
+- Root kiểm độc lập MCP/Chromium P24 3/3 pass. Worker tiếp tục bị capacity lần hai; giao fresh worker hoàn tất regression/migration/docs/lint/report từ diff hiện có, giữ nguyên nhánh/worktree.
+- Nhận kết quả hoàn tất: `docs/P24-REPORT.md` và `artifacts/p24/` ghi đủ AC, schema4/legacy compatibility, pixel equality, byte budgets và hai workload latency. Root kiểm độc lập 22 storage tests (qua các lượt), MCP cuối 4/4, fmt/diff và benchmark mở rộng thực 6.900 descendants đạt; worker kiểm thêm server liên quan 19/19, unit/golden 35/35 và strict library Clippy.
+- Chốt nghiệm thu P24 trên `codex/p24-components-instances`, lưu benchmark tái lập trong `spikes/p24/context-benchmark.mjs`; dọn các symlink dependency tạm, commit nhánh riêng, không push. Không đổi main, checkout P27 hoặc server/data thật.
+
 Append-only. Cách ghi theo `AGENTS.md` mục "Nhật ký và memory": mỗi task một heading có ngày, mỗi lần ghi vài dòng (quyết định, kết quả cuối, blocker, link báo cáo).
 Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/2026-10-28.md`.
+
+### Design rules và thao tác phần tử viewer — 2026-10-29
+
+- Người dùng yêu cầu nghiên cứu design rules Figma dùng chung cho nhiều AI/phiên; bổ sung export phần tử dễ tìm, bỏ chọn khi bấm nền, custom select và context menu export/copy link, hỗ trợ Cmd/Ctrl+C.
+- Giao ba fresh worker: nghiên cứu tài liệu design rules; custom select toàn viewer/preview; thao tác phần tử, deep link và export UI/API. Dùng checkout hiện tại `codex/p24-components-instances`, phân quyền file để tránh xung đột; không commit/push, không restart server hay chạm dữ liệu thật. Root kiểm chứng và cập nhật tiến độ.
+- Nhận nghiên cứu: [đối chiếu Figma](../DESIGN-RULES-RESEARCH.md) và [protocol hai AI](../DESIGN-RULES.md). Có token/style/font/master và notes; chưa có policy theo project tự nạp/enforce. Protocol là draft cần manifest thực của project, không tự chọn palette/font. Root đọc đối chiếu tài liệu; worker kiểm links/Markdown sạch.
+- Nhận custom selects: toàn bộ viewer/preview dùng combobox chung, portal/focus/keyboard/typeahead/empty/activity giữ hành vi; cập nhật E2E consumers. Root chạy độc lập `test:browser` đạt, gồm SSE/selection/zoom, các thao tác select và màn hình hẹp; kiểm screenshot không thấy clipping.
+- Nhận node actions: Inspector/context menu có Copy link và Export PNG/SVG; deep links stable IDs gồm virtual children, Cmd/Ctrl+C giữ copy văn bản gốc; nền bỏ chọn/blur kể cả pending/failed và qua SSE. HTTP export dùng cùng schema/pipeline MCP, Vite proxy đã kiểm với backend thật. Worker chạy 9 nhóm browser đạt và dọn server/data tạm.
+- Root kiểm độc lập web unit 23/23, typecheck, viewer browser; backend export_nodes/export_svg/viewer_exports/skill_layer 7/7 đạt. Đã xem screenshot context menu/Inspector; mọi file thay đổi ≤250 dòng. Build viewer và server release đạt (cảnh báo bundle >500KB); server3847 đang chạy release cũ, chưa restart. Đang chạy lượt node-actions browser độc lập cuối.
+- Điểm dừng: lượt node-actions browser độc lập cuối đạt đủ 9 nhóm, gồm real Vite/PNG/SVG, pending/failed, virtual child và clipboard; server/cổng/data tạm đã dọn. Diff whitespace sạch; `AGENTS.md` 64 dòng/7.861 byte. Chưa commit/push, chưa restart server3847; cần restart bản release đang chạy để có endpoint export và MCP instructions mới.
+- Trao đổi tiếp về memory chung tại `<data-root>/<project>/AGENTS.md`: source MCP hiện chỉ có resource tĩnh, chưa đọc file theo project. Hướng đề xuất là backend cấp nội dung/version qua MCP cho mọi client; phân biệt quy tắc agent với validator enforcement. Chưa triển khai hoặc tạo file trong dữ liệu thật.
 
 ### Sửa inputSchema render_frame cho Claude Code — 2026-10-28
 
@@ -39,3 +83,17 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Root nghiệm thu độc lập: storage states/refs/style aliases 8 pass, states/catalog/stroke 12 pass sau sửa Page gate; server integration 13, tools budget 1, library 35 pass (gồm golden bytes cũ). Clippy nghiêm ngặt, fmt và diff-check sạch. Tools/list tăng 195 B; mọi file sửa ≤350 dòng, mã Rust ≤216 dòng. Server guide 344 dòng được tách operations riêng.
 - Điểm dừng: main local và origin/main cùng `a0d7743`, checkout vẫn `codex/p27-interaction-states`. Chưa commit/push; không restart server thật, không ghi dữ liệu thật. Không chạy full workspace suite/viewer E2E.
 - Người dùng tiếp tục yêu cầu push nhánh P27. Root rà lại phạm vi thay đổi và diff-check sạch; chốt nội dung đã nghiệm thu để commit và push lên `origin/codex/p27-interaction-states`, không merge main.
+
+### Điều tra animation QueryNest trên P24 — 2026-10-29
+
+- Người dùng hỏi page có animation do Codex design sai hay preview render sai. Root đọc project `querynest-faithful-ui-motion` rev61 trên server 3847 (chỉ đọc). Kết luận: nhánh chỉ có P07a (dữ liệu); renderer/viewer/`render_frame` chưa đọc `animations` (P07c/P07d chưa làm), nên preview luôn vẽ trạng thái nghỉ, đúng thiết kế. Dữ liệu Codex hợp lệ và theo đúng hướng dẫn `author-frame.md`; ghi chú nhỏ: `tab-close` opacity 0 không có cách hiện ra, row-reveal ở page 03 không stagger. Không sửa mã.
+
+### Motion preview trong viewer — 2026-10-29
+
+- Người dùng chọn làm nhanh trang preview chính thức trong app (thay preview tạm Codex ở `/private/tmp/querynest-motion`, cổng 3848, hiểu sai `fillMode` mặc định và để style inline đè states). Worktree `../OpenCanvas-motion-preview`, nhánh `claude/motion-preview` từ `30cc7ff`, symlink node_modules/.runtime từ checkout chính. Giao fresh worker; không push, không chạm server 3847/`~/.opencanvas`.
+- Nhận kết quả: `c7d532a` trên `claude/motion-preview` — route `/preview`, nút Preview, `web/src/preview/` 14 module (≤203 dòng), shared `sceneJob.ts`; báo cáo `docs/MOTION-PREVIEW-REPORT.md`. Root kiểm độc lập: `npm --prefix web test` 20/20, `test:preview` 8/8 (server tạm, data tạm). Kiểm tay bằng Vite dev worktree (cổng 5179, proxy GET tới 3847) trên project QueryNest: 7 load animation chạy, hover giữ translateY -1 + fill state, rời chuột trả về, link sang Table Data đúng. Chưa merge vào nhánh P24, không push.
+- Người dùng yêu cầu merge vào P24: fast-forward `codex/p24-components-instances` 30cc7ff → `c7d532a`, không push. Root kiểm lại trên checkout chính: `npm --prefix web test` 20/20; server 3847 phục vụ `web/dist` mới không cần restart, `/preview` với QueryNest dựng 192 node, không lỗi console (SPA fallback trả HTTP 404, đã biết). Đã dừng Vite 5179, gỡ symlink và worktree `../OpenCanvas-motion-preview`; giữ nhánh `claude/motion-preview`.
+
+### Bỏ theo dõi web/dist — 2026-10-29
+
+- `web/dist` (bản build Vite) được track từ Initial commit, không tài liệu nào ghi lý do; build scripts, README và Dockerfile đều tự build nó. Người dùng yêu cầu bỏ theo dõi: thêm `web/dist/` vào `.gitignore`, `git rm --cached` (file trên đĩa giữ nguyên, 3847 vẫn phục vụ). Commit trên `codex/p24-components-instances`, không push. Clone mới cần `npm run build` trước `npm start` như README.

@@ -13,6 +13,7 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
   The same stream also carries two **non-durable workspace hints** without an SSE `id`, so they never move the commit cursor: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Neither reads the durable log; only a commit of the streamed project replays it. Hints are not replayed after a reconnect or `reset_required`: clients refetch `GET /projects`, which is the source of truth, on every (re)open.
 - `GET /events` → SSE workspace stream for a client that has no project to follow yet (an empty workspace). It carries only `project_created` and `project_activity` with the data above, heartbeat comments every 10 s, and ends on server shutdown. No cursor, no replay, no query parameters (`INVALID_REQUEST` otherwise); a broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream. Same loopback Host/Origin guard as every route.
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
+- `POST /projects/:projectId/exports` → `{projectId,revision,exports:[{nodeId,jobId,status,files?,error?}]}`. Body is the `export_nodes` MCP arguments without `projectId`: `nodeIds` (1–8), optional `settings` (1–8), `theme`, `revision`, `waitMs` (0–10000). The exact MCP runtime schema, cross-field validation, pixel/queue budgets and pipeline apply. `projectId` in the body and unknown fields are rejected. Same Host/Origin guard as other routes. This requests computed files and never changes the authored revision. Poll pending jobs with `GET /jobs/:jobId`, then download the returned file URL.
 - `GET /jobs/:jobId` → RenderJob.
 - `GET /jobs/:jobId/image` → PNG when ready, otherwise structured readiness error.
 - `GET /jobs/:jobId/files/:index` → one file of a ready export job (`export_nodes`) with its MIME type and an attachment `Content-Disposition`; `FILE_NOT_FOUND` 404 for a wrong index or a render job, `IMAGE_NOT_READY` 409 while pending/failed.
@@ -42,6 +43,16 @@ Viewer imports shared renderer source from `renderer/`, calls resource loading +
 
 Layers ordered by `sortKey` within parent. Page/frame selection derives from authored nodes; frame scene includes only descendants. Local selection/pan/zoom/viewport do not mutate design or revision.
 
+Element addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`.
+All query values are percent-encoded stable IDs, including virtual IDs with `/`.
+Opening a complete address overrides localStorage selection and loads the latest
+revision; viewport and cached job IDs are deliberately absent. Removed or moved
+nodes use the viewer's visible missing-selection notice and scope fallback. AI
+clients URL-decode the query once, confirm `find_nodes {projectId,ids:[nodeId]}`,
+then read `get_design_context {projectId,frameId}` and verify ancestry. Use
+`get_subtree {projectId,nodeId}` for a smaller authored read. An AI
+must report missing/moved IDs rather than silently substituting a different node.
+
 ## MCP/domain
 
 MCP Streamable HTTP `/mcp`, versioned typed schemas and bounded results. Public storage/layout types remain authoritative for exact Rust signatures. Domain operations are ordered: `create_node`, `update_node`, `reparent_node`, `reorder_node`, `delete_subtree`, `upsert_token`, `upsert_style`. Resource imports use bounded bytes, never arbitrary filesystem paths. See worker reports for validation and limits.
@@ -66,8 +77,32 @@ pressed, focus and disabled, with paint-only flat overrides after layout; see
 [Interaction states](INTERACTION-STATES.md) for context, rendering and diagnostics.
 Navigation links (`props.links`, `flowStart`) are authored data; `get_design_context.navigation` summarizes them.
 The viewer currently requests the default design theme; its light UI theme is
-independent. Snapshot database `schemaVersion:2` is separate from scene/API
+independent. Snapshot database `schemaVersion:4` is separate from scene/API
 representation schema 1.
+
+Components are authored `frame` nodes with `props.component:{name}`. An authored
+`instance` is a leaf with `componentId`, optional sizing/position/name/visibility,
+and flat descendant-ID `overrides` (`text`, `fill`, `visible`, `styleId`, `assetId`,
+`name` only). Storage expands these references before resolution/layout; the engine
+and renderer receive ordinary frames and stable virtual children
+`<instanceId>/<masterChildId>`. Virtual children are read-only. Snapshot and bundle
+data always retain authored references, never the expanded tree.
+
+`get_design_context` defaults to `instances:"reference"`: scoped instances remain
+leaves, `components` contains the transitive referenced master definitions once on
+the first page, and optional instance `computed.children` maps virtual IDs to bounds
+and lines. `instances:"expand"` returns the virtual tree and its computed bounds.
+The mode is part of cursor identity. Compact resources include dependencies of both
+master definitions and placed overrides. Outline/subtree expose reference leaves
+with `componentId` and expanded `childCount`; virtual IDs can be read directly.
+`find_nodes` retains authored instance kinds and searches effective child text.
+Cycles, nesting beyond 8 levels and an expanded project above 20,000 nodes fail
+before commit. `COMPONENT_IN_USE` returns `count` and at most 20 `instanceIds`;
+virtual mutations return `INSTANCE_CHILD_READONLY`. Component subtrees cannot use
+links, flow starts or animations. Master updates invalidate scenes at the new revision.
+Expansion retains master-root and descendant interaction states. The instance
+override whitelist does not include states; opt-in `resolvedStates` also applies
+to reference component definitions. See [Components and instances](COMPONENTS.md).
 
 ### Multi-viewport context (additive)
 

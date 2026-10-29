@@ -20,6 +20,7 @@ pub(super) struct Computed {
     pub metadata: Value,
     pub bounds: BTreeMap<String, Vec<Value>>,
     pub reflow: Option<bool>,
+    pub lines: BTreeMap<String, Vec<Value>>,
 }
 
 /// Enqueue/read the existing bounded jobs; never wait on Chromium in a context read.
@@ -48,9 +49,16 @@ pub(super) async fn compute(
         return Err(ApiError::invalid("frameId must identify a frame"));
     }
     validate(viewports)?;
-    let ids = scope_ids(snapshot, frame);
+    let expanded = opencanvas_storage::instances::expand(&snapshot.nodes)?;
+    let ids: HashSet<String> = TreeIndex::new(&expanded)
+        .preorder(Some(frame))
+        .into_iter()
+        .map(|(n, _)| n.id.clone())
+        .collect();
     let mut bounds: BTreeMap<_, _> = ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut metadata = Vec::new();
+    let mut lines: BTreeMap<String, Vec<Value>> =
+        ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut pending = false;
     let mut failed = false;
     for viewport in viewports {
@@ -89,6 +97,19 @@ pub(super) async fn compute(
                 Value::Null
             });
         }
+        let scene_lines: BTreeMap<_, _> = job["scene"]["nodes"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|n| Some((n["id"].as_str()?, n["lines"].clone())))
+            .collect();
+        for (id, values) in &mut lines {
+            values.push(if item["status"] == "ready" {
+                scene_lines.get(id.as_str()).cloned().unwrap_or(Value::Null)
+            } else {
+                Value::Null
+            });
+        }
         metadata.push(item);
     }
     // Compare the entire descendant scope, never just the current page or filtered props.
@@ -108,6 +129,7 @@ pub(super) async fn compute(
             "comparisonScope":"all-descendants-excluding-root","comparedNodes":ids.len()-1}),
         bounds,
         reflow,
+        lines,
     }))
 }
 
@@ -132,14 +154,6 @@ fn validate(viewports: &[Viewport]) -> Result<()> {
 }
 
 /// The frame and every descendant, in one indexed walk (was a fixed-point rescan of all nodes).
-fn scope_ids(snapshot: &Snapshot, frame: &str) -> HashSet<String> {
-    TreeIndex::new(&snapshot.nodes)
-        .preorder(Some(frame))
-        .into_iter()
-        .map(|(node, _)| node.id.clone())
-        .collect()
-}
-
 fn scene_bounds(job: &Value, ids: &HashSet<String>) -> Option<BTreeMap<String, Value>> {
     let mut out = BTreeMap::new();
     for node in job["scene"]["nodes"].as_array()? {

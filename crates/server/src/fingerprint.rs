@@ -12,13 +12,20 @@ pub fn pipeline(workspace: &Path) -> String {
         "worker/pipeline.mjs",
         "worker/runtime.mjs",
         "renderer/dist/index.js",
-        "target/debug/layout-step",
     ] {
         if let Ok(bytes) = std::fs::read(workspace.join(file)) {
             hash.update(bytes);
         } else {
             hash.update(format!("unavailable:{file}"));
         }
+    }
+    // Match the worker's explicit binary override; direct/Docker starts retain the debug path.
+    let layout = std::env::var_os("OPENCANVAS_LAYOUT_BIN")
+        .unwrap_or_else(|| "target/debug/layout-step".into());
+    if let Ok(bytes) = std::fs::read(workspace.join(&layout)) {
+        hash.update(bytes);
+    } else {
+        hash.update(format!("unavailable:{}", layout.to_string_lossy()));
     }
     let runtime=Command::new("node").current_dir(workspace)
         .env("PLAYWRIGHT_BROWSERS_PATH",std::env::var_os("PLAYWRIGHT_BROWSERS_PATH").unwrap_or_else(||workspace.join(".runtime/browsers").into_os_string()))

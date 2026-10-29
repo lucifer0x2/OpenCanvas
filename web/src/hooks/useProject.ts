@@ -57,6 +57,10 @@ export function useProject() {
     if (!list.loaded) return;
     setSelection((previous) => {
       const next = pickProject(list.projects, previous.projectId);
+      if (next !== previous.projectId && previous.projectId)
+        setNotice(
+          "The linked or selected project is unavailable. Showing the first available project.",
+        );
       return next === previous.projectId
         ? previous
         : { ...EMPTY_SELECTION, projectId: next };

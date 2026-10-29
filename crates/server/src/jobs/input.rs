@@ -2,12 +2,12 @@ use crate::{
     error::{ApiError, Result},
     jobs::SceneRequest,
 };
-use opencanvas_storage::{resolved_nodes_for_theme, Node, NodeKind, Snapshot};
+use opencanvas_storage::{resolved_expanded_nodes, Node, NodeKind, Snapshot};
 use serde_json::{json, Value};
 use std::collections::HashSet;
 
 pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Result<Value> {
-    let all = resolved_nodes_for_theme(snapshot, &request.theme)?;
+    let all = resolved_expanded_nodes(snapshot, &request.theme)?;
     if !all
         .iter()
         .any(|n| n.id == request.frame_id && n.kind == NodeKind::Frame)

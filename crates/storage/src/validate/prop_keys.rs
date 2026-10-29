@@ -44,6 +44,7 @@ pub(super) fn check_required(kind: &NodeKind, props: &Map<String, Value>) -> Res
         if !props.contains_key(key) {
             let message = match prop_spec(key).map(|spec| spec.scope) {
                 Some(PropScope::Image) => "Image requires an existing asset",
+                Some(PropScope::Instance) => "Instance requires a componentId",
                 _ => {
                     "Text requires explicit text, fontId, fontSize and lineHeight (or a text style)"
                 }

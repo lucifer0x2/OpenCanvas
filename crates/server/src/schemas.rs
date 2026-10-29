@@ -38,6 +38,9 @@ pub fn tools() -> Vec<Tool> {
 fn id() -> Value {
     json!({"type":"string","minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9_-]+$"})
 }
+fn node_id() -> Value {
+    json!({"type":"string","minLength":1,"maxLength":1160,"pattern":"^[A-Za-z0-9_/-]+$"})
+}
 fn count(max: u64) -> Value {
     json!({"type":"integer","minimum":1,"maximum":max})
 }
@@ -69,7 +72,7 @@ fn build() -> Vec<Tool> {
             &["slug", "name"],
         ),
     );
-    let tree = json!({"projectId":id(),"nodeId":id(),"frameId":id(),"depth":{"type":"integer","minimum":0,"maximum":8},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"properties":{"type":"array","maxItems":50,"items":text(64)},"viewport":viewport(),"theme":text(64),"cursor":text(1024),"revision":{"type":"integer","minimum":0}});
+    let tree = json!({"projectId":id(),"nodeId":node_id(),"frameId":id(),"depth":{"type":"integer","minimum":0,"maximum":8},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"properties":{"type":"array","maxItems":50,"items":text(64)},"viewport":viewport(),"theme":text(64),"cursor":text(1024),"revision":{"type":"integer","minimum":0}});
     // Each read says what it is for, so a caller can tell the three scopes apart without trying them.
     const CAPS: &str = " depth (0–8) keeps nodes at most that many levels below the scope root, which is level 0 (project scope: pages are 0, their root frames 1); a node whose children were cut carries omittedChildren. Omitted depth reads the whole scope. One consistent revision, at most 200 nodes and 64 KiB per page; truncation is explicit.";
     for (name, required, purpose) in [
@@ -95,6 +98,7 @@ fn build() -> Vec<Tool> {
             properties["viewports"] = json!({"type":"array","minItems":1,"maxItems":4,"items":viewport()});
             properties["compact"] = json!({"type":"boolean"});
             properties["notes"] = json!({"enum":["open","all","none"]});
+            properties["instances"] = json!({"enum":["reference","expand"]});
             properties["statesMode"] = json!({"enum":["none","resolved"]});
             description.push_str(" statesMode:resolved adds resolvedStates with only visual overrides differing from default; none (default) omits it.");
             description.push_str(" notes lists the intent notes on the frame, its descendants and ancestors: open (default), all (adds resolved:true ones) or none; absent when there are none.");
@@ -103,12 +107,12 @@ fn build() -> Vec<Tool> {
         }
         add(name, description, object(properties, &required));
     }
-    let kinds = json!({"enum":["page","frame","group","rectangle","text","image"]});
+    let kinds = json!({"enum":["page","frame","group","rectangle","text","image","instance"]});
     add(
         "find_nodes",
         "Find nodes in one call when you know a name, visible text, kind or ID; use get_outline when you need structure. Criteria are ANDed (kinds is OR within the list) and at least one is required. Matching is case-insensitive substring via lowercase, without accent folding or Unicode normalization; textContains only matches text nodes' props.text; parentId matches the direct children of that node, so parentId:<pageId> with kinds:[\"frame\"] lists a page's root frames. Scope is the project, or one nodeId or frameId subtree. Returns preorder matches with id, kind, name, parentId, depth and the ancestor path (up to 8 nearest, pathTruncated when cut), plus textPreview and the requested authored properties. totalMatches and scannedNodes cover the whole scope before paging: totalMatches 0 means nothing matched, not an error; truncated with nextCursor means more pages. Position (left/right) is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds. One revision, up to 200 matches and 64 KiB per page.".into(),
         object(
-            json!({"projectId":id(),"nodeId":id(),"frameId":id(),"kinds":{"type":"array","minItems":1,"maxItems":6,"items":kinds},"nameContains":text(128),"textContains":text(256),"ids":{"type":"array","minItems":1,"maxItems":200,"items":id()},"parentId":id(),"properties":{"type":"array","maxItems":20,"items":text(64)},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024),"revision":{"type":"integer","minimum":0}}),
+            json!({"projectId":id(),"nodeId":node_id(),"frameId":id(),"kinds":{"type":"array","minItems":1,"maxItems":7,"items":kinds},"nameContains":text(128),"textContains":text(256),"ids":{"type":"array","minItems":1,"maxItems":200,"items":node_id()},"parentId":node_id(),"properties":{"type":"array","maxItems":20,"items":text(64)},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024),"revision":{"type":"integer","minimum":0}}),
             &["projectId"],
         ),
     );
@@ -154,7 +158,7 @@ fn build() -> Vec<Tool> {
         render::published(),
     );
     add("export_nodes", export::DESCRIPTION.into(), export::schema());
-    add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
+    add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":node_id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
     tools
 }
 fn viewport() -> Value {

@@ -9,14 +9,31 @@ pub(crate) fn database(path: &Path, manifest: &BundleManifest) -> Result<Snapsho
     // authored tables or ever opening this file for writes.
     let mut reference = Connection::open_in_memory()?;
     initialize(&mut reference, "reference", "reference", "Reference")?;
+    let version: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
+    if !(1..=SCHEMA_VERSION).contains(&version) || version != manifest.database_schema_version {
+        return Err(invalid("Unsupported database version"));
+    }
+    if version < 3 {
+        reference.execute_batch("DROP TABLE notes")?;
+    }
+    if version < 2 {
+        reference.execute_batch("DROP TABLE retention_metadata")?;
+    }
     if schema(&conn)? != schema(&reference)? {
         return Err(invalid("Unexpected database schema objects"));
     }
-    let version: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
     let integrity: String = conn.query_row("PRAGMA integrity_check(1)", [], |r| r.get(0))?;
     let foreign_keys: bool = conn.prepare("PRAGMA foreign_key_check")?.exists([])?;
-    if version != SCHEMA_VERSION || integrity != "ok" || foreign_keys {
+    if integrity != "ok" || foreign_keys {
         return Err(invalid("Database integrity or version check failed"));
+    }
+    // Only the private staging DB is upgraded, after its exact legacy schema passed.
+    if version < SCHEMA_VERSION {
+        drop(conn);
+        conn = Connection::open(path)?;
+        conn.pragma_update(None, "trusted_schema", "OFF")?;
+        migration::migrate(&mut conn)?;
+        conn.pragma_update(None, "query_only", "ON")?;
     }
     bundle_history::preflight(&conn)?;
     let snapshot = read_snapshot(&mut conn)?;

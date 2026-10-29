@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { drawScene, loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
-import { projectPath, read } from "../api";
+import { fetchSceneJob } from "../sceneJob";
 import { acceptsJob } from "../state";
-import type { RenderJob, SceneRequest } from "../types";
+import type { SceneRequest } from "../types";
 
 export interface SceneView {
   status: "empty" | "pending" | "ready" | "failed";
@@ -31,9 +31,7 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
     }
     const desired = request;
     let stopped = false;
-    let timer: ReturnType<typeof setTimeout>;
     const controller = new AbortController();
-    const started = Date.now();
     setView({ status: "pending", missing: [], diagnostics: [] });
     const fail = (message: string) => {
       if (!stopped)
@@ -44,41 +42,9 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
           error: message,
         });
     };
-
-    const receive = async (
-      job: RenderJob,
-      expectedJobId?: string,
-    ): Promise<void> => {
+    const load = async () => {
+      const job = await fetchSceneJob(desired, controller.signal);
       if (stopped) return;
-      if (!acceptsJob(job, desired, expectedJobId)) {
-        fail(
-          "The render response does not match this revision or viewport. Retry this view.",
-        );
-        return;
-      }
-      if (job.status === "failed") {
-        fail(
-          job.error?.message ?? "The render worker failed. Retry this view.",
-        );
-        return;
-      }
-      if (job.status === "pending") {
-        if (Date.now() - started > 45_000) {
-          fail("Rendering timed out. Retry this view.");
-          return;
-        }
-        timer = setTimeout(() => {
-          read<RenderJob>(
-            `/api/v1/jobs/${encodeURIComponent(job.jobId)}`,
-            controller.signal,
-          )
-            .then((next) => receive(next, job.jobId))
-            .catch((cause: Error) => {
-              if (!stopped) fail(cause.message);
-            });
-        }, 500);
-        return;
-      }
       const scene = job.scene!;
       const resources = await loadResources(scene.fonts, scene.assets, {
         strict: false,
@@ -107,26 +73,10 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
         ],
       });
     };
-    const query = new URLSearchParams({
-      frameId: desired.frameId,
-      revision: String(desired.revision),
-      width: String(desired.width),
-      height: String(desired.height),
-      theme: "default",
-      state: "default",
-    });
-    read<RenderJob>(
-      `${projectPath(desired.projectId)}/scene?${query}`,
-      controller.signal,
-    )
-      .then((job) => receive(job))
-      .catch((cause: Error) => {
-        if (!stopped) fail(cause.message);
-      });
+    load().catch((cause: Error) => fail(cause.message));
     return () => {
       stopped = true;
       controller.abort();
-      clearTimeout(timer);
     };
     // The serialized immutable request prevents object identity from restarting jobs.
     // eslint-disable-next-line react-hooks/exhaustive-deps

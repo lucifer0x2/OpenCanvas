@@ -16,6 +16,7 @@ pub enum PropScope {
     Container,
     Text,
     Image,
+    Instance,
     /// Nodes with a painted box: frame, group, rectangle, image.
     Box,
 }
@@ -24,6 +25,7 @@ impl PropScope {
     pub fn allows(self, kind: &NodeKind) -> bool {
         match self {
             Self::Any => true,
+            Self::Instance => *kind == NodeKind::Instance,
             Self::Rendered => *kind != NodeKind::Page,
             Self::Layer => *kind != NodeKind::Page,
             Self::Frame => *kind == NodeKind::Frame,
@@ -36,6 +38,7 @@ impl PropScope {
     pub fn label(self) -> &'static str {
         match self {
             Self::Any => "all",
+            Self::Instance => "instance",
             Self::Rendered => "frame, group, rectangle, text, image",
             Self::Layer => "frame, group, rectangle, text, image",
             Self::Frame => "frame",
@@ -49,6 +52,7 @@ impl PropScope {
     pub fn requirement(self) -> &'static str {
         match self {
             Self::Any => "Property is supported on every node kind",
+            Self::Instance => "Only instances support componentId and overrides",
             Self::Rendered => {
                 "Pages cannot be exported or animated; put exportSettings and animations on a node inside a frame"
             }
@@ -93,6 +97,10 @@ const fn prop(
 use PropScope::{Any, Container, Frame, Image, Layer, Rendered, Text};
 
 pub const PROPS: &[PropSpec] = &[
+    prop("component", Frame, false, "object {name: string}; reusable master, no links or animations in its subtree", &[]),
+    prop("componentId", PropScope::Instance, true, "ID of a component frame", &[]),
+    prop("overrides", PropScope::Instance, false, "object keyed by master descendant IDs; partial text, fill, visible, styleId, assetId, name", &[]),
+    prop("visible", Any, false, "boolean; false hides the node and its descendants", &[]),
     prop("name", Any, false, "string, at most 256 bytes", &["title"]),
     prop("styleId", Any, false, "ID of a fill style (any kind) or a text style (text nodes only); its values apply under the node's own props", &["style", "textStyle", "fillStyle", "textStyleId", "fillStyleId"]),
     prop("x", Any, false, "number -100000..100000, or {\"tokenId\"} of a number token; used by a free parent", &["left"]),
@@ -129,6 +137,9 @@ pub fn prop_spec(key: &str) -> Option<&'static PropSpec> {
 
 /// Every key a node of this kind may author, in table order.
 pub fn allowed_props(kind: &NodeKind) -> Vec<&'static str> {
+    if *kind == NodeKind::Instance {
+        return crate::instances::INSTANCE_KEYS.to_vec();
+    }
     PROPS
         .iter()
         .filter(|spec| spec.scope.allows(kind))
@@ -144,11 +155,12 @@ pub fn required_props(kind: &NodeKind) -> impl Iterator<Item = &'static str> + '
         .map(|spec| spec.key)
 }
 
-pub const NODE_KINDS: [NodeKind; 6] = [
+pub const NODE_KINDS: [NodeKind; 7] = [
     NodeKind::Page,
     NodeKind::Frame,
     NodeKind::Group,
     NodeKind::Rectangle,
     NodeKind::Text,
     NodeKind::Image,
+    NodeKind::Instance,
 ];

@@ -1,4 +1,4 @@
-use super::{id, object, text};
+use super::{id, node_id, object, text};
 use serde_json::{json, Value};
 pub fn schema() -> Value {
     let mut variants = Vec::new();
@@ -12,25 +12,25 @@ pub fn schema() -> Value {
     let index = json!({"type":"integer","minimum":0,"maximum":20000});
     add(
         "create_node",
-        json!({"id":id(),"kind":{"enum":["page","frame","group","rectangle","text","image"]},"parentId":{"type":["string","null"],"maxLength":128},"props":props,"index":index}),
+        json!({"id":node_id(),"kind":{"enum":["page","frame","group","rectangle","text","image","instance"]},"parentId":{"type":["string","null"],"maxLength":1160},"props":props,"index":index}),
         &["id", "kind", "parentId", "props"],
     );
     add(
         "update_node",
-        json!({"id":id(),"props":props}),
+        json!({"id":node_id(),"props":props}),
         &["id", "props"],
     );
     add(
         "reparent_node",
-        json!({"id":id(),"parentId":id(),"index":index}),
+        json!({"id":node_id(),"parentId":node_id(),"index":index}),
         &["id", "parentId"],
     );
     add(
         "reorder_node",
-        json!({"id":id(),"index":index}),
+        json!({"id":node_id(),"index":index}),
         &["id", "index"],
     );
-    add("delete_subtree", json!({"id":id()}), &["id"]);
+    add("delete_subtree", json!({"id":node_id()}), &["id"]);
     add(
         "upsert_token",
         json!({"token":object(json!({"id":id(),"name":text(256),"type":{"enum":["color","dimension","number"]},"value":token_value()}),&["id","name","type","value"])}),

@@ -1,12 +1,18 @@
 # Flat interaction states (P27a+b)
 
-Every non-page node may author `props.states`, an object keyed by `hover`,
+Every non-page drawing node may author `props.states`, an object keyed by `hover`,
 `pressed`, `focus` and `disabled`. Each value is a flat visual override object.
 Only `fill`, `opacity`, `radius` and `stroke` (frame/group/rectangle/image) are
 accepted. Text color uses `fill`. Base property types, ranges and typed references
 apply. The real stroke schema is `{color,width?,align?}`, including four-side
 arrays; `strokeColor` and `strokeWidth` are aliases rejected by the base catalog.
 Font weight and shadow have no base property and are unsupported in states.
+
+Instances inherit the component master's declarations through expansion; their
+virtual children retain each master child's own states. Instances cannot author
+`states` or descendant `states` overrides in the minimal P24 whitelist. Reference
+component definitions expose `resolvedStates` under the same opt-in mode/filter
+as scoped nodes. See [Components and instances](COMPONENTS.md).
 
 ```json
 {"op":"update_node","id":"button","props":{"states":{

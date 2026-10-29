@@ -3,6 +3,31 @@
 pub const CONNECT: &str = "Versioned design tools over a local design store. Every read is one \
 consistent revision.
 
+Project design memory: before reading, understanding, inspecting, editing or authoring a design, \
+read the selected project's AGENTS.md at <configured-data-root>/<project-slug>/AGENTS.md \
+(default ~/.opencanvas/<project>/AGENTS.md), using authorized client filesystem access if available. \
+If absent, create it from confirmed user design requirements and decisions; never invent a \
+palette or fonts. Keep concise confirmed intent, tokens, styles, fonts, components, layout, \
+constraints and exceptions; update it when the user confirms design changes. Prefer this project \
+memory over session-private design memory, subject to user and higher-priority directives. \
+It applies only to OpenCanvas design work, never code, build, test, repository work or unrelated \
+tasks; exclude activity logs and coding rules. This is client instruction policy, not backend \
+validation. MCP currently exposes static skill resources, with no project-memory read/write tool. \
+If the client lacks authorized access or a suitable tool, report that limitation; never claim \
+memory was read, initialized or saved. Use only the selected project's confirmed root and slug; \
+do not create another project or access arbitrary paths to obtain memory. See the project design \
+memory checklist in skill://opencanvas/author-frame.md.
+
+Viewer element links use /?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId> \
+(URL-decode each value, including virtual instance IDs with /). These are stable IDs at the \
+latest authored revision, not a cached viewport or historical revision. On receiving a link, \
+call find_nodes {projectId, ids:[nodeId]} then get_design_context {projectId, frameId}; \
+use get_subtree {projectId, nodeId} for a smaller authored read. \
+verify the returned scope, and report a missing/deleted ID instead of guessing another element. \
+Read skill://opencanvas/implement-frame.md for the address contract.
+
+Reuse frame props.component masters with kind instance, componentId and flat overrides. Context defaults to references; instances:expand reads virtual children.
+
 Finding: when you know a node's name, visible text, kind, ID or parent (parentId lists direct \
 children), call find_nodes; use get_outline when you need structure: depth counts from the scope \
 root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \

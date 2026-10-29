@@ -97,7 +97,7 @@ JSON read back; defaults are omitted:
 
 ## Consistency and limits
 
-- HTTP snapshot is authored data at one revision; its database schema version is currently 3. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
+- HTTP snapshot is authored data at one revision; its database schema version is currently 4. Worker input, computed scene and MCP read envelopes use scene/API schema 1. These version numbers describe different formats.
 - Scene input is an owned immutable snapshot, with the scoped frame detached from its authored page for layout. Its source revision and scene key remain fixed if a later mutation commits. Old completed jobs remain readable by job ID until eviction; a new request for an authored revision no longer available returns `REVISION_UNAVAILABLE`.
 - Scene cache identity includes project, revision, frame, viewport, theme, state, scale and a startup fingerprint of pipeline artifacts, actual Node version, installed Playwright and the browser executable identity. The cache is process-local. Restart the backend after changing Node, Chromium, layout binary or renderer/worker artifacts. PNG provenance records actual runtime versions, not guessed pins.
 - Named design themes come from token declarations; unknown themes return `UNSUPPORTED_THEME`. Interaction states are default, hover, pressed, focus and disabled; see [state semantics](INTERACTION-STATES.md). Literal, typed token references, aliases and default/themes envelopes are resolved by storage. Authored node `props` remain intact in context; `resolvedProps`, token/style `resolvedValue` carry concrete-theme values separately.

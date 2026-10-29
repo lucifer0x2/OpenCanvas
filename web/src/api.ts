@@ -10,7 +10,7 @@ export class ApiError extends Error {
 export const projectPath = (projectId: string) =>
   `/api/v1/projects/${encodeURIComponent(projectId)}`;
 
-/** Viewer intentionally exposes only GET. Design changes belong to the agent's MCP client. */
+/** Design changes belong to MCP; export POST only requests a computed representation. */
 export async function read<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, {
     signal,

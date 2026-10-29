@@ -2,6 +2,7 @@
 //! once, one PNG per setting); the call waits for the jobs up to `waitMs` and reports each node
 //! on its own, so one bad node never fails the others.
 mod download;
+mod http;
 mod target;
 use crate::{
     error::{ApiError, Result},
@@ -9,7 +10,8 @@ use crate::{
     state::AppState,
 };
 pub(crate) use download::file;
-use opencanvas_storage::{check_export_settings, resolved_nodes_for_theme};
+pub(crate) use http::create;
+use opencanvas_storage::{check_export_settings, resolved_expanded_nodes};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::time::Duration;
@@ -31,7 +33,7 @@ pub(crate) async fn export_nodes(state: &AppState, args: Value) -> Result<Value>
     if let Some(settings) = &req.settings {
         check_export_settings(settings, "settings")?;
     }
-    let snapshot = state.snapshot(req.project_id).await?;
+    let mut snapshot = state.snapshot(req.project_id).await?;
     if req.revision.is_some_and(|r| r != snapshot.revision) {
         return Err(ApiError::new(
             "REVISION_UNAVAILABLE",
@@ -39,12 +41,14 @@ pub(crate) async fn export_nodes(state: &AppState, args: Value) -> Result<Value>
         ));
     }
     let theme = req.theme.as_deref().unwrap_or("default");
-    let resolved = resolved_nodes_for_theme(&snapshot, theme)?;
+    let resolved = resolved_expanded_nodes(&snapshot, theme)?;
+    let authored = snapshot.clone();
+    snapshot.nodes = opencanvas_storage::instances::expand(&snapshot.nodes)?;
     let nodes = target::Nodes::new(&snapshot, &resolved);
     let mut jobs = Vec::with_capacity(req.node_ids.len());
     for node_id in &req.node_ids {
         let job = match target::resolve(&nodes, &snapshot, node_id, theme, req.settings.as_ref()) {
-            Ok((request, spec)) => state.jobs.export(snapshot.clone(), request, spec).await,
+            Ok((request, spec)) => state.jobs.export(authored.clone(), request, spec).await,
             Err(error) => Err(error),
         };
         jobs.push(job);

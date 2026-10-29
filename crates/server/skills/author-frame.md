@@ -1,5 +1,34 @@
 # Author an OpenCanvas frame
 
+## Project design memory
+
+Before reading, understanding, inspecting, editing or authoring an OpenCanvas design,
+read the selected project's `AGENTS.md` using authorized client filesystem access
+if available. Its location is `<configured-data-root>/<project-slug>/AGENTS.md`,
+defaulting to `~/.opencanvas/<project>/AGENTS.md`. Use the selected project's confirmed
+data root and slug; a project ID or viewer link is not a filesystem path. Do not
+guess a different root, access arbitrary paths or create another project to get memory.
+
+If the file is missing and authorized write access is available, create it from the
+user's confirmed design requirements and decisions. Record only concise confirmed
+design intent, tokens, styles, fonts, components, layout rules, constraints and
+exceptions. Never invent a palette, font or unconfirmed decision to fill it out.
+Update it when the user confirms a design change; keep it current rather than
+appending an activity log. Do not put coding, build, test or repository rules in it.
+
+Prefer this shared project memory over session-private memory for design decisions,
+subject to the user's current instructions and higher-priority directives. Its scope
+is only reading, understanding, inspecting and editing/authoring designs in OpenCanvas;
+it does not govern code implementation, builds, tests, repository work or other tasks.
+
+This is client instruction policy, not a backend validation requirement. The current
+MCP resources are static skill documents; there is no project-memory read/write tool.
+If the client lacks authorized filesystem access or a suitable tool to read or create
+the file, explain the limitation and use the design context actually available. Never
+pretend that memory has been read, initialized or saved.
+
+## Authoring checklist
+
 1. Read `get_outline` and the scoped context before editing an existing project.
    To locate a node you know by name, visible text, kind or ID, use `find_nodes`
    instead of scanning the outline; each match carries its ancestor `path`.

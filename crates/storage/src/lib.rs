@@ -4,6 +4,7 @@ mod animation_catalog;
 mod error;
 mod export_settings;
 mod image_fit;
+pub mod instances;
 mod links;
 mod model;
 mod props_catalog;
@@ -24,7 +25,8 @@ pub use props_catalog::{
 };
 pub use props_suggest::suggest_prop;
 pub use validate::{
-    resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme, validate_slug,
+    resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
+    validate_slug,
 };
 
 mod assets;

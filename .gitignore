@@ -1,6 +1,7 @@
 node_modules/
 target/
 renderer/dist/
+web/dist/
 spikes/pipeline/output/
 .DS_Store
 .runtime/
