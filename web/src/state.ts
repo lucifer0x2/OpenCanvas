@@ -80,6 +80,7 @@ export function acceptsJob(
   job: RenderJob,
   request: SceneRequest,
   expectedJobId?: string,
+  state = "default",
 ) {
   if (expectedJobId && job.jobId !== expectedJobId) return false;
   if (
@@ -98,7 +99,7 @@ export function acceptsJob(
     provenance.viewport.width === request.width &&
     provenance.viewport.height === request.height &&
     provenance.theme === "default" &&
-    provenance.state === "default" &&
+    provenance.state === state &&
     (!job.sceneKey || job.sceneKey === provenance.sourceSceneKey)
   );
 }

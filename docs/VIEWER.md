@@ -130,3 +130,71 @@ See `artifacts/e2e/evidence.json`, `spikes/e2e/README.md` and `docs/ACCEPTANCE.m
 for exact evidence and limits. The earlier fixture checks remain evidence for
 controlled stale-job/reconnect/failure UI scenarios; the live run does not claim
 cross-browser pixel equality or replace backend/storage failure suites.
+
+## Motion preview
+
+`/preview?project=<projectId>&frame=<frameId>[&width=&height=]` plays a frame's declared
+`props.animations`, `props.states` and `props.links` in the browser. The header's **Preview**
+button opens it for the selected frame in a new tab; the server's SPA fallback serves it, and
+`web/src/main.tsx` picks `PreviewApp` for paths under `/preview`. It is a DOM preview, not a
+time-sampled render (P07c/P07d stay out of scope), and it sends only GET requests.
+
+**Data.** The authored snapshot gives animations, links, states, tokens/styles and the root
+frame picker. The default-state scene (`state=default`, default theme) gives bounds, fill,
+opacity, radius, stroke, text lines, fonts and assets. For each state declared in the frame
+(including masters of its instances) the scene is also fetched with `state=<name>`; per-node
+differences against the default scene become the state visuals, so the server keeps owning
+theme/token resolution. Scene jobs share `fetchSceneJob` (`web/src/sceneJob.ts`) with
+`useScene`. Width/height default to the authored frame size (800×600 fallback).
+
+**DOM.** One absolutely positioned element per scene node (`.oc-node` → `.oc-box` for fill,
+radius, clip and children, then `.oc-stroke`, a border overlay outside the node's own clip,
+sized like `renderer/stroke.ts`). Text is SVG `<text>` at the scene's baseline positions, so the
+browser never re-wraps; images use the shared `placeImage` with crop. The 1:1 frame is scaled
+down to fit the window. At rest it differs from the worker PNG in under 1% of pixels (text
+antialiasing) on the smoke fixture.
+
+**Motion semantics** (`web/src/preview/keyframes.ts`, unit tested):
+
+- `fillMode` defaults to `both`; times are milliseconds; `"infinite"` iterations map to
+  `Infinity`. The effect is linear and each keyframe carries `easing ?? animation.easing ?? ease`
+  for the segment starting at it, as in CSS.
+- Offsets spread like WAAPI (lone keyframe without offset = 1). Every animated property missing
+  at offset 0 or 1 gets an explicit keyframe with the node's resting scene value.
+- `translateX/Y`, `scale`, `rotate` map to the CSS `translate`, `scale`, `rotate` properties
+  (around the bounds center), one CSS property per validator channel, so two animations on one
+  node animating different channels never clobber a shared `transform`.
+- `fill` animates `background-color` of shapes and `color` of text (SVG text uses
+  `currentColor`). `{tokenId}`/`{styleId}` resolve at the default theme from the snapshot; an
+  unresolvable reference skips that property and is listed under the stage as a warning.
+- `load` plays when the frame mounts; **Replay** resets every animation and restarts the load
+  ones. `hover` plays forward on `pointerenter` and reverses from its current time on
+  `pointerleave` (no snap). `click` restarts on every click.
+- **Reduced motion** starts from `prefers-reduced-motion` and can be toggled: triggers jump to
+  their end state (`finish()`), an infinite animation stays at rest, hover leave returns to rest.
+
+**States.** Rules are generated per declared state with `!important` on `:hover`, `:active`
+(pressed), `:focus-visible` (focus; such nodes get `tabindex=0`) and `[data-oc-disabled]`
+(the **Disabled state** toggle, shown only when declared). They therefore beat the resting
+inline styles. Animations own `translate`/`scale`/`rotate`; for `opacity` and `fill`, an active
+state that declares the property wins over the animated value, and the animation shows again
+when the state ends. A state stroke replaces the whole stroke overlay.
+
+**Links.** A click link `navigate` pushes `?frame=<to>` and shows that frame; `back` goes back
+through preview history (a toast when there is none). `overlay`/`close` show a "not supported in
+preview" toast; hover (overlay) links are listed as warnings.
+
+**Instances (P24).** Scene IDs of instance children are virtual (`<instanceId>/<masterChildId>`).
+State visuals come from the per-state scenes, so expanded master states work without ID
+mapping. Component subtrees and instances cannot author animations or links (storage rejects
+them), so there is nothing else to map.
+
+**Known limitations.** Default design theme only; no overlay/close navigation; states are
+plain CSS pseudo-classes (hovering a child also hovers its ancestors, focus needs keyboard
+focus); the preview loads one snapshot and does not follow live SSE commits (use Reload); a
+`width`/`height` in the URL is kept across link navigation.
+
+Tests: `npm --prefix web test` (keyframes, model and state-style units) and
+`npm --prefix web run test:preview`, a Playwright smoke against a temporary server
+(`target/debug` binaries, `renderer/dist`, `web/dist` must be built) with a temporary data root,
+which creates its fixture through MCP and removes everything afterwards.

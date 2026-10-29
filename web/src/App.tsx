@@ -4,6 +4,7 @@ import { FollowToggle } from "./components/FollowToggle";
 import { Icon } from "./components/Icon";
 import { Inspector } from "./components/Inspector";
 import { Layers } from "./components/Layers";
+import { PreviewButton } from "./components/PreviewButton";
 import { ProjectPicker } from "./components/ProjectPicker";
 import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
@@ -77,6 +78,10 @@ export function App() {
         />
         <span className="read-only-badge">Read only</span>
         <div className="topbar-actions">
+          <PreviewButton
+            projectId={snapshot && frame ? selection.projectId : ""}
+            frameId={frame?.id ?? ""}
+          />
           <button
             aria-label={leftOpen ? "Hide layers panel" : "Show layers panel"}
             aria-pressed={leftOpen}
