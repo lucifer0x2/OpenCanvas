@@ -52,7 +52,7 @@ impl PropScope {
             Self::Rendered => {
                 "Pages cannot be exported or animated; put exportSettings and animations on a node inside a frame"
             }
-            Self::Layer => "Pages cannot carry links; put them on a node inside a frame",
+            Self::Layer => "Pages cannot carry links or states; put them on a node inside a frame",
             Self::Frame => "Only frames support flowStart",
             Self::Container => "Only containers support layout",
             Self::Text => "Text properties require a text node",
@@ -120,6 +120,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("links", Layer, false, "array of {to?, on?: \"click\" (default) | \"hover\", action?: \"navigate\" (default) | \"overlay\" | \"back\" | \"close\"}; to = a root frame ID, required for navigate/overlay, absent for back/close; one link per on; hover needs overlay; [] = none", &["reactions", "interactions", "prototype", "onClick", "href", "link", "navigation"]),
     prop("flowStart", Frame, false, "flow name 1–64 bytes, unique in the project; marks this root frame as the first screen of that flow", &["startingPoint", "flowStartingPoint", "start", "entry", "initialRoute"]),
     prop("animations", Rendered, false, "array of at most 8 {name, on?, duration, delay?, easing?, iterations?, direction?, fillMode?, keyframes}; keyframes animate opacity, translateX/Y, scale, rotate and fill from the authored (resting) props; see Animations below; [] = none", &["animation", "motion", "transitions", "transition", "keyframes"]),
+    prop("states", Layer, false, "object of hover|pressed|focus|disabled flat visual overrides: fill, opacity, radius and stroke (box kinds only); refs resolve per theme; {} clears variants; no inheritance or layout changes", &[]),
 ];
 
 pub fn prop_spec(key: &str) -> Option<&'static PropSpec> {

@@ -66,6 +66,16 @@ pub(super) fn read(
             let mut value = json!(authored);
             if context {
                 let mut props = by_id[node.id.as_str()].props.clone();
+                if req.states_mode.as_deref() == Some("resolved")
+                    && req
+                        .properties
+                        .as_ref()
+                        .is_none_or(|f| f.iter().any(|k| k == "states"))
+                {
+                    if let Some(states) = super::states::differing(&props, &node.kind) {
+                        value["resolvedStates"] = states;
+                    }
+                }
                 if let Some(filter) = &req.properties {
                     props
                         .as_object_mut()

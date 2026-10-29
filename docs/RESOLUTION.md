@@ -166,3 +166,13 @@ percentage sizing, breakpoint variants, column wrap or dashboard redesign (align
 padding/gap; a non-dimension token in the list rejects with field
 `layout.padding`. Authored props keep the list and refs; `resolvedProps` hold the
 numbers, and `compact` `resources:"referenced"` still finds tokens inside the list.
+
+## P27: interaction variants
+
+`props.states` resolves typed fill/opacity/radius/stroke references with the same
+concrete theme as resting props. Every declared state is validated in every token
+theme before commit, including unused themes and dependent token/style updates.
+The snapshot retains authored references; context opt-in `statesMode:"resolved"`
+adds only visual differences from resting values. Rendering applies them after
+measurement/layout, preserving resting bounds and lines. See the exact
+[state contract](INTERACTION-STATES.md) and [verification report](P27-REPORT.md).

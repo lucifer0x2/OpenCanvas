@@ -14,7 +14,7 @@ fn include_scene() -> Value {
     json!({"type":"boolean"})
 }
 fn enqueue() -> Map<String, Value> {
-    let properties = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4},"includeScene":include_scene()});
+    let properties = json!({"projectId":id(),"revision":{"type":"integer","minimum":0},"frameId":id(),"viewport":viewport(),"theme":text(64),"state":{"enum":["default","hover","pressed","focus","disabled"]},"scale":{"type":"number","exclusiveMinimum":0,"maximum":4},"includeScene":include_scene()});
     properties.as_object().unwrap().clone()
 }
 fn poll() -> Map<String, Value> {

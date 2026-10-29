@@ -41,8 +41,11 @@ is null until a successful comparison of at least two viewports. An all-free fra
 not a responsive specification: heed NO_REFLOW_INFORMATION, state assumptions or ask the user; \
 do not silently consider absolute positioning complete. Read skill://opencanvas/implement-frame.md \
 or skill://opencanvas/author-frame.md through resources/read for detailed checklists. \
-Only interaction state 'default' is supported; named token themes may be requested. \
-Navigation is the one interaction a design declares: props.links on a node ({on: click|hover, \
+props.states declares flat hover/pressed/focus/disabled visual variants; statesMode:resolved \
+adds resolvedStates to context. Map these to :hover/:active/:focus-visible/[disabled]; never invent \
+undeclared states. render_frame state previews every declaring node in the frame at once, without \
+inheritance or layout changes; named token themes may be requested. \
+Navigation is declared through props.links on a node ({on: click|hover, \
 action: navigate|overlay with to = a root frame ID, or back|close}) and flowStart on a root frame; \
 get_design_context returns them as navigation {out, in}. Implement declared links as routes and \
 overlays. Motion a design declares is props.animations on a node: CSS-like keyframes of opacity, \
