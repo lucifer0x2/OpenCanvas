@@ -1,9 +1,24 @@
-//! Spike CLI: measure | wrap | make-image | render | compare. See README.md.
+//! Spike CLI: measure | wrap | make-image | render | compare | bench | ndjson | paint-gate.
+//! See README.md.
+mod bench;
+mod clip;
 mod compare;
+mod convert;
+mod encode;
 mod font;
+mod gate;
+mod measure;
+mod mode;
+mod ndjson;
 mod paint;
+mod par;
+mod pipeline;
+mod profile;
 mod scene;
+mod shape;
 mod text;
+mod text_full;
+mod text_mask;
 mod wrap;
 
 use serde_json::{json, Value};
@@ -16,6 +31,13 @@ fn arg_f(args: &[String], name: &str, d: f32) -> f32 {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    // Part D commands time their own font loading, so they run before the shared load.
+    match args[1].as_str() {
+        "bench" => return bench::main(&args),
+        "ndjson" => return ndjson::main(&args),
+        "paint-gate" => return gate::main(&args),
+        _ => {}
+    }
     let shaper = font::Shaper::load();
     match args[1].as_str() {
         "measure" => {
@@ -73,7 +95,8 @@ fn main() {
             let sc: scene::Scene = serde_json::from_str(&std::fs::read_to_string(&args[2]).unwrap()).unwrap();
             let image = tiny_skia::Pixmap::load_png(&args[3]).unwrap();
             let opts = text::TextOpts { gamma: arg_f(&args, "--gamma", 1.0), snap: args.iter().any(|a| a == "--snap") };
-            let painter = paint::Painter { shaper: &shaper, text: text::TextPainter::new(&shaper), image, opts };
+            let mode = mode::PaintMode::parse(&args);
+            let painter = paint::Painter { shaper: &shaper, text: text::TextPainter::new(&shaper), image, opts, mode, prof: Default::default() };
             let bench = arg_f(&args, "--bench", 0.0) as usize;
             for scale in [1.0f32, 2.0] {
                 let px = painter.render(&sc, scale);

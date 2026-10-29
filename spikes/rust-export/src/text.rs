@@ -48,15 +48,20 @@ impl TextPainter {
         }
     }
 
-    /// Coverage mask of `pb` with the gamma tweak applied.
+    /// Whole-canvas coverage mask of `pb` with the gamma tweak applied (full painter, text_full.rs).
     pub fn coverage(&self, pb: PathBuilder, w: u32, h: u32, opts: TextOpts) -> Option<Mask> {
         let path = pb.finish()?;
         let mut mask = Mask::new(w, h)?;
         mask.fill_path(&path, FillRule::Winding, true, Transform::identity());
-        if (opts.gamma - 1.0).abs() > 1e-6 {
-            let lut: Vec<u8> = (0..256).map(|v| ((v as f32 / 255.0).powf(1.0 / opts.gamma) * 255.0).round() as u8).collect();
+        if let Some(lut) = gamma_lut(opts) {
             for p in mask.data_mut() { *p = lut[*p as usize]; }
         }
         Some(mask)
     }
+}
+
+/// Coverage → mask byte for `opts.gamma`; None when gamma is 1 (linear, no pass at all).
+pub fn gamma_lut(opts: TextOpts) -> Option<[u8; 256]> {
+    if (opts.gamma - 1.0).abs() <= 1e-6 { return None; }
+    Some(std::array::from_fn(|v| ((v as f32 / 255.0).powf(1.0 / opts.gamma) * 255.0).round() as u8))
 }

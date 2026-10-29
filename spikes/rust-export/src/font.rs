@@ -19,7 +19,10 @@ pub struct PlacedGlyph {
 
 impl Shaper {
     pub fn load() -> Shaper {
-        let bytes = std::fs::read(FONT_PATH).expect("font");
+        Shaper::from_bytes(std::fs::read(FONT_PATH).expect("font"))
+    }
+
+    pub fn from_bytes(bytes: Vec<u8>) -> Shaper {
         let font = Font::new(bytes, 0).expect("parse font");
         let upem = font.units_per_em() as f32;
         let lang = Language::from_str("vi").unwrap();
