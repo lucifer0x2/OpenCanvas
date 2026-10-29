@@ -71,6 +71,7 @@ async fn run(
             .call(json!({"op":"compute","input":work.input,"strict":false}))
             .await?;
         computed["scene"]["provenance"]["sourceSceneKey"] = json!(work.key);
+        super::states::apply(&mut computed["scene"], &work.input);
         if let Some(spec) = &work.export {
             let assets = AssetSource {
                 store: store.clone(),
