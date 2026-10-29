@@ -99,6 +99,8 @@ fn build() -> Vec<Tool> {
             properties["compact"] = json!({"type":"boolean"});
             properties["notes"] = json!({"enum":["open","all","none"]});
             properties["instances"] = json!({"enum":["reference","expand"]});
+            properties["statesMode"] = json!({"enum":["none","resolved"]});
+            description.push_str(" statesMode:resolved adds resolvedStates with only visual overrides differing from default; none (default) omits it.");
             description.push_str(" notes lists the intent notes on the frame, its descendants and ancestors: open (default), all (adds resolved:true ones) or none; absent when there are none.");
             description.push_str(" compact:true (default false) shrinks the read: resolvedProps keep only keys whose resolved value differs from authored (resolvedPropsMode:\"differing\"; the full value is authored props without styleId overlaid with them), and tokens/styles/assets/fonts are only those the frame references, closed over style and alias/theme references (resources:\"referenced\"). Diagnostics and reflow still cover the whole frame.");
             description.push_str(" Optional viewports (1–4, mutually exclusive with viewport, total 16M pixels) enqueue cached render jobs without waiting. Repeat the same read when computed.status is pending; ready nodes include computedBounds in viewport order and reflow compares all descendants, excluding the root. Pending/failed comparisons return reflow:null.");

@@ -77,7 +77,7 @@ các test binary chỉ dùng một phần helper; production strict lint không 
 Build web còn warning chunk ~574,59kB, không chặn build.
 
 Giới hạn công bố: một fixture/runtime Chromium; history authored bất kỳ, state
-ngoài default, hot runtime replacement, log expiration/GC và backup UI/CLI/MCP
+ngoài default/hover/pressed/focus/disabled, hot runtime replacement, log expiration/GC và backup UI/CLI/MCP
 chưa hỗ trợ. Backup/restore là Rust storage API. Token4096 được kiểm validator/
 readback, chưa load-test mutation4096 tokens. Benchmark không đo physical writes
 hoặc end-to-end retry latency. Không commit/push; working tree giữ thay đổi cũ/mới.
@@ -88,6 +88,10 @@ delete/reparent và nhận bundled-font copy là resource đang được tham ch
 Retention metadata nay được đọc trong cùng snapshot transaction.
 
 ## Quy tắc báo cáo
+
+P27 bổ sung visual states phẳng và render toàn frame theo state, giữ layout của
+default. Hợp đồng tại [Interaction states](INTERACTION-STATES.md); bằng chứng AC,
+pixel diff, cache và giới hạn nằm ở [P27 report](P27-REPORT.md).
 
 ### Bổ sung Task 01–02 — 2026-10-28
 

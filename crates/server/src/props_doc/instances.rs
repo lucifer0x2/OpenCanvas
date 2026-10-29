@@ -10,7 +10,8 @@ pub(super) fn section() -> &'static str {
      partial props object accepting only `text`, `fill`, `visible`, `styleId`, `assetId` \
      and `name`, validated for the target's kind and every theme. Image references use \
      `assetId`; token references use `{tokenId: \"...\"}`. The target cannot be the master \
-     root. Layout, structure and component references cannot be overridden. \
+     root. Layout, structure, states and component references cannot be overridden. \
+     Master root/child states are inherited by the corresponding expanded nodes. \
      `update_node` replaces the complete `overrides` object, so resend entries to retain.\n\n\
      Expanded children have stable IDs `<instanceId>/<masterChildId>` and are read-only: \
      update the instance's `props.overrides` instead (`INSTANCE_CHILD_READONLY`). \

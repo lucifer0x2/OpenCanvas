@@ -61,7 +61,9 @@ Resource-only continuation pages are valid.
 Design context keeps authored `props` and adds `resolvedProps`, plus authored
 token/style values and `resolvedValue` for the requested concrete design theme.
 The node `props` field is never computed geometry. Theme aliases and fallback
-rules are specified in `RESOLUTION.md`. Interaction state supports `default`.
+rules are specified in `RESOLUTION.md`. Interaction state supports default, hover,
+pressed, focus and disabled, with paint-only flat overrides after layout; see
+[Interaction states](INTERACTION-STATES.md) for context, rendering and diagnostics.
 Navigation links (`props.links`, `flowStart`) are authored data; `get_design_context.navigation` summarizes them.
 The viewer currently requests the default design theme; its light UI theme is
 independent. Snapshot database `schemaVersion:4` is separate from scene/API
@@ -87,6 +89,9 @@ Cycles, nesting beyond 8 levels and an expanded project above 20,000 nodes fail
 before commit. `COMPONENT_IN_USE` returns `count` and at most 20 `instanceIds`;
 virtual mutations return `INSTANCE_CHILD_READONLY`. Component subtrees cannot use
 links, flow starts or animations. Master updates invalidate scenes at the new revision.
+Expansion retains master-root and descendant interaction states. The instance
+override whitelist does not include states; opt-in `resolvedStates` also applies
+to reference component definitions. See [Components and instances](COMPONENTS.md).
 
 ### Multi-viewport context (additive)
 

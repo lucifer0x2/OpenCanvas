@@ -36,6 +36,7 @@ pub(super) fn definitions(
     scope: &[(&Node, usize)],
     resolved: &HashMap<&str, &Node>,
     compact: bool,
+    states: bool,
 ) -> Value {
     let definitions = definition_nodes(s, scope);
     if definitions.is_empty() {
@@ -54,6 +55,11 @@ pub(super) fn definitions(
             .map(|(n, _)| {
                 let mut value = json!(n);
                 if let Some(resolved) = resolved.get(n.id.as_str()) {
+                    if states {
+                        if let Some(states) = super::states::differing(&resolved.props, &n.kind) {
+                            value["resolvedStates"] = states;
+                        }
+                    }
                     value["resolvedProps"] =
                         super::compact::resolved_props(compact, &n.props, resolved.props.clone());
                 }

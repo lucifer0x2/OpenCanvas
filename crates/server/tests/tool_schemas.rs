@@ -91,7 +91,7 @@ async fn render_frame_modes_are_still_exclusive_at_runtime() {
         json!({"waitMs":100}),
         json!({"extra":1}),
         json!({"scale":5}),
-        json!({"state":"hover"}),
+        json!({"state":"unknown"}),
     ] {
         let mut args = enqueue.clone();
         args.as_object_mut()

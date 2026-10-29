@@ -78,10 +78,11 @@ pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> 
             "Viewport or scale exceeds the render budget",
         ));
     }
-    if request.state != "default" {
-        return Err(ApiError::invalid(
-            "Only default interaction state is supported",
-        ));
+    if !matches!(
+        request.state.as_str(),
+        "default" | "hover" | "pressed" | "focus" | "disabled"
+    ) {
+        return Err(ApiError::invalid("Unknown interaction state"));
     }
     Ok(())
 }

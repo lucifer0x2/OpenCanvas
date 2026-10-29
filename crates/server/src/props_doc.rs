@@ -58,11 +58,12 @@ fn render() -> String {
          - `update_node` replaces the whole `layout` object: resend `mode` with the other layout keys.\n\
          - `links` targets are root frame IDs checked at the end of the batch; `flowStart` goes on \
          a root frame. `get_design_context` summarizes both as `navigation`.\n\
-         - Not supported: per-corner radius, stroke, shadow, gradient, blur, letter spacing, text \
+         - Not supported: per-corner radius, shadow, gradient, blur, letter spacing, text \
          alignment, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
     );
     out.push_str(&animations::section());
     out.push_str(instances::section());
+    out.push_str("\n## Interaction states\n\n`states` declares hover, pressed, focus and disabled as flat objects. Only fill, opacity, radius and stroke (box kinds) are accepted, with the same token/style references as resting props. No state inherits another or changes children. `update_node` replaces the entire states object; {} clears it. State strokes paint after layout, even inside strokes: resting borders reserve space. Font weight and shadow are not supported. Read statesMode:resolved and map declared variants to CSS pseudo-classes. P07a hover animations still require one explicit keyframe; there is no `to` property or implicit states.hover target.\n");
     out
 }
 

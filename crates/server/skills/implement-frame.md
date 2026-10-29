@@ -99,8 +99,12 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   enclosing overlay. `in` tells you where a screen opens from, so choose route
   or overlay. A `flowStart` frame is the initial route of that flow.
 - Route paths, transitions, guards, motion beyond `animations` and real data are not in the
-  design and require user requirements. Only the default interaction state is
-  supported; named token themes may be requested.
+  design and require user requirements. Request `statesMode:"resolved"` for declared
+  `props.states` variants; map hover/pressed/focus/disabled to CSS :hover/:active/
+  :focus-visible/[disabled]. Never invent undeclared variants. `render_frame state`
+  previews all declaring nodes at once; layout and children retain resting geometry.
+  Named token themes may be requested. P07a hover animations require one explicit
+  keyframe; there is no `to` property or implicit target from `states.hover`.
 
 ## Finding nodes
 

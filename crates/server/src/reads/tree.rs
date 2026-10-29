@@ -85,6 +85,11 @@ pub(super) fn read(
             let mut value = json!(authored);
             if context {
                 let mut props = by_id[node.id.as_str()].props.clone();
+                if super::states::requested(&req) {
+                    if let Some(states) = super::states::differing(&props, &node.kind) {
+                        value["resolvedStates"] = states;
+                    }
+                }
                 if let Some(filter) = &req.properties {
                     props
                         .as_object_mut()
@@ -114,7 +119,13 @@ pub(super) fn read(
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if context {
         if !expand && offset == 0 {
-            let definitions = instances::definitions(s, &ordered, &by_id, compact.is_some());
+            let definitions = instances::definitions(
+                s,
+                &ordered,
+                &by_id,
+                compact.is_some(),
+                super::states::requested(&req),
+            );
             if definitions.as_object().is_some_and(|o| !o.is_empty()) {
                 response["components"] = definitions;
             }
