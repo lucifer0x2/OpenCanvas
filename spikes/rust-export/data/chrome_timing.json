@@ -1,0 +1,22 @@
+{
+ "default-s1": {
+  "msDrawPlusToDataURL": 0.475,
+  "msDrawPlusReadback1px": 0.11749999998137355,
+  "version": "156.0.8078.4"
+ },
+ "default-s2": {
+  "msDrawPlusToDataURL": 1.4174999999813735,
+  "msDrawPlusReadback1px": 0.23999999999068677,
+  "version": "156.0.8078.4"
+ },
+ "nohint-s1": {
+  "msDrawPlusToDataURL": 0.4675000000279397,
+  "msDrawPlusReadback1px": 0.10749999997206032,
+  "version": "156.0.8078.4"
+ },
+ "nohint-s2": {
+  "msDrawPlusToDataURL": 1.4100000000093131,
+  "msDrawPlusReadback1px": 0.23999999999068677,
+  "version": "156.0.8078.4"
+ }
+}

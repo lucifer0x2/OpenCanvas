@@ -51,7 +51,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 | `PLAN.md` | Trước mọi triển khai: nguồn yêu cầu sản phẩm và AC. |
 | `README.md` | Cần setup, chạy app hoặc kết nối MCP. |
 | `docs/ACCEPTANCE.md` | Nghiệm thu, cần AC, lệnh kiểm hoặc giới hạn đã công bố. |
-| `tasks/` | Trước khi định nghĩa việc mới. 01–05 sinh từ điều tra "export HTML không căn theo màn hình" (frame mẫu author toàn `layout.mode:"free"` nên không có thông tin reflow); 06–08 là `find_nodes`, giảm chi phí đọc MCP, live workspace events. Trạng thái ghi ở đầu mỗi file. |
+| `tasks/` | Trước khi định nghĩa việc mới. 01–05 sinh từ điều tra "export HTML không căn theo màn hình" (frame mẫu author toàn `layout.mode:"free"` nên không có thông tin reflow); 06–08 là `find_nodes`, giảm chi phí đọc MCP, live workspace events; 09–13 là engine render Rust một nguồn cho export native và viewer WASM (phạm vi macOS, xem `docs/PURE-RUST-EXPORT.md`). Trạng thái ghi ở đầu mỗi file. |
 | `docs/TASK*-REPORT.md`, `docs/TASK04-PROPOSAL.md` | Cần chi tiết kỹ thuật, số đo hoặc rủi ro còn mở của Task03–08. |
 | `docs/SERVER.md` | Sửa hoặc gọi backend: MCP, HTTP API, jobs, SSE. |
 | `docs/CONTRACT.md` | Tích hợp giữa các module (viewer ↔ HTTP API, kiểu dữ liệu). |

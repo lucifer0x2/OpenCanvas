@@ -1,0 +1,378 @@
+{
+ "schemaVersion": 1,
+ "coordinateSpace": "frame",
+ "provenance": {
+  "projectId": "spike",
+  "revision": 1,
+  "frameId": "root",
+  "viewport": {
+   "width": 400,
+   "height": 300
+  },
+  "theme": "light",
+  "state": "default",
+  "sceneVersion": "scene-2",
+  "rendererVersion": "web-2",
+  "sourceSceneKey": "spike",
+  "fontManifestHash": "x",
+  "assetManifestHash": "x"
+ },
+ "nodes": [
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#ffffff",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "root",
+   "parentId": null,
+   "kind": "frame",
+   "bounds": {
+    "x": 0,
+    "y": 0,
+    "width": 400,
+    "height": 300
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#eef2ff",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 12,
+   "crop": null,
+   "id": "card",
+   "parentId": "root",
+   "kind": "frame",
+   "bounds": {
+    "x": 16,
+    "y": 16,
+    "width": 368,
+    "height": 150
+   },
+   "stroke": {
+    "color": [
+     "#6366f1",
+     "#6366f1",
+     "#6366f1",
+     "#6366f1"
+    ],
+    "width": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "align": "inside"
+   }
+  },
+  {
+   "lines": [
+    {
+     "text": "Đăng nhập tài khoản của bạn",
+     "x": 0,
+     "y": 17,
+     "width": 260
+    },
+    {
+     "text": "Tiếng Việt: ắ ằ ẳ ẵ ặ ể ễ ộ ợ ữ ỹ",
+     "x": 0,
+     "y": 37,
+     "width": 260
+    }
+   ],
+   "fontId": "font_bundled",
+   "fontSize": 14,
+   "lineHeight": 20,
+   "fill": "#111827",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "t1",
+   "parentId": "card",
+   "kind": "text",
+   "bounds": {
+    "x": 28,
+    "y": 26,
+    "width": 260,
+    "height": 40
+   }
+  },
+  {
+   "lines": [
+    {
+     "text": "Export AV To Ty We",
+     "x": 0,
+     "y": 28,
+     "width": 260
+    }
+   ],
+   "fontId": "font_bundled",
+   "fontSize": 24,
+   "lineHeight": 32,
+   "fill": "#1e3a8a",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "t2",
+   "parentId": "card",
+   "kind": "text",
+   "bounds": {
+    "x": 28,
+    "y": 70,
+    "width": 260,
+    "height": 32
+   }
+  },
+  {
+   "lines": [
+    {
+     "text": "Thiết kế đẹp, Ưu tiên",
+     "x": 0,
+     "y": 28,
+     "width": 260
+    }
+   ],
+   "fontId": "font_bundled",
+   "fontSize": 24,
+   "lineHeight": 32,
+   "fill": "#0f172a",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "t3",
+   "parentId": "card",
+   "kind": "text",
+   "bounds": {
+    "x": 28,
+    "y": 106,
+    "width": 260,
+    "height": 32
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "transparent",
+   "assetId": "asset_img",
+   "fit": "cover",
+   "opacity": 1,
+   "clip": false,
+   "radius": 10,
+   "crop": null,
+   "id": "img",
+   "parentId": "card",
+   "kind": "image",
+   "bounds": {
+    "x": 296,
+    "y": 28,
+    "width": 76,
+    "height": 60
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#f1f5f9",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": true,
+   "radius": 16,
+   "crop": null,
+   "id": "clipParent",
+   "parentId": "root",
+   "kind": "frame",
+   "bounds": {
+    "x": 16,
+    "y": 180,
+    "width": 180,
+    "height": 104
+   },
+   "stroke": {
+    "color": [
+     "#0f172a",
+     "#0f172a",
+     "#0f172a",
+     "#0f172a"
+    ],
+    "width": [
+     2,
+     2,
+     2,
+     2
+    ],
+    "align": "inside"
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#f97316",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "clipA",
+   "parentId": "clipParent",
+   "kind": "frame",
+   "bounds": {
+    "x": 96,
+    "y": 220,
+    "width": 140,
+    "height": 90
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#10b981",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "clipB",
+   "parentId": "clipParent",
+   "kind": "frame",
+   "bounds": {
+    "x": 4,
+    "y": 170,
+    "width": 60,
+    "height": 50
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "transparent",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 0.5,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "group",
+   "parentId": "root",
+   "kind": "frame",
+   "bounds": {
+    "x": 212,
+    "y": 180,
+    "width": 172,
+    "height": 104
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#2563eb",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 0,
+   "crop": null,
+   "id": "gA",
+   "parentId": "group",
+   "kind": "frame",
+   "bounds": {
+    "x": 222,
+    "y": 190,
+    "width": 96,
+    "height": 60
+   }
+  },
+  {
+   "lines": [],
+   "fontId": null,
+   "fontSize": 0,
+   "lineHeight": 0,
+   "fill": "#dc2626",
+   "assetId": null,
+   "fit": "fit",
+   "opacity": 1,
+   "clip": false,
+   "radius": 8,
+   "crop": null,
+   "id": "gB",
+   "parentId": "group",
+   "kind": "frame",
+   "bounds": {
+    "x": 270,
+    "y": 220,
+    "width": 100,
+    "height": 56
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "id": "font_bundled",
+   "family": "OpenCanvas Noto Sans",
+   "hash": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+   "url": "/renderer/fonts/NotoSans.ttf",
+   "weight": 400,
+   "style": "normal"
+  }
+ ],
+ "assets": [
+  {
+   "id": "asset_img",
+   "hash": "14903fa811d38b95b166728872eaea858330f1077f8202829f436eee84e2d966",
+   "url": "/asset.png",
+   "mediaType": "image/png"
+  }
+ ],
+ "diagnostics": [],
+ "regions": [
+  {
+   "label": "text",
+   "x": 24,
+   "y": 20,
+   "w": 268,
+   "h": 130
+  },
+  {
+   "label": "image",
+   "x": 296,
+   "y": 28,
+   "w": 76,
+   "h": 60
+  }
+ ]
+}
