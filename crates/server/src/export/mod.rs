@@ -2,6 +2,7 @@
 //! once, one PNG per setting); the call waits for the jobs up to `waitMs` and reports each node
 //! on its own, so one bad node never fails the others.
 mod download;
+mod http;
 mod target;
 use crate::{
     error::{ApiError, Result},
@@ -9,6 +10,7 @@ use crate::{
     state::AppState,
 };
 pub(crate) use download::file;
+pub(crate) use http::create;
 use opencanvas_storage::{check_export_settings, resolved_expanded_nodes};
 use serde::Deserialize;
 use serde_json::{json, Value};

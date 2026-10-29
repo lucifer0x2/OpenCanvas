@@ -37,7 +37,11 @@ export async function verifyLiveWorkspace(browser) {
     const { page: tab, streams } = view;
     const picker = tab.getByLabel("Project", { exact: true });
     const selected = (id) =>
-      waitFor(async () => (await picker.inputValue()) === id, id, 5_000);
+      waitFor(
+        async () => (await picker.getAttribute("value")) === id,
+        id,
+        5_000,
+      );
     const streamOn = (path) =>
       waitFor(async () => streams.current().join() === path, path, 5_000);
     await tab.getByText("No project selected", { exact: true }).waitFor();
@@ -60,13 +64,14 @@ export async function verifyLiveWorkspace(browser) {
     await tab.getByText("Authored r1", { exact: true }).waitFor();
 
     // Another project appears in the selector while A stays in view.
+    await picker.click();
     const b = await timed(
       "createOtherToOption",
       () =>
         mcp.call("create_project", { slug: "live-beta", name: "Live beta" }),
       (created) =>
-        picker
-          .locator(`option[value="${created.projectId}"]`)
+        tab
+          .locator(`[role="option"][data-value="${created.projectId}"]`)
           .waitFor({ state: "attached" }),
     );
     assert.ok(
@@ -88,8 +93,8 @@ export async function verifyLiveWorkspace(browser) {
           operations: page("Beta"),
         }),
       () =>
-        picker
-          .locator("option", { hasText: "● Live beta" })
+        tab
+          .getByRole("option", { name: "Live beta, new changes", exact: true })
           .waitFor({ state: "attached" }),
     );
     await tab
@@ -97,13 +102,18 @@ export async function verifyLiveWorkspace(browser) {
       .waitFor();
     await tab.waitForTimeout(500);
     assert.equal(snapshotsOfA(), before, "a commit to B must not refetch A");
-    assert.equal(await picker.inputValue(), a.projectId);
+    assert.equal(await picker.getAttribute("value"), a.projectId);
 
     // Selecting B shows its newest revision and clears its mark.
-    await picker.selectOption(b.projectId);
+    await tab.locator(`[role="option"][data-value="${b.projectId}"]`).click();
     await tab.getByText("Authored r1", { exact: true }).waitFor();
     await streamOn(`/api/v1/projects/${b.projectId}/events`);
-    assert.equal(await picker.locator("option", { hasText: "●" }).count(), 0);
+    await picker.click();
+    assert.equal(
+      await tab.getByRole("option", { name: /new changes/ }).count(),
+      0,
+    );
+    await picker.press("Escape");
 
     // Reconnect after a backend restart keeps a single stream and refetches the list.
     const port = server.port;

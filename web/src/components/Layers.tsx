@@ -2,6 +2,7 @@ import { useState } from "react";
 import { children, nodeName } from "../state";
 import type { DesignNode } from "../types";
 import { Icon } from "./Icon";
+import { useNodeActions } from "./NodeActionsProvider";
 
 function LayerRow({
   node,
@@ -17,12 +18,18 @@ function LayerRow({
   depth?: number;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const actions = useNodeActions();
   const nested = children(nodes, node.id);
   return (
     <li>
       <div
         className={`layer-row ${selectedId === node.id ? "is-selected" : ""}`}
         style={{ paddingLeft: 10 + depth * 14 }}
+        onContextMenu={(event) => {
+          if (!actions) return;
+          event.preventDefault();
+          actions.open(node.id, event.clientX, event.clientY);
+        }}
       >
         {nested.length ? (
           <button
@@ -39,6 +46,16 @@ function LayerRow({
         <button
           className="layer-select"
           onClick={() => select(node.id)}
+          onKeyDown={(event) => {
+            if (
+              event.key === "ContextMenu" ||
+              (event.shiftKey && event.key === "F10")
+            ) {
+              event.preventDefault();
+              const rect = event.currentTarget.getBoundingClientRect();
+              actions?.open(node.id, rect.left, rect.bottom);
+            }
+          }}
           aria-pressed={selectedId === node.id}
           title={nodeName(node)}
         >

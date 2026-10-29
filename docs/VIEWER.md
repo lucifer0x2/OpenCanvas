@@ -16,6 +16,30 @@ Project → page → frame selectors use authored snapshots; layers are sorted b
 
 Drag to pan; wheel or the zoom buttons to zoom; Fit or `F` to fit. Wheel zoom is proportional to the wheel delta, so a mouse notch still steps about 1.1x while a trackpad glides in small increments. The frame name and zoom controls float over the canvas, which fills the pane edge to edge. Focus the canvas and use arrow keys to pan and `+`/`-` to zoom. Every layer is a keyboard accessible native button. The header buttons toggle layers and inspector, including at narrow widths. No editing, resizing, chat, terminal, theme toggle, or mutation request is provided.
 
+## Element actions and links
+
+Select an element to reveal **Copy link**, **Export PNG** and **Export SVG** in
+the Inspector. Right-click a canvas element or layer to select it and open the
+same small action menu. `Shift+F10`/the context-menu key works on layer buttons;
+arrow keys move through the menu, Escape closes it and restores focus, and an
+outside click dismisses it. Export uses authored frame dimensions and the existing
+strict node-export pipeline, independent of viewer zoom/viewport. Pending work,
+download completion and errors appear in an accessible status message. SVG keeps
+live text rather than outlining it. Export requests never change design revisions.
+
+`Cmd+C`/`Ctrl+C` copies the selected element's link. Native copying in text inputs,
+editable content and selected page text is preserved. Clicking empty canvas clears
+selection and input focus; a pan or right-click does not deselect. Empty selection
+survives snapshot reconciliation and live SSE refreshes.
+
+Links contain stable project/page/frame/node IDs (`/?project=…&page=…&frame=…&node=…`),
+including percent-encoded virtual instance child IDs. Opening one in a fresh tab
+overrides stored selection, restores scope and highlights the element at the latest
+revision. It encodes no viewport/cache/revision. The MCP connection instructions and
+`skill://opencanvas/implement-frame.md` teach AI clients to confirm the exact node ID
+with `find_nodes`, then read its `get_design_context`; deleted/moved IDs must be
+reported rather than guessed. A stale browser address displays a fallback notice.
+
 ## Zoom rendering
 
 The canvas paints the scene as vectors on every draw: a Konva `Shape` whose `sceneFunc` calls the

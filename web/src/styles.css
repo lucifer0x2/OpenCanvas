@@ -22,13 +22,11 @@
 body {
   margin: 0;
 }
-button,
-select {
+button {
   font: inherit;
   color: inherit;
 }
 button,
-select,
 a {
   -webkit-tap-highlight-color: transparent;
 }
@@ -53,8 +51,7 @@ button:hover {
 button:active {
   background: #e6ecf3;
 }
-button:disabled,
-select:disabled {
+button:disabled {
   opacity: 0.45;
   cursor: default;
 }
@@ -64,24 +61,10 @@ button[aria-pressed="true"] {
   border-color: #ccdffc;
 }
 button:focus-visible,
-select:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid #1672e8;
   outline-offset: 2px;
-}
-select {
-  min-height: 30px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 3px 24px 3px 7px;
-  background: transparent;
-  max-width: 100%;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-select:hover:not(:disabled) {
-  background-color: #f2f4f6;
 }
 ::selection {
   background: #cce1ff;

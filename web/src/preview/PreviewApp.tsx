@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { nodeName } from "../state";
+import { CustomSelect } from "../components/CustomSelect";
 import { nodeMotion, rootFrames } from "./model";
 import { PreviewStage } from "./PreviewStage";
 import { historyDepth, readRoute, routeUrl, type PreviewRoute } from "./route";
@@ -87,18 +88,17 @@ export function PreviewApp() {
         <span className="pv-title">Motion preview</span>
         <label>
           <span>Frame</span>
-          <select
-            aria-label="Frame"
+          <CustomSelect
+            label="Frame"
             value={frameId}
             disabled={!frames.length}
-            onChange={(e) => go(e.target.value)}
-          >
-            {frames.map((frame) => (
-              <option key={frame.id} value={frame.id}>
-                {nodeName(frame)}
-              </option>
-            ))}
-          </select>
+            placeholder="No frames"
+            onChange={go}
+            options={frames.map((frame) => ({
+              value: frame.id,
+              label: nodeName(frame),
+            }))}
+          />
         </label>
         <div className="pv-actions">
           <button

@@ -8,6 +8,7 @@ import type {
   Selection,
   Snapshot,
 } from "./types.ts";
+import { readNodeLink, selectionNode } from "./deepLink.ts";
 
 export const EMPTY_SELECTION: Selection = {
   projectId: "",
@@ -20,7 +21,8 @@ export function children(nodes: DesignNode[], parentId: string | null) {
   return nodes
     .filter((node) => node.parentId === parentId)
     .sort(
-      (a, b) => Number(a.sortKey) - Number(b.sortKey) || a.id.localeCompare(b.id),
+      (a, b) =>
+        Number(a.sortKey) - Number(b.sortKey) || a.id.localeCompare(b.id),
     );
 }
 
@@ -44,16 +46,20 @@ export function reconcileSelection(
   const frame =
     frames.find((node) => node.id === previous.frameId) ?? frames[0];
   const byId = new Map(snapshot.nodes.map((node) => [node.id, node]));
-  let candidate = byId.get(previous.nodeId);
+  let candidate = selectionNode(snapshot.nodes, previous.nodeId);
   const seen = new Set<string>();
   while (candidate && candidate.id !== frame?.id && !seen.has(candidate.id)) {
     seen.add(candidate.id);
-    candidate = byId.get(candidate.parentId ?? "");
+    candidate =
+      byId.get(candidate.parentId ?? "") ??
+      selectionNode(snapshot.nodes, candidate.parentId ?? "");
   }
   const nodeId =
-    candidate?.id === frame?.id
-      ? previous.nodeId
-      : (frame?.id ?? page?.id ?? "");
+    previous.nodeId === ""
+      ? ""
+      : candidate?.id === frame?.id
+        ? previous.nodeId
+        : (frame?.id ?? page?.id ?? "");
   return {
     projectId: snapshot.projectId,
     pageId: page?.id ?? "",
@@ -105,6 +111,9 @@ export function acceptsJob(
 }
 
 export function readSelection(): Selection {
+  const link =
+    typeof location !== "undefined" ? readNodeLink(location.href) : null;
+  if (link) return link;
   try {
     return {
       ...EMPTY_SELECTION,

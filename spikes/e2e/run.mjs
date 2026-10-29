@@ -89,9 +89,8 @@ try {
   await view.page.screenshot({
     path: fileURLToPath(new URL("token-update.png", artifacts)),
   });
-  await view.page
-    .getByLabel("Viewport", { exact: true })
-    .selectOption("mobile");
+  await view.page.getByLabel("Viewport", { exact: true }).click();
+  await view.page.getByRole("option", { name: /^Mobile/ }).click();
   const mobile = await render(mcp, base, projectId, 3, 390, 844);
   await waitFor(
     async () =>

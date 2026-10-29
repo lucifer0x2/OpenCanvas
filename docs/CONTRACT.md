@@ -13,6 +13,7 @@ Base `/api/v1`, localhost. Success returns the described JSON value; failures re
   The same stream also carries two **non-durable workspace hints** without an SSE `id`, so they never move the commit cursor: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Neither reads the durable log; only a commit of the streamed project replays it. Hints are not replayed after a reconnect or `reset_required`: clients refetch `GET /projects`, which is the source of truth, on every (re)open.
 - `GET /events` → SSE workspace stream for a client that has no project to follow yet (an empty workspace). It carries only `project_created` and `project_activity` with the data above, heartbeat comments every 10 s, and ends on server shutdown. No cursor, no replay, no query parameters (`INVALID_REQUEST` otherwise); a broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream. Same loopback Host/Origin guard as every route.
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
+- `POST /projects/:projectId/exports` → `{projectId,revision,exports:[{nodeId,jobId,status,files?,error?}]}`. Body is the `export_nodes` MCP arguments without `projectId`: `nodeIds` (1–8), optional `settings` (1–8), `theme`, `revision`, `waitMs` (0–10000). The exact MCP runtime schema, cross-field validation, pixel/queue budgets and pipeline apply. `projectId` in the body and unknown fields are rejected. Same Host/Origin guard as other routes. This requests computed files and never changes the authored revision. Poll pending jobs with `GET /jobs/:jobId`, then download the returned file URL.
 - `GET /jobs/:jobId` → RenderJob.
 - `GET /jobs/:jobId/image` → PNG when ready, otherwise structured readiness error.
 - `GET /jobs/:jobId/files/:index` → one file of a ready export job (`export_nodes`) with its MIME type and an attachment `Content-Disposition`; `FILE_NOT_FOUND` 404 for a wrong index or a render job, `IMAGE_NOT_READY` 409 while pending/failed.
@@ -41,6 +42,16 @@ Frontend package in `web/`, built to `web/dist`. Its dev server proxies `/api` t
 Viewer imports shared renderer source from `renderer/`, calls resource loading + `drawScene` on an offscreen canvas, and mounts it in Konva for pan/zoom/selection overlays. No frontend layout engine or text rewrap. Source manifest URLs are controlled HTTP URLs. Scene rendering uses strict=false for labeled resource placeholders; status exposes diagnostics.
 
 Layers ordered by `sortKey` within parent. Page/frame selection derives from authored nodes; frame scene includes only descendants. Local selection/pan/zoom/viewport do not mutate design or revision.
+
+Element addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`.
+All query values are percent-encoded stable IDs, including virtual IDs with `/`.
+Opening a complete address overrides localStorage selection and loads the latest
+revision; viewport and cached job IDs are deliberately absent. Removed or moved
+nodes use the viewer's visible missing-selection notice and scope fallback. AI
+clients URL-decode the query once, confirm `find_nodes {projectId,ids:[nodeId]}`,
+then read `get_design_context {projectId,frameId}` and verify ancestry. Use
+`get_subtree {projectId,nodeId}` for a smaller authored read. An AI
+must report missing/moved IDs rather than silently substituting a different node.
 
 ## MCP/domain
 

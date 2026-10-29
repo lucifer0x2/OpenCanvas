@@ -44,7 +44,7 @@
   max-width: 320px;
   min-width: 0;
 }
-.project-picker select {
+.project-picker .custom-select {
   font-weight: 550;
   font-size: 13px;
 }
@@ -88,7 +88,7 @@
   font-size: 10px;
   color: var(--subtle);
 }
-.scope-controls select {
+.scope-controls .custom-select {
   max-width: 220px;
 }
 .scope-slash {
@@ -100,7 +100,7 @@
   gap: 4px;
   color: #424b58;
 }
-.viewport-picker select {
+.viewport-picker .custom-select {
   width: 190px;
 }
 .notice-bar {
@@ -190,7 +190,7 @@
   .scope-controls {
     flex: 1;
   }
-  .scope-controls select {
+  .scope-controls .custom-select {
     max-width: 140px;
   }
   .viewport-picker {
@@ -214,12 +214,12 @@
   .scope-controls label {
     flex: 1;
   }
-  .scope-controls select {
+  .scope-controls .custom-select {
     min-width: 0;
     width: 100%;
     max-width: 124px;
   }
-  .viewport-picker select {
+  .viewport-picker .custom-select {
     width: 190px;
   }
   .viewbar {

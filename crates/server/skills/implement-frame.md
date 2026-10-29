@@ -1,5 +1,38 @@
 # Implement an OpenCanvas frame
 
+## Design context memory
+
+Before reading or inspecting the design, follow the project design memory checklist
+in `skill://opencanvas/author-frame.md`. Read the selected project's
+`<configured-data-root>/<project-slug>/AGENTS.md` (default
+`~/.opencanvas/<project>/AGENTS.md`) only through authorized client filesystem access.
+Prefer it over session-private design memory for understanding design intent, subject
+to user and higher-priority directives. It governs design context only, not the code,
+build, test or repository work used to implement that design. MCP has no project-memory
+read/write tool: explain unavailable access and never claim a read, initialization or
+save that did not happen. Do not create another project or access arbitrary paths.
+
+## Element addresses copied from the viewer
+
+`http://127.0.0.1:<port>/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`
+identifies one element using stable design IDs. Parse URL query values with a URL
+parser (percent-decode once; a virtual node can contain `/`). The port is the local
+server address, not design identity. No revision or viewport is encoded: read the
+latest authored revision intentionally.
+
+1. Call `find_nodes {projectId, ids:[nodeId]}` to confirm identity. Use the exact ID;
+   never infer identity from a label, viewport position or a cached scene.
+2. Call `get_design_context {projectId, frameId}` for surrounding authored structure,
+   resources and notes; use `get_subtree {projectId, nodeId}` for a smaller authored read. For virtual instance
+   children use `instances:"expand"` when expanded surrounding structure is needed.
+3. Confirm page/frame ancestry. If an ID was deleted or moved, explain the mismatch
+   and ask for a current link; do not silently substitute the first frame.
+
+The browser restores project/page/frame/selection before its stored local selection.
+This address does not grant access to any remote system or filesystem path.
+
+## Implement the frame
+
 1. Choose the frame: `find_nodes` with `kinds:["frame"]`, a `nameContains` or a
    `textContains` when you know what to look for; `get_outline` when you need the
    structure (`depth:1` on a page lists its root frames; `find_nodes {parentId:<page>,

@@ -3,6 +3,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { startFixture } from "./fixture.mjs";
+import {
+  verifyCustomSelects,
+  verifyEmptySelects,
+  verifyPreviewSelect,
+} from "./custom-select-smoke.mjs";
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= fileURLToPath(
   new URL("../../.runtime/browsers", import.meta.url),
@@ -52,6 +57,8 @@ try {
   const ready = (rev) =>
     page.getByText(`Scene r${rev}`, { exact: true }).waitFor();
   await ready(7);
+  await verifyCustomSelects(page);
+  await verifyEmptySelects(browser, "http://127.0.0.1:5179");
   await page.getByRole("button", { name: "Headline", exact: true }).click();
   await page.getByRole("heading", { name: "Headline", exact: true }).waitFor();
   await page.screenshot({
@@ -126,6 +133,8 @@ try {
     false,
   );
   assert.deepEqual(errors, []);
+  await verifyPreviewSelect(page, "http://127.0.0.1:5179");
+  assert.deepEqual(errors, []);
   const evidence = {
     browser: browser.version(),
     checks: [
@@ -138,6 +147,7 @@ try {
       "render failure",
       "deleted selection fallback",
       "390px overflow",
+      "custom combobox click/keyboard/typeahead/focus/outside/Tab/empty/narrow and preview",
     ],
     screenshots: ["desktop.png", "missing-resources.png", "narrow.png"],
   };

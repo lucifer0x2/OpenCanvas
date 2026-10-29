@@ -12,7 +12,7 @@ use axum::{
     http::{header, HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
 use rmcp::transport::streamable_http_server::{
@@ -40,6 +40,10 @@ pub fn router(state: AppState) -> Router {
         .route("/api/v1/events", get(workspace_events::events))
         .route("/api/v1/projects/{project}/events", get(events::events))
         .route("/api/v1/projects/{project}/scene", get(scene))
+        .route(
+            "/api/v1/projects/{project}/exports",
+            post(crate::export::create),
+        )
         .route("/api/v1/projects/{project}/assets/{asset}", get(asset))
         .route("/api/v1/fonts/font_bundled", get(font))
         .route("/api/v1/jobs/{job}", get(job))

@@ -1,0 +1,45 @@
+.node-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 16px;
+}
+.node-actions button {
+  min-height: 32px;
+}
+.node-context-menu {
+  position: fixed;
+  z-index: 100;
+  width: 192px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  box-shadow: 0 8px 28px #14253b26;
+}
+.node-context-menu button {
+  width: 100%;
+  min-height: 34px;
+  justify-content: space-between;
+  border: 0;
+}
+.node-context-menu button span {
+  font-size: 10px;
+  color: var(--subtle);
+}
+.node-action-notice {
+  position: fixed;
+  z-index: 110;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(600px, calc(100vw - 24px));
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 12px;
+  background: white;
+  box-shadow: 0 4px 18px #14253b22;
+}

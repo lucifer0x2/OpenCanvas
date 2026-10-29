@@ -20,7 +20,7 @@
   gap: 6px;
   color: var(--subtle);
 }
-.pv-bar select {
+.pv-bar .custom-select {
   max-width: 220px;
   min-height: 28px;
   border: 1px solid var(--line);

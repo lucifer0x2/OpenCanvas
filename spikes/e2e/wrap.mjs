@@ -82,9 +82,10 @@ export async function verifyWrapRepeat(mcp, base, browser, before, artifacts) {
     viewports: [],
   };
   try {
+    await view.page.getByLabel("Project", { exact: true }).click();
     await view.page
-      .getByLabel("Project", { exact: true })
-      .selectOption(before.projectId);
+      .locator(`[role="option"][data-value="${before.projectId}"]`)
+      .click();
     for (const [i, current] of after.views.entries()) {
       const old = before.views[i];
       assert.notEqual(current.jobId, old.jobId);
@@ -98,9 +99,10 @@ export async function verifyWrapRepeat(mcp, base, browser, before, artifacts) {
       );
       let viewer;
       if (i !== 1) {
+        await view.page.getByLabel("Viewport", { exact: true }).click();
         await view.page
-          .getByLabel("Viewport", { exact: true })
-          .selectOption(i === 0 ? "frame" : "mobile");
+          .getByRole("option", { name: i === 0 ? "Frame size" : /^Mobile/ })
+          .click();
         await waitFor(
           async () =>
             view.scenes.some(

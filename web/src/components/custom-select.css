@@ -1,0 +1,112 @@
+.custom-select {
+  justify-content: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #303a48;
+  text-align: left;
+}
+.custom-select:hover:not(:disabled) {
+  background: #f2f5f8;
+  border-color: #e4e9ef;
+}
+.custom-select[aria-expanded="true"] {
+  background: #eef4fc;
+  border-color: #c7daf3;
+}
+.custom-select:focus-visible {
+  outline: 2px solid #1672e8;
+  outline-offset: 2px;
+}
+.custom-select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.select-value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.select-detail {
+  color: #687587;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.select-chevron {
+  display: flex;
+  margin-left: auto;
+  color: #758194;
+  transform: rotate(90deg);
+}
+.select-menu {
+  position: fixed;
+  z-index: 1000;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 5px;
+  border: 1px solid #dce3eb;
+  border-radius: 9px;
+  background: #fff;
+  color: #283444;
+  box-shadow:
+    0 10px 30px #172c491a,
+    0 2px 6px #172c490d;
+  font-size: 12px;
+}
+.select-menu-label {
+  padding: 5px 8px 7px;
+  color: #6a7687;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.select-option.is-active {
+  background: #edf4ff;
+  box-shadow: inset 0 0 0 1px #d6e5fc;
+}
+.select-option[aria-selected="true"] {
+  color: #125db7;
+  font-weight: 550;
+}
+.select-option[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+}
+.select-check {
+  width: 12px;
+  flex-shrink: 0;
+  color: #1267d6;
+}
+.select-option-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.select-option-copy small {
+  color: #687587;
+  font-size: 10px;
+  font-weight: 400;
+}
+.select-activity {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #287b55;
+}
