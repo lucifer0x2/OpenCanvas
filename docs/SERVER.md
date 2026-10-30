@@ -135,11 +135,28 @@ an exception, including component source notes for virtual instance descendants.
 
 Render jobs append `TEXT_CONTENT_OUTSIDE_BOX` from immutable measured line advance
 and optional glyph `inkBounds`, including ancestor clips. Bounded examples omit
-source text and carry scene/font-manifest/viewport provenance. `Intentional overflow:`
+source text. Each item names its job with `sourceSceneKey`; the job adds one
+`TEXT_OVERFLOW_SUMMARY` (`sourceSceneKey`, `reportedNodes` ≤ 12, `omittedNodes`) that
+carries the full scene/font/asset-manifest/viewport/theme/state `provenance` once.
+`Intentional overflow:`
 notes lower this advisory to informational. `inspect_layout` retains the same job
-diagnostics across pages/field filters and narrows node diagnostics for `nodeIds`;
+diagnostics across pages/field filters and narrows node diagnostics for `nodeIds`
+(the summary has no `nodeId` and stays, with job-level counts);
 context with ready `viewports` returns those measured diagnostics before pagination.
-No viewport request means no measured overflow claim. These checks cover semantic
+No viewport request means no measured overflow claim.
+
+These advisories never make a read fail on their own. In context (and in
+`inspect_layout` given an explicit `budget`) they may use at most `budget / 4`
+bytes (16 KiB at the 64 KiB default). Larger sets are compacted, first step that
+fits: (1) summaries drop `provenance`; (2) items keep only `code, severity, nodeId,
+sourceSceneKey, intentionalOverflow, outsideLineCount, inkEvidence`; (3) the fewest
+items are dropped, round-robin across jobs in viewport order; (4) one read-wide
+summary with the total `omittedNodes`. Compacted summaries carry
+`compaction {step, droppedNodes, retrieve}`, and `reportedNodes`/`omittedNodes`
+describe what this read shows. Compaction depends only on the jobs and the budget,
+so every page of one read carries identical advisories. Read all items with
+`inspect_layout` (no budget) for the `jobId`/`sceneKey` in `computed.viewports`.
+Other diagnostics and errors are never compacted. These checks cover semantic
 text only; general contrast, tap-target and overlap lint remain outside this slice.
 
 ### Property validation errors
@@ -226,7 +243,9 @@ when property filters omit all authored geometry. All pages include `truncated`
 and `nextCursor`; continuation binds revision, theme and the ordered viewports,
 along with the other query parameters. Small byte budgets may return the usual
 `CONTEXT_ITEM_TOO_LARGE` error for metadata alone or one complete node plus bounds;
-no successful response silently drops bounds or viewport entries. Invalid count,
+measured overflow advisories are compacted to their budget share instead (see
+text diagnostics above), so they never cause that error on their own.
+No successful response silently drops bounds or viewport entries. Invalid count,
 dimensions or total area returns the usual `INVALID_REQUEST` error envelope.
 
 Failed jobs remain visible to context reads until eviction. Correct the resource

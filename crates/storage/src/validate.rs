@@ -1,3 +1,4 @@
+mod animated_fill;
 mod animation_refs;
 mod animations;
 mod candidate;

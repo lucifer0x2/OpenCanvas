@@ -40,5 +40,9 @@ báo cáo riêng; không coi AC nghiên cứu là đã pass.
 Root kiểm độc lập trên một build debug đồng bộ (`npm run build`): Rust 29 suites,
 renderer/web typecheck+test, pipeline 49/49, preview smoke 8/8, font UI smoke 3/3,
 fmt/Clippy `-D warnings`/diff-check sạch, không file mã nào vượt 250 dòng.
+Sau review PR #1: storage từ chối fill nghỉ gradient + animation fill (preview cảnh báo);
+text có decoration/tracking âm/dòng chạm nhau composite opacity một lần (Canvas layer,
+SVG `<g opacity>`); overflow advisory gom provenance và nén theo budget để context không
+vỡ; khôi phục `PADDING_HELP`. Workspace Rust 304/304, pipeline 52/52, preview 8/8.
 Rủi ro mở: inset shadow + inside stroke khi inner radius tràn chưa có pixel test;
 preview stroke center độ rộng lẻ lệch do snap nửa px; giới hạn text/SVG trong các report.

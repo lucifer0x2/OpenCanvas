@@ -2,6 +2,8 @@
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 
+const MAX_NODES: usize = 12;
+
 pub(crate) fn append(scene: &mut Value, intentional: &[String]) {
     let Some(nodes) = scene["nodes"].as_array() else {
         return;
@@ -72,14 +74,20 @@ pub(crate) fn append(scene: &mut Value, intentional: &[String]) {
             "nodeId":id,"fontId":node["fontId"],"scope":"complete-measured-scene-before-pagination",
             "intentionalOverflow":intentional.contains(id),"outsideLineCount":count,"examples":examples,"box":node["bounds"],
             "inkEvidence":if has_ink {"measured"}else{"unavailable"},
-            "provenance":scene["provenance"],
+            "sourceSceneKey":scene["provenance"]["sourceSceneKey"],
             "message":"Measured text exceeds its box or a clip. Advance is layout width; ink is measured glyph extent when available. Overflow can be intentional; this advisory never changes authoring."}));
     }
     let total = issues.len();
-    issues.truncate(12);
-    if total > 12 {
-        issues.push(json!({"code":"TEXT_OVERFLOW_SUMMARY","scope":"complete-measured-scene-before-pagination","omittedNodes":total-12}));
+    if total == 0 {
+        return;
     }
+    issues.truncate(MAX_NODES);
+    // One summary per job carries the full provenance once; items reference it by key.
+    issues.push(
+        json!({"code":"TEXT_OVERFLOW_SUMMARY","scope":"complete-measured-scene-before-pagination",
+        "sourceSceneKey":scene["provenance"]["sourceSceneKey"],"reportedNodes":issues.len(),
+        "omittedNodes":total-issues.len(),"provenance":scene["provenance"]}),
+    );
     if let Some(diagnostics) = scene["diagnostics"].as_array_mut() {
         diagnostics.extend(issues);
     }

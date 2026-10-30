@@ -129,6 +129,15 @@ center vẫn bắt đầu ở x=0 và tràn phải như Chrome. Không thấy kh
   trình xem hỗ trợ `@font-face` data URL.
 - Underline CSS có lệch 1 kênh ở vùng chồng glyph/underline như số liệu trên.
 
+**Opacity của text tự chồng (R2).** Text có decoration, `letterSpacing` âm, hoặc các dòng
+có ink chạm nhau (ink rect nới 1 đơn vị) dưới opacity của chính node được composite một
+lần như CSS: Canvas/PNG đếm hai paint unit để buộc opacity layer (`renderer/text-overlap.ts`,
+extent gồm cả rect decoration); SVG bọc `<text>`/`<rect>` trong một `<g opacity>`
+(`svg/text.rs::self_overlaps`; tracking âm trong một `<text>` vốn đã composite một lần).
+Còn lại: glyph tự chồng ở tracking ≥ 0 (font script, kerning chặt) không được phát hiện nên
+Canvas vẫn composite hai lần; khi vượt `MAX_LAYER_PIXELS`, nhóm rơi về gập alpha vào từng
+paint (`opacityLayerFallbacks`) và vùng chồng lại đậm hơn CSS.
+
 ## Thay đổi của phiên hoàn tất này
 
 - `renderer/text-extent.test.mjs`: test cũ không chạy được (Node không resolve import

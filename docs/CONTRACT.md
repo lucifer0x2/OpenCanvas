@@ -159,7 +159,14 @@ for the successful measured comparison. No breakpoint semantics are inferred.
 Poll jobs then repeat the same read from page one until ready before consuming
 continuations. Complete node bounds are indivisible pagination items; the normal
 64 KiB/200-entry/depth-8 limits, explicit truncated/nextCursor and
-`CONTEXT_ITEM_TOO_LARGE` errors apply, including to fixed metadata. Viewport count
+`CONTEXT_ITEM_TOO_LARGE` errors apply, including to fixed metadata, except that
+measured overflow advisories (`TEXT_CONTENT_OUTSIDE_BOX` items and their per-job
+`TEXT_OVERFLOW_SUMMARY`) never cause it on their own: they get at most a quarter
+of the byte budget and are compacted in fixed steps (drop per-job provenance, drop
+item evidence, drop items round-robin, one read-wide summary), identically on every
+page of a read, with `compaction {step, droppedNodes, retrieve}` and updated
+`reportedNodes`/`omittedNodes` on the summary. Items reference the job by
+`sourceSceneKey`; the full provenance travels once per job on its summary. Viewport count
 and total pixel violations return `INVALID_REQUEST`, with no partial page.
 Cursors bind ordered viewports and theme/query/revision. If jobs are evicted and
 a continuation becomes pending, restart the ready read from page one.

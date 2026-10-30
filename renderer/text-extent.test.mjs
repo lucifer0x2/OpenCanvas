@@ -37,3 +37,18 @@ test("a group's extent includes child ink overhang so the opacity layer covers i
   const tree = indexScene({ nodes: [group, child] }, resources);
   assert.equal(tree.extent.get("g").x0, -300);
 });
+
+test("self-overlapping text counts two paint units; decoration widens its extent", () => {
+  const units = (extra) => indexScene({ nodes: [{ ...textNode({ x: 0, y: -11, width: 20, height: 14 }), ...extra }] }, resources).units.get("text");
+  assert.equal(units({}), 1);
+  assert.equal(units({ letterSpacing: 1 }), 1);
+  assert.equal(units({ letterSpacing: -1 }), 2);
+  const deco = { decoration: { line: "underline", offset: 900, thickness: 3 } };
+  assert.equal(units(deco), 2);
+  const line = (y, ink) => ({ text: "gj", x: 0, y, width: 20, ...(ink && { inkBounds: { x: 0, y: -11, width: 20, height: 15 } }) });
+  assert.equal(units({ lines: [line(15, true), line(35, true)] }), 1);
+  assert.equal(units({ lines: [line(15, true), line(30, true)] }), 2);
+  assert.equal(units({ lines: [line(15), line(35)] }), 2);
+  const tree = indexScene({ nodes: [{ ...textNode(), ...deco }] }, resources);
+  assert.equal(tree.extent.get("text").y1, 10 + 15 + 900 + 3);
+});

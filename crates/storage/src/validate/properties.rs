@@ -104,6 +104,7 @@ impl Candidate {
                 _ => {}
             }
         }
+        super::animated_fill::check_animated_fill(p)?;
         check_required(&n.kind, p)?;
         if n.kind == NodeKind::Image {
             let asset = p

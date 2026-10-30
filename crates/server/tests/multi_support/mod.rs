@@ -61,3 +61,21 @@ pub async fn wait_context(s: &Server, args: Value) -> (Value, Duration) {
     let result = settled(s, args).await;
     (result, start.elapsed())
 }
+
+/// Measured overflow advisories of a context page: (items, per-job summaries).
+#[allow(dead_code)]
+pub fn overflow(page: &Value) -> (Vec<&Value>, Vec<&Value>) {
+    let all = page["diagnostics"].as_array().unwrap().iter();
+    let items = all
+        .clone()
+        .filter(|d| d["code"] == "TEXT_CONTENT_OUTSIDE_BOX");
+    let summaries = all.filter(|d| d["code"] == "TEXT_OVERFLOW_SUMMARY");
+    (items.collect(), summaries.collect())
+}
+
+/// Bytes of the measured overflow advisories on a page.
+#[allow(dead_code)]
+pub fn overflow_bytes(page: &Value) -> usize {
+    let (items, summaries) = overflow(page);
+    serde_json::to_vec(&(items, summaries)).unwrap().len()
+}

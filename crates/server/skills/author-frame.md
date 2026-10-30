@@ -163,6 +163,8 @@ layout key with the one you change.
   to combine a load fade with a hover change of the same property, animate a
   wrapping group. When an animation sets both translate axes, set them at the
   same keyframes. `on:"hover"` takes exactly one keyframe and no iterations.
+  A `fill` keyframe requires a solid resting fill; on a gradient box animate
+  opacity or transform instead.
 
 ```json
 {"name":"enter","duration":400,"easing":"ease-out","keyframes":[{"offset":0,"opacity":0,"translateY":12}]}

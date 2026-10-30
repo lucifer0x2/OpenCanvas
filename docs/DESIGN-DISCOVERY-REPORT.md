@@ -30,7 +30,15 @@ Không commit/push, restart3847 hoặc ghi dữ liệu project thật.
   state và trước render/export. Evidence tách advance width khỏi glyph ink bounds,
   đối chiếu own box và rectangular ancestor clips; bỏ content có ancestor opacity0.
   Tối đa12 nodes ×2 line examples và omission summary, không chứa source text.
-  Scene key, viewport, theme/state, versions và font/asset manifest hashes đi kèm.
+  Mỗi item chỉ mang `sourceSceneKey`; một `TEXT_OVERFLOW_SUMMARY` mỗi job
+  (`reportedNodes`, `omittedNodes`) mang provenance đầy đủ một lần: scene key,
+  viewport, theme/state, versions và font/asset manifest hashes.
+- Advisory đo được không bao giờ tự làm read lỗi. Context (và `inspect_layout` có
+  `budget`) cho chúng tối đa `budget/4`; vượt thì nén theo bậc cố định: bỏ provenance,
+  bỏ evidence của item, bỏ item round-robin theo viewport, cuối cùng một summary
+  chung. Summary nén ghi `compaction {step, droppedNodes, retrieve}`; mọi page cùng
+  read giống hệt nhau. Sample `welcome` 2 viewport: diagnostics 13.940 B →
+  10.179 B (budget mặc định, không nén) → 2.378 B ở budget 8192.
   `Intentional overflow:` notes hạ severity thành info; không đổi authored data.
 - Render/inspect/context tái dùng warning của cùng job. Context chỉ có measured
   overflow khi requested viewports đã ready; authored-only read không bịa số đo.

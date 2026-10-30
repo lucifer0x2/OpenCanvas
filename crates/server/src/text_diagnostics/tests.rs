@@ -16,7 +16,20 @@ fn advance_and_ink_are_separate_bounded_measured_evidence() {
     assert_eq!(d["examples"][0]["advance"]["width"].as_f64(), Some(35.));
     assert_eq!(d["examples"][0]["ink"]["width"].as_f64(), Some(18.));
     assert_eq!(d["inkEvidence"], "measured");
-    assert_eq!(d["provenance"]["sourceSceneKey"], "key");
+    assert_eq!(d["sourceSceneKey"], "key");
+    assert!(d.get("provenance").is_none());
+    let summary = &value["diagnostics"][1];
+    assert_eq!(summary["code"], "TEXT_OVERFLOW_SUMMARY");
+    assert_eq!(summary["sourceSceneKey"], "key");
+    assert_eq!(summary["provenance"], value["provenance"]);
+    assert_eq!(
+        (
+            summary["reportedNodes"].as_u64(),
+            summary["omittedNodes"].as_u64()
+        ),
+        (Some(1), Some(0))
+    );
+    assert_eq!(value["diagnostics"].as_array().unwrap().len(), 2);
     assert!(!d.to_string().contains("text\":"));
     let mut absent = scene(Value::Null);
     append(&mut absent, &["label".into()]);
@@ -72,4 +85,7 @@ fn many_overflows_have_bounded_examples_and_an_explicit_omission_summary() {
     assert_eq!(issues[1]["examples"].as_array().unwrap().len(), 2);
     assert_eq!(issues[12]["code"], "TEXT_OVERFLOW_SUMMARY");
     assert_eq!(issues[12]["omittedNodes"], 3);
+    assert_eq!(issues[12]["reportedNodes"], 12);
+    let with_provenance = issues.iter().filter(|i| i.get("provenance").is_some());
+    assert_eq!(with_provenance.count(), 1);
 }

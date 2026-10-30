@@ -11,6 +11,8 @@ mod stops;
 #[cfg(test)]
 mod tests;
 mod text;
+#[cfg(test)]
+mod text_tests;
 use crate::error::{ApiError, Result};
 use geometry::{shape, Radius};
 pub use image_meta::Image;
@@ -63,6 +65,8 @@ struct Line {
     y: f64,
     #[serde(default)]
     width: f64,
+    #[serde(rename = "inkBounds")]
+    ink_bounds: Option<Bounds>,
 }
 
 #[derive(Deserialize)]
@@ -146,9 +150,11 @@ impl Writer<'_> {
             return Err(ApiError::new("SCENE_INVALID", "Scene cycle"));
         }
         let children = self.children.get(node.id.as_str()).cloned();
-        // CSS group opacity, as the renderer composites it: a node with children wraps its
-        // subtree in one `<g opacity>`; a leaf carries its opacity on its own elements.
-        let group = node.opacity < 1.0 && children.as_ref().is_some_and(|c| !c.is_empty());
+        // CSS group opacity, as the renderer composites it: a node with children, or text whose
+        // own elements overlap, wraps them in one `<g opacity>`; any other leaf carries its
+        // opacity on its own elements.
+        let group = node.opacity < 1.0
+            && (children.as_ref().is_some_and(|c| !c.is_empty()) || text::self_overlaps(node));
         let opacity = if group { 1.0 } else { node.opacity };
         if self.id_attribute {
             let _ = write!(out, "<g id=\"{}\">", attr(&node.id));

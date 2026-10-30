@@ -14,6 +14,35 @@ fn coordinate(value: f64) -> String {
     }
 }
 
+/// Whether a text node's own elements can cover a pixel twice, so node opacity must wrap them
+/// in one `<g opacity>` (see `renderer/text-overlap.ts`). One `<text>` with `opacity` already
+/// composites its glyphs once, so tracking needs no group here; a decoration `<rect>` across
+/// glyphs, or separate line `<text>` elements whose ink rectangles (plus one unit of
+/// antialiasing) meet, do. A line without ink bounds counts as overlapping.
+pub(super) fn self_overlaps(node: &Node) -> bool {
+    if node.kind != "text" || node.lines.is_empty() {
+        return false;
+    }
+    if node.decoration.is_some() {
+        return true;
+    }
+    if node.lines.len() == 1 {
+        return false;
+    }
+    let mut bottom = f64::NEG_INFINITY;
+    for line in &node.lines {
+        let Some(ink) = line.ink_bounds else {
+            return true;
+        };
+        let top = line.y + ink.y;
+        if top < bottom + 1.0 {
+            return true;
+        }
+        bottom = bottom.max(top + ink.height);
+    }
+    false
+}
+
 impl Writer<'_> {
     pub(super) fn text(&mut self, out: &mut String, node: &Node, opacity: f64) {
         let font = node.font_id.as_deref().and_then(|id| self.fonts.get(id));

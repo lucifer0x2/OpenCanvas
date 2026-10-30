@@ -37,8 +37,8 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 
 ## Trạng thái hiện tại — 2026-10-30
 
-- Nhánh `claude/design-properties` (từ `main` @ `6ccf191`, chưa push) chứa font import/export, 5 nhóm thuộc tính thiết kế và các nghiên cứu, gồm hai commit.
-- 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Chưa push hoặc mở PR.
+- Nhánh `claude/design-properties` (từ `main` @ `6ccf191`, đã push, PR #1) chứa font import/export, 5 nhóm thuộc tính thiết kế và các nghiên cứu, cùng các sửa theo review PR #1.
+- 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
 - Cổng 3847 do container compose `opencanvas` phục vụ, volume `opencanvas-data` chứa dữ liệu thật của người dùng. Chỉ orchestrator gốc được restart. Kiểm live bằng server tạm `--port 0` + data root tạm, dọn process/data sau khi kiểm.
 - Giới hạn đã công bố vẫn hiệu lực: default interaction state, không arbitrary authored history, deep layout explanation/diff, log pruning/GC, runtime hot replacement, backup UI/CLI/MCP; Task04 chỉ row wrap, `%`/breakpoint cần duyệt riêng. Chi tiết ở `docs/ACCEPTANCE.md`.
 - Không reset/checkout/stash hay bỏ thay đổi của người khác; không push; không ghi `~/.opencanvas`.

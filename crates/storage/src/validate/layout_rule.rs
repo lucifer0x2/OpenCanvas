@@ -119,24 +119,20 @@ impl Candidate {
         let Some(layout) = layout.as_object_mut() else {
             return Ok(());
         };
-        for key in ["padding", "gap"] {
-            if key == "padding" {
-                if let Some(v) = layout.get_mut(key) {
-                    self.resolve_quad(v, "dimension", "layout.padding")?;
-                }
-                continue;
-            }
-            match layout.get_mut(key) {
-                Some(x) if x.is_object() => *x = self.resolve_value(x, "dimension")?,
-                Some(Value::Array(sides)) if key == "padding" => {
-                    for side in sides.iter_mut().filter(|v| v.is_object()) {
-                        *side = self.resolve_value(side, "dimension").map_err(|_| {
-                            StorageError::validation("layout.padding", PADDING_HELP)
-                        })?;
+        if let Some(v) = layout.get_mut("padding") {
+            // A bad token inside a side list gets the shorthand help, as before quad sharing.
+            let list = v.is_array();
+            self.resolve_quad(v, "dimension", "layout.padding")
+                .map_err(|e| {
+                    if list {
+                        StorageError::validation("layout.padding", PADDING_HELP)
+                    } else {
+                        e
                     }
-                }
-                _ => {}
-            }
+                })?;
+        }
+        if let Some(x) = layout.get_mut("gap").filter(|x| x.is_object()) {
+            *x = self.resolve_value(x, "dimension")?;
         }
         Ok(())
     }

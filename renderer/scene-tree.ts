@@ -2,6 +2,7 @@ import type { Bounds, Resources, Scene, SceneNode } from "./types";
 import { PipelineError } from "./error";
 import { strokeOuter } from "./stroke";
 import { shadowBounds } from "./shadow";
+import { textSelfOverlaps } from "./text-overlap";
 
 /** An axis-aligned rectangle by its edges; in scene units or device pixels depending on use. */
 export interface LogicalRect {
@@ -15,7 +16,10 @@ export interface LogicalRect {
 export interface SceneTree {
   roots: SceneNode[];
   children: Map<string, SceneNode[]>;
-  /** Paint commands a layer would merge: own fill/content, own stroke, each child subtree that paints. */
+  /**
+   * Paint commands a layer would merge: own fill/content (two for self-overlapping text), own
+   * stroke, each shadow, each child subtree that paints.
+   */
   units: Map<string, number>;
   /** Scene-unit bounds of everything the subtree paints; null when it paints nothing. */
   extent: Map<string, LogicalRect | null>;
@@ -92,6 +96,10 @@ function ownExtent(n: SceneNode, resources: Resources): LogicalRect | null {
       x: x + line.x + line.inkBounds.x, y: y + line.y + line.inkBounds.y,
       width: line.inkBounds.width, height: line.inkBounds.height,
     }));
+    const d = n.decoration;
+    if (d) extent = union(extent, rectOf({
+      x: x + line.x, y: Math.round(y + line.y + d.offset), width: line.width, height: d.thickness,
+    }));
   }
   return extent;
 }
@@ -124,7 +132,9 @@ export function indexScene(scene: Scene, resources: Resources): SceneTree {
   const visit = (n: SceneNode): LogicalRect | null => {
     const stroke = strokeOuter(n);
     const shadow = shadowBounds(n);
-    let units = (paintsItself(n) ? 1 : 0) + (stroke ? 1 : 0) + (n.shadow?.length ?? 0);
+    // Text whose glyphs/decoration overlap paints as two units, so opacity composites it once.
+    let units = (paintsItself(n) ? 1 : 0) + (textSelfOverlaps(n) ? 1 : 0) + (stroke ? 1 : 0)
+      + (n.shadow?.length ?? 0);
     // The node's own clip cuts its children, never its stroke.
     let extent = union(ownExtent(n, resources), stroke && rectOf(stroke));
     extent = union(extent, shadow && rectOf(shadow));

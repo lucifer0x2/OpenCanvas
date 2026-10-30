@@ -37,7 +37,27 @@ async fn measured_overflow_render_inspect_context_scope_and_paging() {
     assert_eq!(warning["severity"], "info");
     assert_eq!(warning["inkEvidence"], "measured");
     assert_eq!(warning["examples"][0]["clipNodeIds"], json!(["frame"]));
-    assert_eq!(warning["provenance"]["sourceSceneKey"], job["sceneKey"]);
+    assert_eq!(warning["sourceSceneKey"], job["sceneKey"]);
+    assert!(warning.get("provenance").is_none());
+    // The full provenance travels once per job, on its summary.
+    let summary = job["diagnostics"].as_array().unwrap().iter();
+    let summary: Vec<_> = summary
+        .filter(|d| d["code"] == "TEXT_OVERFLOW_SUMMARY")
+        .collect();
+    assert_eq!(summary.len(), 1);
+    assert_eq!(summary[0]["sourceSceneKey"], job["sceneKey"]);
+    assert_eq!(summary[0]["provenance"]["sourceSceneKey"], job["sceneKey"]);
+    assert_eq!(
+        summary[0]["provenance"]["fontManifestHash"],
+        job["provenance"]["fontManifestHash"]
+    );
+    assert_eq!(
+        (
+            summary[0]["reportedNodes"].as_u64(),
+            summary[0]["omittedNodes"].as_u64()
+        ),
+        (Some(1), Some(0))
+    );
     assert!(!warning.to_string().contains("Private paragraph"));
     let args = json!({"projectId":p,"jobId":job["jobId"],"sceneKey":job["sceneKey"],"fields":["bounds"],"limit":1});
     let first = s.call("inspect_layout", args.clone()).await;

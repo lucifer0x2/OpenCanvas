@@ -17,6 +17,10 @@ trên pipeline Chromium hiện tại. Pipeline vẫn là bản tổng chưa phá
   `{type:"radial", center?:[.5,.5], radius?: số | [rx, ry], stops}`; stops 2..16 cặp
   `[position 0..1 không giảm, color]`, hard stop giữ thứ tự; màu stop nhận color token;
   fill style có thể là gradient. Nội suy premultiplied như CSS ở canvas, preview và SVG.
+  Fill animation cần fill nghỉ solid: node có fill gradient (literal hoặc qua fill style)
+  mà khai báo keyframe `fill` bị từ chối ở `props.animations[i].keyframes[j].fill`, vì
+  preview HTML vẽ gradient bằng `background-image` che màu đang chạy. Gradient chỉ trong
+  state vẫn hợp lệ (state luôn thắng animation fill). Preview cảnh báo nếu dữ liệu cũ lọt qua.
 - **shadow**: 0..8 lớp `{x,y,blur,spread,color,inset}`, lớp đầu nằm trên; x/y/spread nhận
   number token, blur dimension token, color color token. Outer + inset; fill trong mờ
   khoét shadow ngoài như CSS.
