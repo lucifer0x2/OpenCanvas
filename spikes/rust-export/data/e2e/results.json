@@ -1,0 +1,3094 @@
+{
+ "env": {
+  "date": "2026-10-29T13:54:05.190Z",
+  "model": "Mac15,6",
+  "cpu": "Apple M3 Pro",
+  "ncpu": 11,
+  "cores": "5P+6E",
+  "memGiB": 18,
+  "os": "macOS 15.7.2",
+  "power": "Battery Power",
+  "node": "v22.23.2",
+  "chromium": "156.0.8078.4",
+  "playwright": "1.64.1",
+  "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+  "commit": "cd41aff",
+  "dirty": true,
+  "phases": {
+   "author": {
+    "start": "2026-10-29T13:49:06.334Z",
+    "load1mBefore": 3.24,
+    "seconds": 1.951,
+    "load1mAfter": 3.221
+   },
+   "capture": {
+    "start": "2026-10-29T13:49:08.286Z",
+    "load1mBefore": 3.221,
+    "seconds": 3.328,
+    "load1mAfter": 3.221
+   },
+   "server": {
+    "start": "2026-10-29T13:49:11.615Z",
+    "load1mBefore": 3.221,
+    "seconds": 71.392,
+    "load1mAfter": 3.464
+   },
+   "stages": {
+    "start": "2026-10-29T13:50:23.007Z",
+    "load1mBefore": 3.464,
+    "seconds": 36.826,
+    "load1mAfter": 3.869
+   },
+   "paintgate": {
+    "start": "2026-10-29T13:50:59.833Z",
+    "load1mBefore": 3.869,
+    "seconds": 76.486,
+    "load1mAfter": 3.18
+   },
+   "rust": {
+    "start": "2026-10-29T13:52:16.319Z",
+    "load1mBefore": 3.18,
+    "seconds": 108.632,
+    "load1mAfter": 3.11
+   },
+   "gate": {
+    "start": "2026-10-29T13:54:04.952Z",
+    "load1mBefore": 3.11,
+    "seconds": 0.232,
+    "load1mAfter": 3.11
+   }
+  }
+ },
+ "frames": {
+  "stacks-1040": {
+   "viewport": {
+    "width": 1040,
+    "height": 720
+   },
+   "sceneNodes": 181,
+   "textNodes": 41,
+   "textLines": 41
+  },
+  "stacks-390": {
+   "viewport": {
+    "width": 390,
+    "height": 844
+   },
+   "sceneNodes": 181,
+   "textNodes": 41,
+   "textLines": 49
+  },
+  "welcome-1040": {
+   "viewport": {
+    "width": 1040,
+    "height": 720
+   },
+   "sceneNodes": 71,
+   "textNodes": 41,
+   "textLines": 41
+  },
+  "grid-2080": {
+   "viewport": {
+    "width": 2080,
+    "height": 1440
+   },
+   "sceneNodes": 727,
+   "textNodes": 164,
+   "textLines": 167
+  }
+ },
+ "configs": {
+  "stacks-1040-s1": {
+   "chromiumServer": {
+    "coldMs": {"p50": 428.393, "p95": 433.7, "n": 3},
+    "coldRuns": [
+     420.274,
+     428.393,
+     433.7
+    ],
+    "warm": {
+     "totalMs": {"p50": 52.397, "p95": 53.463, "n": 21},
+     "enqueueMs": {"p50": 4.497, "p95": 4.781, "n": 21},
+     "waitMs": {"p50": 46.114, "p95": 46.983, "n": 21},
+     "imageMs": {"p50": 1.795, "p95": 1.859, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 55,
+     "processes": 5,
+     "threads": 110
+    },
+    "pngBytes": 103291
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.229,
+     "importPlaywright": 161.964,
+     "launch": 86.333,
+     "newPage": 33.392,
+     "goto": 7.892,
+     "importRenderer": 7.201,
+     "scriptStartMs": 24.084,
+     "readyMs": 326.101
+    },
+    "cold": {
+     "startupMs": 326.101,
+     "firstJobMs": 87.936,
+     "jobMs": 87.936,
+     "passes": 3,
+     "measured": 75,
+     "resourcesRttMs": 17.312,
+     "resourcesPageMs": 14.9,
+     "layoutSpawnMs": 11.706,
+     "layoutBytes": 245123,
+     "measureRttMs": 30.499,
+     "measurePageMs": 10,
+     "drawRttMs": 27.979,
+     "drawPageMs": 3.7,
+     "toDataURLPageMs": 4.9,
+     "base64Bytes": 137724,
+     "workerNdjsonMs": 0.806,
+     "ipcMs": 42.29,
+     "otherMs": 0.439
+    },
+    "warm": {
+     "jobMs": {"p50": 44.74, "p95": 46.368, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "resourcesRttMs": {"p50": 12.524, "p95": 13.282, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 12.1, "n": 21},
+     "layoutSpawnMs": {"p50": 7.963, "p95": 8.243, "n": 21},
+     "layoutBytes": {"p50": 191284, "p95": 194416, "n": 21},
+     "measureRttMs": {"p50": 0.902, "p95": 1.043, "n": 21},
+     "measurePageMs": {"p50": 0.3, "p95": 0.4, "n": 21},
+     "drawRttMs": {"p50": 22.956, "p95": 23.553, "n": 21},
+     "drawPageMs": {"p50": 2.8, "p95": 3.1, "n": 21},
+     "toDataURLPageMs": {"p50": 4.9, "p95": 5.1, "n": 21},
+     "base64Bytes": {"p50": 137984, "p95": 138224, "n": 21},
+     "workerNdjsonMs": {"p50": 0.711, "p95": 0.821, "n": 21},
+     "ipcMs": {"p50": 16.97, "p95": 17.648, "n": 21},
+     "otherMs": {"p50": 0.055, "p95": 0.17, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 62.511, "p95": 64.06, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "resourcesRttMs": {"p50": 12.585, "p95": 12.978, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 11.8, "n": 21},
+     "layoutSpawnMs": {"p50": 10.835, "p95": 11.368, "n": 21},
+     "layoutBytes": {"p50": 245124, "p95": 245124, "n": 21},
+     "measureRttMs": {"p50": 17.146, "p95": 17.578, "n": 21},
+     "measurePageMs": {"p50": 3.9, "p95": 4.1, "n": 21},
+     "drawRttMs": {"p50": 21.825, "p95": 22.936, "n": 21},
+     "drawPageMs": {"p50": 2.6, "p95": 2.9, "n": 21},
+     "toDataURLPageMs": {"p50": 4.8, "p95": 5.1, "n": 21},
+     "base64Bytes": {"p50": 137984, "p95": 138224, "n": 21},
+     "workerNdjsonMs": {"p50": 0.711, "p95": 0.727, "n": 21},
+     "ipcMs": {"p50": 28.721, "p95": 30.201, "n": 21},
+     "otherMs": {"p50": 0.068, "p95": 0.077, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 36246,
+    "computeResponseBytes": 52269,
+    "msDecodePngTwice": 0.059,
+    "msParseComputed": 0.197,
+    "msParseRendered": 0.015,
+    "msSerializeCompute": 0.238,
+    "msSerializeRender": 0.355,
+    "msTotal": 0.863,
+    "pngBytes": 103291,
+    "renderResponseBytes": 138681
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 23.51, "p95": 23.663, "n": 5},
+     "wallRuns": [
+      23.663,
+      23.466,
+      23.51,
+      23.603,
+      23.469
+     ],
+     "firstRunDoneMs": {"p50": 20.646, "p95": 20.724, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.244,
+      "fontParseMs": 0.033,
+      "fontReadMs": 0.227,
+      "poolMs": 0.106,
+      "readInputMs": 0.192,
+      "totalMs": 4.805
+     },
+     "run": {
+      "cpuMs": 22.367,
+      "encodeFastMs": 1.806,
+      "encodeMs": 7.599,
+      "layoutMs": 1.966,
+      "measureMs": 0.779,
+      "measured": 75,
+      "paintMs": 3.295,
+      "parseMs": 0.164,
+      "passes": 3,
+      "pngBytes": 57092,
+      "pngFastBytes": 96457,
+      "profile": {
+       "compositeMs": 0.225,
+       "fallbacks": 0,
+       "maskArea": 66485,
+       "maskMs": 0.09,
+       "masks": 1,
+       "pathMs": 0.771,
+       "rasterMs": 0.655,
+       "shapeMs": 2.057,
+       "textArea": 189863,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 8.011,
+      "totalMs": 13.804
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 27.748, "p95": 27.922, "n": 5},
+     "wallRuns": [
+      27.748,
+      27.629,
+      27.619,
+      27.83,
+      27.922
+     ],
+     "firstRunDoneMs": {"p50": 25.179, "p95": 25.365, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.313,
+      "fontParseMs": 0.032,
+      "fontReadMs": 0.242,
+      "poolMs": 0.017,
+      "readInputMs": 0.178,
+      "totalMs": 4.786
+     },
+     "run": {
+      "cpuMs": 17.032,
+      "encodeFastMs": 3.249,
+      "encodeMs": 8.954,
+      "layoutMs": 1.932,
+      "measureMs": 0.79,
+      "measured": 75,
+      "paintMs": 5.167,
+      "parseMs": 0.154,
+      "passes": 3,
+      "pngBytes": 57092,
+      "pngFastBytes": 96457,
+      "profile": {
+       "compositeMs": 0.221,
+       "fallbacks": 0,
+       "maskArea": 66485,
+       "maskMs": 0.099,
+       "masks": 1,
+       "pathMs": 0.295,
+       "rasterMs": 2.523,
+       "shapeMs": 2.076,
+       "textArea": 189863,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 11.291,
+      "totalMs": 16.996
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 12.156, "p95": 12.434, "n": 21},
+     "totalFastMs": {"p50": 6.488, "p95": 6.685, "n": 21},
+     "cpuMs": {"p50": 20.504, "p95": 21.417, "n": 21},
+     "parseMs": {"p50": 0.134, "p95": 0.146, "n": 21},
+     "layoutMs": {"p50": 1.392, "p95": 1.478, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.01, "p95": 0.013, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 3.053, "p95": 3.19, "n": 21},
+     "encodeMs": {"p50": 7.599, "p95": 7.703, "n": 21},
+     "encodeFastMs": {"p50": 1.936, "p95": 2.061, "n": 21},
+     "pngBytes": {"p50": 57206, "p95": 57243, "n": 21},
+     "pngFastBytes": {"p50": 96783, "p95": 97451, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 190199, "p95": 190415, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.528, "p95": 0.838, "n": 21},
+      "rasterMs": {"p50": 0.541, "p95": 0.595, "n": 21},
+      "compositeMs": {"p50": 0.209, "p95": 0.214, "n": 21},
+      "shapeMs": {"p50": 2.028, "p95": 2.124, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.078, "p95": 0.089, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 15.413, "p95": 15.61, "n": 21},
+     "totalFastMs": {"p50": 9.778, "p95": 9.938, "n": 21},
+     "cpuMs": {"p50": 15.418, "p95": 15.622, "n": 21},
+     "parseMs": {"p50": 0.126, "p95": 0.142, "n": 21},
+     "layoutMs": {"p50": 1.4, "p95": 1.514, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.01, "p95": 0.014, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 5.008, "p95": 5.115, "n": 21},
+     "encodeMs": {"p50": 8.877, "p95": 9.04, "n": 21},
+     "encodeFastMs": {"p50": 3.236, "p95": 3.3, "n": 21},
+     "pngBytes": {"p50": 57206, "p95": 57243, "n": 21},
+     "pngFastBytes": {"p50": 96783, "p95": 97451, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 190199, "p95": 190415, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.296, "p95": 0.316, "n": 21},
+      "rasterMs": {"p50": 2.49, "p95": 2.595, "n": 21},
+      "compositeMs": {"p50": 0.21, "p95": 0.225, "n": 21},
+      "shapeMs": {"p50": 2.009, "p95": 2.084, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.073, "p95": 0.095, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 38.456, "p95": 38.876, "n": 21},
+     "totalFastMs": {"p50": 32.832, "p95": 33.091, "n": 21},
+     "cpuMs": {"p50": 38.486, "p95": 38.87, "n": 21},
+     "parseMs": {"p50": 0.136, "p95": 0.141, "n": 21},
+     "layoutMs": {"p50": 1.386, "p95": 1.46, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.011, "p95": 0.014, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 28.016, "p95": 28.355, "n": 21},
+     "encodeMs": {"p50": 8.928, "p95": 9.075, "n": 21},
+     "encodeFastMs": {"p50": 3.259, "p95": 3.313, "n": 21},
+     "pngBytes": {"p50": 57206, "p95": 57243, "n": 21},
+     "pngFastBytes": {"p50": 96783, "p95": 97451, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 190199, "p95": 190415, "n": 21},
+      "maskArea": {"p50": 31114080, "p95": 31379760, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.287, "p95": 0.31, "n": 21},
+      "rasterMs": {"p50": 9.429, "p95": 9.591, "n": 21},
+      "compositeMs": {"p50": 14.384, "p95": 14.578, "n": 21},
+      "shapeMs": {"p50": 2.054, "p95": 2.095, "n": 21},
+      "masks": {"p50": 57, "p95": 57, "n": 21},
+      "maskMs": {"p50": 1.18, "p95": 1.307, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 13.558, "p95": 13.772, "n": 21},
+     "totalFastMs": {"p50": 7.874, "p95": 8.02, "n": 21},
+     "cpuMs": {"p50": 21.547, "p95": 22.586, "n": 21},
+     "parseMs": {"p50": 0.13, "p95": 0.141, "n": 21},
+     "layoutMs": {"p50": 1.926, "p95": 2.079, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 0.711, "p95": 0.762, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "paintMs": {"p50": 3.124, "p95": 3.294, "n": 21},
+     "encodeMs": {"p50": 7.607, "p95": 7.798, "n": 21},
+     "encodeFastMs": {"p50": 1.935, "p95": 2.067, "n": 21},
+     "pngBytes": {"p50": 57206, "p95": 57243, "n": 21},
+     "pngFastBytes": {"p50": 96783, "p95": 97451, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 190199, "p95": 190415, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.567, "p95": 0.706, "n": 21},
+      "rasterMs": {"p50": 0.55, "p95": 0.639, "n": 21},
+      "compositeMs": {"p50": 0.223, "p95": 0.235, "n": 21},
+      "shapeMs": {"p50": 2.06, "p95": 2.187, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.076, "p95": 0.083, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 23.813,
+     "maskMs": 1.18,
+     "bboxAreaRatio": 0.006,
+     "paintMs": 3.171,
+     "totalFastMs": 7.962
+    }
+   },
+   "mcpMs": 6.293,
+   "ratio": {
+    "cold": 14.374,
+    "cold1": 12.585,
+    "warm": 2.84,
+    "warm1": 2.414,
+    "warmFast": 4.1,
+    "warmFast1": 3.26,
+    "warmFull": 1.171
+   }
+  },
+  "stacks-1040-s2": {
+   "chromiumServer": {
+    "coldMs": {"p50": 437.779, "p95": 439.792, "n": 3},
+    "coldRuns": [
+     439.792,
+     437.779,
+     435.6
+    ],
+    "warm": {
+     "totalMs": {"p50": 62.071, "p95": 64.057, "n": 21},
+     "enqueueMs": {"p50": 4.614, "p95": 4.865, "n": 21},
+     "waitMs": {"p50": 55.659, "p95": 57.418, "n": 21},
+     "imageMs": {"p50": 1.93, "p95": 2.159, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 66.25,
+     "processes": 5,
+     "threads": 109
+    },
+    "pngBytes": 257958
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.303,
+     "importPlaywright": 160.499,
+     "launch": 87.486,
+     "newPage": 31.5,
+     "goto": 8.018,
+     "importRenderer": 6.615,
+     "scriptStartMs": 23.703,
+     "readyMs": 321.747
+    },
+    "cold": {
+     "startupMs": 321.747,
+     "firstJobMs": 95.858,
+     "jobMs": 95.858,
+     "passes": 3,
+     "measured": 75,
+     "resourcesRttMs": 17.36,
+     "resourcesPageMs": 14.6,
+     "layoutSpawnMs": 11.261,
+     "layoutBytes": 245123,
+     "measureRttMs": 30.831,
+     "measurePageMs": 9.9,
+     "drawRttMs": 35.941,
+     "drawPageMs": 4.2,
+     "toDataURLPageMs": 11.2,
+     "base64Bytes": 343944,
+     "workerNdjsonMs": 1.144,
+     "ipcMs": 44.232,
+     "otherMs": 0.466
+    },
+    "warm": {
+     "jobMs": {"p50": 52.234, "p95": 53.553, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "resourcesRttMs": {"p50": 12.36, "p95": 12.651, "n": 21},
+     "resourcesPageMs": {"p50": 11.3, "p95": 11.6, "n": 21},
+     "layoutSpawnMs": {"p50": 7.782, "p95": 8.023, "n": 21},
+     "layoutBytes": {"p50": 191284, "p95": 194416, "n": 21},
+     "measureRttMs": {"p50": 0.908, "p95": 1.012, "n": 21},
+     "measurePageMs": {"p50": 0.3, "p95": 0.4, "n": 21},
+     "drawRttMs": {"p50": 31.241, "p95": 31.407, "n": 21},
+     "drawPageMs": {"p50": 3.4, "p95": 3.7, "n": 21},
+     "toDataURLPageMs": {"p50": 11.1, "p95": 11.3, "n": 21},
+     "base64Bytes": {"p50": 344984, "p95": 345820, "n": 21},
+     "workerNdjsonMs": {"p50": 1.125, "p95": 1.161, "n": 21},
+     "ipcMs": {"p50": 18.194, "p95": 19.057, "n": 21},
+     "otherMs": {"p50": 0.054, "p95": 0.166, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 71.838, "p95": 73.544, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "resourcesRttMs": {"p50": 12.655, "p95": 13.241, "n": 21},
+     "resourcesPageMs": {"p50": 11.6, "p95": 12.1, "n": 21},
+     "layoutSpawnMs": {"p50": 11.349, "p95": 12.103, "n": 21},
+     "layoutBytes": {"p50": 245124, "p95": 245124, "n": 21},
+     "measureRttMs": {"p50": 17.394, "p95": 17.805, "n": 21},
+     "measurePageMs": {"p50": 3.9, "p95": 4, "n": 21},
+     "drawRttMs": {"p50": 30.369, "p95": 30.772, "n": 21},
+     "drawPageMs": {"p50": 3.3, "p95": 3.6, "n": 21},
+     "toDataURLPageMs": {"p50": 11.2, "p95": 11.6, "n": 21},
+     "base64Bytes": {"p50": 344984, "p95": 345820, "n": 21},
+     "workerNdjsonMs": {"p50": 1.124, "p95": 1.167, "n": 21},
+     "ipcMs": {"p50": 30.365, "p95": 30.994, "n": 21},
+     "otherMs": {"p50": 0.07, "p95": 0.09, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 36246,
+    "computeResponseBytes": 52270,
+    "msDecodePngTwice": 0.145,
+    "msParseComputed": 0.195,
+    "msParseRendered": 0.032,
+    "msSerializeCompute": 0.234,
+    "msSerializeRender": 0.351,
+    "msTotal": 0.958,
+    "pngBytes": 257958,
+    "renderResponseBytes": 344902
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 50.1, "p95": 50.263, "n": 5},
+     "wallRuns": [
+      50.057,
+      50.263,
+      50.127,
+      49.961,
+      50.1
+     ],
+     "firstRunDoneMs": {"p50": 46.831, "p95": 46.92, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.418,
+      "fontParseMs": 0.032,
+      "fontReadMs": 0.227,
+      "poolMs": 0.101,
+      "readInputMs": 0.19,
+      "totalMs": 4.972
+     },
+     "run": {
+      "cpuMs": 56.329,
+      "encodeFastMs": 6.145,
+      "encodeMs": 22.442,
+      "layoutMs": 1.949,
+      "measureMs": 0.758,
+      "measured": 75,
+      "paintMs": 10.159,
+      "parseMs": 0.16,
+      "passes": 3,
+      "pngBytes": 135673,
+      "pngFastBytes": 247793,
+      "profile": {
+       "compositeMs": 0.774,
+       "fallbacks": 0,
+       "maskArea": 239301,
+       "maskMs": 0.29,
+       "masks": 1,
+       "pathMs": 0.886,
+       "rasterMs": 0.948,
+       "shapeMs": 7.998,
+       "textArea": 759452,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 19.17,
+      "totalMs": 35.467
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 64.536, "p95": 64.586, "n": 5},
+     "wallRuns": [
+      64.292,
+      64.332,
+      64.536,
+      64.586,
+      64.56
+     ],
+     "firstRunDoneMs": {"p50": 61.454, "p95": 61.697, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.272,
+      "fontParseMs": 0.03,
+      "fontReadMs": 0.227,
+      "poolMs": 0.017,
+      "readInputMs": 0.187,
+      "totalMs": 4.736
+     },
+     "run": {
+      "cpuMs": 44.491,
+      "encodeFastMs": 11.859,
+      "encodeMs": 28.498,
+      "layoutMs": 2.079,
+      "measureMs": 0.77,
+      "measured": 75,
+      "paintMs": 13.061,
+      "parseMs": 0.156,
+      "passes": 3,
+      "pngBytes": 135673,
+      "pngFastBytes": 247793,
+      "profile": {
+       "compositeMs": 0.76,
+       "fallbacks": 0,
+       "maskArea": 239301,
+       "maskMs": 0.262,
+       "masks": 1,
+       "pathMs": 0.31,
+       "rasterMs": 3.968,
+       "shapeMs": 7.931,
+       "textArea": 759452,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 27.925,
+      "totalMs": 44.564
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 34.497, "p95": 35.584, "n": 21},
+     "totalFastMs": {"p50": 18.275, "p95": 19.211, "n": 21},
+     "cpuMs": {"p50": 53.958, "p95": 55.384, "n": 21},
+     "parseMs": {"p50": 0.137, "p95": 0.193, "n": 21},
+     "layoutMs": {"p50": 1.448, "p95": 1.523, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.014, "p95": 0.016, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 10.078, "p95": 10.359, "n": 21},
+     "encodeMs": {"p50": 22.876, "p95": 23.403, "n": 21},
+     "encodeFastMs": {"p50": 6.561, "p95": 6.766, "n": 21},
+     "pngBytes": {"p50": 136068, "p95": 136168, "n": 21},
+     "pngFastBytes": {"p50": 248353, "p95": 248686, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 760796, "p95": 761660, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.576, "p95": 0.656, "n": 21},
+      "rasterMs": {"p50": 0.835, "p95": 0.902, "n": 21},
+      "compositeMs": {"p50": 0.734, "p95": 0.842, "n": 21},
+      "shapeMs": {"p50": 8.079, "p95": 8.248, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.234, "p95": 0.272, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 43.553, "p95": 43.992, "n": 21},
+     "totalFastMs": {"p50": 27.064, "p95": 27.454, "n": 21},
+     "cpuMs": {"p50": 43.557, "p95": 43.97, "n": 21},
+     "parseMs": {"p50": 0.134, "p95": 0.145, "n": 21},
+     "layoutMs": {"p50": 1.462, "p95": 1.554, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.014, "p95": 0.017, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 13.142, "p95": 13.299, "n": 21},
+     "encodeMs": {"p50": 28.793, "p95": 29.283, "n": 21},
+     "encodeFastMs": {"p50": 12.366, "p95": 12.634, "n": 21},
+     "pngBytes": {"p50": 136068, "p95": 136168, "n": 21},
+     "pngFastBytes": {"p50": 248353, "p95": 248686, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 760796, "p95": 761660, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.311, "p95": 0.317, "n": 21},
+      "rasterMs": {"p50": 4.004, "p95": 4.132, "n": 21},
+      "compositeMs": {"p50": 0.706, "p95": 0.778, "n": 21},
+      "shapeMs": {"p50": 7.939, "p95": 8.045, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.222, "p95": 0.267, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 145.689, "p95": 147.507, "n": 21},
+     "totalFastMs": {"p50": 129.577, "p95": 131.16, "n": 21},
+     "cpuMs": {"p50": 145.511, "p95": 147.394, "n": 21},
+     "parseMs": {"p50": 0.135, "p95": 0.387, "n": 21},
+     "layoutMs": {"p50": 1.453, "p95": 1.746, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.014, "p95": 0.016, "n": 21},
+     "measured": {"p50": 1, "p95": 1, "n": 21},
+     "paintMs": {"p50": 115.216, "p95": 116.778, "n": 21},
+     "encodeMs": {"p50": 29.009, "p95": 29.415, "n": 21},
+     "encodeFastMs": {"p50": 12.464, "p95": 12.763, "n": 21},
+     "pngBytes": {"p50": 136068, "p95": 136168, "n": 21},
+     "pngFastBytes": {"p50": 248353, "p95": 248686, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 760796, "p95": 761660, "n": 21},
+      "maskArea": {"p50": 124456320, "p95": 125519040, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.377, "p95": 0.389, "n": 21},
+      "rasterMs": {"p50": 35.514, "p95": 36.148, "n": 21},
+      "compositeMs": {"p50": 57.672, "p95": 58.579, "n": 21},
+      "shapeMs": {"p50": 8.438, "p95": 8.647, "n": 21},
+      "masks": {"p50": 57, "p95": 57, "n": 21},
+      "maskMs": {"p50": 8.117, "p95": 8.799, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 35.497, "p95": 35.815, "n": 21},
+     "totalFastMs": {"p50": 19.428, "p95": 19.638, "n": 21},
+     "cpuMs": {"p50": 55.15, "p95": 57.186, "n": 21},
+     "parseMs": {"p50": 0.136, "p95": 0.215, "n": 21},
+     "layoutMs": {"p50": 1.933, "p95": 2.069, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 0.718, "p95": 0.798, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "paintMs": {"p50": 10.007, "p95": 10.253, "n": 21},
+     "encodeMs": {"p50": 22.698, "p95": 22.851, "n": 21},
+     "encodeFastMs": {"p50": 6.614, "p95": 6.786, "n": 21},
+     "pngBytes": {"p50": 136068, "p95": 136168, "n": 21},
+     "pngFastBytes": {"p50": 248353, "p95": 248686, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 760796, "p95": 761660, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.593, "p95": 0.742, "n": 21},
+      "rasterMs": {"p50": 0.821, "p95": 0.916, "n": 21},
+      "compositeMs": {"p50": 0.746, "p95": 0.798, "n": 21},
+      "shapeMs": {"p50": 8.029, "p95": 8.218, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.225, "p95": 0.265, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 93.186,
+     "maskMs": 8.117,
+     "bboxAreaRatio": 0.006,
+     "paintMs": 14.49,
+     "totalFastMs": 28.557
+    }
+   },
+   "mcpMs": 6.544,
+   "ratio": {
+    "cold": 7.729,
+    "cold1": 6.159,
+    "warm": 1.512,
+    "warm1": 1.239,
+    "warmFast": 2.501,
+    "warmFast1": 1.847,
+    "warmFull": 0.408
+   }
+  },
+  "stacks-390-s1": {
+   "chromiumServer": {
+    "coldMs": {"p50": 434.57, "p95": 440.882, "n": 3},
+    "coldRuns": [
+     440.882,
+     434.57,
+     432.728
+    ],
+    "warm": {
+     "totalMs": {"p50": 46.991, "p95": 48.007, "n": 21},
+     "enqueueMs": {"p50": 4.6, "p95": 4.813, "n": 21},
+     "waitMs": {"p50": 40.69, "p95": 42.126, "n": 21},
+     "imageMs": {"p50": 1.74, "p95": 1.835, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 51.25,
+     "processes": 5,
+     "threads": 108
+    },
+    "pngBytes": 56917
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.261,
+     "importPlaywright": 161.248,
+     "launch": 83.879,
+     "newPage": 32.923,
+     "goto": 7.42,
+     "importRenderer": 7.162,
+     "scriptStartMs": 22.447,
+     "readyMs": 319.589
+    },
+    "cold": {
+     "startupMs": 319.589,
+     "firstJobMs": 85.797,
+     "jobMs": 85.797,
+     "passes": 3,
+     "measured": 75,
+     "resourcesRttMs": 17.66,
+     "resourcesPageMs": 14.8,
+     "layoutSpawnMs": 11.617,
+     "layoutBytes": 246139,
+     "measureRttMs": 30.433,
+     "measurePageMs": 9.9,
+     "drawRttMs": 25.601,
+     "drawPageMs": 3.5,
+     "toDataURLPageMs": 3.3,
+     "base64Bytes": 75892,
+     "workerNdjsonMs": 0.592,
+     "ipcMs": 42.194,
+     "otherMs": 0.486
+    },
+    "warm": {
+     "jobMs": {"p50": 38.328, "p95": 39.731, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.624, "p95": 13.024, "n": 21},
+     "resourcesPageMs": {"p50": 11.6, "p95": 11.9, "n": 21},
+     "layoutSpawnMs": {"p50": 4.864, "p95": 5.075, "n": 21},
+     "layoutBytes": {"p50": 119830, "p95": 119830, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 20.679, "p95": 21.309, "n": 21},
+     "drawPageMs": {"p50": 2.5, "p95": 2.9, "n": 21},
+     "toDataURLPageMs": {"p50": 3.3, "p95": 3.4, "n": 21},
+     "base64Bytes": {"p50": 79252, "p95": 80792, "n": 21},
+     "workerNdjsonMs": {"p50": 0.577, "p95": 0.622, "n": 21},
+     "ipcMs": {"p50": 16.033, "p95": 16.487, "n": 21},
+     "otherMs": {"p50": 0.055, "p95": 0.17, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 61.658, "p95": 63.7, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "resourcesRttMs": {"p50": 12.885, "p95": 13.333, "n": 21},
+     "resourcesPageMs": {"p50": 11.7, "p95": 12.1, "n": 21},
+     "layoutSpawnMs": {"p50": 11.464, "p95": 12.291, "n": 21},
+     "layoutBytes": {"p50": 246139, "p95": 246139, "n": 21},
+     "measureRttMs": {"p50": 17.21, "p95": 18.33, "n": 21},
+     "measurePageMs": {"p50": 4, "p95": 4.3, "n": 21},
+     "drawRttMs": {"p50": 19.971, "p95": 20.389, "n": 21},
+     "drawPageMs": {"p50": 2.5, "p95": 2.7, "n": 21},
+     "toDataURLPageMs": {"p50": 3.3, "p95": 3.6, "n": 21},
+     "base64Bytes": {"p50": 79252, "p95": 80792, "n": 21},
+     "workerNdjsonMs": {"p50": 0.579, "p95": 0.71, "n": 21},
+     "ipcMs": {"p50": 28.507, "p95": 29.597, "n": 21},
+     "otherMs": {"p50": 0.075, "p95": 0.09, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 36245,
+    "computeResponseBytes": 52606,
+    "msDecodePngTwice": 0.033,
+    "msParseComputed": 0.197,
+    "msParseRendered": 0.009,
+    "msSerializeCompute": 0.234,
+    "msSerializeRender": 0.357,
+    "msTotal": 0.83,
+    "pngBytes": 56917,
+    "renderResponseBytes": 76847
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 17.646, "p95": 17.982, "n": 5},
+     "wallRuns": [
+      17.662,
+      17.982,
+      17.59,
+      17.646,
+      17.327
+     ],
+     "firstRunDoneMs": {"p50": 14.666, "p95": 14.919, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.248,
+      "fontParseMs": 0.029,
+      "fontReadMs": 0.232,
+      "poolMs": 0.106,
+      "readInputMs": 0.18,
+      "totalMs": 4.798
+     },
+     "run": {
+      "cpuMs": 16.082,
+      "encodeFastMs": 0.923,
+      "encodeMs": 3.951,
+      "layoutMs": 1.999,
+      "measureMs": 0.774,
+      "measured": 75,
+      "paintMs": 1.927,
+      "parseMs": 0.158,
+      "passes": 3,
+      "pngBytes": 32001,
+      "pngFastBytes": 52561,
+      "profile": {
+       "compositeMs": 0.136,
+       "fallbacks": 8,
+       "maskArea": 43159,
+       "maskMs": 0.08,
+       "masks": 1,
+       "pathMs": 1.025,
+       "rasterMs": 0.549,
+       "shapeMs": 1.01,
+       "textArea": 126067,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 5.781,
+      "totalMs": 8.809
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 19.246, "p95": 19.585, "n": 5},
+     "wallRuns": [
+      19.585,
+      19.309,
+      19.13,
+      19.224,
+      19.246
+     ],
+     "firstRunDoneMs": {"p50": 16.707, "p95": 16.75, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.307,
+      "fontParseMs": 0.031,
+      "fontReadMs": 0.225,
+      "poolMs": 0.017,
+      "readInputMs": 0.171,
+      "totalMs": 4.755
+     },
+     "run": {
+      "cpuMs": 10.542,
+      "encodeFastMs": 1.335,
+      "encodeMs": 4.375,
+      "layoutMs": 1.909,
+      "measureMs": 0.771,
+      "measured": 75,
+      "paintMs": 3.286,
+      "parseMs": 0.152,
+      "passes": 3,
+      "pngBytes": 32001,
+      "pngFastBytes": 52561,
+      "profile": {
+       "compositeMs": 0.146,
+       "fallbacks": 8,
+       "maskArea": 43159,
+       "maskMs": 0.05,
+       "masks": 1,
+       "pathMs": 0.316,
+       "rasterMs": 1.852,
+       "shapeMs": 1.073,
+       "textArea": 126067,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 7.453,
+      "totalMs": 10.493
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 6.92, "p95": 6.984, "n": 21},
+     "totalFastMs": {"p50": 3.808, "p95": 3.959, "n": 21},
+     "cpuMs": {"p50": 12.877, "p95": 13.629, "n": 21},
+     "parseMs": {"p50": 0.128, "p95": 0.144, "n": 21},
+     "layoutMs": {"p50": 0.853, "p95": 0.884, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 1.905, "p95": 1.968, "n": 21},
+     "encodeMs": {"p50": 4.024, "p95": 4.098, "n": 21},
+     "encodeFastMs": {"p50": 0.913, "p95": 1.056, "n": 21},
+     "pngBytes": {"p50": 33297, "p95": 33835, "n": 21},
+     "pngFastBytes": {"p50": 55625, "p95": 57085, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 126067, "p95": 126067, "n": 21},
+      "maskArea": {"p50": 45681, "p95": 47148, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.559, "p95": 0.706, "n": 21},
+      "rasterMs": {"p50": 0.511, "p95": 0.554, "n": 21},
+      "compositeMs": {"p50": 0.133, "p95": 0.153, "n": 21},
+      "shapeMs": {"p50": 1.07, "p95": 1.14, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.059, "p95": 0.069, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 8.721, "p95": 8.947, "n": 21},
+     "totalFastMs": {"p50": 5.596, "p95": 5.78, "n": 21},
+     "cpuMs": {"p50": 8.751, "p95": 8.967, "n": 21},
+     "parseMs": {"p50": 0.125, "p95": 0.139, "n": 21},
+     "layoutMs": {"p50": 0.853, "p95": 0.878, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 3.192, "p95": 3.38, "n": 21},
+     "encodeMs": {"p50": 4.521, "p95": 4.616, "n": 21},
+     "encodeFastMs": {"p50": 1.4, "p95": 1.438, "n": 21},
+     "pngBytes": {"p50": 33297, "p95": 33835, "n": 21},
+     "pngFastBytes": {"p50": 55625, "p95": 57085, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 126067, "p95": 126067, "n": 21},
+      "maskArea": {"p50": 45681, "p95": 47148, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.286, "p95": 0.32, "n": 21},
+      "rasterMs": {"p50": 1.843, "p95": 2.022, "n": 21},
+      "compositeMs": {"p50": 0.129, "p95": 0.137, "n": 21},
+      "shapeMs": {"p50": 1.051, "p95": 1.122, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.055, "p95": 0.058, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 18.75, "p95": 19.208, "n": 21},
+     "totalFastMs": {"p50": 15.696, "p95": 16.056, "n": 21},
+     "cpuMs": {"p50": 18.756, "p95": 19.202, "n": 21},
+     "parseMs": {"p50": 0.129, "p95": 0.143, "n": 21},
+     "layoutMs": {"p50": 0.877, "p95": 0.927, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 13.297, "p95": 13.627, "n": 21},
+     "encodeMs": {"p50": 4.479, "p95": 4.679, "n": 21},
+     "encodeFastMs": {"p50": 1.396, "p95": 1.44, "n": 21},
+     "pngBytes": {"p50": 33297, "p95": 33835, "n": 21},
+     "pngFastBytes": {"p50": 55625, "p95": 57085, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 126067, "p95": 126067, "n": 21},
+      "maskArea": {"p50": 13980016, "p95": 14291452, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.276, "p95": 0.31, "n": 21},
+      "rasterMs": {"p50": 4.664, "p95": 4.845, "n": 21},
+      "compositeMs": {"p50": 6.514, "p95": 6.673, "n": 21},
+      "shapeMs": {"p50": 1.054, "p95": 1.088, "n": 21},
+      "masks": {"p50": 57, "p95": 57, "n": 21},
+      "maskMs": {"p50": 0.491, "p95": 0.554, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 8.51, "p95": 8.616, "n": 21},
+     "totalFastMs": {"p50": 5.432, "p95": 5.532, "n": 21},
+     "cpuMs": {"p50": 14.141, "p95": 14.991, "n": 21},
+     "parseMs": {"p50": 0.127, "p95": 0.136, "n": 21},
+     "layoutMs": {"p50": 1.876, "p95": 1.97, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 0.698, "p95": 0.722, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "paintMs": {"p50": 1.811, "p95": 1.928, "n": 21},
+     "encodeMs": {"p50": 3.927, "p95": 4.064, "n": 21},
+     "encodeFastMs": {"p50": 0.85, "p95": 0.943, "n": 21},
+     "pngBytes": {"p50": 33297, "p95": 33835, "n": 21},
+     "pngFastBytes": {"p50": 55625, "p95": 57085, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 126067, "p95": 126067, "n": 21},
+      "maskArea": {"p50": 45681, "p95": 47148, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.539, "p95": 0.588, "n": 21},
+      "rasterMs": {"p50": 0.457, "p95": 0.534, "n": 21},
+      "compositeMs": {"p50": 0.125, "p95": 0.155, "n": 21},
+      "shapeMs": {"p50": 1.044, "p95": 1.1, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.058, "p95": 0.065, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 11.178,
+     "maskMs": 0.491,
+     "bboxAreaRatio": 0.009,
+     "paintMs": 1.732,
+     "totalFastMs": 4.134
+    }
+   },
+   "mcpMs": 6.339,
+   "ratio": {
+    "cold": 18.118,
+    "cold1": 16.985,
+    "warm": 3.544,
+    "warm1": 3.12,
+    "warmFast": 4.631,
+    "warmFast1": 3.937,
+    "warmFull": 1.873
+   }
+  },
+  "stacks-390-s2": {
+   "chromiumServer": {
+    "coldMs": {"p50": 433.708, "p95": 437.101, "n": 3},
+    "coldRuns": [
+     437.101,
+     426.715,
+     433.708
+    ],
+    "warm": {
+     "totalMs": {"p50": 51.87, "p95": 53.095, "n": 21},
+     "enqueueMs": {"p50": 4.491, "p95": 4.711, "n": 21},
+     "waitMs": {"p50": 45.39, "p95": 46.812, "n": 21},
+     "imageMs": {"p50": 1.789, "p95": 1.954, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 56.25,
+     "processes": 5,
+     "threads": 109
+    },
+    "pngBytes": 137315
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.218,
+     "importPlaywright": 162.21,
+     "launch": 90.356,
+     "newPage": 32.619,
+     "goto": 7.624,
+     "importRenderer": 7.216,
+     "scriptStartMs": 23.592,
+     "readyMs": 327.431
+    },
+    "cold": {
+     "startupMs": 327.431,
+     "firstJobMs": 89.517,
+     "jobMs": 89.517,
+     "passes": 3,
+     "measured": 75,
+     "resourcesRttMs": 17.45,
+     "resourcesPageMs": 14.8,
+     "layoutSpawnMs": 11.429,
+     "layoutBytes": 246139,
+     "measureRttMs": 30.625,
+     "measurePageMs": 10,
+     "drawRttMs": 29.558,
+     "drawPageMs": 3.7,
+     "toDataURLPageMs": 6.6,
+     "base64Bytes": 183088,
+     "workerNdjsonMs": 1.006,
+     "ipcMs": 42.534,
+     "otherMs": 0.454
+    },
+    "warm": {
+     "jobMs": {"p50": 42.914, "p95": 43.818, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.689, "p95": 12.956, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 11.9, "n": 21},
+     "layoutSpawnMs": {"p50": 4.821, "p95": 4.965, "n": 21},
+     "layoutBytes": {"p50": 119830, "p95": 119830, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 25.365, "p95": 26.05, "n": 21},
+     "drawPageMs": {"p50": 2.9, "p95": 3.1, "n": 21},
+     "toDataURLPageMs": {"p50": 6.6, "p95": 6.8, "n": 21},
+     "base64Bytes": {"p50": 190600, "p95": 194460, "n": 21},
+     "workerNdjsonMs": {"p50": 0.817, "p95": 0.946, "n": 21},
+     "ipcMs": {"p50": 16.992, "p95": 17.738, "n": 21},
+     "otherMs": {"p50": 0.052, "p95": 0.155, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 65.052, "p95": 66.609, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "resourcesRttMs": {"p50": 12.597, "p95": 12.879, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 11.7, "n": 21},
+     "layoutSpawnMs": {"p50": 11.066, "p95": 11.68, "n": 21},
+     "layoutBytes": {"p50": 246139, "p95": 246139, "n": 21},
+     "measureRttMs": {"p50": 17.242, "p95": 17.856, "n": 21},
+     "measurePageMs": {"p50": 3.9, "p95": 4.2, "n": 21},
+     "drawRttMs": {"p50": 24.197, "p95": 24.825, "n": 21},
+     "drawPageMs": {"p50": 2.8, "p95": 3, "n": 21},
+     "toDataURLPageMs": {"p50": 6.5, "p95": 6.8, "n": 21},
+     "base64Bytes": {"p50": 190600, "p95": 194460, "n": 21},
+     "workerNdjsonMs": {"p50": 0.824, "p95": 0.867, "n": 21},
+     "ipcMs": {"p50": 29.011, "p95": 30.743, "n": 21},
+     "otherMs": {"p50": 0.078, "p95": 0.09, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 36245,
+    "computeResponseBytes": 52606,
+    "msDecodePngTwice": 0.078,
+    "msParseComputed": 0.197,
+    "msParseRendered": 0.019,
+    "msSerializeCompute": 0.234,
+    "msSerializeRender": 0.355,
+    "msTotal": 0.882,
+    "pngBytes": 137315,
+    "renderResponseBytes": 184044
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 30.277, "p95": 30.73, "n": 5},
+     "wallRuns": [
+      30.392,
+      30.73,
+      30.223,
+      30.243,
+      30.277
+     ],
+     "firstRunDoneMs": {"p50": 27.31, "p95": 27.823, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.294,
+      "fontParseMs": 0.031,
+      "fontReadMs": 0.217,
+      "poolMs": 0.1,
+      "readInputMs": 0.172,
+      "totalMs": 4.818
+     },
+     "run": {
+      "cpuMs": 30.573,
+      "encodeFastMs": 2.712,
+      "encodeMs": 11.284,
+      "layoutMs": 2.013,
+      "measureMs": 0.795,
+      "measured": 75,
+      "paintMs": 5.295,
+      "parseMs": 0.161,
+      "passes": 3,
+      "pngBytes": 73669,
+      "pngFastBytes": 132720,
+      "profile": {
+       "compositeMs": 0.436,
+       "fallbacks": 8,
+       "maskArea": 157180,
+       "maskMs": 0.177,
+       "masks": 1,
+       "pathMs": 0.883,
+       "rasterMs": 0.846,
+       "shapeMs": 3.454,
+       "textArea": 504268,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 10.975,
+      "totalMs": 19.547
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 36.788, "p95": 37.055, "n": 5},
+     "wallRuns": [
+      36.702,
+      36.788,
+      37.055,
+      36.958,
+      36.688
+     ],
+     "firstRunDoneMs": {"p50": 34.27, "p95": 34.337, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.359,
+      "fontParseMs": 0.031,
+      "fontReadMs": 0.216,
+      "poolMs": 0.015,
+      "readInputMs": 0.179,
+      "totalMs": 4.804
+     },
+     "run": {
+      "cpuMs": 23.971,
+      "encodeFastMs": 5.324,
+      "encodeMs": 13.842,
+      "layoutMs": 1.932,
+      "measureMs": 0.791,
+      "measured": 75,
+      "paintMs": 7.233,
+      "parseMs": 0.151,
+      "passes": 3,
+      "pngBytes": 73669,
+      "pngFastBytes": 132720,
+      "profile": {
+       "compositeMs": 0.4,
+       "fallbacks": 8,
+       "maskArea": 157180,
+       "maskMs": 0.109,
+       "masks": 1,
+       "pathMs": 0.29,
+       "rasterMs": 2.826,
+       "shapeMs": 3.536,
+       "textArea": 504268,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 15.43,
+      "totalMs": 23.949
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 17.763, "p95": 18.083, "n": 21},
+     "totalFastMs": {"p50": 9.14, "p95": 9.309, "n": 21},
+     "cpuMs": {"p50": 29.169, "p95": 29.751, "n": 21},
+     "parseMs": {"p50": 0.13, "p95": 0.137, "n": 21},
+     "layoutMs": {"p50": 0.895, "p95": 0.97, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 5.164, "p95": 5.348, "n": 21},
+     "encodeMs": {"p50": 11.534, "p95": 11.69, "n": 21},
+     "encodeFastMs": {"p50": 2.908, "p95": 3.071, "n": 21},
+     "pngBytes": {"p50": 76932, "p95": 78156, "n": 21},
+     "pngFastBytes": {"p50": 139234, "p95": 141983, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 504268, "p95": 504268, "n": 21},
+      "maskArea": {"p50": 166556, "p95": 171996, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.558, "p95": 0.619, "n": 21},
+      "rasterMs": {"p50": 0.715, "p95": 0.964, "n": 21},
+      "compositeMs": {"p50": 0.43, "p95": 0.465, "n": 21},
+      "shapeMs": {"p50": 3.584, "p95": 3.673, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.115, "p95": 0.164, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 22.517, "p95": 23.068, "n": 21},
+     "totalFastMs": {"p50": 13.876, "p95": 14.221, "n": 21},
+     "cpuMs": {"p50": 22.537, "p95": 23.044, "n": 21},
+     "parseMs": {"p50": 0.133, "p95": 0.147, "n": 21},
+     "layoutMs": {"p50": 0.891, "p95": 0.975, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 7.389, "p95": 7.658, "n": 21},
+     "encodeMs": {"p50": 14.118, "p95": 14.515, "n": 21},
+     "encodeFastMs": {"p50": 5.436, "p95": 5.621, "n": 21},
+     "pngBytes": {"p50": 76932, "p95": 78156, "n": 21},
+     "pngFastBytes": {"p50": 139234, "p95": 141983, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 504268, "p95": 504268, "n": 21},
+      "maskArea": {"p50": 166556, "p95": 171996, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.309, "p95": 0.334, "n": 21},
+      "rasterMs": {"p50": 2.97, "p95": 3.181, "n": 21},
+      "compositeMs": {"p50": 0.42, "p95": 0.46, "n": 21},
+      "shapeMs": {"p50": 3.564, "p95": 3.673, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.114, "p95": 0.119, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 64.569, "p95": 66.305, "n": 21},
+     "totalFastMs": {"p50": 55.681, "p95": 57.605, "n": 21},
+     "cpuMs": {"p50": 64.437, "p95": 66.188, "n": 21},
+     "parseMs": {"p50": 0.133, "p95": 0.143, "n": 21},
+     "layoutMs": {"p50": 0.927, "p95": 1.031, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 49.138, "p95": 50.982, "n": 21},
+     "encodeMs": {"p50": 14.195, "p95": 14.425, "n": 21},
+     "encodeFastMs": {"p50": 5.451, "p95": 5.584, "n": 21},
+     "pngBytes": {"p50": 76932, "p95": 78156, "n": 21},
+     "pngFastBytes": {"p50": 139234, "p95": 141983, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 504268, "p95": 504268, "n": 21},
+      "maskArea": {"p50": 55920064, "p95": 57165808, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.318, "p95": 0.339, "n": 21},
+      "rasterMs": {"p50": 15.577, "p95": 16.004, "n": 21},
+      "compositeMs": {"p50": 26.079, "p95": 26.896, "n": 21},
+      "shapeMs": {"p50": 3.636, "p95": 3.797, "n": 21},
+      "masks": {"p50": 57, "p95": 57, "n": 21},
+      "maskMs": {"p50": 2.3, "p95": 2.506, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 19.806, "p95": 20.155, "n": 21},
+     "totalFastMs": {"p50": 11.09, "p95": 11.333, "n": 21},
+     "cpuMs": {"p50": 30.916, "p95": 31.904, "n": 21},
+     "parseMs": {"p50": 0.129, "p95": 0.139, "n": 21},
+     "layoutMs": {"p50": 1.981, "p95": 2.108, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 0.721, "p95": 0.789, "n": 21},
+     "measured": {"p50": 75, "p95": 75, "n": 21},
+     "paintMs": {"p50": 5.289, "p95": 5.476, "n": 21},
+     "encodeMs": {"p50": 11.696, "p95": 11.943, "n": 21},
+     "encodeFastMs": {"p50": 2.958, "p95": 3.081, "n": 21},
+     "pngBytes": {"p50": 76932, "p95": 78156, "n": 21},
+     "pngFastBytes": {"p50": 139234, "p95": 141983, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 504268, "p95": 504268, "n": 21},
+      "maskArea": {"p50": 166556, "p95": 171996, "n": 21},
+      "fallbacks": {"p50": 7, "p95": 8, "n": 21},
+      "pathMs": {"p50": 0.567, "p95": 0.684, "n": 21},
+      "rasterMs": {"p50": 0.759, "p95": 0.851, "n": 21},
+      "compositeMs": {"p50": 0.429, "p95": 0.485, "n": 21},
+      "shapeMs": {"p50": 3.596, "p95": 3.725, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.114, "p95": 0.153, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 41.656,
+     "maskMs": 2.3,
+     "bboxAreaRatio": 0.009,
+     "paintMs": 5.571,
+     "totalFastMs": 12.082
+    }
+   },
+   "mcpMs": 6.281,
+   "ratio": {
+    "cold": 11.864,
+    "cold1": 10.07,
+    "warm": 2.157,
+    "warm1": 1.801,
+    "warmFast": 3.364,
+    "warmFast1": 2.573,
+    "warmFull": 0.732
+   }
+  },
+  "welcome-1040-s1": {
+   "chromiumServer": {
+    "coldMs": {"p50": 393.629, "p95": 399.701, "n": 3},
+    "coldRuns": [
+     399.701,
+     393.629,
+     388.986
+    ],
+    "warm": {
+     "totalMs": {"p50": 37.231, "p95": 39.464, "n": 21},
+     "enqueueMs": {"p50": 3.2, "p95": 3.402, "n": 21},
+     "waitMs": {"p50": 32.335, "p95": 34.668, "n": 21},
+     "imageMs": {"p50": 1.803, "p95": 1.921, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 44.167,
+     "processes": 5,
+     "threads": 108
+    },
+    "pngBytes": 103291
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.528,
+     "importPlaywright": 162.045,
+     "launch": 92.323,
+     "newPage": 33.133,
+     "goto": 7.62,
+     "importRenderer": 7.212,
+     "scriptStartMs": 23.242,
+     "readyMs": 329.708
+    },
+    "cold": {
+     "startupMs": 329.708,
+     "firstJobMs": 53.586,
+     "jobMs": 53.586,
+     "passes": 2,
+     "measured": 41,
+     "resourcesRttMs": 17.522,
+     "resourcesPageMs": 14.9,
+     "layoutSpawnMs": 6.144,
+     "layoutBytes": 73841,
+     "measureRttMs": 9.986,
+     "measurePageMs": 3.2,
+     "drawRttMs": 19.515,
+     "drawPageMs": 3.4,
+     "toDataURLPageMs": 5.1,
+     "base64Bytes": 137724,
+     "workerNdjsonMs": 0.485,
+     "ipcMs": 20.423,
+     "otherMs": 0.419
+    },
+    "warm": {
+     "jobMs": {"p50": 30.662, "p95": 31.78, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.631, "p95": 13.544, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 12.1, "n": 21},
+     "layoutSpawnMs": {"p50": 3.281, "p95": 3.476, "n": 21},
+     "layoutBytes": {"p50": 45252, "p95": 45252, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 14.677, "p95": 15.502, "n": 21},
+     "drawPageMs": {"p50": 2.6, "p95": 2.9, "n": 21},
+     "toDataURLPageMs": {"p50": 4.9, "p95": 5.1, "n": 21},
+     "base64Bytes": {"p50": 137972, "p95": 138240, "n": 21},
+     "workerNdjsonMs": {"p50": 0.497, "p95": 0.577, "n": 21},
+     "ipcMs": {"p50": 8.291, "p95": 9.049, "n": 21},
+     "otherMs": {"p50": 0.04, "p95": 0.162, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 38.525, "p95": 39.36, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measured": {"p50": 41, "p95": 41, "n": 21},
+     "resourcesRttMs": {"p50": 12.842, "p95": 13.021, "n": 21},
+     "resourcesPageMs": {"p50": 11.6, "p95": 11.9, "n": 21},
+     "layoutSpawnMs": {"p50": 5.749, "p95": 6.044, "n": 21},
+     "layoutBytes": {"p50": 73841, "p95": 73841, "n": 21},
+     "measureRttMs": {"p50": 5.613, "p95": 6.08, "n": 21},
+     "measurePageMs": {"p50": 2.2, "p95": 2.5, "n": 21},
+     "drawRttMs": {"p50": 14.255, "p95": 14.801, "n": 21},
+     "drawPageMs": {"p50": 2.5, "p95": 2.7, "n": 21},
+     "toDataURLPageMs": {"p50": 4.8, "p95": 5.1, "n": 21},
+     "base64Bytes": {"p50": 137972, "p95": 138240, "n": 21},
+     "workerNdjsonMs": {"p50": 0.488, "p95": 0.598, "n": 21},
+     "ipcMs": {"p50": 11.472, "p95": 12.115, "n": 21},
+     "otherMs": {"p50": 0.053, "p95": 0.063, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 15945,
+    "computeResponseBytes": 22610,
+    "msDecodePngTwice": 0.058,
+    "msParseComputed": 0.085,
+    "msParseRendered": 0.014,
+    "msSerializeCompute": 0.1,
+    "msSerializeRender": 0.152,
+    "msTotal": 0.408,
+    "pngBytes": 103291,
+    "renderResponseBytes": 138675
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 21.528, "p95": 22.124, "n": 5},
+     "wallRuns": [
+      21.497,
+      21.528,
+      22.124,
+      21.555,
+      21.403
+     ],
+     "firstRunDoneMs": {"p50": 18.583, "p95": 18.7, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.268,
+      "fontParseMs": 0.029,
+      "fontReadMs": 0.224,
+      "poolMs": 0.107,
+      "readInputMs": 0.111,
+      "totalMs": 4.743
+     },
+     "run": {
+      "cpuMs": 20.714,
+      "encodeFastMs": 1.925,
+      "encodeMs": 7.623,
+      "layoutMs": 0.532,
+      "measureMs": 0.316,
+      "measured": 41,
+      "paintMs": 3.183,
+      "parseMs": 0.072,
+      "passes": 2,
+      "pngBytes": 57092,
+      "pngFastBytes": 96457,
+      "profile": {
+       "compositeMs": 0.25,
+       "fallbacks": 0,
+       "maskArea": 66485,
+       "maskMs": 0.091,
+       "masks": 1,
+       "pathMs": 1.102,
+       "rasterMs": 0.583,
+       "shapeMs": 2.043,
+       "textArea": 184660,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 6.028,
+      "totalMs": 11.726
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 25.575, "p95": 25.676, "n": 5},
+     "wallRuns": [
+      25.667,
+      25.362,
+      25.437,
+      25.676,
+      25.575
+     ],
+     "firstRunDoneMs": {"p50": 23.049, "p95": 23.171, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.37,
+      "fontParseMs": 0.035,
+      "fontReadMs": 0.243,
+      "poolMs": 0.017,
+      "readInputMs": 0.095,
+      "totalMs": 4.763
+     },
+     "run": {
+      "cpuMs": 15.095,
+      "encodeFastMs": 3.139,
+      "encodeMs": 8.968,
+      "layoutMs": 0.529,
+      "measureMs": 0.312,
+      "measured": 41,
+      "paintMs": 5.24,
+      "parseMs": 0.063,
+      "passes": 2,
+      "pngBytes": 57092,
+      "pngFastBytes": 96457,
+      "profile": {
+       "compositeMs": 0.239,
+       "fallbacks": 0,
+       "maskArea": 66485,
+       "maskMs": 0.095,
+       "masks": 1,
+       "pathMs": 0.292,
+       "rasterMs": 2.537,
+       "shapeMs": 2.132,
+       "textArea": 184660,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 9.284,
+      "totalMs": 15.112
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 11.124, "p95": 11.346, "n": 21},
+     "totalFastMs": {"p50": 5.397, "p95": 5.569, "n": 21},
+     "cpuMs": {"p50": 19.468, "p95": 20.387, "n": 21},
+     "parseMs": {"p50": 0.053, "p95": 0.058, "n": 21},
+     "layoutMs": {"p50": 0.337, "p95": 0.407, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 3.071, "p95": 3.206, "n": 21},
+     "encodeMs": {"p50": 7.653, "p95": 7.818, "n": 21},
+     "encodeFastMs": {"p50": 1.917, "p95": 2.075, "n": 21},
+     "pngBytes": {"p50": 57195, "p95": 57238, "n": 21},
+     "pngFastBytes": {"p50": 96804, "p95": 97471, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 184660, "p95": 184660, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.583, "p95": 0.701, "n": 21},
+      "rasterMs": {"p50": 0.544, "p95": 0.667, "n": 21},
+      "compositeMs": {"p50": 0.215, "p95": 0.231, "n": 21},
+      "shapeMs": {"p50": 2.042, "p95": 2.136, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.074, "p95": 0.093, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 14.33, "p95": 14.462, "n": 21},
+     "totalFastMs": {"p50": 8.603, "p95": 8.691, "n": 21},
+     "cpuMs": {"p50": 14.331, "p95": 14.455, "n": 21},
+     "parseMs": {"p50": 0.051, "p95": 0.064, "n": 21},
+     "layoutMs": {"p50": 0.351, "p95": 0.389, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 4.916, "p95": 5.017, "n": 21},
+     "encodeMs": {"p50": 9.01, "p95": 9.104, "n": 21},
+     "encodeFastMs": {"p50": 3.271, "p95": 3.373, "n": 21},
+     "pngBytes": {"p50": 57195, "p95": 57238, "n": 21},
+     "pngFastBytes": {"p50": 96804, "p95": 97471, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 184660, "p95": 184660, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.292, "p95": 0.317, "n": 21},
+      "rasterMs": {"p50": 2.477, "p95": 2.558, "n": 21},
+      "compositeMs": {"p50": 0.215, "p95": 0.235, "n": 21},
+      "shapeMs": {"p50": 1.981, "p95": 2.049, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.071, "p95": 0.088, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 35.825, "p95": 36.181, "n": 21},
+     "totalFastMs": {"p50": 30.123, "p95": 30.455, "n": 21},
+     "cpuMs": {"p50": 35.784, "p95": 36.125, "n": 21},
+     "parseMs": {"p50": 0.054, "p95": 0.059, "n": 21},
+     "layoutMs": {"p50": 0.355, "p95": 0.407, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 26.437, "p95": 26.778, "n": 21},
+     "encodeMs": {"p50": 8.965, "p95": 9.077, "n": 21},
+     "encodeFastMs": {"p50": 3.259, "p95": 3.377, "n": 21},
+     "pngBytes": {"p50": 57195, "p95": 57238, "n": 21},
+     "pngFastBytes": {"p50": 96804, "p95": 97471, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 184660, "p95": 184660, "n": 21},
+      "maskArea": {"p50": 31114080, "p95": 31379760, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.296, "p95": 0.312, "n": 21},
+      "rasterMs": {"p50": 9.164, "p95": 9.29, "n": 21},
+      "compositeMs": {"p50": 14.451, "p95": 14.687, "n": 21},
+      "shapeMs": {"p50": 2.007, "p95": 2.075, "n": 21},
+      "masks": {"p50": 8, "p95": 8, "n": 21},
+      "maskMs": {"p50": 0.173, "p95": 0.198, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 11.509, "p95": 11.668, "n": 21},
+     "totalFastMs": {"p50": 5.787, "p95": 5.977, "n": 21},
+     "cpuMs": {"p50": 19.811, "p95": 20.408, "n": 21},
+     "parseMs": {"p50": 0.052, "p95": 0.055, "n": 21},
+     "layoutMs": {"p50": 0.525, "p95": 0.585, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.247, "p95": 0.257, "n": 21},
+     "measured": {"p50": 41, "p95": 41, "n": 21},
+     "paintMs": {"p50": 3.043, "p95": 3.118, "n": 21},
+     "encodeMs": {"p50": 7.66, "p95": 7.785, "n": 21},
+     "encodeFastMs": {"p50": 1.94, "p95": 2.059, "n": 21},
+     "pngBytes": {"p50": 57195, "p95": 57238, "n": 21},
+     "pngFastBytes": {"p50": 96804, "p95": 97471, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 184660, "p95": 184660, "n": 21},
+      "maskArea": {"p50": 66485, "p95": 66485, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.555, "p95": 0.607, "n": 21},
+      "rasterMs": {"p50": 0.564, "p95": 0.613, "n": 21},
+      "compositeMs": {"p50": 0.217, "p95": 0.227, "n": 21},
+      "shapeMs": {"p50": 2.014, "p95": 2.113, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.073, "p95": 0.079, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 23.615,
+     "maskMs": 0.173,
+     "bboxAreaRatio": 0.006,
+     "paintMs": 2.791,
+     "totalFastMs": 6.459
+    }
+   },
+   "mcpMs": 5.003,
+   "ratio": {
+    "cold": 14.837,
+    "cold1": 12.873,
+    "warm": 2.309,
+    "warm1": 1.926,
+    "warmFast": 3.58,
+    "warmFast1": 2.736,
+    "warmFull": 0.912
+   }
+  },
+  "welcome-1040-s2": {
+   "chromiumServer": {
+    "coldMs": {"p50": 404.926, "p95": 415.789, "n": 3},
+    "coldRuns": [
+     398.47,
+     404.926,
+     415.789
+    ],
+    "warm": {
+     "totalMs": {"p50": 45.881, "p95": 46.582, "n": 21},
+     "enqueueMs": {"p50": 3.149, "p95": 3.336, "n": 21},
+     "waitMs": {"p50": 40.924, "p95": 41.846, "n": 21},
+     "imageMs": {"p50": 1.825, "p95": 1.97, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 53.333,
+     "processes": 5,
+     "threads": 109
+    },
+    "pngBytes": 257958
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.596,
+     "importPlaywright": 161.098,
+     "launch": 81.729,
+     "newPage": 33.34,
+     "goto": 7.271,
+     "importRenderer": 7.05,
+     "scriptStartMs": 24.624,
+     "readyMs": 318.902
+    },
+    "cold": {
+     "startupMs": 318.902,
+     "firstJobMs": 60.736,
+     "jobMs": 60.736,
+     "passes": 2,
+     "measured": 41,
+     "resourcesRttMs": 16.954,
+     "resourcesPageMs": 14.3,
+     "layoutSpawnMs": 6.011,
+     "layoutBytes": 73841,
+     "measureRttMs": 9.804,
+     "measurePageMs": 3.2,
+     "drawRttMs": 27.503,
+     "drawPageMs": 4,
+     "toDataURLPageMs": 11.2,
+     "base64Bytes": 343944,
+     "workerNdjsonMs": 0.964,
+     "ipcMs": 21.561,
+     "otherMs": 0.464
+    },
+    "warm": {
+     "jobMs": {"p50": 38.6, "p95": 41.978, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.532, "p95": 13.713, "n": 21},
+     "resourcesPageMs": {"p50": 11.4, "p95": 12.2, "n": 21},
+     "layoutSpawnMs": {"p50": 3.111, "p95": 3.312, "n": 21},
+     "layoutBytes": {"p50": 45252, "p95": 45252, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 22.902, "p95": 24.621, "n": 21},
+     "drawPageMs": {"p50": 3.3, "p95": 3.7, "n": 21},
+     "toDataURLPageMs": {"p50": 11.1, "p95": 11.7, "n": 21},
+     "base64Bytes": {"p50": 345004, "p95": 345840, "n": 21},
+     "workerNdjsonMs": {"p50": 0.937, "p95": 1.196, "n": 21},
+     "ipcMs": {"p50": 9.56, "p95": 10.439, "n": 21},
+     "otherMs": {"p50": 0.042, "p95": 0.171, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 46.468, "p95": 47.644, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measured": {"p50": 41, "p95": 41, "n": 21},
+     "resourcesRttMs": {"p50": 12.609, "p95": 12.951, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 11.8, "n": 21},
+     "layoutSpawnMs": {"p50": 5.647, "p95": 5.999, "n": 21},
+     "layoutBytes": {"p50": 73841, "p95": 73841, "n": 21},
+     "measureRttMs": {"p50": 5.566, "p95": 6.43, "n": 21},
+     "measurePageMs": {"p50": 2.2, "p95": 2.5, "n": 21},
+     "drawRttMs": {"p50": 22.507, "p95": 23.103, "n": 21},
+     "drawPageMs": {"p50": 3.2, "p95": 3.5, "n": 21},
+     "toDataURLPageMs": {"p50": 11.1, "p95": 11.3, "n": 21},
+     "base64Bytes": {"p50": 345004, "p95": 345840, "n": 21},
+     "workerNdjsonMs": {"p50": 0.932, "p95": 0.963, "n": 21},
+     "ipcMs": {"p50": 12.486, "p95": 13.261, "n": 21},
+     "otherMs": {"p50": 0.051, "p95": 0.059, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 15946,
+    "computeResponseBytes": 22611,
+    "msDecodePngTwice": 0.149,
+    "msParseComputed": 0.084,
+    "msParseRendered": 0.032,
+    "msSerializeCompute": 0.1,
+    "msSerializeRender": 0.148,
+    "msTotal": 0.513,
+    "pngBytes": 257958,
+    "renderResponseBytes": 344896
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 47.623, "p95": 47.763, "n": 5},
+     "wallRuns": [
+      47.763,
+      47.617,
+      47.539,
+      47.697,
+      47.623
+     ],
+     "firstRunDoneMs": {"p50": 44.429, "p95": 44.611, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.27,
+      "fontParseMs": 0.033,
+      "fontReadMs": 0.221,
+      "poolMs": 0.121,
+      "readInputMs": 0.108,
+      "totalMs": 4.757
+     },
+     "run": {
+      "cpuMs": 53.943,
+      "encodeFastMs": 6.055,
+      "encodeMs": 22.305,
+      "layoutMs": 0.538,
+      "measureMs": 0.328,
+      "measured": 41,
+      "paintMs": 10.088,
+      "parseMs": 0.074,
+      "passes": 2,
+      "pngBytes": 135673,
+      "pngFastBytes": 247793,
+      "profile": {
+       "compositeMs": 0.768,
+       "fallbacks": 0,
+       "maskArea": 239301,
+       "maskMs": 0.311,
+       "masks": 1,
+       "pathMs": 0.792,
+       "rasterMs": 0.908,
+       "shapeMs": 8.01,
+       "textArea": 738640,
+       "textNodes": 41,
+       "threads": 11
+      },
+      "totalFastMs": 17.083,
+      "totalMs": 33.333
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 62.337, "p95": 62.533, "n": 5},
+     "wallRuns": [
+      62.533,
+      62.387,
+      62.217,
+      61.789,
+      62.337
+     ],
+     "firstRunDoneMs": {"p50": 59.523, "p95": 59.675, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.295,
+      "fontParseMs": 0.033,
+      "fontReadMs": 0.237,
+      "poolMs": 0.016,
+      "readInputMs": 0.098,
+      "totalMs": 4.683
+     },
+     "run": {
+      "cpuMs": 42.488,
+      "encodeFastMs": 11.94,
+      "encodeMs": 28.413,
+      "layoutMs": 0.524,
+      "measureMs": 0.321,
+      "measured": 41,
+      "paintMs": 13.23,
+      "parseMs": 0.068,
+      "passes": 2,
+      "pngBytes": 135673,
+      "pngFastBytes": 247793,
+      "profile": {
+       "compositeMs": 0.743,
+       "fallbacks": 0,
+       "maskArea": 239301,
+       "maskMs": 0.262,
+       "masks": 1,
+       "pathMs": 0.36,
+       "rasterMs": 4.175,
+       "shapeMs": 7.962,
+       "textArea": 738640,
+       "textNodes": 41,
+       "threads": 1
+      },
+      "totalFastMs": 26.082,
+      "totalMs": 42.555
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 33.071, "p95": 33.779, "n": 21},
+     "totalFastMs": {"p50": 16.981, "p95": 17.269, "n": 21},
+     "cpuMs": {"p50": 52.423, "p95": 54.155, "n": 21},
+     "parseMs": {"p50": 0.055, "p95": 0.061, "n": 21},
+     "layoutMs": {"p50": 0.393, "p95": 0.434, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 9.926, "p95": 10.162, "n": 21},
+     "encodeMs": {"p50": 22.695, "p95": 23.218, "n": 21},
+     "encodeFastMs": {"p50": 6.577, "p95": 6.842, "n": 21},
+     "pngBytes": {"p50": 136020, "p95": 136142, "n": 21},
+     "pngFastBytes": {"p50": 248290, "p95": 248715, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 738640, "p95": 738640, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.57, "p95": 0.664, "n": 21},
+      "rasterMs": {"p50": 0.837, "p95": 0.958, "n": 21},
+      "compositeMs": {"p50": 0.742, "p95": 0.823, "n": 21},
+      "shapeMs": {"p50": 7.932, "p95": 8.123, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.227, "p95": 0.277, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 42.715, "p95": 43.099, "n": 21},
+     "totalFastMs": {"p50": 26.081, "p95": 26.277, "n": 21},
+     "cpuMs": {"p50": 42.657, "p95": 43.032, "n": 21},
+     "parseMs": {"p50": 0.055, "p95": 0.062, "n": 21},
+     "layoutMs": {"p50": 0.381, "p95": 0.452, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 13.126, "p95": 13.282, "n": 21},
+     "encodeMs": {"p50": 29.19, "p95": 29.522, "n": 21},
+     "encodeFastMs": {"p50": 12.495, "p95": 12.745, "n": 21},
+     "pngBytes": {"p50": 136020, "p95": 136142, "n": 21},
+     "pngFastBytes": {"p50": 248290, "p95": 248715, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 738640, "p95": 738640, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.317, "p95": 0.345, "n": 21},
+      "rasterMs": {"p50": 4.068, "p95": 4.22, "n": 21},
+      "compositeMs": {"p50": 0.726, "p95": 0.773, "n": 21},
+      "shapeMs": {"p50": 8, "p95": 8.089, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.221, "p95": 0.295, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 132.264, "p95": 134.582, "n": 21},
+     "totalFastMs": {"p50": 115.843, "p95": 117.832, "n": 21},
+     "cpuMs": {"p50": 132.056, "p95": 134.323, "n": 21},
+     "parseMs": {"p50": 0.055, "p95": 0.059, "n": 21},
+     "layoutMs": {"p50": 0.38, "p95": 0.449, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 102.902, "p95": 104.77, "n": 21},
+     "encodeMs": {"p50": 28.94, "p95": 29.402, "n": 21},
+     "encodeFastMs": {"p50": 12.379, "p95": 12.673, "n": 21},
+     "pngBytes": {"p50": 136020, "p95": 136142, "n": 21},
+     "pngFastBytes": {"p50": 248290, "p95": 248715, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 738640, "p95": 738640, "n": 21},
+      "maskArea": {"p50": 124456320, "p95": 125519040, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.362, "p95": 0.375, "n": 21},
+      "rasterMs": {"p50": 34.896, "p95": 35.638, "n": 21},
+      "compositeMs": {"p50": 57.276, "p95": 58.023, "n": 21},
+      "shapeMs": {"p50": 8.252, "p95": 8.498, "n": 21},
+      "masks": {"p50": 8, "p95": 8, "n": 21},
+      "maskMs": {"p50": 1.157, "p95": 1.309, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 33.481, "p95": 33.797, "n": 21},
+     "totalFastMs": {"p50": 17.372, "p95": 17.601, "n": 21},
+     "cpuMs": {"p50": 53.378, "p95": 55.012, "n": 21},
+     "parseMs": {"p50": 0.056, "p95": 0.06, "n": 21},
+     "layoutMs": {"p50": 0.559, "p95": 0.607, "n": 21},
+     "passes": {"p50": 2, "p95": 2, "n": 21},
+     "measureMs": {"p50": 0.258, "p95": 0.273, "n": 21},
+     "measured": {"p50": 41, "p95": 41, "n": 21},
+     "paintMs": {"p50": 9.948, "p95": 10.061, "n": 21},
+     "encodeMs": {"p50": 22.655, "p95": 22.99, "n": 21},
+     "encodeFastMs": {"p50": 6.558, "p95": 6.836, "n": 21},
+     "pngBytes": {"p50": 136020, "p95": 136142, "n": 21},
+     "pngFastBytes": {"p50": 248290, "p95": 248715, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 41, "p95": 41, "n": 21},
+      "textArea": {"p50": 738640, "p95": 738640, "n": 21},
+      "maskArea": {"p50": 239301, "p95": 239301, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 0.594, "p95": 0.957, "n": 21},
+      "rasterMs": {"p50": 0.839, "p95": 0.913, "n": 21},
+      "compositeMs": {"p50": 0.729, "p95": 0.785, "n": 21},
+      "shapeMs": {"p50": 7.984, "p95": 8.134, "n": 21},
+      "masks": {"p50": 1, "p95": 1, "n": 21},
+      "maskMs": {"p50": 0.22, "p95": 0.266, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 92.172,
+     "maskMs": 1.157,
+     "bboxAreaRatio": 0.006,
+     "paintMs": 10.128,
+     "totalFastMs": 22.942
+    }
+   },
+   "mcpMs": 4.974,
+   "ratio": {
+    "cold": 7.699,
+    "cold1": 6.016,
+    "warm": 1.206,
+    "warm1": 0.962,
+    "warmFast": 2.09,
+    "warmFast1": 1.477,
+    "warmFull": 0.334
+   }
+  },
+  "grid-2080-s1": {
+   "chromiumServer": {
+    "coldMs": {"p50": 577.079, "p95": 578.469, "n": 3},
+    "coldRuns": [
+     577.079,
+     578.469,
+     570.733
+    ],
+    "warm": {
+     "totalMs": {"p50": 131.943, "p95": 135.177, "n": 21},
+     "enqueueMs": {"p50": 12.634, "p95": 13.256, "n": 21},
+     "waitMs": {"p50": 118.025, "p95": 120.734, "n": 21},
+     "imageMs": {"p50": 1.937, "p95": 2.067, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 132.083,
+     "processes": 5,
+     "threads": 109
+    },
+    "pngBytes": 289264
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.182,
+     "importPlaywright": 172.144,
+     "launch": 80.348,
+     "newPage": 32.529,
+     "goto": 7.429,
+     "importRenderer": 6.918,
+     "scriptStartMs": 22.736,
+     "readyMs": 326.975
+    },
+    "cold": {
+     "startupMs": 326.975,
+     "firstJobMs": 207.512,
+     "jobMs": 207.512,
+     "passes": 3,
+     "measured": 300,
+     "resourcesRttMs": 17.397,
+     "resourcesPageMs": 14.8,
+     "layoutSpawnMs": 27.627,
+     "layoutBytes": 1004095,
+     "measureRttMs": 77.273,
+     "measurePageMs": 14.7,
+     "drawRttMs": 84.662,
+     "drawPageMs": 5.7,
+     "toDataURLPageMs": 12.5,
+     "base64Bytes": 385688,
+     "workerNdjsonMs": 2.375,
+     "ipcMs": 131.633,
+     "otherMs": 0.553
+    },
+    "warm": {
+     "jobMs": {"p50": 98.474, "p95": 102.331, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.686, "p95": 13.621, "n": 21},
+     "resourcesPageMs": {"p50": 11.5, "p95": 11.9, "n": 21},
+     "layoutSpawnMs": {"p50": 12.618, "p95": 13.418, "n": 21},
+     "layoutBytes": {"p50": 488438, "p95": 488438, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 73.185, "p95": 75.082, "n": 21},
+     "drawPageMs": {"p50": 4.3, "p95": 4.6, "n": 21},
+     "toDataURLPageMs": {"p50": 12.3, "p95": 13.4, "n": 21},
+     "base64Bytes": {"p50": 386844, "p95": 387436, "n": 21},
+     "workerNdjsonMs": {"p50": 2.382, "p95": 3.524, "n": 21},
+     "ipcMs": {"p50": 57.892, "p95": 59.699, "n": 21},
+     "otherMs": {"p50": 0.076, "p95": 0.177, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 169.564, "p95": 185.019, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 300, "p95": 300, "n": 21},
+     "resourcesRttMs": {"p50": 13.702, "p95": 15.686, "n": 21},
+     "resourcesPageMs": {"p50": 11.7, "p95": 14.5, "n": 21},
+     "layoutSpawnMs": {"p50": 26.962, "p95": 29.116, "n": 21},
+     "layoutBytes": {"p50": 1004095, "p95": 1004095, "n": 21},
+     "measureRttMs": {"p50": 58.375, "p95": 68.427, "n": 21},
+     "measurePageMs": {"p50": 8.2, "p95": 8.7, "n": 21},
+     "drawRttMs": {"p50": 68.809, "p95": 75.071, "n": 21},
+     "drawPageMs": {"p50": 4.3, "p95": 4.6, "n": 21},
+     "toDataURLPageMs": {"p50": 12.2, "p95": 12.6, "n": 21},
+     "base64Bytes": {"p50": 386844, "p95": 387436, "n": 21},
+     "workerNdjsonMs": {"p50": 2.361, "p95": 2.451, "n": 21},
+     "ipcMs": {"p50": 105.774, "p95": 118.397, "n": 21},
+     "otherMs": {"p50": 0.138, "p95": 0.18, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 148223,
+    "computeResponseBytes": 211950,
+    "msDecodePngTwice": 0.167,
+    "msParseComputed": 0.836,
+    "msParseRendered": 0.036,
+    "msSerializeCompute": 1.07,
+    "msSerializeRender": 1.924,
+    "msTotal": 4.033,
+    "pngBytes": 289264,
+    "renderResponseBytes": 386635
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 75.346, "p95": 76.693, "n": 5},
+     "wallRuns": [
+      75.037,
+      75.346,
+      74.72,
+      75.657,
+      76.693
+     ],
+     "firstRunDoneMs": {"p50": 71.544, "p95": 72.207, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.287,
+      "fontParseMs": 0.031,
+      "fontReadMs": 0.224,
+      "poolMs": 0.115,
+      "readInputMs": 0.625,
+      "totalMs": 5.286
+     },
+     "run": {
+      "cpuMs": 92.043,
+      "encodeFastMs": 6.624,
+      "encodeMs": 24.451,
+      "layoutMs": 8.505,
+      "measureMs": 2.927,
+      "measured": 300,
+      "paintMs": 22.685,
+      "parseMs": 0.517,
+      "passes": 3,
+      "pngBytes": 151404,
+      "pngFastBytes": 410985,
+      "profile": {
+       "compositeMs": 0.986,
+       "fallbacks": 0,
+       "maskArea": 294409,
+       "maskMs": 1.537,
+       "masks": 5,
+       "pathMs": 2.132,
+       "rasterMs": 1.656,
+       "shapeMs": 17.972,
+       "textArea": 761552,
+       "textNodes": 164,
+       "threads": 11
+      },
+      "totalFastMs": 41.257,
+      "totalMs": 59.084
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 95.842, "p95": 98.497, "n": 5},
+     "wallRuns": [
+      95.578,
+      98.497,
+      96.117,
+      95.842,
+      95.596
+     ],
+     "firstRunDoneMs": {"p50": 92.332, "p95": 94.97, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.288,
+      "fontParseMs": 0.032,
+      "fontReadMs": 0.221,
+      "poolMs": 0.016,
+      "readInputMs": 0.635,
+      "totalMs": 5.195
+     },
+     "run": {
+      "cpuMs": 74.381,
+      "encodeFastMs": 12.278,
+      "encodeMs": 30.346,
+      "layoutMs": 8.692,
+      "measureMs": 2.968,
+      "measured": 300,
+      "paintMs": 31.761,
+      "parseMs": 0.52,
+      "passes": 3,
+      "pngBytes": 151404,
+      "pngFastBytes": 410985,
+      "profile": {
+       "compositeMs": 1.055,
+       "fallbacks": 0,
+       "maskArea": 294409,
+       "maskMs": 1.845,
+       "masks": 5,
+       "pathMs": 1.211,
+       "rasterMs": 10.571,
+       "shapeMs": 17.682,
+       "textArea": 761552,
+       "textNodes": 164,
+       "threads": 1
+      },
+      "totalFastMs": 56.219,
+      "totalMs": 74.287
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 51.513, "p95": 52.605, "n": 21},
+     "totalFastMs": {"p50": 33.986, "p95": 34.592, "n": 21},
+     "cpuMs": {"p50": 83.953, "p95": 87.399, "n": 21},
+     "parseMs": {"p50": 0.483, "p95": 0.558, "n": 21},
+     "layoutMs": {"p50": 3.729, "p95": 3.877, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 22.721, "p95": 23.238, "n": 21},
+     "encodeMs": {"p50": 24.504, "p95": 25.064, "n": 21},
+     "encodeFastMs": {"p50": 6.943, "p95": 7.129, "n": 21},
+     "pngBytes": {"p50": 151575, "p95": 151660, "n": 21},
+     "pngFastBytes": {"p50": 412235, "p95": 413597, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 761552, "p95": 761552, "n": 21},
+      "maskArea": {"p50": 294409, "p95": 294409, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 1.999, "p95": 2.185, "n": 21},
+      "rasterMs": {"p50": 1.702, "p95": 1.82, "n": 21},
+      "compositeMs": {"p50": 0.945, "p95": 1.065, "n": 21},
+      "shapeMs": {"p50": 17.618, "p95": 18.302, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 1.451, "p95": 1.607, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 66.777, "p95": 67.654, "n": 21},
+     "totalFastMs": {"p50": 48.852, "p95": 49.511, "n": 21},
+     "cpuMs": {"p50": 66.787, "p95": 67.707, "n": 21},
+     "parseMs": {"p50": 0.497, "p95": 0.645, "n": 21},
+     "layoutMs": {"p50": 3.724, "p95": 3.872, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 31.755, "p95": 32.134, "n": 21},
+     "encodeMs": {"p50": 30.705, "p95": 31.126, "n": 21},
+     "encodeFastMs": {"p50": 12.895, "p95": 13.086, "n": 21},
+     "pngBytes": {"p50": 151575, "p95": 151660, "n": 21},
+     "pngFastBytes": {"p50": 412235, "p95": 413597, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 761552, "p95": 761552, "n": 21},
+      "maskArea": {"p50": 294409, "p95": 294409, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 1.224, "p95": 1.255, "n": 21},
+      "rasterMs": {"p50": 10.719, "p95": 10.946, "n": 21},
+      "compositeMs": {"p50": 0.968, "p95": 1.03, "n": 21},
+      "shapeMs": {"p50": 17.293, "p95": 17.929, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 1.838, "p95": 1.916, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 472.082, "p95": 480.73, "n": 21},
+     "totalFastMs": {"p50": 454.312, "p95": 462.813, "n": 21},
+     "cpuMs": {"p50": 471.205, "p95": 479.98, "n": 21},
+     "parseMs": {"p50": 0.492, "p95": 0.702, "n": 21},
+     "layoutMs": {"p50": 3.882, "p95": 4.095, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 436.617, "p95": 445.605, "n": 21},
+     "encodeMs": {"p50": 30.911, "p95": 31.695, "n": 21},
+     "encodeFastMs": {"p50": 13.035, "p95": 13.464, "n": 21},
+     "pngBytes": {"p50": 151575, "p95": 151660, "n": 21},
+     "pngFastBytes": {"p50": 412235, "p95": 413597, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 761552, "p95": 761552, "n": 21},
+      "maskArea": {"p50": 494519040, "p95": 496644480, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 1.47, "p95": 1.513, "n": 21},
+      "rasterMs": {"p50": 134.988, "p95": 136.67, "n": 21},
+      "compositeMs": {"p50": 226.964, "p95": 229.314, "n": 21},
+      "shapeMs": {"p50": 18.341, "p95": 18.978, "n": 21},
+      "masks": {"p50": 231, "p95": 231, "n": 21},
+      "maskMs": {"p50": 33.009, "p95": 34.998, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 59.58, "p95": 59.943, "n": 21},
+     "totalFastMs": {"p50": 41.927, "p95": 42.196, "n": 21},
+     "cpuMs": {"p50": 91.858, "p95": 94.392, "n": 21},
+     "parseMs": {"p50": 0.492, "p95": 0.517, "n": 21},
+     "layoutMs": {"p50": 8.54, "p95": 8.729, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 2.914, "p95": 3.143, "n": 21},
+     "measured": {"p50": 300, "p95": 300, "n": 21},
+     "paintMs": {"p50": 22.886, "p95": 23.049, "n": 21},
+     "encodeMs": {"p50": 24.676, "p95": 25.028, "n": 21},
+     "encodeFastMs": {"p50": 7.044, "p95": 7.169, "n": 21},
+     "pngBytes": {"p50": 151575, "p95": 151660, "n": 21},
+     "pngFastBytes": {"p50": 412235, "p95": 413597, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 761552, "p95": 761552, "n": 21},
+      "maskArea": {"p50": 294409, "p95": 294409, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 2.052, "p95": 2.217, "n": 21},
+      "rasterMs": {"p50": 1.716, "p95": 1.866, "n": 21},
+      "compositeMs": {"p50": 0.951, "p95": 1.016, "n": 21},
+      "shapeMs": {"p50": 17.595, "p95": 18.174, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 1.481, "p95": 1.602, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 361.953,
+     "maskMs": 33.009,
+     "bboxAreaRatio": 0.002,
+     "paintMs": 42.217,
+     "totalFastMs": 59.625
+    }
+   },
+   "mcpMs": 14.571,
+   "ratio": {
+    "cold": 6.418,
+    "cold1": 5.227,
+    "warm": 1.997,
+    "warm1": 1.622,
+    "warmFast": 2.717,
+    "warmFast1": 2.08,
+    "warmFull": 0.271
+   }
+  },
+  "grid-2080-s2": {
+   "chromiumServer": {
+    "coldMs": {"p50": 607.575, "p95": 633.917, "n": 3},
+    "coldRuns": [
+     607.575,
+     633.917,
+     601.637
+    ],
+    "warm": {
+     "totalMs": {"p50": 160.182, "p95": 162.451, "n": 21},
+     "enqueueMs": {"p50": 12.386, "p95": 13.198, "n": 21},
+     "waitMs": {"p50": 145.362, "p95": 148.079, "n": 21},
+     "imageMs": {"p50": 2.16, "p95": 2.531, "n": 21}
+    },
+    "engineCpu": {
+     "perJobMs": 162.917,
+     "processes": 5,
+     "threads": 108
+    },
+    "pngBytes": 753211
+   },
+   "chromiumStages": {
+    "startup": {
+     "bundleServer": 3.236,
+     "importPlaywright": 161.398,
+     "launch": 93.33,
+     "newPage": 32.984,
+     "goto": 7.545,
+     "importRenderer": 7.157,
+     "scriptStartMs": 23.829,
+     "readyMs": 330.641
+    },
+    "cold": {
+     "startupMs": 330.641,
+     "firstJobMs": 242.006,
+     "jobMs": 242.006,
+     "passes": 3,
+     "measured": 300,
+     "resourcesRttMs": 17.792,
+     "resourcesPageMs": 15.2,
+     "layoutSpawnMs": 28.183,
+     "layoutBytes": 1004095,
+     "measureRttMs": 77.614,
+     "measurePageMs": 14.8,
+     "drawRttMs": 117.842,
+     "drawPageMs": 8.7,
+     "toDataURLPageMs": 37.2,
+     "base64Bytes": 1004284,
+     "workerNdjsonMs": 3.763,
+     "ipcMs": 137.348,
+     "otherMs": 0.575
+    },
+    "warm": {
+     "jobMs": {"p50": 130.958, "p95": 132.571, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "resourcesRttMs": {"p50": 12.975, "p95": 13.356, "n": 21},
+     "resourcesPageMs": {"p50": 11.7, "p95": 12, "n": 21},
+     "layoutSpawnMs": {"p50": 12.793, "p95": 13.161, "n": 21},
+     "layoutBytes": {"p50": 488438, "p95": 488438, "n": 21},
+     "measureRttMs": {"p50": 0, "p95": 0, "n": 21},
+     "measurePageMs": {"p50": 0, "p95": 0, "n": 21},
+     "drawRttMs": {"p50": 105.067, "p95": 106.877, "n": 21},
+     "drawPageMs": {"p50": 7.3, "p95": 7.7, "n": 21},
+     "toDataURLPageMs": {"p50": 36.4, "p95": 37.1, "n": 21},
+     "base64Bytes": {"p50": 1007780, "p95": 1009356, "n": 21},
+     "workerNdjsonMs": {"p50": 3.681, "p95": 5.266, "n": 21},
+     "ipcMs": {"p50": 62.305, "p95": 63.966, "n": 21},
+     "otherMs": {"p50": 0.078, "p95": 0.186, "n": 21}
+    },
+    "warmNoCache": {
+     "jobMs": {"p50": 199.707, "p95": 206.301, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measured": {"p50": 300, "p95": 300, "n": 21},
+     "resourcesRttMs": {"p50": 13.762, "p95": 14.638, "n": 21},
+     "resourcesPageMs": {"p50": 11.8, "p95": 12.1, "n": 21},
+     "layoutSpawnMs": {"p50": 27.042, "p95": 27.793, "n": 21},
+     "layoutBytes": {"p50": 1004095, "p95": 1004095, "n": 21},
+     "measureRttMs": {"p50": 58.165, "p95": 59.415, "n": 21},
+     "measurePageMs": {"p50": 7.9, "p95": 8.2, "n": 21},
+     "drawRttMs": {"p50": 101.318, "p95": 103.965, "n": 21},
+     "drawPageMs": {"p50": 7.2, "p95": 7.4, "n": 21},
+     "toDataURLPageMs": {"p50": 36.1, "p95": 37.2, "n": 21},
+     "base64Bytes": {"p50": 1007780, "p95": 1009356, "n": 21},
+     "workerNdjsonMs": {"p50": 3.617, "p95": 3.743, "n": 21},
+     "ipcMs": {"p50": 109.827, "p95": 113.579, "n": 21},
+     "otherMs": {"p50": 0.134, "p95": 0.176, "n": 21}
+    }
+   },
+   "serverNdjson": {
+    "computeRequestBytes": 148223,
+    "computeResponseBytes": 211948,
+    "msDecodePngTwice": 0.444,
+    "msParseComputed": 0.823,
+    "msParseRendered": 0.088,
+    "msSerializeCompute": 1.096,
+    "msSerializeRender": 2.225,
+    "msTotal": 4.675,
+    "pngBytes": 753211,
+    "renderResponseBytes": 1005231
+   },
+   "rust": {
+    "threads": 11,
+    "cold": {
+     "wallMs": {"p50": 205.369, "p95": 206.675, "n": 5},
+     "wallRuns": [
+      206.675,
+      206.211,
+      205.369,
+      205.221,
+      205.024
+     ],
+     "firstRunDoneMs": {"p50": 201.048, "p95": 202.13, "n": 5},
+     "threads": 11,
+     "startup": {
+      "fontHashMs": 4.241,
+      "fontParseMs": 0.031,
+      "fontReadMs": 0.23,
+      "poolMs": 0.113,
+      "readInputMs": 0.627,
+      "totalMs": 5.245
+     },
+     "run": {
+      "cpuMs": 250.923,
+      "encodeFastMs": 25.645,
+      "encodeMs": 79.159,
+      "layoutMs": 8.538,
+      "measureMs": 2.955,
+      "measured": 300,
+      "paintMs": 78.016,
+      "parseMs": 0.514,
+      "passes": 3,
+      "pngBytes": 362334,
+      "pngFastBytes": 1044692,
+      "profile": {
+       "compositeMs": 3.115,
+       "fallbacks": 0,
+       "maskArea": 1061118,
+       "maskMs": 3.762,
+       "masks": 5,
+       "pathMs": 2.95,
+       "rasterMs": 2.699,
+       "shapeMs": 67.789,
+       "textArea": 3046208,
+       "textNodes": 164,
+       "threads": 11
+      },
+      "totalFastMs": 115.667,
+      "totalMs": 169.181
+     }
+    },
+    "cold1": {
+     "wallMs": {"p50": 270.789, "p95": 271.986, "n": 5},
+     "wallRuns": [
+      271.986,
+      271.728,
+      270.369,
+      270.789,
+      270.295
+     ],
+     "firstRunDoneMs": {"p50": 266.737, "p95": 267.918, "n": 5},
+     "threads": 1,
+     "startup": {
+      "fontHashMs": 4.335,
+      "fontParseMs": 0.032,
+      "fontReadMs": 0.218,
+      "poolMs": 0.015,
+      "readInputMs": 0.62,
+      "totalMs": 5.225
+     },
+     "run": {
+      "cpuMs": 210.999,
+      "encodeFastMs": 49.397,
+      "encodeMs": 104.631,
+      "layoutMs": 8.497,
+      "measureMs": 3.143,
+      "measured": 300,
+      "paintMs": 94.345,
+      "parseMs": 0.516,
+      "passes": 3,
+      "pngBytes": 362334,
+      "pngFastBytes": 1044692,
+      "profile": {
+       "compositeMs": 3.045,
+       "fallbacks": 0,
+       "maskArea": 1061118,
+       "maskMs": 6.324,
+       "masks": 5,
+       "pathMs": 1.256,
+       "rasterMs": 16.725,
+       "shapeMs": 67.602,
+       "textArea": 3046208,
+       "textNodes": 164,
+       "threads": 1
+      },
+      "totalFastMs": 155.897,
+      "totalMs": 211.131
+     }
+    },
+    "warm": {
+     "totalMs": {"p50": 164.844, "p95": 165.686, "n": 21},
+     "totalFastMs": {"p50": 110.828, "p95": 112.204, "n": 21},
+     "cpuMs": {"p50": 248.284, "p95": 251.843, "n": 21},
+     "parseMs": {"p50": 0.505, "p95": 0.562, "n": 21},
+     "layoutMs": {"p50": 3.721, "p95": 3.828, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 80.655, "p95": 81.993, "n": 21},
+     "encodeMs": {"p50": 79.76, "p95": 80.365, "n": 21},
+     "encodeFastMs": {"p50": 25.945, "p95": 26.332, "n": 21},
+     "pngBytes": {"p50": 363112, "p95": 363379, "n": 21},
+     "pngFastBytes": {"p50": 1046466, "p95": 1048194, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 3046208, "p95": 3046208, "n": 21},
+      "maskArea": {"p50": 1061118, "p95": 1061118, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 2.111, "p95": 2.697, "n": 21},
+      "rasterMs": {"p50": 2.616, "p95": 2.731, "n": 21},
+      "compositeMs": {"p50": 3.144, "p95": 3.261, "n": 21},
+      "shapeMs": {"p50": 68.522, "p95": 69.575, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 4.972, "p95": 5.457, "n": 21}
+     }
+    },
+    "warm1": {
+     "totalMs": {"p50": 206.575, "p95": 210.839, "n": 21},
+     "totalFastMs": {"p50": 150.227, "p95": 154.064, "n": 21},
+     "cpuMs": {"p50": 206.389, "p95": 210.597, "n": 21},
+     "parseMs": {"p50": 0.508, "p95": 0.538, "n": 21},
+     "layoutMs": {"p50": 3.743, "p95": 3.828, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 96.212, "p95": 99.157, "n": 21},
+     "encodeMs": {"p50": 105.778, "p95": 107.25, "n": 21},
+     "encodeFastMs": {"p50": 49.761, "p95": 50.57, "n": 21},
+     "pngBytes": {"p50": 363112, "p95": 363379, "n": 21},
+     "pngFastBytes": {"p50": 1046466, "p95": 1048194, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 3046208, "p95": 3046208, "n": 21},
+      "maskArea": {"p50": 1061118, "p95": 1061118, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 1.267, "p95": 1.303, "n": 21},
+      "rasterMs": {"p50": 17.074, "p95": 17.483, "n": 21},
+      "compositeMs": {"p50": 3.122, "p95": 3.266, "n": 21},
+      "shapeMs": {"p50": 68.152, "p95": 69.393, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 7.282, "p95": 7.834, "n": 21}
+     }
+    },
+    "warmFull": {
+     "totalMs": {"p50": 1764.42, "p95": 1779.864, "n": 21},
+     "totalFastMs": {"p50": 1708.285, "p95": 1723.003, "n": 21},
+     "cpuMs": {"p50": 1761.561, "p95": 1775.969, "n": 21},
+     "parseMs": {"p50": 0.491, "p95": 0.516, "n": 21},
+     "layoutMs": {"p50": 3.707, "p95": 3.806, "n": 21},
+     "passes": {"p50": 1, "p95": 1, "n": 21},
+     "measureMs": {"p50": 0, "p95": 0, "n": 21},
+     "measured": {"p50": 0, "p95": 0, "n": 21},
+     "paintMs": {"p50": 1654.369, "p95": 1668.856, "n": 21},
+     "encodeMs": {"p50": 106.07, "p95": 107.304, "n": 21},
+     "encodeFastMs": {"p50": 49.772, "p95": 50.535, "n": 21},
+     "pngBytes": {"p50": 363112, "p95": 363379, "n": 21},
+     "pngFastBytes": {"p50": 1046466, "p95": 1048194, "n": 21},
+     "profile": {
+      "threads": {"p50": 1, "p95": 1, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 3046208, "p95": 3046208, "n": 21},
+      "maskArea": {"p50": 1978076160, "p95": 1986577920, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 2.177, "p95": 2.251, "n": 21},
+      "rasterMs": {"p50": 506.022, "p95": 510.811, "n": 21},
+      "compositeMs": {"p50": 908.356, "p95": 921.249, "n": 21},
+      "shapeMs": {"p50": 70.336, "p95": 70.995, "n": 21},
+      "masks": {"p50": 231, "p95": 231, "n": 21},
+      "maskMs": {"p50": 132.604, "p95": 135.713, "n": 21}
+     }
+    },
+    "warmNoCache": {
+     "totalMs": {"p50": 171.369, "p95": 173.931, "n": 21},
+     "totalFastMs": {"p50": 117.636, "p95": 119.573, "n": 21},
+     "cpuMs": {"p50": 254.288, "p95": 259.8, "n": 21},
+     "parseMs": {"p50": 0.495, "p95": 0.56, "n": 21},
+     "layoutMs": {"p50": 8.522, "p95": 8.656, "n": 21},
+     "passes": {"p50": 3, "p95": 3, "n": 21},
+     "measureMs": {"p50": 2.887, "p95": 3.114, "n": 21},
+     "measured": {"p50": 300, "p95": 300, "n": 21},
+     "paintMs": {"p50": 79.994, "p95": 81.552, "n": 21},
+     "encodeMs": {"p50": 79.731, "p95": 80.345, "n": 21},
+     "encodeFastMs": {"p50": 25.737, "p95": 26.225, "n": 21},
+     "pngBytes": {"p50": 363112, "p95": 363379, "n": 21},
+     "pngFastBytes": {"p50": 1046466, "p95": 1048194, "n": 21},
+     "profile": {
+      "threads": {"p50": 11, "p95": 11, "n": 21},
+      "textNodes": {"p50": 164, "p95": 164, "n": 21},
+      "textArea": {"p50": 3046208, "p95": 3046208, "n": 21},
+      "maskArea": {"p50": 1061118, "p95": 1061118, "n": 21},
+      "fallbacks": {"p50": 0, "p95": 0, "n": 21},
+      "pathMs": {"p50": 2.077, "p95": 3.475, "n": 21},
+      "rasterMs": {"p50": 2.613, "p95": 2.841, "n": 21},
+      "compositeMs": {"p50": 3.091, "p95": 3.173, "n": 21},
+      "shapeMs": {"p50": 68.199, "p95": 68.821, "n": 21},
+      "masks": {"p50": 5, "p95": 5, "n": 21},
+      "maskMs": {"p50": 4.799, "p95": 5.211, "n": 21}
+     }
+    },
+    "textOpts": {
+     "gamma": 1.45,
+     "snap": true
+    },
+    "estimate": {
+     "textFullCanvasMs": 1414.378,
+     "maskMs": 132.604,
+     "bboxAreaRatio": 0.002,
+     "paintMs": 109.58,
+     "totalFastMs": 163.549
+    }
+   },
+   "mcpMs": 14.546,
+   "ratio": {
+    "cold": 2.763,
+    "cold1": 2.129,
+    "warm": 0.893,
+    "warm1": 0.724,
+    "warmFast": 1.278,
+    "warmFast1": 0.972,
+    "warmFull": 0.09
+   }
+  }
+ },
+ "gate": {
+  "stacks-1040": {
+   "rustVsChrome": {
+    "widths": 25,
+    "nodes": 4525,
+    "nodeMismatches": 0,
+    "lines": 1025,
+    "lineMismatches": 0,
+    "missing": 0,
+    "examples": []
+   },
+   "stageVsServer": {
+    "nodes": 181,
+    "nodeMismatches": 0,
+    "lines": 41,
+    "lineMismatches": 0,
+    "missing": 0
+   },
+   "pixels": {
+    "s1": {
+     "gt0": 20345,
+     "gt32": 3337,
+     "gt8": 13654,
+     "maxDelta": 184,
+     "meanDelta": 0.524,
+     "pixels": 748800,
+     "chromePngBytes": 103291,
+     "rustPngBytes": 57092,
+     "rustFastPngBytes": 96457,
+     "stagePngIdenticalToServer": true
+    },
+    "s2": {
+     "gt0": 46455,
+     "gt32": 11683,
+     "gt8": 33728,
+     "maxDelta": 195,
+     "meanDelta": 0.372,
+     "pixels": 2995200,
+     "chromePngBytes": 257958,
+     "rustPngBytes": 135673,
+     "rustFastPngBytes": 247793,
+     "stagePngIdenticalToServer": true
+    }
+   }
+  },
+  "stacks-390": {
+   "rustVsChrome": {
+    "widths": 25,
+    "nodes": 4525,
+    "nodeMismatches": 0,
+    "lines": 1225,
+    "lineMismatches": 0,
+    "missing": 0,
+    "examples": []
+   },
+   "stageVsServer": {
+    "nodes": 181,
+    "nodeMismatches": 0,
+    "lines": 49,
+    "lineMismatches": 0,
+    "missing": 0
+   },
+   "pixels": {
+    "s1": {
+     "gt0": 11440,
+     "gt32": 2091,
+     "gt8": 7813,
+     "maxDelta": 184,
+     "meanDelta": 0.713,
+     "pixels": 329160,
+     "chromePngBytes": 56917,
+     "rustPngBytes": 32001,
+     "rustFastPngBytes": 52561,
+     "stagePngIdenticalToServer": true
+    },
+    "s2": {
+     "gt0": 26156,
+     "gt32": 6742,
+     "gt8": 19420,
+     "maxDelta": 186,
+     "meanDelta": 0.483,
+     "pixels": 1316640,
+     "chromePngBytes": 137315,
+     "rustPngBytes": 73669,
+     "rustFastPngBytes": 132720,
+     "stagePngIdenticalToServer": true
+    }
+   }
+  },
+  "welcome-1040": {
+   "rustVsChrome": {
+    "widths": 25,
+    "nodes": 1775,
+    "nodeMismatches": 0,
+    "lines": 1025,
+    "lineMismatches": 0,
+    "missing": 0,
+    "examples": []
+   },
+   "stageVsServer": {
+    "nodes": 71,
+    "nodeMismatches": 0,
+    "lines": 41,
+    "lineMismatches": 0,
+    "missing": 0
+   },
+   "pixels": {
+    "s1": {
+     "gt0": 20345,
+     "gt32": 3337,
+     "gt8": 13654,
+     "maxDelta": 184,
+     "meanDelta": 0.524,
+     "pixels": 748800,
+     "chromePngBytes": 103291,
+     "rustPngBytes": 57092,
+     "rustFastPngBytes": 96457,
+     "stagePngIdenticalToServer": true
+    },
+    "s2": {
+     "gt0": 46455,
+     "gt32": 11683,
+     "gt8": 33728,
+     "maxDelta": 195,
+     "meanDelta": 0.372,
+     "pixels": 2995200,
+     "chromePngBytes": 257958,
+     "rustPngBytes": 135673,
+     "rustFastPngBytes": 247793,
+     "stagePngIdenticalToServer": true
+    }
+   }
+  },
+  "grid-2080": {
+   "rustVsChrome": {
+    "widths": 25,
+    "nodes": 18175,
+    "nodeMismatches": 0,
+    "lines": 4175,
+    "lineMismatches": 0,
+    "missing": 0,
+    "examples": []
+   },
+   "stageVsServer": {
+    "nodes": 727,
+    "nodeMismatches": 0,
+    "lines": 167,
+    "lineMismatches": 0,
+    "missing": 0
+   },
+   "pixels": {
+    "s1": {
+     "gt0": 87296,
+     "gt32": 14625,
+     "gt8": 58793,
+     "maxDelta": 184,
+     "meanDelta": 0.566,
+     "pixels": 2995200,
+     "chromePngBytes": 289264,
+     "rustPngBytes": 151404,
+     "rustFastPngBytes": 410985,
+     "stagePngIdenticalToServer": true
+    },
+    "s2": {
+     "gt0": 199242,
+     "gt32": 50904,
+     "gt8": 145478,
+     "maxDelta": 195,
+     "meanDelta": 0.405,
+     "pixels": 11980800,
+     "chromePngBytes": 753211,
+     "rustPngBytes": 362334,
+     "rustFastPngBytes": 1044692,
+     "stagePngIdenticalToServer": true
+    }
+   }
+  }
+ },
+ "paintGate": {
+  "groups": [
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "stacks-1040 s1",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "stacks-1040 s2",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "stacks-390 s1",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 183,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "stacks-390 s2",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 182,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "welcome-1040 s1",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "welcome-1040 s2",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 41,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "grid-2080 s1",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 164,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "grid-2080 s2",
+    "cases": 25,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 25,
+    "textNodes": 164,
+    "threadsEqual": 25
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "scene gamma 1 snap false s1",
+    "cases": 1,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 1,
+    "textNodes": 3,
+    "threadsEqual": 1
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "scene gamma 1 snap false s2",
+    "cases": 1,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 1,
+    "textNodes": 3,
+    "threadsEqual": 1
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "scene gamma 1.45 snap true s1",
+    "cases": 1,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 1,
+    "textNodes": 3,
+    "threadsEqual": 1
+   },
+   {
+    "baselineK0": null,
+    "baselinePngBytesK0": null,
+    "case": "scene gamma 1.45 snap true s2",
+    "cases": 1,
+    "diffs": [],
+    "fallbacks": 0,
+    "fullEqualsBbox": 1,
+    "textNodes": 3,
+    "threadsEqual": 1
+   }
+  ],
+  "iters": 25,
+  "threads": [
+   1,
+   2,
+   11
+  ]
+ }
+}

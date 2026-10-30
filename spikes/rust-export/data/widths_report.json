@@ -1,0 +1,329 @@
+{
+ "default": {
+  "pairs": 1232,
+  "maxAbs": 0.0010566406249381544,
+  "p99": 0.0008786621093577196,
+  "p50": 0.00006982421874823785,
+  "exactEqual": 0,
+  "roundDiffers": 11,
+  "ceilDiffers": 2,
+  "worst10": [
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 24,
+    "chrome": 1150.366943359375,
+    "rust": 1150.368,
+    "delta": -0.0010566406249381544,
+    "chromeX64": 73623.484375,
+    "rustX64": 73623.552
+   },
+   {
+    "text": "Văn bản tiếng Việt có dấu thanh và dấu mũ chồng lên nhau: ặ ậ ệ ộ ợ ự ỵ — đo đúng là quan trọng.",
+    "size": 24,
+    "chrome": 1110.094970703125,
+    "rust": 1110.096,
+    "delta": -0.001029296875003638,
+    "chromeX64": 71046.078125,
+    "rustX64": 71046.144
+   },
+   {
+    "text": "The quick brown fox jumps over the lazy dog while the export pipeline renders every frame.",
+    "size": 16,
+    "chrome": 685.5029907226562,
+    "rust": 685.504,
+    "delta": -0.0010092773437690994,
+    "chromeX64": 43872.19140625,
+    "rustX64": 43872.256
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 16,
+    "chrome": 766.9110107421875,
+    "rust": 766.912,
+    "delta": -0.0009892578125345608,
+    "chromeX64": 49082.3046875,
+    "rustX64": 49082.368
+   },
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 24,
+    "chrome": 1097.20703125,
+    "rust": 1097.208,
+    "delta": -0.0009687500000836735,
+    "chromeX64": 70221.25,
+    "rustX64": 70221.312
+   },
+   {
+    "text": "Văn bản tiếng Việt có dấu thanh và dấu mũ chồng lên nhau: ặ ậ ệ ộ ợ ự ỵ — đo đúng là quan trọng.",
+    "size": 16,
+    "chrome": 740.0630493164062,
+    "rust": 740.064,
+    "delta": -0.0009506835937145297,
+    "chromeX64": 47364.03515625,
+    "rustX64": 47364.096
+   },
+   {
+    "text": "Auto layout distributes children along the main axis and aligns them on the cross axis.",
+    "size": 16,
+    "chrome": 645.72705078125,
+    "rust": 645.728,
+    "delta": -0.0009492187499517968,
+    "chromeX64": 41326.53125,
+    "rustX64": 41326.592
+   },
+   {
+    "text": "Auto layout distributes children along the main axis and aligns them on the cross axis.",
+    "size": 24,
+    "chrome": 968.591064453125,
+    "rust": 968.592,
+    "delta": -0.0009355468749845386,
+    "chromeX64": 61989.828125,
+    "rustX64": 61989.888
+   },
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 16,
+    "chrome": 731.4710693359375,
+    "rust": 731.472,
+    "delta": -0.0009306640624799911,
+    "chromeX64": 46814.1484375,
+    "rustX64": 46814.208
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 12,
+    "chrome": 575.18310546875,
+    "rust": 575.184,
+    "delta": -0.0008945312499690772,
+    "chromeX64": 36811.71875,
+    "rustX64": 36811.776
+   }
+  ],
+  "roundDiffExamples": [
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 13,
+    "chrome": 594.3202514648438,
+    "rust": 594.321
+   },
+   {
+    "text": "Người dùng",
+    "size": 14,
+    "chrome": 79.08592224121094,
+    "rust": 79.086
+   },
+   {
+    "text": "Một chiếc khung có thể chứa nhiều lớp con, mỗi lớp có độ mờ, viền và bo góc riêng biệt.",
+    "size": 14,
+    "chrome": 576.7574462890625,
+    "rust": 576.758
+   },
+   {
+    "text": "Auto layout",
+    "size": 16,
+    "chrome": 86.33589172363281,
+    "rust": 86.336
+   },
+   {
+    "text": "Đổi tên",
+    "size": 16,
+    "chrome": 54.33592224121094,
+    "rust": 54.336
+   },
+   {
+    "text": "Kerning pairs like AV, To, Ty and We change advances, so shaping must apply GPOS kern.",
+    "size": 16,
+    "chrome": 665.67919921875,
+    "rust": 665.68
+   },
+   {
+    "text": "Xem trước",
+    "size": 24,
+    "chrome": 117.33592224121094,
+    "rust": 117.336
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 24,
+    "chrome": 1150.366943359375,
+    "rust": 1150.368
+   },
+   {
+    "text": "Untitled frame",
+    "size": 32,
+    "chrome": 218.3358917236328,
+    "rust": 218.336
+   },
+   {
+    "text": "Notifications",
+    "size": 32,
+    "chrome": 190.33590698242188,
+    "rust": 190.336
+   }
+  ]
+ },
+ "nohint": {
+  "pairs": 1232,
+  "maxAbs": 0.0010566406249381544,
+  "p99": 0.0008786621093577196,
+  "p50": 0.00006982421874823785,
+  "exactEqual": 0,
+  "roundDiffers": 11,
+  "ceilDiffers": 2,
+  "worst10": [
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 24,
+    "chrome": 1150.366943359375,
+    "rust": 1150.368,
+    "delta": -0.0010566406249381544,
+    "chromeX64": 73623.484375,
+    "rustX64": 73623.552
+   },
+   {
+    "text": "Văn bản tiếng Việt có dấu thanh và dấu mũ chồng lên nhau: ặ ậ ệ ộ ợ ự ỵ — đo đúng là quan trọng.",
+    "size": 24,
+    "chrome": 1110.094970703125,
+    "rust": 1110.096,
+    "delta": -0.001029296875003638,
+    "chromeX64": 71046.078125,
+    "rustX64": 71046.144
+   },
+   {
+    "text": "The quick brown fox jumps over the lazy dog while the export pipeline renders every frame.",
+    "size": 16,
+    "chrome": 685.5029907226562,
+    "rust": 685.504,
+    "delta": -0.0010092773437690994,
+    "chromeX64": 43872.19140625,
+    "rustX64": 43872.256
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 16,
+    "chrome": 766.9110107421875,
+    "rust": 766.912,
+    "delta": -0.0009892578125345608,
+    "chromeX64": 49082.3046875,
+    "rustX64": 49082.368
+   },
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 24,
+    "chrome": 1097.20703125,
+    "rust": 1097.208,
+    "delta": -0.0009687500000836735,
+    "chromeX64": 70221.25,
+    "rustX64": 70221.312
+   },
+   {
+    "text": "Văn bản tiếng Việt có dấu thanh và dấu mũ chồng lên nhau: ặ ậ ệ ộ ợ ự ỵ — đo đúng là quan trọng.",
+    "size": 16,
+    "chrome": 740.0630493164062,
+    "rust": 740.064,
+    "delta": -0.0009506835937145297,
+    "chromeX64": 47364.03515625,
+    "rustX64": 47364.096
+   },
+   {
+    "text": "Auto layout distributes children along the main axis and aligns them on the cross axis.",
+    "size": 16,
+    "chrome": 645.72705078125,
+    "rust": 645.728,
+    "delta": -0.0009492187499517968,
+    "chromeX64": 41326.53125,
+    "rustX64": 41326.592
+   },
+   {
+    "text": "Auto layout distributes children along the main axis and aligns them on the cross axis.",
+    "size": 24,
+    "chrome": 968.591064453125,
+    "rust": 968.592,
+    "delta": -0.0009355468749845386,
+    "chromeX64": 61989.828125,
+    "rustX64": 61989.888
+   },
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 16,
+    "chrome": 731.4710693359375,
+    "rust": 731.472,
+    "delta": -0.0009306640624799911,
+    "chromeX64": 46814.1484375,
+    "rustX64": 46814.208
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 12,
+    "chrome": 575.18310546875,
+    "rust": 575.184,
+    "delta": -0.0008945312499690772,
+    "chromeX64": 36811.71875,
+    "rustX64": 36811.776
+   }
+  ],
+  "roundDiffExamples": [
+   {
+    "text": "Measured widths are rounded to a 1/64 grid so layout converges in a bounded number of passes.",
+    "size": 13,
+    "chrome": 594.3202514648438,
+    "rust": 594.321
+   },
+   {
+    "text": "Người dùng",
+    "size": 14,
+    "chrome": 79.08592224121094,
+    "rust": 79.086
+   },
+   {
+    "text": "Một chiếc khung có thể chứa nhiều lớp con, mỗi lớp có độ mờ, viền và bo góc riêng biệt.",
+    "size": 14,
+    "chrome": 576.7574462890625,
+    "rust": 576.758
+   },
+   {
+    "text": "Auto layout",
+    "size": 16,
+    "chrome": 86.33589172363281,
+    "rust": 86.336
+   },
+   {
+    "text": "Đổi tên",
+    "size": 16,
+    "chrome": 54.33592224121094,
+    "rust": 54.336
+   },
+   {
+    "text": "Kerning pairs like AV, To, Ty and We change advances, so shaping must apply GPOS kern.",
+    "size": 16,
+    "chrome": 665.67919921875,
+    "rust": 665.68
+   },
+   {
+    "text": "Xem trước",
+    "size": 24,
+    "chrome": 117.33592224121094,
+    "rust": 117.336
+   },
+   {
+    "text": "Thiết kế giao diện người dùng cần nhất quán về khoảng cách, màu sắc và kiểu chữ trên mọi màn hình.",
+    "size": 24,
+    "chrome": 1150.366943359375,
+    "rust": 1150.368
+   },
+   {
+    "text": "Untitled frame",
+    "size": 32,
+    "chrome": 218.3358917236328,
+    "rust": 218.336
+   },
+   {
+    "text": "Notifications",
+    "size": 32,
+    "chrome": 190.33590698242188,
+    "rust": 190.336
+   }
+  ]
+ },
+ "chromeDefaultVsNohintIdentical": true
+}

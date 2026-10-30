@@ -1,0 +1,34 @@
+{
+ "default/rust_wrap.json": {
+  "cases": 120,
+  "identicalLineText": 120,
+  "identicalTextWidthY": 117,
+  "maxLineWidthDelta": 0.015625,
+  "ydiff": 0,
+  "diffs": []
+ },
+ "default/rust_wrap_v2.json": {
+  "cases": 120,
+  "identicalLineText": 120,
+  "identicalTextWidthY": 120,
+  "maxLineWidthDelta": 0,
+  "ydiff": 0,
+  "diffs": []
+ },
+ "nohint/rust_wrap.json": {
+  "cases": 120,
+  "identicalLineText": 120,
+  "identicalTextWidthY": 117,
+  "maxLineWidthDelta": 0.015625,
+  "ydiff": 0,
+  "diffs": []
+ },
+ "nohint/rust_wrap_v2.json": {
+  "cases": 120,
+  "identicalLineText": 120,
+  "identicalTextWidthY": 120,
+  "maxLineWidthDelta": 0,
+  "ydiff": 0,
+  "diffs": []
+ }
+}
