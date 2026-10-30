@@ -1,5 +1,11 @@
 # Local backend
 
+Project font import, exact original-file downloads, MCP metadata and rendering
+portability limits are documented in [Project fonts](FONTS.md). The viewer font
+POST reuses the `import_asset` transaction; project font download URLs also serve
+the worker's validated font bytes. A project database alone does not contain its
+uploaded font files.
+
 For changes/history, notes, consistency, mutation responses, layout and animations,
 see [Server operations](SERVER-OPERATIONS.md). Interaction variants and state render
 semantics are specified in [Interaction states](INTERACTION-STATES.md).
@@ -95,7 +101,7 @@ scene order; following `nextCursor` returns every selected node exactly once.
 
 - Settings come from the call's `settings` (applied to every node), else the node's `exportSettings` prop, else one PNG at 1x. A PNG setting is `{format?:"png", scale?:0.01–4 | width?:1–16384 | height?:1–16384, suffix?}`, at most one of the three sizes. A target width/height derives the scale from the node bounds; outside 0.01–4 the item fails with `EXPORT_SCALE_RANGE`. The file name is the node `name` (else its ID, with `/ \ : * ? " < > |` and control characters replaced by `_`, cut to 100 bytes) + suffix + `.png`; the suffix defaults to `@<scale>x` when scale is not 1, else empty. An invalid `settings` argument fails the whole call with `VALIDATION_FAILED` and `field` such as `settings[1].scale`, by the same rules as the prop (`skill://opencanvas/props.md`).
 - `exportSettings` is a node prop (every kind except page): an array of 0–8 settings. `[]` clears it (`update_node` merges keys, so a key cannot be removed). Two settings yielding the same file name, unknown keys (`constraint` → use scale/width/height, `type` → `format`) and formats other than `png` and `svg` are rejected with `field` `exportSettings[i]…`.
-- SVG: `{format:"svg", suffix?, svgIdAttribute?}` takes no scale, width or height (rejected at `…scale` etc.: SVG is resolution-independent); the file is `<name><suffix>.svg`, `mimeType:"image/svg+xml"`, `width`/`height` the node's CSS-pixel size, no `scale`. It is built in Rust from the same subtree scene, without the worker: fills as `<rect rx>` (8-digit hex split into `fill` + `fill-opacity`), clip as `<clipPath>` (`oc-clip-N` IDs), CSS group opacity as `<g opacity>` like the renderer, images as `<image>` with the asset's original bytes in a `data:` URI (crop through a nested `viewBox` of natural pixels, read from the PNG/JPEG/WebP header). The file is self-contained: no server URL. Text stays live `<text>` per measured line with the font family/weight/size, not outlined and with no embedded font, so line widths depend on the viewer's fonts; such a file carries `diagnostics:["SVG_TEXT_NOT_OUTLINED"]`. Strokes (box `stroke`, uniform or per-side) are not drawn in SVG yet: a subtree with any stroked node exports without them and carries `SVG_STROKE_NOT_EXPORTED`; export PNG for those. `svgIdAttribute:true` wraps each node's elements in `<g id="<nodeId>">`. Resources are strict: a failed font or asset, or image bytes missing or no longer matching the scene's manifest hash, fail the item with `RESOURCE_NOT_READY` rather than a partial SVG. JPEG EXIF orientation is not applied.
+- SVG: `{format:"svg", suffix?, svgIdAttribute?}` takes no scale, width or height (rejected at `…scale` etc.: SVG is resolution-independent); the file is `<name><suffix>.svg`, `mimeType:"image/svg+xml"`, `width`/`height` the node's CSS-pixel size, no `scale`. It is built in Rust from the same subtree scene, without the worker: fills as `<rect rx>` (8-digit hex split into `fill` + `fill-opacity`), clip as `<clipPath>` (`oc-clip-N` IDs), CSS group opacity as `<g opacity>` like the renderer, images as `<image>` with the asset's original bytes in a `data:` URI (crop through a nested `viewBox` of natural pixels, read from the PNG/JPEG/WebP header). The file is self-contained: no server URL. Text stays live `<text>` per measured line with the font family/weight/size, not outlined and with no embedded font, so line widths depend on the viewer's fonts; such a file carries `diagnostics:["SVG_TEXT_NOT_OUTLINED"]`. Strokes (box `stroke`, uniform or per-side) are not drawn in SVG yet: a subtree with any stroked node exports without them and carries `SVG_STROKE_NOT_EXPORTED`; export PNG for those. Box `shadow` layers are not drawn either and carry `SVG_SHADOW_NOT_EXPORTED`. Per-corner `radius` exports as a `<path>` with CSS overlap reduction; linear/radial gradient fills export as `<linearGradient>`/`<radialGradient>` whose stops are expanded so SVG's straight-alpha interpolation matches CSS premultiplied interpolation (a stop fading to `#0000` keeps its neighbor's hue). `svgIdAttribute:true` wraps each node's elements in `<g id="<nodeId>">`. Resources are strict: a failed font or asset, or image bytes missing or no longer matching the scene's manifest hash, fail the item with `RESOURCE_NOT_READY` rather than a partial SVG. JPEG EXIF orientation is not applied.
 - The call waits up to `waitMs` (default and max 10,000) for all jobs, then returns `{projectId, revision, exports:[{nodeId, jobId, status, files?, error?}]}`. A ready item lists `files[]` `{url, fileName, format, mimeType, scale, width, height, bytes}`; no scene and no base64. A pending item: repeat the identical call, which reuses the same `jobId` while the record is retained, or poll `render_frame {jobId, waitMs}`.
 - Per-item errors leave the other nodes running: `NODE_NOT_FOUND`, `EXPORT_UNSUPPORTED` (page, or a node outside a root frame), `QUEUE_FULL` (retryable, `retryAfterMs`), and at run time `EMPTY_BOUNDS` (zero width or height), `PIXEL_BUDGET` (16M pixels per file, 48 MiB per job), `EXPORT_SCALE_RANGE`, `RESOURCE_NOT_READY`. Whole-call errors: `INVALID_REQUEST`, `VALIDATION_FAILED` (settings), `REVISION_UNAVAILABLE` (`revision` other than head), `PROJECT_NOT_FOUND`.
 - `GET /api/v1/jobs/{job}/files/{index}` serves a file with its MIME type and `Content-Disposition: attachment; filename="<ascii>"; filename*=UTF-8''<encoded>`; `FILE_NOT_FOUND` (404) for a wrong index or a render job, `IMAGE_NOT_READY` (409) while pending or failed, `JOB_NOT_FOUND` (404) once evicted. `GET /api/v1/jobs/{job}` returns the export record (`kind:"export"`, `nodeId`, `files`, `provenance`, `readiness`; no `scene`, no `imageUrl`). Export records share the 32 retained job records with renders and prerenders, so download right away; a later identical call recreates evicted files. No filesystem path is returned or accepted.
@@ -103,8 +109,8 @@ scene order; following `nextCursor` returns every selected node exactly once.
 ## MCP skill resources and context diagnostics
 
 The initialization capabilities advertise both tools and resources. `resources/list`
-returns exactly three embedded Markdown documents (`text/markdown`), available without
-project creation or filesystem access through `resources/read`:
+returns three embedded Markdown documents (`text/markdown`) and one JSON capability
+document, available without project creation or filesystem access through `resources/read`:
 
 - `skill://opencanvas/implement-frame.md`: context-to-code checklist, stack/sizing
   mapping, text baseline cautions, and when to state assumptions or ask the user.
@@ -114,6 +120,27 @@ project creation or filesystem access through `resources/read`:
   value ranges, required keys and common wrong names. It is rendered at startup
   (`src/props_doc.rs`) from the storage validator's property table
   (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+- `opencanvas://capabilities` (`application/json`): accepted keys/kinds generated from
+  that same catalog, with explicit Canvas/PNG, HTML preview and SVG consumer facts.
+  Cache by `catalogFingerprint`, `sceneVersion` and `rendererVersion`; this resource
+  describes static support, while font/asset readiness and glyph coverage require
+  job evidence. Resource list/read responses carry private cache hints.
+
+`get_design_context` scans the complete effective expanded frame before depth,
+property and pagination filters for `TEXT_FRAGMENTATION_SUSPECTED`. This conservative
+advisory combines many single-letter siblings, shared typography/baseline and dense
+free placement. Intentional lettering/wordmarks/motion remain valid; no mutation or
+rejection is performed. `Intentional lettering:` notes on a node or ancestor record
+an exception, including component source notes for virtual instance descendants.
+
+Render jobs append `TEXT_CONTENT_OUTSIDE_BOX` from immutable measured line advance
+and optional glyph `inkBounds`, including ancestor clips. Bounded examples omit
+source text and carry scene/font-manifest/viewport provenance. `Intentional overflow:`
+notes lower this advisory to informational. `inspect_layout` retains the same job
+diagnostics across pages/field filters and narrows node diagnostics for `nodeIds`;
+context with ready `viewports` returns those measured diagnostics before pagination.
+No viewport request means no measured overflow claim. These checks cover semantic
+text only; general contrast, tap-target and overlap lint remain outside this slice.
 
 ### Property validation errors
 

@@ -4,6 +4,11 @@
 
 ## HTTP viewer surface
 
+Font inventory/import and exact-byte download routes are specified in
+[Project fonts](FONTS.md). MCP `list_fonts` preserves pagination and adds
+`mediaType`, `byteSize`, `source` and `downloadUrl`. Font `family` remains authored
+metadata; shared rendering uses an internal hash/weight/style CSS family.
+
 Base `/api/v1`, localhost. Success returns the described JSON value; failures return `{ "error": { "code", "message", "retryable", "currentRevision"? } }` with an appropriate HTTP status. No filesystem paths.
 
 - `GET /projects` → `{ projects: ProjectRef[], nextCursor?: string|null }`. ProjectRef: `{ projectId, slug, name, revision, schemaVersion? }`.

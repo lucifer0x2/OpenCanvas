@@ -26,13 +26,7 @@ impl Padding {
     pub fn edges(&self) -> Option<[f32; 4]> {
         match *self {
             Self::All(v) => Some([v; 4]),
-            Self::Sides(ref s) => match s[..] {
-                [a] => Some([a; 4]),
-                [v, h] => Some([v, h, v, h]),
-                [t, h, b] => Some([t, h, b, h]),
-                [t, r, b, l] => Some([t, r, b, l]),
-                _ => None,
-            },
+            Self::Sides(ref s) => super::stroke::expand_quad(s),
         }
     }
 }

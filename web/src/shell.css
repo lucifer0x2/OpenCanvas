@@ -43,6 +43,7 @@
 .project-picker {
   max-width: 320px;
   min-width: 0;
+  flex-shrink: 1;
 }
 .project-picker .custom-select {
   font-weight: 550;
@@ -202,7 +203,7 @@
     display: none;
   }
   .project-picker {
-    max-width: calc(100vw - 145px);
+    max-width: calc(100vw - 255px);
   }
   .topbar {
     height: 48px;

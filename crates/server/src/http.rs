@@ -37,6 +37,14 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/v1/projects", get(projects).post(create))
         .route("/api/v1/projects/{project}/snapshot", get(snapshot))
+        .route(
+            "/api/v1/projects/{project}/fonts",
+            get(crate::fonts::list).post(crate::fonts::import),
+        )
+        .route(
+            "/api/v1/projects/{project}/fonts/{font}/download",
+            get(crate::fonts::download),
+        )
         .route("/api/v1/events", get(workspace_events::events))
         .route("/api/v1/projects/{project}/events", get(events::events))
         .route("/api/v1/projects/{project}/scene", get(scene))
@@ -120,11 +128,11 @@ async fn asset(
         .await?;
     Ok(binary(&meta.media_type, bytes))
 }
-async fn font(State(s): State<AppState>) -> Result<Response> {
-    let bytes = tokio::fs::read(s.config.workspace.join("renderer/fonts/NotoSans.ttf"))
-        .await
-        .map_err(|_| ApiError::new("FONT_MISSING", "Bundled font is unavailable"))?;
-    Ok(binary("font/ttf", bytes))
+async fn font() -> Result<Response> {
+    Ok(binary(
+        "font/ttf",
+        include_bytes!("../../../renderer/fonts/NotoSans.ttf").to_vec(),
+    ))
 }
 fn binary(mime: &str, bytes: Vec<u8>) -> Response {
     let mut response = Response::new(Body::from(bytes));
@@ -152,8 +160,11 @@ async fn guard(State(state): State<AppState>, request: Request, next: Next) -> R
         return (StatusCode::FORBIDDEN,Json(json!({"error":{"code":"HOST_REJECTED","message":"Loopback Host required","retryable":false}}))).into_response();
     }
     let origin = headers.get(header::ORIGIN).and_then(|h| h.to_str().ok());
-    let resource = request.uri().path().contains("/assets/")
-        || request.uri().path() == "/api/v1/fonts/font_bundled";
+    let resource = request.method() == axum::http::Method::GET
+        && (request.uri().path().contains("/assets/")
+            || (request.uri().path().contains("/fonts/")
+                && request.uri().path().ends_with("/download"))
+            || request.uri().path() == "/api/v1/fonts/font_bundled");
     // Only read-only worker resources permit a random loopback origin. Mutations require same origin.
     let worker_origin = origin.is_some_and(|o| {
         o.strip_prefix("http://127.0.0.1:")

@@ -102,7 +102,7 @@ export function CustomSelect({
               </div>
             ))}
           </div>,
-          document.body,
+          ui.trigger.current?.closest("dialog") ?? document.body,
         )}
     </>
   );

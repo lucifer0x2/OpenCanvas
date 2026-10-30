@@ -7,11 +7,13 @@
  *     .oc-stroke          border overlay after the subtree, outside the node's own clip
  */
 import { placeImage } from "../../../renderer/image-fit";
+import { appendText } from "./textContent";
 import type { Resources, Scene, SceneNode } from "../../../renderer/types";
 import {
   boxDeclarations,
   nodeDeclarations,
   strokeDeclarations,
+  insetDeclarations,
   type Declarations,
 } from "./paintStyle";
 
@@ -25,8 +27,6 @@ export interface SceneDom {
   elements: Map<string, NodeElements>;
 }
 
-const SVG = "http://www.w3.org/2000/svg";
-
 function apply(element: HTMLElement | SVGElement, declarations: Declarations) {
   for (const [key, value] of Object.entries(declarations))
     element.style.setProperty(key, value);
@@ -38,29 +38,6 @@ function placeholder(box: HTMLElement, label: string, background?: string) {
   note.textContent = label;
   if (background) box.style.background = background;
   box.append(note);
-}
-
-function textContent(box: HTMLElement, node: SceneNode, resources: Resources) {
-  const font = resources.fonts.get(node.fontId ?? "");
-  if (!font) return placeholder(box, "[Missing font]");
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("class", "oc-text");
-  svg.setAttribute("width", String(node.bounds.width));
-  svg.setAttribute("height", String(node.bounds.height));
-  apply(svg, {
-    "font-family": `"${font.family}"`,
-    "font-weight": String(font.weight),
-    "font-style": font.style,
-    "font-size": `${node.fontSize}px`,
-  });
-  for (const line of node.lines) {
-    const text = document.createElementNS(SVG, "text");
-    text.setAttribute("x", String(line.x));
-    text.setAttribute("y", String(line.y));
-    text.textContent = line.text;
-    svg.append(text);
-  }
-  box.append(svg);
 }
 
 function imageContent(
@@ -125,13 +102,17 @@ export function buildSceneDom(
     apply(box, boxDeclarations(node));
     // An image always clips to its rounded bounds, like renderer/paint.ts.
     if (node.clip || node.kind === "image") box.style.overflow = "hidden";
-    if (node.kind === "text") textContent(box, node, resources);
+    if (node.kind === "text" && !appendText(box, node, resources)) placeholder(box, "[Missing font]");
     if (node.kind === "image") imageContent(box, node, scene, resources);
+    if (node.shadow?.some(s=>s.inset)) {
+      const inset=document.createElement("div"); inset.className="oc-inset";
+      apply(inset,insetDeclarations(node)); box.append(inset);
+    }
     element.append(box);
     if (strokeIds.has(node.id)) {
       const stroke = document.createElement("div");
       stroke.className = "oc-stroke";
-      apply(stroke, strokeDeclarations(node.stroke, node.radius ?? 0));
+      apply(stroke, strokeDeclarations(node.stroke, node.radius ?? 0, node.bounds));
       element.append(stroke);
     }
     (parent ? elements.get(parent.id)!.box : root).append(element);

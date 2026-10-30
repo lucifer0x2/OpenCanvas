@@ -1,9 +1,14 @@
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+mod fill;
 mod layout;
+mod shadow;
 mod stroke;
+mod text;
+pub use fill::{Gradient, Paint, Radius};
 pub use layout::{LayoutRule, Padding, Sizing};
+pub use shadow::Shadow;
 pub use stroke::{SceneStroke, Sides, StrokeInput};
+pub use text::{MeasureCache, MeasureRequest, Measurement, SceneDecoration, TextLine};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -69,12 +74,18 @@ pub struct Props {
     pub font_id: Option<String>,
     pub font_size: Option<f32>,
     pub line_height: Option<f32>,
-    pub fill: Option<String>,
+    pub text_wrap: Option<String>,
+    pub letter_spacing: Option<f32>,
+    pub text_align: Option<String>,
+    pub text_decoration: Option<String>,
+    pub text_transform: Option<String>,
+    pub fill: Option<Paint>,
     pub asset_id: Option<String>,
     pub fit: Option<String>,
     pub opacity: Option<f32>,
     pub clip: Option<bool>,
-    pub radius: Option<f32>,
+    pub radius: Option<Sides<f32>>,
+    pub shadow: Option<Vec<Shadow>>,
     pub crop: Option<Crop>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stroke: Option<StrokeInput>,
@@ -110,36 +121,6 @@ pub struct LayoutInput {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MeasureRequest {
-    pub key: String,
-    pub text: String,
-    pub font_id: String,
-    pub font_hash: String,
-    pub family: String,
-    pub weight: u16,
-    pub style: String,
-    pub font_size: f32,
-    pub line_height: f32,
-    pub width: Option<f32>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct TextLine {
-    pub text: String,
-    pub x: f32,
-    pub y: f32,
-    pub width: f32,
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Measurement {
-    pub width: f32,
-    pub height: f32,
-    pub lines: Vec<TextLine>,
-}
-pub type MeasureCache = BTreeMap<String, Measurement>;
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Bounds {
     pub x: f32,
     pub y: f32,
@@ -157,12 +138,18 @@ pub struct SceneNode {
     pub font_id: Option<String>,
     pub font_size: f32,
     pub line_height: f32,
-    pub fill: String,
+    #[serde(default)]
+    pub letter_spacing: f32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decoration: Option<SceneDecoration>,
+    pub fill: Paint,
     pub asset_id: Option<String>,
     pub fit: String,
     pub opacity: f32,
     pub clip: bool,
-    pub radius: f32,
+    pub radius: Sides<f32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shadow: Vec<Shadow>,
     pub crop: Option<Crop>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stroke: Option<SceneStroke>,

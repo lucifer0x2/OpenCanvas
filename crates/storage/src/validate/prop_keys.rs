@@ -10,6 +10,9 @@ use serde_json::{Map, Value};
 /// Every resolved key must exist in the catalog and be allowed on this node kind.
 pub(super) fn check_keys(kind: &NodeKind, props: &Map<String, Value>) -> Result<()> {
     for key in props.keys() {
+        if *kind == NodeKind::Instance && !allowed_props(kind).contains(&key.as_str()) {
+            return Err(key_error(kind, key, "Instances accept only their explicit instance properties; override a descendant through overrides"));
+        }
         match prop_spec(key) {
             None => {
                 let suggestion = suggest_prop(key);
@@ -25,6 +28,9 @@ pub(super) fn check_keys(kind: &NodeKind, props: &Map<String, Value>) -> Result<
                 return Err(e);
             }
             Some(spec) if !spec.scope.allows(kind) => {
+                if key == "shadow" {
+                    return Err(key_error(kind, key, "Shadow requires a frame, group, rectangle or image node; wrap text in a frame to give it a box shadow"));
+                }
                 let message = format!(
                     "{} ('{key}' on {} node)",
                     spec.scope.requirement(),
@@ -40,6 +46,12 @@ pub(super) fn check_keys(kind: &NodeKind, props: &Map<String, Value>) -> Result<
 
 /// Required keys (text content and metrics, image asset) must be present.
 pub(super) fn check_required(kind: &NodeKind, props: &Map<String, Value>) -> Result<()> {
+    if *kind == NodeKind::Text && !props.contains_key("fontId") {
+        return Err(StorageError::validation(
+            "fontId",
+            "Text requires fontId or fontFamily, directly or through a text style",
+        ));
+    }
     for key in required_props(kind) {
         if !props.contains_key(key) {
             let message = match prop_spec(key).map(|spec| spec.scope) {

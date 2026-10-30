@@ -66,7 +66,7 @@ const job = (): RenderJob => ({
       theme: "default",
       state: "default",
       sourceSceneKey: "key3",
-      sceneVersion: "scene-2",
+      sceneVersion: "scene-3",
       rendererVersion: "web-2",
       fontManifestHash: "",
       assetManifestHash: "",

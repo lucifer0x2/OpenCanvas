@@ -1,5 +1,7 @@
 use crate::{cache_hints::Cached, props_doc};
 use rmcp::{model::*, ErrorData};
+#[path = "capabilities.rs"]
+mod capabilities;
 
 const SKILLS: [(&str, &str, &str); 2] = [
     (
@@ -29,6 +31,9 @@ pub(crate) fn list() -> ListResourcesResult {
                     .with_mime_type("text/markdown")
                     .with_size(text.len() as u64)
             })
+            .chain([Resource::new(capabilities::URI, capabilities::NAME)
+                .with_mime_type("application/json")
+                .with_size(capabilities::text().len() as u64)])
             .collect(),
     )
     .cached()
@@ -41,6 +46,15 @@ pub(crate) fn templates() -> ListResourceTemplatesResult {
 }
 
 pub(crate) fn read(uri: &str) -> Result<ReadResourceResponse, ErrorData> {
+    if uri == capabilities::URI {
+        return Ok(ReadResourceResult::new(vec![ResourceContents::text(
+            capabilities::text(),
+            uri,
+        )
+        .with_mime_type("application/json")])
+        .cached()
+        .into());
+    }
     let (_, _, text) = skills()
         .find(|(known, _, _)| *known == uri)
         .ok_or_else(|| ErrorData::resource_not_found("Unknown OpenCanvas skill resource", None))?;

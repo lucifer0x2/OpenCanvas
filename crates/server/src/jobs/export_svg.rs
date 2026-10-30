@@ -81,9 +81,16 @@ pub async fn images(
 pub fn file(
     scene: &Value,
     images: &HashMap<String, Image>,
+    font_css: &str,
     setting: &ExportSetting,
 ) -> Result<StoredFile> {
-    let svg = scene_to_svg(scene, images, setting.svg_id_attribute)?;
+    let mut svg = scene_to_svg(scene, images, setting.svg_id_attribute)?;
+    // Insert within the SVG root, before painted content. Generated CSS contains no XML delimiters.
+    if !font_css.is_empty() {
+        let end = svg.markup.find('>').unwrap() + 1;
+        svg.markup
+            .insert_str(end, &format!("<defs><style>{font_css}</style></defs>"));
+    }
     let viewport = &scene["provenance"]["viewport"];
     let bytes = svg.markup.into_bytes();
     let mut meta = json!({"fileName":setting.file_name,"format":"svg","mimeType":"image/svg+xml","width":viewport["width"],"height":viewport["height"],"bytes":bytes.len()});
@@ -95,6 +102,14 @@ pub fn file(
     let mut nodes = scene["nodes"].as_array().into_iter().flatten();
     if nodes.any(|n| !n["stroke"].is_null()) {
         diagnostics.push("SVG_STROKE_NOT_EXPORTED");
+    }
+    if scene["nodes"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .any(|n| n["shadow"].as_array().is_some_and(|s| !s.is_empty()))
+    {
+        diagnostics.push("SVG_SHADOW_NOT_EXPORTED");
     }
     if !diagnostics.is_empty() {
         meta["diagnostics"] = json!(diagnostics);

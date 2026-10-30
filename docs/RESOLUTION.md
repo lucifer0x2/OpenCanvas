@@ -176,3 +176,22 @@ The snapshot retains authored references; context opt-in `statesMode:"resolved"`
 adds only visual differences from resting values. Rendering applies them after
 measurement/layout, preserving resting bounds and lines. See the exact
 [state contract](INTERACTION-STATES.md) and [verification report](P27-REPORT.md).
+
+## P10c: exact static font faces
+
+Text and text styles can select an imported `fontFamily`, integer `fontWeight`
+100–900 and `fontStyle` (`normal` or `italic`). Family/style are literal strings;
+weight accepts a number token, resolved in every declared theme before commit.
+Choose either `fontId` or `fontFamily` on one authored node/style. A direct node
+base overrides the style base, then merged weight/style select an exact imported
+face. Defaults come from the base font record, or 400 normal for a family.
+Only the selected `fontId` is added to resolved props; snapshots keep authored
+selectors. Old `fontId`-only props resolve without additional keys.
+
+Missing faces report the imported alternatives and required import; no nearest
+weight or synthetic bold/italic is used. Duplicate faces require an explicit base
+`fontId`, retained when it matches the target. Compact context includes authored
+font references plus effective faces across theme branches and expanded instance
+style overrides, including required master definitions. Font content hashes and
+download URLs still identify the original portable bytes. See
+[font-face checks](FONT-FACE-REPORT.md).

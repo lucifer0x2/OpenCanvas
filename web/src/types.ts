@@ -46,7 +46,7 @@ export interface RenderJob {
   frameId: string;
   sceneKey?: string;
   scene?: Scene;
-  diagnostics?: string[];
+  diagnostics?: Scene["diagnostics"];
   error?: { code: string; message: string };
 }
 

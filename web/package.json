@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "test": "node --test --test-concurrency=1 tests/state.test.ts tests/node-links.test.ts tests/preview-keyframes.test.ts tests/preview-model.test.ts",
+    "test": "node --test --test-concurrency=1 tests/state.test.ts tests/node-links.test.ts tests/preview-keyframes.test.ts tests/preview-model.test.ts tests/diagnostics.test.ts",
     "test:actions": "node tests/node-actions-smoke.mjs",
     "test:preview": "node tests/preview-smoke.mjs",
     "test:browser": "node tests/smoke.mjs",

@@ -9,6 +9,7 @@ import { connectMcp } from "../../spikes/e2e/protocol.mjs";
 import { startServer } from "../../spikes/e2e/server.mjs";
 import { createFixture, FIXTURE } from "./preview-fixture.mjs";
 import { frameParity } from "./preview-parity.mjs";
+import { settle as settleIn } from "./preview-settle.mjs";
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= fileURLToPath(
   new URL("../../.runtime/browsers", import.meta.url),
@@ -39,6 +40,7 @@ try {
     `document.getAnimations().find((a) => a.id === ${JSON.stringify(id)})`;
   const style = (selector, property) =>
     page.$eval(selector, (el, p) => getComputedStyle(el)[p], property);
+  const settle = (label, promise) => settleIn(page, label, promise);
 
   await page.goto(`${server.base}/preview?project=${projectId}&frame=home`);
   const loadId = `${FIXTURE.load.id}:${FIXTURE.load.name}`;
@@ -62,7 +64,7 @@ try {
     [0, "0", "0px 24px"],
     [1, "1", "0px"],
   ]);
-  await page.evaluate(`${anim(loadId)}.finished`);
+  await settle("load animation", `${anim(loadId)}.finished`);
   assert.equal(await style(sel(FIXTURE.load.id), "opacity"), "1");
   assert.match(
     await style(sel(FIXTURE.load.id), "translate"),
@@ -77,8 +79,9 @@ try {
   );
 
   // At rest the DOM matches the worker PNG of the same scene (text antialiasing aside).
-  await page.evaluate(
-    `Promise.all(document.getAnimations().map((a) => a.finished))`,
+  await settle(
+    "resting animations",
+    "Promise.all(document.getAnimations().map((a) => a.finished))",
   );
   const mismatch = await frameParity(page, server.base, projectId, "home");
   assert.ok(mismatch < 0.01, `DOM vs worker PNG mismatch ${mismatch}`);
@@ -91,7 +94,7 @@ try {
   const hoverId = `${FIXTURE.hover.id}:${FIXTURE.hover.name}`;
   await page.hover(card);
   await page.waitForFunction(`!!${anim(hoverId)}`);
-  await page.evaluate(`${anim(hoverId)}.finished`);
+  await settle("hover animation", `${anim(hoverId)}.finished`);
   await page.waitForTimeout(FIXTURE.hover.duration + 150);
   assert.equal(await style(card, "scale"), String(FIXTURE.hover.scale));
   assert.equal(
@@ -105,7 +108,7 @@ try {
     `(() => { const a = ${anim(hoverId)}; return [a.playbackRate, a.playState]; })()`,
   );
   assert.deepEqual(leaving, [-1, "running"]);
-  await page.evaluate(`${anim(hoverId)}.finished`);
+  await settle("hover reverse animation", `${anim(hoverId)}.finished`);
   assert.match(await style(card, "scale"), /^(none|1)$/);
   assert.equal(
     await style(`${card} > .oc-box`, "backgroundColor"),
@@ -124,7 +127,7 @@ try {
   await page.mouse.up();
   assert.equal(await style(sel(FIXTURE.click.id), "opacity"), "1");
   await page.waitForFunction(`!!${anim(clickId)}`);
-  await page.evaluate(`${anim(clickId)}.finished`);
+  await settle("click animation", `${anim(clickId)}.finished`);
   const done = await page.evaluate(`${anim(clickId)}.playState`);
   await page.click(sel(FIXTURE.click.id));
   const again = await page.evaluate(

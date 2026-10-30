@@ -10,7 +10,7 @@ export class ApiError extends Error {
 export const projectPath = (projectId: string) =>
   `/api/v1/projects/${encodeURIComponent(projectId)}`;
 
-/** Design changes belong to MCP; export POST only requests a computed representation. */
+/** Read viewer data. Font resource imports are the explicit UI mutation exception. */
 export async function read<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, {
     signal,

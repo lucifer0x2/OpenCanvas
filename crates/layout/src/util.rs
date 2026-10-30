@@ -53,7 +53,13 @@ pub(crate) fn request(
         style: font.style.clone(),
         font_size: node.props.font_size.unwrap_or(16.0),
         line_height: node.props.line_height.unwrap_or(24.0),
-        width: width.map(|w| quantize(w.max(0.0))),
+        width: if node.props.text_wrap.as_deref() == Some("nowrap") {
+            None
+        } else {
+            width.map(|w| quantize(w.max(0.0)))
+        },
+        letter_spacing: node.props.letter_spacing,
+        text_transform: node.props.text_transform.clone(),
     };
     r.key = hash(&(RENDERER_VERSION, &r));
     Ok(r)

@@ -4,6 +4,7 @@ mod error;
 mod events;
 mod export;
 mod fingerprint;
+mod fonts;
 mod http;
 mod inspect;
 mod instructions;
@@ -16,6 +17,7 @@ mod resources;
 mod schemas;
 mod state;
 mod svg;
+mod text_diagnostics;
 mod worker;
 mod workspace_events;
 

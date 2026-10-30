@@ -35,10 +35,10 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Khi `LOG.md` vượt ~300 dòng: chuyển các mục đã đóng sang `docs/agents/history/<ngày>.md`, giữ một dòng con trỏ trong `LOG.md`.
 - Memory ngoài repo (thư mục memory của Claude Code, `~/.codex/memories`, file CLAUDE.md/AGENTS.md chung) chỉ lưu con trỏ hoặc sự thật cần dùng xuyên phiên, không chép nhật ký repo.
 
-## Trạng thái hiện tại — 2026-10-28
+## Trạng thái hiện tại — 2026-10-30
 
-- Task01–08 đã nghiệm thu (`215313c` trên `main`, đã push). Nhánh `night/integration` gồm `215313c` cộng một commit nền: schema `render_frame` phẳng, cache hints MCP 2026-07-28, bản Docker, `AGENTS.md` → `docs/agents/`. Nhánh này chưa push.
-- **Đợt chạy đêm 2026-10-28:** đội R&D (nghiên cứu → dev → kiểm thử) làm theo `/Volumes/MySpace/Workspace/OpenCanvas/.night/TEAM.md`. Hạn chót tuyệt đối là 03:00 ngày 2026-10-29. Trong đợt này, quy tắc của TEAM.md (worktree riêng, commit trên nhánh `night/*`, không push) thay cho các quy tắc "phiên chính chỉ điều phối", "không tự tạo chat" và "không commit" ở trên.
+- Nhánh `claude/design-properties` (từ `main` @ `6ccf191`, chưa push) chứa font import/export, 5 nhóm thuộc tính thiết kế và các nghiên cứu, gồm hai commit.
+- 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Chưa push hoặc mở PR.
 - Cổng 3847 do container compose `opencanvas` phục vụ, volume `opencanvas-data` chứa dữ liệu thật của người dùng. Chỉ orchestrator gốc được restart. Kiểm live bằng server tạm `--port 0` + data root tạm, dọn process/data sau khi kiểm.
 - Giới hạn đã công bố vẫn hiệu lực: default interaction state, không arbitrary authored history, deep layout explanation/diff, log pruning/GC, runtime hot replacement, backup UI/CLI/MCP; Task04 chỉ row wrap, `%`/breakpoint cần duyệt riêng. Chi tiết ở `docs/ACCEPTANCE.md`.
 - Không reset/checkout/stash hay bỏ thay đổi của người khác; không push; không ghi `~/.opencanvas`.

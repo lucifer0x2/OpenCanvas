@@ -30,10 +30,19 @@ test("nested fixed/fill/hug obey min/max, padding/gap, line height and authored 
   for (const [id, [x, y, width, height]] of Object.entries(expected)) {
     assert.deepEqual(byId[id].bounds, { x, y, width, height }, id);
   }
-  assert.deepEqual(byId.text.lines, [
-    { text: "Một", x: 0, y: 22, width: 29.96875 },
-    { text: "Hai", x: 0, y: 50, width: 24.953125 },
-  ]);
+  // Baseline is CSS half-leading from font metrics; width is ceil64 (both DOM-exact, see text-measure).
+  assert.deepEqual(
+    byId.text.lines.map(({ text, x, y, width }) => ({ text, x, y, width })),
+    [
+      { text: "Một", x: 0, y: 20, width: 29.96875 },
+      { text: "Hai", x: 0, y: 48, width: 24.96875 },
+    ],
+  );
+  for (const { text, inkBounds } of byId.text.lines) {
+    assert.deepEqual(Object.keys(inkBounds).sort(), ["height", "width", "x", "y"], text);
+    assert.ok(Object.values(inkBounds).every(Number.isFinite), text);
+    assert.ok(inkBounds.width > 0 && inkBounds.height > 0, text);
+  }
   assert.deepEqual(input, authored);
   assert.equal(scene.provenance.revision, 3);
   assert.ok(metrics.layoutPasses <= 6);

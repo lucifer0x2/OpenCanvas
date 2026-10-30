@@ -17,6 +17,8 @@ Mục tiêu: agent tạo và đọc thiết kế qua MCP; người dùng nhìn k
 - Storage dùng SQLite; mỗi project là thư mục `~/.opencanvas/<project>/`, chứa `db.sql` và `assets/` cho mọi asset/font của project.
 - File `db.sql` là SQLite binary; giữ nguyên đuôi `.sql` người dùng đã chọn.
 - Browser local ưu tiên hiển thị thiết kế chỉ đọc; không có editing, chat hoặc terminal trong sản phẩm.
+- Bổ sung được người dùng yêu cầu ngày 2026-10-30: UI quản lý tài nguyên font cho project được thêm/import và tải xuống font; scene vẫn chỉ đọc. Font dùng file bytes đã lưu cùng project hoặc font bundled đã ghim hash, không yêu cầu cài font hệ thống. SVG export cần mang theo font đã dùng để mở ở máy khác; không tự đổi font của design. Chi tiết hành vi và bằng chứng tại `docs/FONTS.md` sau triển khai.
+- Người dùng duyệt tiếp cả 5 nhóm ưu tiên của báo cáo Figma: metrics/wrap và glyph diagnostics; tracking/alignment/decoration/case; capability và semantic-text advisories; static face selection; corners/shadow/gradient. Phạm vi, defaults và kiểm nghiệm thu ở `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md`; không mở rich runs, variable axes, blur, responsive % hoặc engine Rust đã gác lại. Thêm thuộc tính phải đi xuyên validator/resolution/measurement/scene/canvas/preview và SVG hỗ trợ hoặc diagnostic rõ, giữ authored source và dữ liệu cũ hợp lệ.
 - Giao diện frontend dùng tone sáng theo hướng editor Figma, không yêu cầu clone pixel-perfect: panel/topbar trắng, canvas xám sáng, chữ tối rõ tương phản, divider mảnh và accent xanh cho selection/focus.
 - UI gọn, trung tính để thiết kế nổi bật; bố cục topbar, layers bên trái, canvas chính và inspector chỉ đọc bên phải. Panel có thể thu gọn; trạng thái hiển thị gọn. Chưa cần dark theme hoặc toggle đổi theme giao diện.
 

@@ -7,6 +7,7 @@
 import type { Scene, SceneNode } from "../../../renderer/types.ts";
 import {
   boxDeclarations,
+  insetDeclarations,
   changed,
   nodeDeclarations,
   strokeDeclarations,
@@ -42,8 +43,8 @@ const rule = (selector: string, declarations: Declarations) => {
 
 function nodeRules(selector: string, base: SceneNode, state: SceneNode) {
   const stroke = changed(
-    strokeDeclarations(base.stroke, base.radius ?? 0),
-    strokeDeclarations(state.stroke, state.radius ?? 0),
+    strokeDeclarations(base.stroke, base.radius ?? 0, base.bounds),
+    strokeDeclarations(state.stroke, state.radius ?? 0, state.bounds),
   );
   return [
     rule(selector, changed(nodeDeclarations(base), nodeDeclarations(state))),
@@ -51,11 +52,12 @@ function nodeRules(selector: string, base: SceneNode, state: SceneNode) {
       `${selector}>.oc-box`,
       changed(boxDeclarations(base), boxDeclarations(state)),
     ),
+    rule(`${selector}>.oc-box>.oc-inset`,changed(insetDeclarations(base),insetDeclarations(state))),
     // A stroke replaces the whole stroke object: write every declaration once one differs.
     Object.keys(stroke).length
       ? rule(
           `${selector}>.oc-stroke`,
-          strokeDeclarations(state.stroke, state.radius ?? 0),
+          strokeDeclarations(state.stroke, state.radius ?? 0, state.bounds),
         )
       : "",
   ].filter(Boolean);

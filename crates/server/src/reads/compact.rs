@@ -30,11 +30,17 @@ pub(super) struct Referenced {
 impl Referenced {
     /// Collects over the full authored props of every scope node, independent of any
     /// `properties` filter or page, so each page of one read carries the same resource set.
-    pub fn collect<'a>(s: &Snapshot, scope: impl IntoIterator<Item = &'a Node>) -> Self {
+    pub fn collect<'a>(
+        s: &Snapshot,
+        scope: impl IntoIterator<Item = &'a Node>,
+    ) -> opencanvas_storage::Result<Self> {
         let mut refs = Self::default();
-        for node in scope {
+        let nodes: Vec<_> = scope.into_iter().collect();
+        for node in &nodes {
             refs.walk(&node.props);
         }
+        refs.fonts
+            .extend(opencanvas_storage::referenced_font_ids(s, &nodes)?);
         // Storage rejects style-to-style aliases, so one pass over the styles is complete.
         let styles: HashMap<&str, &Value> =
             s.styles.iter().map(|x| (x.id.as_str(), &x.value)).collect();
@@ -58,7 +64,7 @@ impl Referenced {
                 }
             }
         }
-        refs
+        Ok(refs)
     }
 
     fn keeps(&self, field: &str, item: &Value) -> bool {

@@ -10,6 +10,9 @@ use crate::{error::*, model::*};
 use serde_json::Value;
 impl Candidate {
     pub(super) fn properties(&self, n: &Node) -> Result<()> {
+        if let Some(authored) = n.props.as_object() {
+            check_keys(&n.kind, authored)?;
+        }
         let props = self.resolve_props(n)?;
         let p = props.as_object().unwrap();
         check_keys(&n.kind, p)?;
@@ -25,10 +28,14 @@ impl Candidate {
                     }
                 }
                 "x" | "y" => number(v, -100_000., 100_000., k)?,
-                "radius" => number(v, 0., 100_000., k)?,
+                "radius" => super::quad::radius(v)?,
                 "fontSize" | "lineHeight" => number(v, 1., 10000., k)?,
+                "letterSpacing" | "textWrap" | "textAlign" | "textDecoration" | "textTransform" => {
+                    super::text_props::text_property(k, v)?
+                }
                 "opacity" => number(v, 0., 1., k)?,
-                "fill" => color(v)?,
+                "fill" => super::paint::paint(v, &n.kind)?,
+                "shadow" => super::shadow::shadow(v)?,
                 "exportSettings" => crate::check_export_settings(v, "exportSettings")?,
                 "stroke" => validate_stroke(v)?,
                 "links" => check_links(v)?,

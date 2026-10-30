@@ -94,10 +94,7 @@ fn text_lines_sit_at_bounds_plus_line_and_round_trip() {
     assert!((at(&texts[1], "y") - 40.125).abs() < 0.001);
     assert_eq!(texts[0].text(), Some("a<b & \"c\""));
     assert_eq!(texts[1].text(), Some(" two"));
-    assert_eq!(
-        texts[0].attribute("font-family"),
-        Some("'Noto Sans', sans-serif")
-    );
+    assert_eq!(texts[0].attribute("font-family"), Some("'Noto Sans'"));
     assert_eq!(texts[0].attribute("font-weight"), Some("600"));
     assert_eq!(texts[0].attribute("font-style"), Some("italic"));
     assert_eq!(texts[0].attribute("font-size"), Some("12"));
@@ -200,5 +197,5 @@ fn xml_invalid_characters_are_dropped_from_font_family() {
     let markup = scene_to_svg(&scene, &images(), false).unwrap().markup;
     let doc = roxmltree::Document::parse(&markup).unwrap();
     let family = named(&doc, "text")[0].attribute("font-family");
-    assert_eq!(family, Some("'Family', sans-serif"));
+    assert_eq!(family, Some("'Family'"));
 }

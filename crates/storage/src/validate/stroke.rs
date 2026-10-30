@@ -4,7 +4,7 @@ use super::{values::*, Candidate};
 use crate::error::*;
 use serde_json::Value;
 
-const SIDES: &str = "exactly 4 of them [top, right, bottom, left]";
+const SIDES: &str = "1–4 of them in CSS shorthand [top, right, bottom, left]";
 
 impl Candidate {
     /// Replaces token and style references in `stroke.color` and `stroke.width` with
@@ -17,13 +17,7 @@ impl Candidate {
             let Some(value) = stroke.get_mut(key) else {
                 continue;
             };
-            let values: Vec<&mut Value> = match value {
-                Value::Array(sides) => sides.iter_mut().collect(),
-                single => vec![single],
-            };
-            for v in values.into_iter().filter(|v| v.is_object()) {
-                *v = self.resolve_value(v, expected)?;
-            }
+            self.resolve_quad(value, expected, &format!("stroke.{key}"))?;
         }
         Ok(())
     }
@@ -50,13 +44,13 @@ pub(super) fn validate_stroke(v: &Value) -> Result<()> {
     let color_value = stroke
         .get("color")
         .ok_or_else(|| StorageError::validation("stroke.color", "Stroke requires color"))?;
-    sides(color_value, |c| color(c).is_ok())
+    super::quad::quad(color_value, |c| color(c).is_ok())
         .then_some(())
         .ok_or_else(|| StorageError::validation("stroke.color", &color_message))?;
     if let Some(width) = stroke.get("width") {
         let message =
             format!("Stroke width must be a number 0..100000, a dimension token, or {SIDES}");
-        sides(width, |w| number(w, 0., 100_000., "stroke.width").is_ok())
+        super::quad::quad(width, |w| number(w, 0., 100_000., "stroke.width").is_ok())
             .then_some(())
             .ok_or_else(|| StorageError::validation("stroke.width", &message))?;
     }
@@ -69,12 +63,4 @@ pub(super) fn validate_stroke(v: &Value) -> Result<()> {
         }
     }
     Ok(())
-}
-
-/// One valid value, or an array of exactly 4 valid values.
-fn sides(v: &Value, valid: impl Fn(&Value) -> bool) -> bool {
-    match v {
-        Value::Array(each) => each.len() == 4 && each.iter().all(&valid),
-        single => valid(single),
-    }
 }

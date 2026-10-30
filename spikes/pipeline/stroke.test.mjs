@@ -35,8 +35,15 @@ async function expectPixels(children, expected) {
   const points = expected.flatMap(([, list]) => list);
   const colors = await at(points);
   let n = 0;
+  // A uniform rounded ring is stroked along its mid-line, as Chromium paints that CSS border
+  // (renderer/stroke-ring.ts); Skia's stroker leaves straight-side coverage within 3/255 of
+  // exact, so premultiplied channels compare within 3. Anything else differs by far more.
+  const premultiplied = (c) => [...c.slice(0, 3).map((v) => (v * c[3]) / 255), c[3]];
   for (const [color, list] of expected)
-    for (const p of list) assert.deepEqual(colors[n++], color, `pixel ${p}`);
+    for (const p of list) {
+      const got = premultiplied(colors[n++]), want = premultiplied(color);
+      assert.ok(got.every((v, i) => Math.abs(v - want[i]) <= 3), `pixel ${p}: ${colors[n - 1]} vs ${color}`);
+    }
 }
 
 const card = (stroke, extra = {}) =>

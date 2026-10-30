@@ -1,0 +1,201 @@
+.fonts-dialog {
+  width: min(620px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: inherit;
+  box-shadow: 0 18px 70px #17283d33;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.fonts-dialog::backdrop {
+  background: #16233166;
+}
+.fonts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.fonts-header h2 {
+  font-size: 17px;
+}
+.fonts-header p {
+  overflow-wrap: anywhere;
+}
+.fonts-body {
+  padding: 20px 22px;
+  display: grid;
+  gap: 20px;
+}
+.fonts-dialog h3 {
+  font-size: 13px;
+}
+.fonts-dialog button {
+  min-height: 34px;
+}
+.fonts-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.font-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.font-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+}
+.font-list li + li {
+  border-top: 1px solid var(--line);
+}
+.font-info {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.font-info strong {
+  font-weight: 600;
+}
+.font-info > span {
+  font-size: 12px;
+}
+.font-list button {
+  flex-shrink: 0;
+}
+.font-import {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+.font-import fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+.font-import label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: baseline;
+  font-weight: 550;
+}
+.font-import label input,
+.font-import label .custom-select {
+  flex-basis: 100%;
+  width: 100%;
+}
+.font-import input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 8px 10px;
+  color: inherit;
+  background: white;
+  font: inherit;
+}
+.font-import input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.font-import input[type="file"] {
+  padding: 8px;
+  font-weight: 400;
+  overflow: hidden;
+}
+.font-import input::file-selector-button {
+  font: inherit;
+  padding: 5px 8px;
+  margin-right: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f3f5f7;
+  color: inherit;
+  cursor: pointer;
+}
+.font-import fieldset:disabled {
+  opacity: 0.65;
+}
+.font-import #font-file-help {
+  margin-top: -8px;
+  font-size: 12px;
+}
+.font-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.font-fields .custom-select {
+  max-width: none;
+}
+.font-submit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.font-submit span {
+  font-size: 12px;
+}
+.font-primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  white-space: nowrap;
+}
+.font-primary:hover {
+  background: #0d57b9;
+}
+.font-error {
+  color: #a3263e;
+  overflow-wrap: anywhere;
+}
+.font-feedback {
+  padding: 10px 12px;
+  border-radius: 5px;
+  background: #fff1f3;
+}
+.font-notice {
+  background: #edf6f0;
+  color: #226740;
+}
+@media (max-width: 560px) {
+  .fonts-dialog {
+    max-height: calc(100dvh - 16px);
+  }
+  .fonts-header {
+    padding: 14px 16px;
+  }
+  .fonts-body {
+    padding: 16px;
+    gap: 16px;
+  }
+  .fonts-dialog button,
+  .fonts-dialog input {
+    min-height: 44px;
+  }
+  .font-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .font-submit {
+    flex-wrap: wrap;
+  }
+}

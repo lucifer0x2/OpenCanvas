@@ -5,6 +5,7 @@ import { projectPath, read } from "../api";
 import { fetchSceneJob } from "../sceneJob";
 import { declaredStates, frameSize, rootFrames } from "./model";
 import type { PreviewSnapshot, StateName } from "./types";
+import { diagnosticLabel } from "../diagnostics";
 
 export interface PreviewScenes {
   status: "loading" | "ready" | "failed";
@@ -110,7 +111,11 @@ export function usePreviewScenes(
         states,
         resources,
         diagnostics: [
-          ...new Set([...scene.diagnostics, ...resources.diagnostics]),
+          ...new Set(
+            [...scene.diagnostics, ...resources.diagnostics].map(
+              diagnosticLabel,
+            ),
+          ),
         ],
       });
     };

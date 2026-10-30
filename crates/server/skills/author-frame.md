@@ -70,6 +70,29 @@ an icon, fill for the flexible content area, hug for content-driven dimensions.
 Text needs a valid font (for example `fontId:"font_bundled"`), `fontSize`, and
 `lineHeight`, or a valid text style providing those fields.
 
+Keep UI copy semantic: one text node per paragraph or coherent label with its full
+source string, meaningful spaces and intentional hard breaks. Use fixed/fill width
+and hug height for wrapping paragraphs. Measured line breaks are output for one
+viewport; do not turn them into authored line or character nodes to match a capture.
+Read `skill://opencanvas/props.md` and `opencanvas://capabilities` before a workaround;
+cache capabilities by its fingerprint and pipeline versions. Support differs between
+authored data, Canvas/PNG, HTML preview and SVG. Runtime readiness and glyph coverage
+still require job evidence. Record unsupported behavior and approximations with
+`create_note`; never invent a property or use positioned glyphs to hide engine errors.
+
+Character/line layers remain valid for intentional lettering, wordmarks, monograms
+and per-letter motion. Preserve grapheme clusters and source copy. A note beginning
+`Intentional lettering:` on the group records the exception for the advisory heuristic.
+Use `Intentional overflow:` for deliberately overflowing text; measured overflow is
+then informational. These are note conventions, not new props. Single-character
+labels are valid. Do not merge existing layers without evidence of source and intent.
+Inspect `TEXT_FRAGMENTATION_SUSPECTED` and `TEXT_CONTENT_OUTSIDE_BOX` diagnostics:
+they describe bounded examples from the complete scope before paging/filtering,
+not a rejection or an instruction to change the design automatically.
+Check the same revision, fonts, theme and state at the intended width and a second
+relevant width; compare text lines, ink/advance evidence and pixels. State which
+parts reflow, which are intentional fixed art, and which are approximations.
+
 Stacks align like CSS flexbox, so centering and right edges need no x/y math:
 
 - Centered content: `{"mode":"column","padding":[24,32],"gap":16,"align":"center","justify":"center"}`.
@@ -164,5 +187,5 @@ layout key with the one you change.
 ## Notes for intent the props cannot carry
 
 - Put behavior (sticky, hover, scroll), constraints ("fixed width per spec") and effects the
-  renderer lacks (blur, gradient) in `create_note` on the node they concern; never as a text node.
+  renderer lacks (blur, conic gradient, gradient text) in `create_note` on the node they concern; never as a text node.
 - Notes are revisioned like nodes: `delete_subtree` drops the notes of deleted nodes.

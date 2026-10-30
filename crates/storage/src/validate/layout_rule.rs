@@ -47,10 +47,7 @@ pub(super) fn validate_layout_rule(l: &Map<String, Value>) -> Result<()> {
 
 fn padding(value: &Value) -> Result<()> {
     let ok = |v: &Value| v.as_f64().is_some_and(|n| (0.0..=100_000.0).contains(&n));
-    let valid = match value {
-        Value::Array(sides) => (1..=4).contains(&sides.len()) && sides.iter().all(ok),
-        v => ok(v),
-    };
+    let valid = super::quad::quad(value, ok);
     if valid {
         Ok(())
     } else {
@@ -123,6 +120,12 @@ impl Candidate {
             return Ok(());
         };
         for key in ["padding", "gap"] {
+            if key == "padding" {
+                if let Some(v) = layout.get_mut(key) {
+                    self.resolve_quad(v, "dimension", "layout.padding")?;
+                }
+                continue;
+            }
             match layout.get_mut(key) {
                 Some(x) if x.is_object() => *x = self.resolve_value(x, "dimension")?,
                 Some(Value::Array(sides)) if key == "padding" => {

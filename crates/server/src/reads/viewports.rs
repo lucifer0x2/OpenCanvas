@@ -21,6 +21,7 @@ pub(super) struct Computed {
     pub bounds: BTreeMap<String, Vec<Value>>,
     pub reflow: Option<bool>,
     pub lines: BTreeMap<String, Vec<Value>>,
+    pub diagnostics: Vec<Value>,
 }
 
 /// Enqueue/read the existing bounded jobs; never wait on Chromium in a context read.
@@ -57,6 +58,7 @@ pub(super) async fn compute(
         .collect();
     let mut bounds: BTreeMap<_, _> = ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut metadata = Vec::new();
+    let mut diagnostics = Vec::new();
     let mut lines: BTreeMap<String, Vec<Value>> =
         ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut pending = false;
@@ -79,6 +81,19 @@ pub(super) async fn compute(
             Err(e) => return Err(e),
         };
         let mut item = json!({"viewport":viewport,"jobId":job["jobId"],"sceneKey":job["sceneKey"],"status":job["status"]});
+        let text: Vec<_> = job["diagnostics"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|d| {
+                matches!(
+                    d["code"].as_str(),
+                    Some("TEXT_CONTENT_OUTSIDE_BOX" | "TEXT_OVERFLOW_SUMMARY")
+                )
+            })
+            .cloned()
+            .collect();
+        diagnostics.extend(text);
         if let Some(error) = job.get("error") {
             item["status"] = json!("failed");
             item["error"] = error.clone();
@@ -130,6 +145,7 @@ pub(super) async fn compute(
         bounds,
         reflow,
         lines,
+        diagnostics,
     }))
 }
 

@@ -55,16 +55,18 @@ pub(super) fn read(
     };
     let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
     let ordered = index.preorder(root.map(String::as_str));
-    let compact = (context && req.compact == Some(true)).then(|| {
-        compact::Referenced::collect(
-            s,
-            expanded_index
-                .preorder(root.map(String::as_str))
-                .iter()
-                .map(|(n, _)| *n)
-                .chain(instances::definition_nodes(s, &ordered)),
-        )
-    });
+    let compact = (context && req.compact == Some(true))
+        .then(|| {
+            compact::Referenced::collect(
+                s,
+                expanded_index
+                    .preorder(root.map(String::as_str))
+                    .iter()
+                    .map(|(n, _)| *n)
+                    .chain(instances::definition_nodes(s, &ordered)),
+            )
+        })
+        .transpose()?;
     let mut entries = Vec::new();
     // depth filters from the scope root (depth 0); omitted, it lists the whole scope.
     for (node, d) in ordered
@@ -134,6 +136,7 @@ pub(super) fn read(
         compact::mark(&mut response, compact.as_ref());
         response["viewport"] = json!(req.viewport);
         response["diagnostics"] = diagnostics::for_scope(&ordered);
+        let text_diagnostics = crate::text_diagnostics::authored(s, &resolved, root.unwrap());
         // Navigation is frame metadata: on the first page only, absent when the frame has none.
         if let Some(nav) = root
             .filter(|_| offset == 0)
@@ -145,6 +148,7 @@ pub(super) fn read(
             response["animated"] = animated;
         }
         if let Some(computed) = computed {
+            let measured_diagnostics = computed.diagnostics;
             response["computed"] = computed.metadata;
             response["reflow"] = json!(computed.reflow);
             if computed.reflow == Some(true) {
@@ -152,7 +156,15 @@ pub(super) fn read(
             } else if computed.reflow == Some(false) && response["diagnostics"] == json!([]) {
                 response["diagnostics"] = diagnostics::unchanged(ordered[0].0);
             }
+            response["diagnostics"]
+                .as_array_mut()
+                .unwrap()
+                .extend(measured_diagnostics);
         }
+        response["diagnostics"]
+            .as_array_mut()
+            .unwrap()
+            .extend(text_diagnostics);
         let tokens = resolved_tokens_for_theme(s, theme)?;
         let value = serde_json::to_value(s)?;
         for field in ["tokens", "styles", "assets", "fonts"] {

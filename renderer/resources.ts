@@ -1,5 +1,7 @@
 import { type AssetManifest, type FontManifest, type Resources } from "./types";
 import { PipelineError } from "./error";
+import { fontCSS, fontFamily } from "./font-family";
+import { parseCoverage } from "./glyph-coverage";
 
 const sha256 = async (bytes: ArrayBuffer) =>
   Array.from(
@@ -59,7 +61,7 @@ async function checkedBytes(
   return bytes;
 }
 
-/** Explicit bytes + SHA, no implicit system fallback. A resolved object alone does not imply readiness. */
+/** Explicit bytes + SHA and private CSS families. Readiness does not prove glyph coverage. */
 export async function loadResources(
   fonts: FontManifest[],
   assets: AssetManifest[],
@@ -71,20 +73,22 @@ export async function loadResources(
     assetHashes: new Map(),
     readiness: [],
     diagnostics: [],
+    glyphCoverage: new Map(),
   };
   const timeoutMs = options.timeoutMs ?? 10_000;
   await Promise.all([
     ...fonts.map(async (font) => {
       try {
         const bytes = await checkedBytes(font, timeoutMs);
-        const face = new FontFace(font.family, bytes, {
+        const family = fontFamily(font);
+        const face = new FontFace(family, bytes, {
           weight: String(font.weight),
           style: font.style,
         });
         await bounded(face.load(), timeoutMs);
         for (const previous of document.fonts) {
           if (
-            previous.family === font.family &&
+            previous.family === family &&
             previous.weight === String(font.weight) &&
             previous.style === font.style
           )
@@ -93,14 +97,16 @@ export async function loadResources(
         document.fonts.add(face);
         await bounded(
           document.fonts.load(
-            `${font.style} ${font.weight} 16px "${font.family}"`,
+            fontCSS(font, 16),
             "Tiếng Việt ă â đ ê ô ơ ư",
           ),
           timeoutMs,
         );
-        if (!document.fonts.check(`${font.weight} 16px "${font.family}"`))
+        if (!document.fonts.check(fontCSS(font, 16)))
           throw new PipelineError("FONT_MISSING", `Font ${font.id} not ready`);
         result.fonts.set(font.id, font);
+        const coverage = parseCoverage(bytes);
+        if (coverage) result.glyphCoverage!.set(font.id, coverage);
         result.readiness.push({ id: font.id, kind: "font", status: "ready" });
       } catch (e) {
         result.readiness.push({

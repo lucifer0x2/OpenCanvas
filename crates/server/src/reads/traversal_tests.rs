@@ -59,6 +59,7 @@ fn computed(s: &Snapshot) -> Computed {
         })
         .collect();
     Computed {
+        diagnostics: Vec::new(),
         metadata: json!({"status":"ready","viewports":[]}),
         bounds,
         lines: BTreeMap::new(),

@@ -1,4 +1,5 @@
 export * from "./types";
+export * from "./font-family";
 export * from "./error";
 export * from "./resources";
 export * from "./measurement";
@@ -7,3 +8,6 @@ export * from "./paint";
 export * from "./scene-tree";
 export * from "./layers";
 export * from "./stroke";
+export * from "./corners";
+export * from "./fill";
+export * from "./shadow";
