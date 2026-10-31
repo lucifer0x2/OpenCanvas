@@ -1,0 +1,20 @@
+# Opt-in only. Supply OPENCANVAS_PUBLIC_ORIGIN and use alongside compose.yaml.
+# Funnel must target OPENCANVAS_PUBLIC_PORT (3848), never OPENCANVAS_PORT (3847).
+services:
+  opencanvas:
+    command:
+      - opencanvas-server
+      - --workspace
+      - /app
+      - --data-root
+      - /data
+      - --host
+      - 0.0.0.0
+      - --port
+      - "${OPENCANVAS_PORT:-3847}"
+      - --public-viewer-port
+      - "${OPENCANVAS_PUBLIC_PORT:-3848}"
+      - --public-viewer-origin
+      - "${OPENCANVAS_PUBLIC_ORIGIN:?Set the HTTPS Funnel origin, without a path}"
+    ports:
+      - "127.0.0.1:${OPENCANVAS_PUBLIC_PORT:-3848}:${OPENCANVAS_PUBLIC_PORT:-3848}"

@@ -3,6 +3,7 @@ import { Icon } from "../components/Icon";
 import { FontImportForm } from "./FontImportForm";
 import { FontList } from "./FontList";
 import { useFonts } from "./useFonts";
+import { useViewerAccess } from "./useViewerAccess";
 import "./fonts.css";
 
 interface Props {
@@ -23,6 +24,7 @@ export function FontManager({
   const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const fonts = useFonts(projectId, revision, open, changed);
+  const readOnly = useViewerAccess();
   useEffect(() => {
     if (open && !dialog.current?.open) dialog.current?.showModal();
   }, [open]);
@@ -81,9 +83,9 @@ export function FontManager({
         </header>
         <div className="fonts-body">
           <p id="fonts-description">
-            Fonts travel with your project. Import files here without installing
-            them on your computer. Bundled Noto Sans is also available to
-            designs.
+            {readOnly
+              ? "Public viewer: browse and download the fonts used by this project."
+              : "Fonts travel with your project. Import files here without installing them on your computer. Bundled Noto Sans is also available to designs."}
           </p>
           <section
             className="fonts-library"
@@ -118,12 +120,14 @@ export function FontManager({
               {fonts.notice}
             </p>
           )}
-          <FontImportForm
-            busy={fonts.busy}
-            ready={!!fonts.data && !fonts.loading}
-            retryable={fonts.retryable}
-            submit={fonts.submit}
-          />
+          {!readOnly && (
+            <FontImportForm
+              busy={fonts.busy}
+              ready={!!fonts.data && !fonts.loading}
+              retryable={fonts.retryable}
+              submit={fonts.submit}
+            />
+          )}
         </div>
       </dialog>
     </>

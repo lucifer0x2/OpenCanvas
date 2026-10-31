@@ -35,11 +35,12 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Khi `LOG.md` vượt ~300 dòng: chuyển các mục đã đóng sang `docs/agents/history/<ngày>.md`, giữ một dòng con trỏ trong `LOG.md`.
 - Memory ngoài repo (thư mục memory của Claude Code, `~/.codex/memories`, file CLAUDE.md/AGENTS.md chung) chỉ lưu con trỏ hoặc sự thật cần dùng xuyên phiên, không chép nhật ký repo.
 
-## Trạng thái hiện tại — 2026-10-30
+## Trạng thái hiện tại — 2026-10-31
 
 - Nhánh `claude/design-properties` (từ `main` @ `6ccf191`, đã push, PR #1) chứa font import/export, 5 nhóm thuộc tính thiết kế và các nghiên cứu, cùng các sửa theo review PR #1.
 - 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
-- Cổng 3847 do container compose `opencanvas` phục vụ, volume `opencanvas-data` chứa dữ liệu thật của người dùng. Chỉ orchestrator gốc được restart. Kiểm live bằng server tạm `--port 0` + data root tạm, dọn process/data sau khi kiểm.
+- Server native release đã tắt theo yêu cầu người dùng để tự chạy; đã kiểm cả3847/3848 không còn listener. Không tự khởi động lại. Kiểm thử dùng server `--port 0` + data root tạm, dọn process/data sau khi kiểm.
+- Public viewer opt-in đã triển khai và kiểm: listener riêng 3848 chỉ xem/SSE/tải/export, không MCP/create/import; local3847 giữ quyền cũ. Funnel chưa bật; người dùng sẽ tự chạy. Xem `docs/PUBLIC-VIEWER-REPORT.md`.
 - Giới hạn đã công bố vẫn hiệu lực: default interaction state, không arbitrary authored history, deep layout explanation/diff, log pruning/GC, runtime hot replacement, backup UI/CLI/MCP; Task04 chỉ row wrap, `%`/breakpoint cần duyệt riêng. Chi tiết ở `docs/ACCEPTANCE.md`.
 - Không reset/checkout/stash hay bỏ thay đổi của người khác; không push; không ghi `~/.opencanvas`.
 - Khi có yêu cầu mới: đọc mục này, mục đang mở trong `docs/agents/LOG.md`, README/ACCEPTANCE và `git status`.

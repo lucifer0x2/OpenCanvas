@@ -40,6 +40,68 @@ Use the printed URL. `npm run dev` launches the existing debug build; `npm start
 
 The backend serves the built viewer. For frontend development, `npm --prefix web run dev` proxies `/api` to port 3847. No frontend call mutates design data.
 
+## Public viewer through Tailscale Funnel
+
+Public sharing is disabled by default. Opt in with **both** `--public-viewer-port`
+and `--public-viewer-origin`. The public port is a separate router sharing the
+same projects, jobs and live event streams. It has no MCP, project creation or
+font import handlers. It permits GET/HEAD reads and only one POST operation:
+`/api/v1/projects/{project}/exports`, which creates files without changing the
+authored revision. Other mutation methods and ambiguous encoded paths fail
+closed, including requests carrying spoofed loopback or forwarded headers.
+The local listener keeps its existing MCP and write access.
+
+There is no authentication or per-project sharing filter. **Anyone with the
+public URL can read every project and its notes, assets and fonts, follow live
+updates, download original resources, and request/export files.** Use a separate
+data root if only selected projects should be shared. Rendering still has the
+existing queue, pixel and file budgets; public viewers share that capacity with
+local agents.
+
+First identify your machine's HTTPS Funnel origin (for example
+`https://machine.tailnet-name.ts.net`), then run an updated build:
+
+```sh
+npm run build -- --offline
+npm run dev -- --public-viewer-port 3848 \
+  --public-viewer-origin https://machine.tailnet-name.ts.net
+# In another terminal; requires Tailscale Funnel enabled for your tailnet:
+tailscale funnel --bg http://127.0.0.1:3848
+```
+
+Use the actual HTTPS origin with no path, query or credentials. Public Host must
+match that origin's authority; a supplied Origin must match the configured
+origin. Both public flags must be supplied together; nonzero public and local
+ports must differ and fit in 16 bits. Port `0` is supported for isolated checks;
+startup prints both actual bound ports. Both listeners use `--host` (loopback by
+default) and shut down together on Ctrl-C, including open SSE streams.
+
+**Point Funnel only at 3848, never at the local MCP port 3847.** The public
+listener's route graph defines read-only access; Host, Origin, forwarding
+headers and loopback peer addresses never grant local mutation privileges.
+Public responses project generated scene font/asset, PNG, export and font
+download links onto the configured HTTPS origin. Worker callbacks, cached jobs
+and local MCP responses retain their loopback URLs. Viewer and HTML preview use
+those public resources directly; authored strings are preserved.
+
+For Docker, the default `compose.yaml` remains local-only. Opt in with the
+additional override file and rebuild the image to include this feature:
+
+```sh
+OPENCANVAS_PUBLIC_ORIGIN=https://machine.tailnet-name.ts.net \
+  docker compose -f compose.yaml -f compose.public-viewer.yaml up -d --build
+tailscale funnel --bg http://127.0.0.1:3848
+```
+
+`OPENCANVAS_PUBLIC_PORT` changes the public host/container port together (default
+3848); `OPENCANVAS_PORT` continues to set the local port (default 3847). Both
+ports publish on host loopback only. The override replaces the container command
+and adds the public mapping while retaining the local mapping and existing data
+volume. Do not start another native/container instance on the same data root.
+The commands above change the running service only when you explicitly run them.
+Funnel setup, tailnet policy and DNS/TLS are managed by Tailscale; see its
+[Funnel CLI reference](https://tailscale.com/docs/reference/tailscale-cli/funnel).
+
 ## Connect an MCP client
 
 Configure a Streamable HTTP server URL, for example the following client-neutral JSON shape (the surrounding configuration key varies between clients):

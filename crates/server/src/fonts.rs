@@ -3,6 +3,7 @@ use crate::{
     domain,
     error::{ApiError, Result},
     state::AppState,
+    viewer_origin::Origin,
 };
 use axum::{
     body::Body,
@@ -48,12 +49,24 @@ pub(crate) fn metadata(snapshot: &Snapshot, id: &str, base: &str) -> Result<Valu
     Ok(value)
 }
 
-pub async fn list(State(s): State<AppState>, Path(project): Path<String>) -> Result<Json<Value>> {
+pub async fn list(
+    State(s): State<AppState>,
+    Path(project): Path<String>,
+    origin: Origin,
+) -> Result<Json<Value>> {
     let snapshot = s.snapshot(project).await?;
     let fonts = snapshot
         .fonts
         .iter()
-        .map(|f| metadata(&snapshot, &f.id, &s.config.base_url))
+        .map(|f| {
+            metadata(
+                &snapshot,
+                &f.id,
+                origin
+                    .as_ref()
+                    .map_or(s.config.base_url.as_str(), |o| o.0 .0.as_str()),
+            )
+        })
         .collect::<Result<Vec<_>>>()?;
     let value = json!({"projectId":snapshot.project_id,"revision":snapshot.revision,"fonts":fonts});
     if serde_json::to_vec(&value)?.len() > 8 * 1024 * 1024 {

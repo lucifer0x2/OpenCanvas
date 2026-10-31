@@ -4,6 +4,7 @@ use crate::{
     jobs::SceneRequest,
     mcp::{self, Mcp},
     state::AppState,
+    viewer_origin::{self, Origin},
     workspace_events,
 };
 use axum::{
@@ -33,14 +34,26 @@ pub fn router(state: AppState) -> Router {
         Arc::new(LocalSessionManager::default()),
         config,
     );
-    let dist = state.config.workspace.join("web/dist");
-    Router::new()
-        .route("/api/v1/projects", get(projects).post(create))
-        .route("/api/v1/projects/{project}/snapshot", get(snapshot))
+    viewer_routes(&state)
+        .route("/api/v1/projects", post(create))
         .route(
             "/api/v1/projects/{project}/fonts",
-            get(crate::fonts::list).post(crate::fonts::import),
+            post(crate::fonts::import),
         )
+        .nest_service("/mcp", service)
+        .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
+        .layer(middleware::from_fn_with_state(state.clone(), guard))
+        .with_state(state)
+}
+
+/// The public route graph deliberately has no MCP, create-project or font-import handler.
+pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
+    let dist = state.config.workspace.join("web/dist");
+    Router::new()
+        .route("/api/v1/viewer", get(viewer_access))
+        .route("/api/v1/projects", get(projects))
+        .route("/api/v1/projects/{project}/snapshot", get(snapshot))
+        .route("/api/v1/projects/{project}/fonts", get(crate::fonts::list))
         .route(
             "/api/v1/projects/{project}/fonts/{font}/download",
             get(crate::fonts::download),
@@ -57,13 +70,13 @@ pub fn router(state: AppState) -> Router {
         .route("/api/v1/jobs/{job}", get(job))
         .route("/api/v1/jobs/{job}/image", get(image))
         .route("/api/v1/jobs/{job}/files/{index}", get(crate::export::file))
-        .nest_service("/mcp", service)
         .fallback_service(
             ServeDir::new(&dist).not_found_service(ServeFile::new(dist.join("index.html"))),
         )
         .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
-        .layer(middleware::from_fn_with_state(state.clone(), guard))
-        .with_state(state)
+}
+async fn viewer_access(origin: Origin) -> Json<Value> {
+    Json(json!({"readOnly":origin.is_some()}))
 }
 async fn projects(
     State(s): State<AppState>,
@@ -100,9 +113,10 @@ async fn snapshot(State(s): State<AppState>, Path(id): Path<String>) -> Result<J
 async fn scene(
     State(s): State<AppState>,
     Path(id): Path<String>,
+    origin: Origin,
     query: std::result::Result<Query<SceneRequest>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<Value>> {
-    Ok(Json(
+    Ok(Json(viewer_origin::job(
         mcp::scene(
             &s,
             id,
@@ -111,10 +125,20 @@ async fn scene(
                 .0,
         )
         .await?,
-    ))
+        &s.config.base_url,
+        origin,
+    )))
 }
-async fn job(State(s): State<AppState>, Path(id): Path<String>) -> Result<Json<Value>> {
-    Ok(Json(s.jobs.get(&id).await?))
+async fn job(
+    State(s): State<AppState>,
+    Path(id): Path<String>,
+    origin: Origin,
+) -> Result<Json<Value>> {
+    Ok(Json(viewer_origin::job(
+        s.jobs.get(&id).await?,
+        &s.config.base_url,
+        origin,
+    )))
 }
 async fn image(State(s): State<AppState>, Path(id): Path<String>) -> Result<Response> {
     Ok(binary("image/png", s.jobs.image(&id).await?))

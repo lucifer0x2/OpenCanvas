@@ -11,6 +11,7 @@ mod instructions;
 mod jobs;
 mod mcp;
 mod props_doc;
+mod public_viewer;
 mod reads;
 mod render_response;
 mod resources;
@@ -18,11 +19,13 @@ mod schemas;
 mod state;
 mod svg;
 mod text_diagnostics;
+mod viewer_origin;
 mod worker;
 mod workspace_events;
 
 pub use error::ApiError;
 pub use http::router;
+pub use public_viewer::PublicViewer;
 pub use state::{AppState, Config};
 
 /// Names of the published MCP tools in `tools/list` order, so tests and tooling compare against

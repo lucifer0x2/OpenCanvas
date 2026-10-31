@@ -4,6 +4,18 @@
 
 ## HTTP viewer surface
 
+The default listener remains loopback-only. An optional separate public viewer
+listener exposes the read/export surface with the same shared state and SSE,
+while excluding MCP, POST project creation and POST font import for every Host.
+It accepts only GET/HEAD and the exact POST exports path; encoded/ambiguous paths
+and other mutation methods are denied. `GET /api/v1/viewer` returns
+`{readOnly:false}` locally and `{readOnly:true}` publicly so font UI can hide
+imports while retaining downloads. The server enforces this independently of UI.
+Public scene/job/export/font responses project generated resource URLs onto the
+configured HTTPS origin; cached jobs, worker callbacks, local responses and
+authored strings keep their original values. See [public sharing](SERVER.md#public-viewer-through-tailscale-funnel)
+for configuration and the disclosure that all projects become readable.
+
 Font inventory/import and exact-byte download routes are specified in
 [Project fonts](FONTS.md). MCP `list_fonts` preserves pagination and adds
 `mediaType`, `byteSize`, `source` and `downloadUrl`. Font `family` remains authored

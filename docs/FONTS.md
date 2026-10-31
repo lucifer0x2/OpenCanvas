@@ -19,6 +19,14 @@ See [face resolution](FONT-FACE-REPORT.md) for precedence and compatibility.
 
 ## Import and download
 
+On the optional [public viewer listener](SERVER.md#public-viewer-through-tailscale-funnel),
+the Fonts dialog offers inventory and original-file downloads only. Font import
+is unavailable there, including direct POST requests with spoofed local headers.
+The local listener retains import. Public inventory and scene links use the
+configured HTTPS origin, while internal worker font requests stay on loopback.
+Enabling public sharing exposes all project font bytes; keep applicable licenses
+with fonts shared this way.
+
 In the browser, open **Fonts** in the selected project's header to add a font file,
 enter its family/weight/style and optional license, or download an original file.
 No operating-system installation is needed. This adds a project resource; existing

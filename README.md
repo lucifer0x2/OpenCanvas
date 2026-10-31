@@ -41,6 +41,12 @@ For optional frontend hot reload, keep the backend running and run `npm --prefix
 
 ## Connect an agent
 
+To share the viewer through Tailscale Funnel, use the separate, opt-in
+[public read-only listener](docs/SERVER.md#public-viewer-through-tailscale-funnel).
+It exposes **all projects, live updates, assets, fonts, downloads and exports**
+without authentication. MCP, project creation and font import stay on the local
+listener. Funnel must target the public port (3848), never the local MCP port (3847).
+
 Configure an MCP client with **Streamable HTTP** and URL `http://127.0.0.1:3847/mcp` (adjust the port if needed). This is an HTTP endpoint, not a stdio command. A minimal connection entry is:
 
 ```json
