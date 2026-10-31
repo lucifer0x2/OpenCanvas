@@ -58,6 +58,7 @@ export async function startRuntime({ resourceHandler, executablePath } = {}) {
       headless: true,
       executablePath,
       timeout: 15_000,
+      args: ["--font-render-hinting=none"],
     });
     const page = await browser.newPage({
       viewport: { width: 800, height: 600 },

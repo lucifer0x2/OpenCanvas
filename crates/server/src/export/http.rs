@@ -3,6 +3,7 @@ use crate::{
     error::{ApiError, Result},
     schemas,
     state::AppState,
+    viewer_origin::{self, Origin},
 };
 use axum::{
     extract::{Path, State},
@@ -13,6 +14,7 @@ use serde_json::{json, Value};
 pub(crate) async fn create(
     State(state): State<AppState>,
     Path(project): Path<String>,
+    origin: Origin,
     body: std::result::Result<Json<Value>, axum::extract::rejection::JsonRejection>,
 ) -> Result<Json<Value>> {
     let mut args = body
@@ -27,5 +29,9 @@ pub(crate) async fn create(
     }
     object.insert("projectId".into(), json!(project));
     schemas::validate("export_nodes", &args)?;
-    Ok(Json(super::export_nodes(&state, args).await?))
+    Ok(Json(viewer_origin::exports(
+        super::export_nodes(&state, args).await?,
+        &state.config.base_url,
+        origin,
+    )))
 }

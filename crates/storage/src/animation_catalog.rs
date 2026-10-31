@@ -48,7 +48,7 @@ pub const KEYFRAME_KEYS: &[AnimationKey] = &[
     key("translateY", "pixels -10000..10000 or number token; offset from the laid-out position (CSS translate)", &["y", "top", "dy", "offsetY"]),
     key("scale", "number 0..100 or number token; uniform, around the bounds center", &["scaleX", "scaleY", "zoom", "size"]),
     key("rotate", "degrees -36000..36000 or number token; around the bounds center", &["rotation", "angle"]),
-    key("fill", "like the fill prop: hex, color token {\"tokenId\"} or fill style {\"styleId\"}", &["color", "backgroundColor", "background", "textColor", "bg"]),
+    key("fill", "like the fill prop: hex, color token {\"tokenId\"} or solid fill style {\"styleId\"}; the node's resting fill must be solid, not a gradient", &["color", "backgroundColor", "background", "textColor", "bg"]),
 ];
 
 /// Properties a keyframe may animate. translateX and translateY form one CSS `translate`.

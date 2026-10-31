@@ -1,5 +1,11 @@
 # Local backend
 
+Project font import, exact original-file downloads, MCP metadata and rendering
+portability limits are documented in [Project fonts](FONTS.md). The viewer font
+POST reuses the `import_asset` transaction; project font download URLs also serve
+the worker's validated font bytes. A project database alone does not contain its
+uploaded font files.
+
 For changes/history, notes, consistency, mutation responses, layout and animations,
 see [Server operations](SERVER-OPERATIONS.md). Interaction variants and state render
 semantics are specified in [Interaction states](INTERACTION-STATES.md).
@@ -33,6 +39,68 @@ Use the printed URL. `npm run dev` launches the existing debug build; `npm start
 `--host` takes `127.0.0.1` (default) or `0.0.0.0`, which listens on every interface for a container whose port is published on host loopback only; Host/Origin checks are unchanged, and worker callbacks and `imageUrl` still use `http://127.0.0.1:<port>`, so no other address is accepted. See "Docker" in `README.md`.
 
 The backend serves the built viewer. For frontend development, `npm --prefix web run dev` proxies `/api` to port 3847. No frontend call mutates design data.
+
+## Public viewer through Tailscale Funnel
+
+Public sharing is disabled by default. Opt in with **both** `--public-viewer-port`
+and `--public-viewer-origin`. The public port is a separate router sharing the
+same projects, jobs and live event streams. It has no MCP, project creation or
+font import handlers. It permits GET/HEAD reads and only one POST operation:
+`/api/v1/projects/{project}/exports`, which creates files without changing the
+authored revision. Other mutation methods and ambiguous encoded paths fail
+closed, including requests carrying spoofed loopback or forwarded headers.
+The local listener keeps its existing MCP and write access.
+
+There is no authentication or per-project sharing filter. **Anyone with the
+public URL can read every project and its notes, assets and fonts, follow live
+updates, download original resources, and request/export files.** Use a separate
+data root if only selected projects should be shared. Rendering still has the
+existing queue, pixel and file budgets; public viewers share that capacity with
+local agents.
+
+First identify your machine's HTTPS Funnel origin (for example
+`https://machine.tailnet-name.ts.net`), then run an updated build:
+
+```sh
+npm run build -- --offline
+npm run dev -- --public-viewer-port 3848 \
+  --public-viewer-origin https://machine.tailnet-name.ts.net
+# In another terminal; requires Tailscale Funnel enabled for your tailnet:
+tailscale funnel --bg http://127.0.0.1:3848
+```
+
+Use the actual HTTPS origin with no path, query or credentials. Public Host must
+match that origin's authority; a supplied Origin must match the configured
+origin. Both public flags must be supplied together; nonzero public and local
+ports must differ and fit in 16 bits. Port `0` is supported for isolated checks;
+startup prints both actual bound ports. Both listeners use `--host` (loopback by
+default) and shut down together on Ctrl-C, including open SSE streams.
+
+**Point Funnel only at 3848, never at the local MCP port 3847.** The public
+listener's route graph defines read-only access; Host, Origin, forwarding
+headers and loopback peer addresses never grant local mutation privileges.
+Public responses project generated scene font/asset, PNG, export and font
+download links onto the configured HTTPS origin. Worker callbacks, cached jobs
+and local MCP responses retain their loopback URLs. Viewer and HTML preview use
+those public resources directly; authored strings are preserved.
+
+For Docker, the default `compose.yaml` remains local-only. Opt in with the
+additional override file and rebuild the image to include this feature:
+
+```sh
+OPENCANVAS_PUBLIC_ORIGIN=https://machine.tailnet-name.ts.net \
+  docker compose -f compose.yaml -f compose.public-viewer.yaml up -d --build
+tailscale funnel --bg http://127.0.0.1:3848
+```
+
+`OPENCANVAS_PUBLIC_PORT` changes the public host/container port together (default
+3848); `OPENCANVAS_PORT` continues to set the local port (default 3847). Both
+ports publish on host loopback only. The override replaces the container command
+and adds the public mapping while retaining the local mapping and existing data
+volume. Do not start another native/container instance on the same data root.
+The commands above change the running service only when you explicitly run them.
+Funnel setup, tailnet policy and DNS/TLS are managed by Tailscale; see its
+[Funnel CLI reference](https://tailscale.com/docs/reference/tailscale-cli/funnel).
 
 ## Connect an MCP client
 
@@ -95,7 +163,7 @@ scene order; following `nextCursor` returns every selected node exactly once.
 
 - Settings come from the call's `settings` (applied to every node), else the node's `exportSettings` prop, else one PNG at 1x. A PNG setting is `{format?:"png", scale?:0.01–4 | width?:1–16384 | height?:1–16384, suffix?}`, at most one of the three sizes. A target width/height derives the scale from the node bounds; outside 0.01–4 the item fails with `EXPORT_SCALE_RANGE`. The file name is the node `name` (else its ID, with `/ \ : * ? " < > |` and control characters replaced by `_`, cut to 100 bytes) + suffix + `.png`; the suffix defaults to `@<scale>x` when scale is not 1, else empty. An invalid `settings` argument fails the whole call with `VALIDATION_FAILED` and `field` such as `settings[1].scale`, by the same rules as the prop (`skill://opencanvas/props.md`).
 - `exportSettings` is a node prop (every kind except page): an array of 0–8 settings. `[]` clears it (`update_node` merges keys, so a key cannot be removed). Two settings yielding the same file name, unknown keys (`constraint` → use scale/width/height, `type` → `format`) and formats other than `png` and `svg` are rejected with `field` `exportSettings[i]…`.
-- SVG: `{format:"svg", suffix?, svgIdAttribute?}` takes no scale, width or height (rejected at `…scale` etc.: SVG is resolution-independent); the file is `<name><suffix>.svg`, `mimeType:"image/svg+xml"`, `width`/`height` the node's CSS-pixel size, no `scale`. It is built in Rust from the same subtree scene, without the worker: fills as `<rect rx>` (8-digit hex split into `fill` + `fill-opacity`), clip as `<clipPath>` (`oc-clip-N` IDs), CSS group opacity as `<g opacity>` like the renderer, images as `<image>` with the asset's original bytes in a `data:` URI (crop through a nested `viewBox` of natural pixels, read from the PNG/JPEG/WebP header). The file is self-contained: no server URL. Text stays live `<text>` per measured line with the font family/weight/size, not outlined and with no embedded font, so line widths depend on the viewer's fonts; such a file carries `diagnostics:["SVG_TEXT_NOT_OUTLINED"]`. Strokes (box `stroke`, uniform or per-side) are not drawn in SVG yet: a subtree with any stroked node exports without them and carries `SVG_STROKE_NOT_EXPORTED`; export PNG for those. `svgIdAttribute:true` wraps each node's elements in `<g id="<nodeId>">`. Resources are strict: a failed font or asset, or image bytes missing or no longer matching the scene's manifest hash, fail the item with `RESOURCE_NOT_READY` rather than a partial SVG. JPEG EXIF orientation is not applied.
+- SVG: `{format:"svg", suffix?, svgIdAttribute?}` takes no scale, width or height (rejected at `…scale` etc.: SVG is resolution-independent); the file is `<name><suffix>.svg`, `mimeType:"image/svg+xml"`, `width`/`height` the node's CSS-pixel size, no `scale`. It is built in Rust from the same subtree scene, without the worker: fills as `<rect rx>` (8-digit hex split into `fill` + `fill-opacity`), clip as `<clipPath>` (`oc-clip-N` IDs), CSS group opacity as `<g opacity>` like the renderer, images as `<image>` with the asset's original bytes in a `data:` URI (crop through a nested `viewBox` of natural pixels, read from the PNG/JPEG/WebP header). The file is self-contained: no server URL. Text stays live `<text>` per measured line with the font family/weight/size, not outlined and with no embedded font, so line widths depend on the viewer's fonts; such a file carries `diagnostics:["SVG_TEXT_NOT_OUTLINED"]`. Strokes (box `stroke`, uniform or per-side) are not drawn in SVG yet: a subtree with any stroked node exports without them and carries `SVG_STROKE_NOT_EXPORTED`; export PNG for those. Box `shadow` layers are not drawn either and carry `SVG_SHADOW_NOT_EXPORTED`. Per-corner `radius` exports as a `<path>` with CSS overlap reduction; linear/radial gradient fills export as `<linearGradient>`/`<radialGradient>` whose stops are expanded so SVG's straight-alpha interpolation matches CSS premultiplied interpolation (a stop fading to `#0000` keeps its neighbor's hue). `svgIdAttribute:true` wraps each node's elements in `<g id="<nodeId>">`. Resources are strict: a failed font or asset, or image bytes missing or no longer matching the scene's manifest hash, fail the item with `RESOURCE_NOT_READY` rather than a partial SVG. JPEG EXIF orientation is not applied.
 - The call waits up to `waitMs` (default and max 10,000) for all jobs, then returns `{projectId, revision, exports:[{nodeId, jobId, status, files?, error?}]}`. A ready item lists `files[]` `{url, fileName, format, mimeType, scale, width, height, bytes}`; no scene and no base64. A pending item: repeat the identical call, which reuses the same `jobId` while the record is retained, or poll `render_frame {jobId, waitMs}`.
 - Per-item errors leave the other nodes running: `NODE_NOT_FOUND`, `EXPORT_UNSUPPORTED` (page, or a node outside a root frame), `QUEUE_FULL` (retryable, `retryAfterMs`), and at run time `EMPTY_BOUNDS` (zero width or height), `PIXEL_BUDGET` (16M pixels per file, 48 MiB per job), `EXPORT_SCALE_RANGE`, `RESOURCE_NOT_READY`. Whole-call errors: `INVALID_REQUEST`, `VALIDATION_FAILED` (settings), `REVISION_UNAVAILABLE` (`revision` other than head), `PROJECT_NOT_FOUND`.
 - `GET /api/v1/jobs/{job}/files/{index}` serves a file with its MIME type and `Content-Disposition: attachment; filename="<ascii>"; filename*=UTF-8''<encoded>`; `FILE_NOT_FOUND` (404) for a wrong index or a render job, `IMAGE_NOT_READY` (409) while pending or failed, `JOB_NOT_FOUND` (404) once evicted. `GET /api/v1/jobs/{job}` returns the export record (`kind:"export"`, `nodeId`, `files`, `provenance`, `readiness`; no `scene`, no `imageUrl`). Export records share the 32 retained job records with renders and prerenders, so download right away; a later identical call recreates evicted files. No filesystem path is returned or accepted.
@@ -103,8 +171,8 @@ scene order; following `nextCursor` returns every selected node exactly once.
 ## MCP skill resources and context diagnostics
 
 The initialization capabilities advertise both tools and resources. `resources/list`
-returns exactly three embedded Markdown documents (`text/markdown`), available without
-project creation or filesystem access through `resources/read`:
+returns three embedded Markdown documents (`text/markdown`) and one JSON capability
+document, available without project creation or filesystem access through `resources/read`:
 
 - `skill://opencanvas/implement-frame.md`: context-to-code checklist, stack/sizing
   mapping, text baseline cautions, and when to state assumptions or ask the user.
@@ -114,6 +182,44 @@ project creation or filesystem access through `resources/read`:
   value ranges, required keys and common wrong names. It is rendered at startup
   (`src/props_doc.rs`) from the storage validator's property table
   (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+- `opencanvas://capabilities` (`application/json`): accepted keys/kinds generated from
+  that same catalog, with explicit Canvas/PNG, HTML preview and SVG consumer facts.
+  Cache by `catalogFingerprint`, `sceneVersion` and `rendererVersion`; this resource
+  describes static support, while font/asset readiness and glyph coverage require
+  job evidence. Resource list/read responses carry private cache hints.
+
+`get_design_context` scans the complete effective expanded frame before depth,
+property and pagination filters for `TEXT_FRAGMENTATION_SUSPECTED`. This conservative
+advisory combines many single-letter siblings, shared typography/baseline and dense
+free placement. Intentional lettering/wordmarks/motion remain valid; no mutation or
+rejection is performed. `Intentional lettering:` notes on a node or ancestor record
+an exception, including component source notes for virtual instance descendants.
+
+Render jobs append `TEXT_CONTENT_OUTSIDE_BOX` from immutable measured line advance
+and optional glyph `inkBounds`, including ancestor clips. Bounded examples omit
+source text. Each item names its job with `sourceSceneKey`; the job adds one
+`TEXT_OVERFLOW_SUMMARY` (`sourceSceneKey`, `reportedNodes` ≤ 12, `omittedNodes`) that
+carries the full scene/font/asset-manifest/viewport/theme/state `provenance` once.
+`Intentional overflow:`
+notes lower this advisory to informational. `inspect_layout` retains the same job
+diagnostics across pages/field filters and narrows node diagnostics for `nodeIds`
+(the summary has no `nodeId` and stays, with job-level counts);
+context with ready `viewports` returns those measured diagnostics before pagination.
+No viewport request means no measured overflow claim.
+
+These advisories never make a read fail on their own. In context (and in
+`inspect_layout` given an explicit `budget`) they may use at most `budget / 4`
+bytes (16 KiB at the 64 KiB default). Larger sets are compacted, first step that
+fits: (1) summaries drop `provenance`; (2) items keep only `code, severity, nodeId,
+sourceSceneKey, intentionalOverflow, outsideLineCount, inkEvidence`; (3) the fewest
+items are dropped, round-robin across jobs in viewport order; (4) one read-wide
+summary with the total `omittedNodes`. Compacted summaries carry
+`compaction {step, droppedNodes, retrieve}`, and `reportedNodes`/`omittedNodes`
+describe what this read shows. Compaction depends only on the jobs and the budget,
+so every page of one read carries identical advisories. Read all items with
+`inspect_layout` (no budget) for the `jobId`/`sceneKey` in `computed.viewports`.
+Other diagnostics and errors are never compacted. These checks cover semantic
+text only; general contrast, tap-target and overlap lint remain outside this slice.
 
 ### Property validation errors
 
@@ -199,7 +305,9 @@ when property filters omit all authored geometry. All pages include `truncated`
 and `nextCursor`; continuation binds revision, theme and the ordered viewports,
 along with the other query parameters. Small byte budgets may return the usual
 `CONTEXT_ITEM_TOO_LARGE` error for metadata alone or one complete node plus bounds;
-no successful response silently drops bounds or viewport entries. Invalid count,
+measured overflow advisories are compacted to their budget share instead (see
+text diagnostics above), so they never cause that error on their own.
+No successful response silently drops bounds or viewport entries. Invalid count,
 dimensions or total area returns the usual `INVALID_REQUEST` error envelope.
 
 Failed jobs remain visible to context reads until eviction. Correct the resource

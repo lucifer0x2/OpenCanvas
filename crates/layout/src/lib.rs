@@ -1,6 +1,8 @@
 //! Synchronous Taffy layout with external batched browser measurement.
 mod engine;
 mod model;
+#[cfg(test)]
+mod paint_tests;
 mod stack;
 #[cfg(test)]
 mod stack_tests;
@@ -10,6 +12,7 @@ mod stretch_tests;
 mod stroke_tests;
 #[cfg(test)]
 mod tests;
+mod text_lines;
 mod tree;
 mod util;
 mod validation;
@@ -17,8 +20,8 @@ mod validation;
 mod wrap_tests;
 pub use engine::compute;
 pub use model::*;
-pub const SCENE_VERSION: &str = "scene-2";
-pub const RENDERER_VERSION: &str = "web-2";
+pub const SCENE_VERSION: &str = "scene-3";
+pub const RENDERER_VERSION: &str = "web-4";
 pub const MAX_PASSES: usize = 6;
 pub const MAX_NODES: usize = 2048;
 pub const MAX_PIXELS: f32 = 16_000_000.0;

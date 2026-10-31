@@ -1,45 +1,10 @@
 //! Text and image elements of one scene node.
-use super::markup::{attr, color, num};
+use super::markup::num;
 use super::{Node, Writer};
 use crate::error::{ApiError, Result};
 use std::fmt::Write;
 
 impl Writer<'_> {
-    pub(super) fn text(&mut self, out: &mut String, node: &Node, opacity: f64) {
-        let font = node.font_id.as_deref().and_then(|id| self.fonts.get(id));
-        let mut style = String::new();
-        if let Some(font) = font {
-            let family: String = font
-                .family
-                .chars()
-                .filter(|c| !"'\"\\<>&".contains(*c))
-                .collect();
-            let family = attr(&family);
-            let _ = write!(style, " font-family=\"'{family}', sans-serif\"");
-            let _ = write!(style, " font-weight=\"{}\"", attr(&font.weight.to_string()));
-            if font.style != "normal" {
-                let _ = write!(style, " font-style=\"{}\"", attr(&font.style));
-            }
-        } else {
-            style.push_str(" font-family=\"sans-serif\"");
-        }
-        let _ = write!(
-            style,
-            " font-size=\"{}\"{}",
-            num(node.font_size),
-            color(&node.fill, opacity)
-        );
-        for line in &node.lines {
-            self.has_text = true;
-            let (x, y) = (num(node.bounds.x + line.x), num(node.bounds.y + line.y));
-            let text = attr(&line.text);
-            let _ = write!(
-                out,
-                "<text x=\"{x}\" y=\"{y}\"{style} xml:space=\"preserve\">{text}</text>"
-            );
-        }
-    }
-
     pub(super) fn image(&mut self, out: &mut String, node: &Node, opacity: f64) -> Result<()> {
         let image = node
             .asset_id
@@ -47,7 +12,12 @@ impl Writer<'_> {
             .and_then(|id| self.images.get(id))
             .ok_or_else(|| ApiError::new("RESOURCE_NOT_READY", "Image asset is not loaded"))?;
         // The image viewport already clips to the bounds; a radius needs a rounded clip.
-        let clip = (node.radius > 0.0).then(|| self.clip_path(out, node.bounds, node.radius));
+        let clip = node
+            .radius
+            .each()
+            .iter()
+            .any(|r| *r > 0.0)
+            .then(|| self.clip_path(out, node.bounds, node.radius));
         out.push_str("<g");
         if let Some(clip) = clip {
             let _ = write!(out, " clip-path=\"url(#{clip})\"");

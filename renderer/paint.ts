@@ -1,40 +1,17 @@
-import type { FontManifest, Resources, Scene, SceneNode } from "./types";
+import type { Resources, Scene, SceneNode } from "./types";
+import { paintText } from "./paint-text";
 import { paintTree, type PaintStats } from "./layers";
 import { placeImage } from "./image-fit";
 import { paintStroke } from "./stroke";
-
-const fontCSS = (font: FontManifest, size: number) =>
-  `${font.style} ${font.weight} ${size}px "${font.family}"`;
+import { fillPath } from "./fill";
+import { paintOuterShadows, paintInsetShadows } from "./shadow";
 
 function paintFill(context: CanvasRenderingContext2D, node: SceneNode) {
   if (node.fill === "transparent" || node.kind === "text") return;
   const b = node.bounds;
-  context.fillStyle = node.fill;
   context.beginPath();
   context.roundRect(b.x, b.y, b.width, b.height, node.radius ?? 0);
-  context.fill();
-}
-
-function paintText(
-  context: CanvasRenderingContext2D,
-  node: SceneNode,
-  resources: Resources,
-) {
-  const b = node.bounds;
-  const font = resources.fonts.get(node.fontId ?? "");
-  if (!font) {
-    context.fillStyle = "#be123c";
-    context.font = "12px sans-serif";
-    context.fillText("[Missing font]", b.x, b.y + 14);
-    return;
-  }
-  context.font = fontCSS(font, node.fontSize);
-  context.fontKerning = "normal";
-  context.textBaseline = "alphabetic";
-  context.fillStyle = node.fill;
-  // Do not call measureText, wrap, use maxWidth, or Konva.Text here.
-  for (const line of node.lines)
-    context.fillText(line.text, b.x + line.x, b.y + line.y);
+  fillPath(context, node.fill, b);
 }
 
 function paintImage(
@@ -80,9 +57,11 @@ export function paintNode(
   node: SceneNode,
   resources: Resources,
 ) {
+  paintOuterShadows(context, node);
   paintFill(context, node);
   if (node.kind === "text") paintText(context, node, resources);
   if (node.kind === "image") paintImage(context, node, resources);
+  paintInsetShadows(context, node);
 }
 
 /**

@@ -25,6 +25,25 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
             return Err(err("Unsupported node kind"));
         }
         let p = &n.props;
+        crate::text_lines::validate(p)?;
+        if let Some(fill) = &p.fill {
+            fill.check(n.kind == "text")?;
+        }
+        if p.radius.as_ref().is_some_and(|r| {
+            !r.valid_shape()
+                || r.each()
+                    .iter()
+                    .any(|v| !v.is_finite() || !(0.0..=100_000.0).contains(v))
+        }) {
+            return Err(err("Invalid radius shorthand"));
+        }
+        if p.shadow.as_ref().is_some_and(|s| {
+            !["frame", "group", "rectangle", "image"].contains(&n.kind.as_str())
+                || s.len() > 8
+                || s.iter().any(|s| !s.valid())
+        }) {
+            return Err(err("Invalid box shadow"));
+        }
         layout::properties(n)?;
         for d in [&p.width, &p.height] {
             match d {
@@ -42,7 +61,6 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
             p.max_width,
             p.min_height,
             p.max_height,
-            p.radius,
         ] {
             if v.is_some_and(|v| !finite(v)) {
                 return Err(err("Invalid numeric property"));

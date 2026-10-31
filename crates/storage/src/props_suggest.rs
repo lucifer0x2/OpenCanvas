@@ -59,7 +59,8 @@ mod tests {
         assert_eq!(suggest_prop("FONTSIZE"), Some("fontSize"));
         assert_eq!(suggest_prop("opacty"), Some("opacity"));
         assert_eq!(suggest_prop("padding"), Some("layout"));
-        assert_eq!(suggest_prop("letterSpacing"), None);
+        // An unsupported Figma property name gets no misleading near-match.
+        assert_eq!(suggest_prop("paragraphSpacing"), None);
         assert_eq!(suggest_prop("id"), None);
     }
 

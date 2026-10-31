@@ -5,8 +5,7 @@ import { FollowToggle } from "./components/FollowToggle";
 import { Icon } from "./components/Icon";
 import { Inspector } from "./components/Inspector";
 import { Layers } from "./components/Layers";
-import { PreviewButton } from "./components/PreviewButton";
-import { ProjectPicker } from "./components/ProjectPicker";
+import { Topbar } from "./components/Topbar";
 import { NodeActionsProvider } from "./components/NodeActionsProvider";
 import { selectionNode } from "./deepLink";
 import { useProject } from "./hooks/useProject";
@@ -68,46 +67,25 @@ export function App() {
       <div
         className={`app-shell ${leftOpen ? "left-open" : ""} ${rightOpen ? "right-open" : ""}`}
       >
-        <header className="topbar">
-          <a href="/" className="brand" aria-label="OpenCanvas home">
-            <span className="brand-mark">
-              <Icon name="frame" size={19} />
-            </span>
-            <span>OpenCanvas</span>
-          </a>
-          <span className="topbar-divider" />
-          <ProjectPicker
-            projects={project.projects}
-            selected={selection.projectId}
-            activity={project.activity}
-            loading={project.loadingProjects}
-            failed={!!project.error}
-            select={project.selectProject}
-          />
-          <span className="read-only-badge">Read only</span>
-          <div className="topbar-actions">
-            <PreviewButton
-              projectId={snapshot && frame ? selection.projectId : ""}
-              frameId={frame?.id ?? ""}
-            />
-            <button
-              aria-label={leftOpen ? "Hide layers panel" : "Show layers panel"}
-              aria-pressed={leftOpen}
-              onClick={() => setLeftOpen(!leftOpen)}
-            >
-              <Icon name="panelLeft" />
-            </button>
-            <button
-              aria-label={
-                rightOpen ? "Hide inspector panel" : "Show inspector panel"
-              }
-              aria-pressed={rightOpen}
-              onClick={() => setRightOpen(!rightOpen)}
-            >
-              <Icon name="panelRight" />
-            </button>
-          </div>
-        </header>
+        <Topbar
+          projects={project.projects}
+          projectId={selection.projectId}
+          activity={project.activity}
+          loading={project.loadingProjects}
+          failed={!!project.error}
+          selectProject={project.selectProject}
+          revision={
+            snapshot?.projectId === selection.projectId
+              ? snapshot.revision
+              : undefined
+          }
+          refresh={project.retry}
+          frameId={frame?.id ?? ""}
+          leftOpen={leftOpen}
+          rightOpen={rightOpen}
+          toggleLeft={() => setLeftOpen(!leftOpen)}
+          toggleRight={() => setRightOpen(!rightOpen)}
+        />
         <div className="viewbar">
           <div className="scope-controls">
             <label>

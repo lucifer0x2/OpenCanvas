@@ -42,7 +42,7 @@ node you edit or one of its ancestors, resend with expectedRevision toRevision a
 idempotencyKey (the body changed); otherwise re-read those IDs with find_nodes ids, or catch up \
 with get_changes, before rebuilding the batch. The server validates every batch again, so a wrong \
 rebase fails rather than corrupting data. Node props accept only the keys listed per kind in \
-skill://opencanvas/props.md; a wrong key fails with field props.<key>, allowedKeys and a suggestion. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
+skill://opencanvas/props.md; read opencanvas://capabilities once per fingerprint/version before approximating unsupported behavior. A wrong key fails with field props.<key>, allowedKeys and a suggestion. Keep paragraph/label source strings and spaces semantic; measured characters/lines are comparison output. Intentional lettering/motion is valid: record intent in a note and never auto-merge layers. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
 authored revision.
 
 Implementing a design in code: find_nodes kinds [frame] or get_outline for the frame, then \

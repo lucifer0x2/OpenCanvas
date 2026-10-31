@@ -4,6 +4,7 @@ import type { Resources, Scene } from "../../../renderer/types";
 import { fetchSceneJob } from "../sceneJob";
 import { acceptsJob } from "../state";
 import type { SceneRequest } from "../types";
+import { diagnosticLabel } from "../diagnostics";
 
 export interface SceneView {
   status: "empty" | "pending" | "ready" | "failed";
@@ -65,11 +66,13 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
         resources,
         missing,
         diagnostics: [
-          ...new Set([
-            ...scene.diagnostics,
-            ...(job.diagnostics ?? []),
-            ...resources.diagnostics,
-          ]),
+          ...new Set(
+            [
+              ...scene.diagnostics,
+              ...(job.diagnostics ?? []),
+              ...resources.diagnostics,
+            ].map(diagnosticLabel),
+          ),
         ],
       });
     };

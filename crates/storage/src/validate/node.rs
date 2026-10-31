@@ -15,7 +15,7 @@ impl Candidate {
                         "Style aliases are not supported",
                     ));
                 }
-                self.resolve_value(&style.value, "color")?;
+                super::paint::paint(&self.resolve_paint(&style.value)?, &NodeKind::Rectangle)?;
             }
             "text" => {
                 let o = style.value.as_object().ok_or_else(|| {
@@ -43,6 +43,20 @@ impl Candidate {
                         "fontSize" | "lineHeight" => {
                             number(&self.resolve_value(v, "dimension")?, 1., 10000., k)?;
                         }
+                        "letterSpacing" => {
+                            super::text_props::text_property(k, &self.resolve_value(v, "number")?)?;
+                        }
+                        "textWrap" | "textAlign" | "textDecoration" | "textTransform" => {
+                            super::text_props::text_property(k, v)?;
+                        }
+                        "fontFamily" | "fontWeight" | "fontStyle" => {
+                            let resolved = if k == "fontWeight" {
+                                self.resolve_value(v, "number")?
+                            } else {
+                                v.clone()
+                            };
+                            super::font_face::check_face_property(k, &resolved)?;
+                        }
                         _ => {
                             return Err(StorageError::validation(
                                 "style.value",
@@ -50,6 +64,12 @@ impl Candidate {
                             ))
                         }
                     }
+                }
+                if o.contains_key("fontId") && o.contains_key("fontFamily") {
+                    return Err(StorageError::validation(
+                        "style.value",
+                        "Choose fontId or fontFamily, not both",
+                    ));
                 }
             }
             _ => {

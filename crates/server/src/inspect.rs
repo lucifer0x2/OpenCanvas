@@ -71,7 +71,23 @@ pub(crate) async fn inspect(state: &AppState, args: Value) -> Result<Value> {
         })
         .map(|n| project(n, &fields))
         .collect();
-    let response = json!({"schemaVersion":1,"projectId":job["projectId"],"revision":job["revision"],"sceneKey":job["sceneKey"],"status":job["status"],"nodes":[],"diagnostics":job["diagnostics"]});
+    let mut diagnostics: Vec<_> = job["diagnostics"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|issue| {
+            wanted
+                .as_ref()
+                .is_none_or(|ids| issue["nodeId"].as_str().is_none_or(|id| ids.contains(id)))
+        })
+        .cloned()
+        .collect();
+    // Measured overflow advisories never make an explicitly budgeted page fail on their own.
+    if let Some(budget) = req.budget {
+        let allowance = budget / crate::text_diagnostics::BUDGET_SHARE;
+        crate::text_diagnostics::fit_in_place(&mut diagnostics, allowance);
+    }
+    let response = json!({"schemaVersion":1,"projectId":job["projectId"],"revision":job["revision"],"sceneKey":job["sceneKey"],"status":job["status"],"nodes":[],"diagnostics":diagnostics});
     let entries = entries.into_iter().map(|n| ("nodes".into(), n)).collect();
     let budget = req.budget.unwrap_or(usize::MAX);
     let mut page = pagination::page(response, entries, offset, limit, budget, &scope)?;

@@ -1,4 +1,5 @@
 mod export;
+mod export_fonts;
 mod export_svg;
 mod input;
 mod pace;
@@ -122,6 +123,14 @@ impl Jobs {
     ) -> Result<Value> {
         input::check_request(&snapshot, &request)?;
         let input = input::make_input(&snapshot, &request, &self.config.base_url)?;
+        let text_overflow_intent = if snapshot.notes.is_empty() {
+            Vec::new()
+        } else {
+            crate::text_diagnostics::overflow_ids(
+                &snapshot,
+                &serde_json::from_value::<Vec<opencanvas_storage::Node>>(input["nodes"].clone())?,
+            )
+        };
         let mut basis =
             json!({"input":input,"scale":request.scale,"pipeline":self.config.pipeline_identity});
         if let Some(spec) = &export {
@@ -151,6 +160,7 @@ impl Jobs {
             value["nodeId"] = json!(spec.node_id);
         }
         let work = Work {
+            text_overflow_intent,
             id,
             key: key.clone(),
             input,

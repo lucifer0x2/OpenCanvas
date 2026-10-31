@@ -49,6 +49,7 @@ pub(crate) fn run(value: Value) -> Boxes {
                         width: (chars.min(per_line) * 8) as f32,
                         height: lines as f32 * r.line_height,
                         lines: Vec::new(),
+                        ..Measurement::default()
                     };
                     cache.insert(r.key, m);
                 }

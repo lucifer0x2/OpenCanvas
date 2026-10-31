@@ -58,8 +58,11 @@ fn render() -> String {
          - `update_node` replaces the whole `layout` object: resend `mode` with the other layout keys.\n\
          - `links` targets are root frame IDs checked at the end of the batch; `flowStart` goes on \
          a root frame. `get_design_context` summarizes both as `navigation`.\n\
-         - Not supported: per-corner radius, shadow, gradient, blur, letter spacing, text \
-         alignment, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
+         - Text wrap collapses ASCII spaces/tabs and preserves LF; NBSP and narrow NBSP remain nonbreaking. Long ordinary words break at graphemes. `textWrap:nowrap` preserves LF and can overflow fixed boxes.\n\
+         - Text widths use ceil 1/64px; line y is the alphabetic baseline with font metrics and half-leading. Source text is preserved; lines contain transformed display text.\n\
+         - Map letterSpacing to CSS px, textAlign to text-align, textTransform to text-transform using authored text; decoration is continuous (text-decoration-skip-ink:none). Glyph diagnostics prove cmap mappings only, not complex sequence shaping.\n\
+         - Paint maps to CSS: `radius` arrays to `border-radius` (overlapping radii scale together), linear/radial `fill` to `linear-gradient`/`radial-gradient` (premultiplied alpha), `shadow` to `box-shadow`. SVG export keeps radii and gradients; shadow and stroke are omitted with `SVG_SHADOW_NOT_EXPORTED`/`SVG_STROKE_NOT_EXPORTED`.\n\
+         - Not supported: blur, conic gradients, gradient or shadow on text, shadow in states, `alignSelf`, `space-around`/`space-evenly`. Do not invent keys for them.\n",
     );
     out.push_str(&animations::section());
     out.push_str(instances::section());

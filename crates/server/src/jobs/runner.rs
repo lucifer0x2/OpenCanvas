@@ -72,6 +72,7 @@ async fn run(
             .await?;
         computed["scene"]["provenance"]["sourceSceneKey"] = json!(work.key);
         super::states::apply(&mut computed["scene"], &work.input);
+        crate::text_diagnostics::append(&mut computed["scene"], &work.text_overflow_intent);
         if let Some(spec) = &work.export {
             let assets = AssetSource {
                 store: store.clone(),

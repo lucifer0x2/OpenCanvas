@@ -14,18 +14,25 @@ fn keys(kind: &NodeKind) -> Vec<&'static str> {
 }
 
 fn unknown(field: &str, allowed: &[&str]) -> StorageError {
-    let mut e = StorageError::validation(field, "Unsupported interaction state or visual property");
+    let message = if field.ends_with(".shadow") {
+        "Shadow is not supported in interaction states yet; keep it on the resting node (it shows in every state) and vary fill, opacity, radius or stroke per state"
+    } else {
+        "Unsupported interaction state or visual property"
+    };
+    let mut e = StorageError::validation(field, message);
     e.node_context().allowed_keys = Some(allowed.iter().map(|k| (*k).into()).collect());
     e
 }
 
 fn at(mut e: StorageError, prefix: &str, key: &str) -> StorageError {
     let suffix = e.field.as_deref().unwrap_or(key);
-    e.field = Some(if suffix.starts_with("stroke.") {
-        format!("{prefix}.{suffix}")
-    } else {
-        format!("{prefix}.{key}")
-    });
+    e.field = Some(
+        if suffix.starts_with("stroke.") || suffix.starts_with("fill.") {
+            format!("{prefix}.{suffix}")
+        } else {
+            format!("{prefix}.{key}")
+        },
+    );
     e
 }
 
@@ -48,14 +55,15 @@ impl Candidate {
                 if !allowed.contains(&key.as_str()) {
                     return Err(unknown(&format!("{prefix}.{key}"), &allowed));
                 }
-                // Refs are checked by resolve_states; literals share the base prop checks.
-                if value.is_object() && key != "stroke" {
+                // Refs are checked by resolve_states; literals (gradients included) share the
+                // base prop checks.
+                if value.is_object() && key != "stroke" && value.get("type").is_none() {
                     continue;
                 }
                 let result = match key.as_str() {
-                    "fill" => color(value),
+                    "fill" => super::paint::paint(value, kind),
                     "opacity" => number(value, 0., 1., key),
-                    "radius" => number(value, 0., 100_000., key),
+                    "radius" => super::quad::radius(value),
                     "stroke" => validate_stroke(value),
                     _ => unreachable!(),
                 };
@@ -85,6 +93,8 @@ impl Candidate {
                 }
                 let result = match key.as_str() {
                     "stroke" => self.resolve_stroke(v),
+                    "fill" => self.resolve_paint(v).map(|resolved| *v = resolved),
+                    "radius" => self.resolve_quad(v, "dimension", "radius"),
                     key => self
                         .resolve_value(
                             v,

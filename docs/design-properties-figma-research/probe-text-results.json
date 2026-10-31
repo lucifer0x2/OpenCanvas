@@ -1,0 +1,135 @@
+{
+  "revision": "8931abd0ad5de2538d433079f7200f65eaf11d03",
+  "platform": "darwin",
+  "node": "v24.21.0",
+  "chromium": "156.0.8078.4",
+  "fontSha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+  "measurementSha256": "118a91071963c87e9cdb967e146bd12e857983057f6c6e0736d5ec9c398fc2d8",
+  "widths": [
+    {
+      "text": "Prefer",
+      "raw": 40.361968994140625,
+      "dom": 40.375,
+      "measured": 40.359375,
+      "remeasureLines": [
+        "Prefer"
+      ]
+    },
+    {
+      "text": "customers",
+      "raw": 69.075927734375,
+      "dom": 69.078125,
+      "measured": 69.078125,
+      "remeasureLines": [
+        "customers"
+      ]
+    },
+    {
+      "text": "Sao chép",
+      "raw": 59.527923583984375,
+      "dom": 59.53125,
+      "measured": 59.53125,
+      "remeasureLines": [
+        "Sao chép"
+      ]
+    },
+    {
+      "text": "exploring",
+      "raw": 62.36993408203125,
+      "dom": 62.375,
+      "measured": 62.375,
+      "remeasureLines": [
+        "exploring"
+      ]
+    },
+    {
+      "text": "AVATAR office",
+      "raw": 88.61994934082031,
+      "dom": 88.625,
+      "measured": 88.625,
+      "remeasureLines": [
+        "AVATAR office"
+      ]
+    }
+  ],
+  "baselines": [
+    {
+      "size": 14,
+      "lineHeight": 20,
+      "domBaseline": 15,
+      "sceneBaseline": 17
+    },
+    {
+      "size": 32,
+      "lineHeight": 40,
+      "domBaseline": 32,
+      "sceneBaseline": 36
+    },
+    {
+      "size": 15,
+      "lineHeight": 15,
+      "domBaseline": 13,
+      "sceneBaseline": 15
+    }
+  ],
+  "whitespace": [
+    {
+      "input": "A  B",
+      "lines": [
+        "A",
+        "B"
+      ],
+      "domHeight": 40
+    },
+    {
+      "input": " A\tB ",
+      "lines": [
+        "A",
+        "B"
+      ],
+      "domHeight": 40
+    },
+    {
+      "input": "A B",
+      "lines": [
+        "A",
+        "B"
+      ],
+      "domHeight": 20
+    },
+    {
+      "input": "A\nB",
+      "lines": [
+        "A",
+        "B"
+      ],
+      "domHeight": 40
+    },
+    {
+      "input": "A B",
+      "lines": [
+        "A",
+        "B"
+      ],
+      "domHeight": 20
+    }
+  ],
+  "tracking": [
+    {
+      "spacing": 0,
+      "wholeRunWidth": 188.9998016357422,
+      "sumCharacterWidths": 189.69979858398438
+    },
+    {
+      "spacing": 2.3800000000000003,
+      "wholeRunWidth": 258.0195007324219,
+      "sumCharacterWidths": 258.71949768066406
+    },
+    {
+      "spacing": -0.77,
+      "wholeRunWidth": 166.6701202392578,
+      "sumCharacterWidths": 167.3701171875
+    }
+  ],
+  "letterSpacingAvailable": true
+}

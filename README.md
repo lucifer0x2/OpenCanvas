@@ -2,7 +2,7 @@
 
 OpenCanvas lets an agent create and inspect local designs through MCP while a read-only browser viewer displays the result. A Rust backend owns SQLite, revisions, validation and rendering jobs. The viewer and PNG exporter share one Canvas2D renderer and precomputed text lines.
 
-The browser offers project/page/frame selection, layers, inspection, pan, zoom, fit and viewport presets. Design changes come from MCP. Starting the server creates no demo project.
+The browser offers project/page/frame selection, layers, inspection, pan, zoom, fit and viewport presets. Design changes come from MCP; **Fonts** in the header imports and downloads project font resources without installing them on the operating system. Starting the server creates no demo project.
 
 ## Local setup
 
@@ -41,6 +41,12 @@ For optional frontend hot reload, keep the backend running and run `npm --prefix
 
 ## Connect an agent
 
+To share the viewer through Tailscale Funnel, use the separate, opt-in
+[public read-only listener](docs/SERVER.md#public-viewer-through-tailscale-funnel).
+It exposes **all projects, live updates, assets, fonts, downloads and exports**
+without authentication. MCP, project creation and font import stay on the local
+listener. Funnel must target the public port (3848), never the local MCP port (3847).
+
 Configure an MCP client with **Streamable HTTP** and URL `http://127.0.0.1:3847/mcp` (adjust the port if needed). This is an HTTP endpoint, not a stdio command. A minimal connection entry is:
 
 ```json
@@ -60,9 +66,20 @@ side what they evaluate to for one theme, so code written against the reference 
 change. Build the structure the design declares — a container's layout `mode` is `row`, `column`
 or `free`, with `padding` and `gap` — instead of deriving it from measured bounds; those bounds
 and the wrapped text lines belong to one viewport and are there to check the result. The design
-covers theme `default` and state `default` and states nothing about interaction, animation or
-data. The connect-time MCP instructions repeat this, so a client sees it without reading this
-file.
+can declare named token themes, flat visual `states`, `links` and `animations`.
+Context can resolve declared states, `render_frame` previews a selected state, and HTML
+preview plays declared links and motion. These declarations do not supply application data,
+screen transitions or arbitrary layout/font variants.
+
+Read the generated [`props` resource](skill://opencanvas/props.md) and
+`opencanvas://capabilities` through MCP `resources/read` before approximating an
+unsupported property. Capabilities distinguish authored keys, Canvas/PNG, HTML preview
+and SVG; cache by fingerprint/version, and inspect runtime job readiness separately.
+Author one full semantic string per paragraph/label, preserving spaces and intentional
+hard breaks. Read that authored source when implementing; measured line/character positions
+are comparison evidence at one viewport. Intentional lettering, wordmarks and per-letter
+motion remain valid: record their intent with a node note. Text diagnostics are advisory,
+scoped and bounded; they never merge or rewrite layers automatically.
 
 ## Docker
 

@@ -73,6 +73,9 @@ This address does not grant access to any remote system or filesystem path.
 | `opacity` on a frame or group | CSS `opacity` on that element; the group fades as one image, so do not multiply it into children |
 | `stroke` `align:"inside"` (default) | `border` (`box-sizing:border-box`); width/color arrays are [top, right, bottom, left] |
 | `stroke` `align:"outside"` or `"center"` | Paint only (`outline`/`box-shadow` spread); does not move children |
+| `radius` 1–4 values | `border-radius` shorthand [top-left, top-right, bottom-right, bottom-left] |
+| `fill` `{type:"linear"\|"radial"}` | `linear-gradient(<angle>deg, …)` / `radial-gradient(… at x% y%, …)`, stops `[position, color]` → `color position%` |
+| `shadow` layers | `box-shadow`, first layer on top; `inset:true` → `inset` |
 
 A free child's x/y counts from its parent's outer edge; CSS absolute offsets count from
 the padding box, so subtract the parent's inside `border-left`/`border-top`.
@@ -94,8 +97,16 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 
 - Load the declared font and use the authored font size and line height. Read
   `list_fonts`, `list_styles`, and `list_tokens` when mapping the design system.
+- Keep paragraphs from their full authored source strings and semantic styles/layout.
+  Read `skill://opencanvas/props.md` and `opencanvas://capabilities` before choosing
+  an approximation; cache static capabilities by fingerprint/pipeline version.
+  For character/line layers, read source and notes, grouping and intent first.
+  Measured positions alone do not require hundreds of positioned spans. Preserve
+  intentional lettering/animation; do not automatically merge art. If spaces/order
+  or source are missing, report the limitation instead of inventing copy.
 - Text node y is its box position, not a browser baseline. Computed line positions
-  come from font metrics. Avoid copying line y values into CSS or offsetting text
+  are rendering output for that font/runtime/viewport, not a CSS layout contract.
+  Avoid copying line y values into CSS or offsetting text
   by eye to compensate for an unloaded/different font.
 - Render at the same revision, viewport, theme and state; compare `render_frame`
   pixels with `inspect_layout` bounds/text lines for that scene key. The
@@ -123,8 +134,10 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   right away instead of rebuilding it in code or cropping a frame PNG. Pass
   `settings` (e.g. `[{"scale":2}]`) to export any other node the same way.
   Prefer `[{"format":"svg"}]` for icons, logos and shapes: one self-contained
-  vector file. Text in SVG is not outlined (`SVG_TEXT_NOT_OUTLINED`), so its
-  width depends on installed fonts; use PNG or real text for labels.
+  vector file. Text in SVG is not outlined (`SVG_TEXT_NOT_OUTLINED`);
+  production export embeds the used font bytes. Compare the actual job diagnostics
+  and capabilities; SVG text remains font-shaped rather than outlined. Use semantic
+  text for UI labels and PNG when a raster reference is needed.
 - Navigation is declared: `get_design_context.navigation` lists `out` links (from
   nodes in the frame) and `in` links (from other screens), plus `flowStart`.
   `navigate` → go to the route built from frame `to`; `overlay` → a modal or

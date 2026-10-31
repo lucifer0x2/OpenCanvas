@@ -89,14 +89,17 @@ pub async fn render(
 ) -> Result<Rendered> {
     let scene = subtree::scene(&computed["scene"], &spec.node_id)?;
     let mut images = None;
+    let mut svg_fonts = None;
     let mut files = Vec::with_capacity(spec.settings.len());
     let mut total = 0;
     for setting in &spec.settings {
         let file = if setting.format == "svg" {
             if images.is_none() {
                 images = Some(export_svg::images(assets, &scene, &computed["readiness"]).await?);
+                svg_fonts = Some(super::export_fonts::embed(assets, &scene).await?);
             }
-            export_svg::file(&scene, images.as_ref().unwrap(), setting)?
+            let (svg_scene, css) = svg_fonts.as_ref().unwrap();
+            export_svg::file(svg_scene, images.as_ref().unwrap(), css, setting)?
         } else {
             png_file(worker, &scene, setting).await?
         };

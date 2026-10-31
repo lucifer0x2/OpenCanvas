@@ -1,6 +1,8 @@
 import type { Bounds, Resources, Scene, SceneNode } from "./types";
 import { PipelineError } from "./error";
 import { strokeOuter } from "./stroke";
+import { shadowBounds } from "./shadow";
+import { textSelfOverlaps } from "./text-overlap";
 
 /** An axis-aligned rectangle by its edges; in scene units or device pixels depending on use. */
 export interface LogicalRect {
@@ -14,7 +16,10 @@ export interface LogicalRect {
 export interface SceneTree {
   roots: SceneNode[];
   children: Map<string, SceneNode[]>;
-  /** Paint commands a layer would merge: own fill/content, own stroke, each child subtree that paints. */
+  /**
+   * Paint commands a layer would merge: own fill/content (two for self-overlapping text), own
+   * stroke, each shadow, each child subtree that paints.
+   */
   units: Map<string, number>;
   /** Scene-unit bounds of everything the subtree paints; null when it paints nothing. */
   extent: Map<string, LogicalRect | null>;
@@ -80,13 +85,22 @@ function ownExtent(n: SceneNode, resources: Resources): LogicalRect | null {
     Math.max(n.fontSize, n.lineHeight),
   );
   const { x, y } = n.bounds;
-  for (const line of n.lines)
+  for (const line of n.lines) {
     extent = union(extent, {
       x0: x + line.x - n.fontSize,
       y0: y + line.y - 2 * n.fontSize,
       x1: x + line.x + line.width + n.fontSize,
       y1: y + line.y + n.fontSize,
     });
+    if (line.inkBounds) extent = union(extent, rectOf({
+      x: x + line.x + line.inkBounds.x, y: y + line.y + line.inkBounds.y,
+      width: line.inkBounds.width, height: line.inkBounds.height,
+    }));
+    const d = n.decoration;
+    if (d) extent = union(extent, rectOf({
+      x: x + line.x, y: Math.round(y + line.y + d.offset), width: line.width, height: d.thickness,
+    }));
+  }
   return extent;
 }
 
@@ -117,9 +131,13 @@ export function indexScene(scene: Scene, resources: Resources): SceneTree {
   // Depth is validated at 128 upstream, so recursion is bounded.
   const visit = (n: SceneNode): LogicalRect | null => {
     const stroke = strokeOuter(n);
-    let units = (paintsItself(n) ? 1 : 0) + (stroke ? 1 : 0);
+    const shadow = shadowBounds(n);
+    // Text whose glyphs/decoration overlap paints as two units, so opacity composites it once.
+    let units = (paintsItself(n) ? 1 : 0) + (textSelfOverlaps(n) ? 1 : 0) + (stroke ? 1 : 0)
+      + (n.shadow?.length ?? 0);
     // The node's own clip cuts its children, never its stroke.
     let extent = union(ownExtent(n, resources), stroke && rectOf(stroke));
+    extent = union(extent, shadow && rectOf(shadow));
     for (const child of tree.children.get(n.id) ?? []) {
       const inner = visit(child);
       if (inner) units++;

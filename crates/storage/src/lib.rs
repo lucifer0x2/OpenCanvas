@@ -25,8 +25,8 @@ pub use props_catalog::{
 };
 pub use props_suggest::suggest_prop;
 pub use validate::{
-    resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
-    validate_slug,
+    referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
+    resolved_tokens_for_theme, validate_slug,
 };
 
 mod assets;
@@ -36,6 +36,7 @@ mod bundle_history;
 mod bundle_import;
 mod bundle_validation;
 mod db;
+mod fonts;
 mod migration;
 mod persistence;
 mod project;

@@ -4,6 +4,23 @@
 
 ## HTTP viewer surface
 
+The default listener remains loopback-only. An optional separate public viewer
+listener exposes the read/export surface with the same shared state and SSE,
+while excluding MCP, POST project creation and POST font import for every Host.
+It accepts only GET/HEAD and the exact POST exports path; encoded/ambiguous paths
+and other mutation methods are denied. `GET /api/v1/viewer` returns
+`{readOnly:false}` locally and `{readOnly:true}` publicly so font UI can hide
+imports while retaining downloads. The server enforces this independently of UI.
+Public scene/job/export/font responses project generated resource URLs onto the
+configured HTTPS origin; cached jobs, worker callbacks, local responses and
+authored strings keep their original values. See [public sharing](SERVER.md#public-viewer-through-tailscale-funnel)
+for configuration and the disclosure that all projects become readable.
+
+Font inventory/import and exact-byte download routes are specified in
+[Project fonts](FONTS.md). MCP `list_fonts` preserves pagination and adds
+`mediaType`, `byteSize`, `source` and `downloadUrl`. Font `family` remains authored
+metadata; shared rendering uses an internal hash/weight/style CSS family.
+
 Base `/api/v1`, localhost. Success returns the described JSON value; failures return `{ "error": { "code", "message", "retryable", "currentRevision"? } }` with an appropriate HTTP status. No filesystem paths.
 
 - `GET /projects` → `{ projects: ProjectRef[], nextCursor?: string|null }`. ProjectRef: `{ projectId, slug, name, revision, schemaVersion? }`.
@@ -154,7 +171,14 @@ for the successful measured comparison. No breakpoint semantics are inferred.
 Poll jobs then repeat the same read from page one until ready before consuming
 continuations. Complete node bounds are indivisible pagination items; the normal
 64 KiB/200-entry/depth-8 limits, explicit truncated/nextCursor and
-`CONTEXT_ITEM_TOO_LARGE` errors apply, including to fixed metadata. Viewport count
+`CONTEXT_ITEM_TOO_LARGE` errors apply, including to fixed metadata, except that
+measured overflow advisories (`TEXT_CONTENT_OUTSIDE_BOX` items and their per-job
+`TEXT_OVERFLOW_SUMMARY`) never cause it on their own: they get at most a quarter
+of the byte budget and are compacted in fixed steps (drop per-job provenance, drop
+item evidence, drop items round-robin, one read-wide summary), identically on every
+page of a read, with `compaction {step, droppedNodes, retrieve}` and updated
+`reportedNodes`/`omittedNodes` on the summary. Items reference the job by
+`sourceSceneKey`; the full provenance travels once per job on its summary. Viewport count
 and total pixel violations return `INVALID_REQUEST`, with no partial page.
 Cursors bind ordered viewports and theme/query/revision. If jobs are evicted and
 a continuation becomes pending, restart the ready read from page one.

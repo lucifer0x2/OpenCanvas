@@ -21,6 +21,7 @@ pub(super) struct Computed {
     pub bounds: BTreeMap<String, Vec<Value>>,
     pub reflow: Option<bool>,
     pub lines: BTreeMap<String, Vec<Value>>,
+    pub diagnostics: Vec<Value>,
 }
 
 /// Enqueue/read the existing bounded jobs; never wait on Chromium in a context read.
@@ -57,6 +58,7 @@ pub(super) async fn compute(
         .collect();
     let mut bounds: BTreeMap<_, _> = ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut metadata = Vec::new();
+    let mut diagnostics = Vec::new();
     let mut lines: BTreeMap<String, Vec<Value>> =
         ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut pending = false;
@@ -79,6 +81,14 @@ pub(super) async fn compute(
             Err(e) => return Err(e),
         };
         let mut item = json!({"viewport":viewport,"jobId":job["jobId"],"sceneKey":job["sceneKey"],"status":job["status"]});
+        let text: Vec<_> = job["diagnostics"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|d| crate::text_diagnostics::is_overflow(d))
+            .cloned()
+            .collect();
+        diagnostics.push(text);
         if let Some(error) = job.get("error") {
             item["status"] = json!("failed");
             item["error"] = error.clone();
@@ -123,6 +133,11 @@ pub(super) async fn compute(
                 .any(|(_, values)| values[1..].iter().any(|v| v != &values[0])),
         )
     };
+    // Fixed metadata on every page: compacted against the budget alone, never the page, so
+    // all pages of one read carry identical advisories and nodes always keep room to page.
+    let budget = req.budget.unwrap_or(65536);
+    let diagnostics =
+        crate::text_diagnostics::fit(diagnostics, budget / crate::text_diagnostics::BUDGET_SHARE);
     Ok(Some(Computed {
         metadata: json!({"status":if failed {"failed"} else if pending {"pending"} else {"ready"},
             "coordinateSpace":"frame-local","viewports":metadata,
@@ -130,6 +145,7 @@ pub(super) async fn compute(
         bounds,
         reflow,
         lines,
+        diagnostics,
     }))
 }
 

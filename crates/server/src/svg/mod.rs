@@ -3,13 +3,20 @@
 //! and CSS group opacity (`renderer/layers.ts`). Text keeps the scene's measured lines and is not
 //! outlined; images embed their original bytes.
 mod elements;
+mod geometry;
 mod image_meta;
 mod markup;
+mod paint;
+mod stops;
 #[cfg(test)]
 mod tests;
+mod text;
+#[cfg(test)]
+mod text_tests;
 use crate::error::{ApiError, Result};
+use geometry::{shape, Radius};
 pub use image_meta::Image;
-use markup::{attr, num, rect};
+use markup::{attr, num};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{collections::HashMap, fmt::Write};
@@ -27,7 +34,10 @@ struct Node {
     #[serde(default)]
     font_size: f64,
     #[serde(default)]
-    fill: String,
+    letter_spacing: f64,
+    decoration: Option<Decoration>,
+    #[serde(default)]
+    fill: Value,
     asset_id: Option<String>,
     #[serde(default)]
     fit: String,
@@ -36,7 +46,7 @@ struct Node {
     #[serde(default)]
     clip: bool,
     #[serde(default)]
-    radius: f64,
+    radius: Radius,
     crop: Option<Bounds>,
 }
 
@@ -53,6 +63,16 @@ struct Line {
     text: String,
     x: f64,
     y: f64,
+    #[serde(default)]
+    width: f64,
+    #[serde(rename = "inkBounds")]
+    ink_bounds: Option<Bounds>,
+}
+
+#[derive(Deserialize)]
+struct Decoration {
+    offset: f64,
+    thickness: f64,
 }
 
 #[derive(Deserialize)]
@@ -67,7 +87,7 @@ fn one() -> f64 {
     1.0
 }
 
-/// The markup and whether it holds text, which renders in whatever font the viewer has.
+/// The markup and whether it holds text. Production export embeds validated font faces.
 pub struct Svg {
     pub markup: String,
     pub has_text: bool,
@@ -130,9 +150,11 @@ impl Writer<'_> {
             return Err(ApiError::new("SCENE_INVALID", "Scene cycle"));
         }
         let children = self.children.get(node.id.as_str()).cloned();
-        // CSS group opacity, as the renderer composites it: a node with children wraps its
-        // subtree in one `<g opacity>`; a leaf carries its opacity on its own elements.
-        let group = node.opacity < 1.0 && children.as_ref().is_some_and(|c| !c.is_empty());
+        // CSS group opacity, as the renderer composites it: a node with children, or text whose
+        // own elements overlap, wraps them in one `<g opacity>`; any other leaf carries its
+        // opacity on its own elements.
+        let group = node.opacity < 1.0
+            && (children.as_ref().is_some_and(|c| !c.is_empty()) || text::self_overlaps(node));
         let opacity = if group { 1.0 } else { node.opacity };
         if self.id_attribute {
             let _ = write!(out, "<g id=\"{}\">", attr(&node.id));
@@ -141,7 +163,7 @@ impl Writer<'_> {
             let _ = write!(out, "<g opacity=\"{}\">", num(node.opacity));
         }
         if node.kind != "text" && node.fill != "transparent" {
-            out.push_str(&rect(node.bounds, node.radius, Some((&node.fill, opacity))));
+            self.paint(out, node, opacity);
         }
         match node.kind.as_str() {
             "text" => self.text(out, node, opacity),
@@ -172,13 +194,13 @@ impl Writer<'_> {
     }
 
     /// Writes a rounded-rect `<clipPath>` and returns its ID, prefixed apart from node IDs.
-    fn clip_path(&mut self, out: &mut String, bounds: Bounds, radius: f64) -> String {
+    fn clip_path(&mut self, out: &mut String, bounds: Bounds, radius: Radius) -> String {
         self.clips += 1;
         let id = format!("oc-clip-{}", self.clips);
         let _ = write!(
             out,
             "<clipPath id=\"{id}\">{}</clipPath>",
-            rect(bounds, radius, None)
+            shape(bounds, radius, None)
         );
         id
     }

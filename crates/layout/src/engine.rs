@@ -86,6 +86,7 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
         });
     }
     let mut nodes = Vec::new();
+    let mut diagnostics = Vec::new();
     let mut positions: HashMap<usize, (f32, f32)> = HashMap::new();
     for idx in order {
         let n = &input.nodes[idx];
@@ -107,10 +108,13 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
             (parent_xy.0 + l.location.x, parent_xy.1 + l.location.y)
         };
         positions.insert(idx, (x, y));
+        let mut ascent = 0.0;
         let lines = if n.kind == "text" {
             let req = request(n, &input.fonts, Some(l.size.width))?;
             if let Some(m) = cache.get(&req.key) {
-                m.lines.clone()
+                ascent = m.ascent;
+                crate::text_lines::diagnostics(&mut diagnostics, n, m);
+                crate::text_lines::align(m, p, quantize(l.size.width))
             } else {
                 misses.insert(req.key.clone(), req);
                 Vec::new()
@@ -142,6 +146,8 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
             }),
             font_size: p.font_size.unwrap_or(16.0),
             line_height: p.line_height.unwrap_or(24.0),
+            letter_spacing: p.letter_spacing.unwrap_or(0.0),
+            decoration: crate::text_lines::decoration(p, ascent),
             fill: p.fill.clone().unwrap_or_else(|| {
                 if n.kind == "text" {
                     "#182230".into()
@@ -155,7 +161,11 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                 .into(),
             opacity: p.opacity.unwrap_or(1.0),
             clip: p.clip.unwrap_or(n.kind == "frame"),
-            radius: p.radius.unwrap_or(0.0),
+            radius: p.radius.as_ref().map_or(Sides::All(0.0), |r| match r {
+                Sides::All(v) => Sides::All(*v),
+                _ => Sides::Each(r.each()),
+            }),
+            shadow: p.shadow.clone().unwrap_or_default(),
             crop: p.crop.clone(),
             stroke: p
                 .stroke
@@ -190,7 +200,7 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
             nodes,
             fonts: input.fonts.clone(),
             assets: input.assets.clone(),
-            diagnostics: Vec::new(),
+            diagnostics: crate::text_lines::cap(diagnostics),
         },
     })
 }

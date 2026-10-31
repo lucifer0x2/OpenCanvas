@@ -1,6 +1,6 @@
 mod multi_support;
 mod support;
-use multi_support::{sample, settled, viewports, wait_context};
+use multi_support::{overflow, overflow_bytes, sample, settled, viewports, wait_context};
 use serde_json::{json, Value};
 use std::time::Instant;
 use support::Server;
@@ -56,16 +56,57 @@ async fn actual_samples_compare_complete_scope_and_paginate_complete_bounds() {
                 "INVALID_CURSOR"
             );
         }
+        let (ready_items, _) = overflow(&ready);
+        assert_eq!(ready_items.is_empty(), stacks, "{ready}");
         let mut paged = json!({"projectId":p,"frameId":frame,"viewports":viewports(),"properties":["name"],"budget":8192});
         let mut seen = std::collections::BTreeSet::new();
         let mut pages = 0;
         let mut any_changed = false;
+        let mut fixed: Option<Value> = None;
         loop {
             let page = s.call("get_design_context", paged.clone()).await;
             assert!(page.get("error").is_none(), "{page}");
             assert_eq!(page["reflow"], stacks);
             assert_eq!(page["computed"]["status"], "ready");
             assert!(serde_json::to_vec(&page).unwrap().len() <= 8192);
+            // Measured advisories are fixed metadata: identical on every page and, when
+            // they exceed their budget share, compacted with an explicit omission summary.
+            let first = fixed.get_or_insert_with(|| {
+                let bytes = |v: &Value| serde_json::to_vec(&v["diagnostics"]).unwrap().len();
+                eprintln!(
+                    "sample stacks={stacks} diagnostics bytes default-budget={} at-8192={}",
+                    bytes(&ready),
+                    bytes(&page)
+                );
+                page["diagnostics"].clone()
+            });
+            assert_eq!(&page["diagnostics"], first);
+            assert!(overflow_bytes(&page) <= 8192 / 4, "{}", page["diagnostics"]);
+            let (items, summaries) = overflow(&page);
+            assert_eq!(summaries.is_empty(), stacks);
+            for summary in &summaries {
+                let key = &summary["sourceSceneKey"];
+                assert!(page["computed"]["viewports"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|v| &v["sceneKey"] == key));
+                let reported = summary["reportedNodes"].as_u64().unwrap();
+                assert_eq!(
+                    reported,
+                    items.iter().filter(|i| &i["sourceSceneKey"] == key).count() as u64
+                );
+                let all = ready_items
+                    .iter()
+                    .filter(|i| &i["sourceSceneKey"] == key)
+                    .count() as u64;
+                assert_eq!(reported + summary["omittedNodes"].as_u64().unwrap(), all);
+                assert_eq!(
+                    summary["compaction"]["droppedNodes"].as_u64().unwrap(),
+                    all - reported
+                );
+                assert!(summary["compaction"]["retrieve"].is_string());
+            }
             for node in page["nodes"].as_array().unwrap() {
                 assert!(seen.insert(node["id"].as_str().unwrap().to_owned()));
                 assert_eq!(node["computedBounds"].as_array().unwrap().len(), 2);

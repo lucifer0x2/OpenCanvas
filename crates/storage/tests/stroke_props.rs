@@ -133,7 +133,7 @@ fn malformed_values_name_the_stroke_field() {
     let (_temp, _store, p) = project();
     for (stroke, field, hint) in [
         (
-            json!({"color":"#fff","width":[1,2]}),
+            json!({"color":"#fff","width":[]}),
             "stroke.width",
             "[top, right, bottom, left]",
         ),
@@ -151,7 +151,7 @@ fn malformed_values_name_the_stroke_field() {
         (json!({"width":1}), "stroke.color", "requires color"),
         (json!({"color":"red"}), "stroke.color", "#RRGGBB"),
         (
-            json!({"color":["#fff","#fff","#fff"]}),
+            json!({"color":["#fff","#fff","#fff","#fff","#fff"]}),
             "stroke.color",
             "[top, right, bottom, left]",
         ),
@@ -190,7 +190,7 @@ fn border_aliases_suggest_stroke() {
 fn catalog_lists_stroke_for_box_kinds_only() {
     for kind in &NODE_KINDS {
         let listed = allowed_props(kind).contains(&"stroke");
-        let expected = !matches!(kind, NodeKind::Page | NodeKind::Text);
+        let expected = !matches!(kind, NodeKind::Page | NodeKind::Text | NodeKind::Instance);
         assert_eq!(listed, expected, "{kind:?}");
     }
 }

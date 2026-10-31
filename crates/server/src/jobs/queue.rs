@@ -22,6 +22,7 @@ pub struct Work {
     pub id: String,
     pub key: String,
     pub input: Value,
+    pub text_overflow_intent: Vec<String>,
     pub scale: f64,
     /// Supersede scope: the prerender of one frame in one project.
     pub frame: (String, String),
@@ -93,6 +94,7 @@ mod tests {
 
     fn work(id: &str, frame: &str) -> Work {
         Work {
+            text_overflow_intent: Vec::new(),
             id: id.into(),
             key: id.into(),
             input: json!({}),

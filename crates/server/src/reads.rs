@@ -73,7 +73,15 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
         };
         return tree::read(&s, name, req, scope, offset, computed);
     }
-    let value = serde_json::to_value(&s)?;
+    let mut value = serde_json::to_value(&s)?;
+    if name == "list_fonts" {
+        value["fonts"] = Value::Array(
+            s.fonts
+                .iter()
+                .map(|f| crate::fonts::metadata(&s, &f.id, &state.config.base_url))
+                .collect::<Result<Vec<_>>>()?,
+        );
+    }
     let field = name.trim_start_matches("list_");
     let entries: Vec<_> = value[field]
         .as_array()

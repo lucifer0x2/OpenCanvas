@@ -107,8 +107,9 @@ export function wireMotion(
     if (!declared || !elements) continue;
     const rest = {
       opacity: node.opacity ?? 1,
-      fill: node.fill || "transparent",
+      fill: typeof node.fill === "string" ? node.fill : "transparent",
       text: node.kind === "text",
+      gradient: typeof node.fill === "object" && node.fill !== null,
     };
     const byTrigger = {
       load: [] as Track[],

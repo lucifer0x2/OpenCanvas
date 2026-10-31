@@ -41,6 +41,20 @@ pub(super) fn apply(scene: &mut Value, input: &Value) {
                     node["stroke"] = json!({"color":sides(&value["color"]),"width":width,
                         "align":value["align"].as_str().unwrap_or("inside")});
                 }
+            } else if key == "radius" && value.is_array() {
+                node[key] = json!(sides(value));
+            } else if key == "fill" && value.is_object() {
+                // Reuse the layout paint defaults and normalization for interaction variants.
+                let mut paint = value.clone();
+                let props = paint.as_object_mut().unwrap();
+                if value["type"] == "linear" {
+                    props.entry("angle").or_insert(json!(180));
+                }
+                if value["type"] == "radial" {
+                    props.entry("center").or_insert(json!([0.5, 0.5]));
+                    props.entry("radius").or_insert(Value::Null);
+                }
+                node[key] = paint;
             } else {
                 node[key] = value.clone();
             }
@@ -53,8 +67,11 @@ pub(super) fn apply(scene: &mut Value, input: &Value) {
 }
 
 fn sides(value: &Value) -> Vec<Value> {
-    value
-        .as_array()
-        .cloned()
-        .unwrap_or_else(|| vec![value.clone(); 4])
+    match value.as_array().map(Vec::as_slice) {
+        Some([a]) => vec![a.clone(); 4],
+        Some([a, b]) => vec![a.clone(), b.clone(), a.clone(), b.clone()],
+        Some([a, b, c]) => vec![a.clone(), b.clone(), c.clone(), b.clone()],
+        Some(v) => v.to_vec(),
+        None => vec![value.clone(); 4],
+    }
 }

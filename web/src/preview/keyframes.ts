@@ -7,7 +7,8 @@
  * - `fillMode` defaults to `both`; `easing` applies per segment (the effect itself is linear).
  * - translateX/Y, scale and rotate map to the CSS `translate`, `scale` and `rotate`
  *   properties (one per validator channel), so two animations on one node never clobber.
- * - `fill` targets the paint element: `backgroundColor` on shapes, `color` on text.
+ * - `fill` targets the paint element: `backgroundColor` on shapes, `color` on text; over a
+ *   gradient resting fill it is skipped with a warning (the gradient image would hide it).
  */
 import { resolveColor, resolveNumber, type TokenTable } from "./tokens.ts";
 import type { AnimationDef, KeyframeDef, Trigger } from "./types.ts";
@@ -17,6 +18,8 @@ export interface Rest {
   opacity: number;
   fill: string;
   text: boolean;
+  /** The resting fill is a gradient: it would paint over an animated solid fill. */
+  gradient?: boolean;
 }
 
 export interface BuiltAnimation {
@@ -172,11 +175,19 @@ export function buildAnimation(
     paint.push({ offset: offsets[j], easing: segment, props: props.paint });
   });
   const restValues = restProps(rest);
+  let painted = withRestEndpoints(paint, restValues.paint, easing);
+  // Storage rejects this pair; older data still gets a visible warning, not a silent no-op.
+  if (rest.gradient && painted.length) {
+    warnings.push(
+      `${label}: fill animation skipped: the resting fill is a gradient, which hides an animated solid fill (fill animation requires a solid resting fill)`,
+    );
+    painted = [];
+  }
   const built: BuiltAnimation = {
     name: def.name,
     trigger,
     motion: withRestEndpoints(motion, restValues.motion, easing),
-    paint: withRestEndpoints(paint, restValues.paint, easing),
+    paint: painted,
     timing: {
       duration: duration.value,
       delay,

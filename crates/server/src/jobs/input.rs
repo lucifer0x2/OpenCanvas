@@ -31,7 +31,7 @@ pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Re
         .filter_map(|n| n.props["assetId"].as_str())
         .collect();
     let fonts:Vec<_> = snapshot.fonts.iter().filter(|f| fonts_used.contains(f.id.as_str())).map(|f| {
-        let url = if let Some(asset) = &f.asset_id { format!("{base}/api/v1/projects/{}/assets/{asset}",snapshot.project_id) } else { format!("{base}/api/v1/fonts/font_bundled") };
+        let url = format!("{base}/api/v1/projects/{}/fonts/{}/download",snapshot.project_id,f.id);
         json!({"id":f.id,"family":f.family,"hash":f.content_hash,"url":url,"weight":f.weight,"style":f.style})
     }).collect();
     let assets:Vec<_> = snapshot.assets.iter().filter(|a| assets_used.contains(a.id.as_str())).map(|a|

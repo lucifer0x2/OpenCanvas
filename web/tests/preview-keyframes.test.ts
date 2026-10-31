@@ -200,3 +200,27 @@ test("hover is a one-way transition; click and load keep their triggers", () => 
     ["click", 50, "alternate", 2],
   );
 });
+
+test("a gradient box skips fill keyframes with a warning, motion still builds", () => {
+  const gradient: Rest = { ...shape, fill: "transparent", gradient: true };
+  const tint = build({ keyframes: [{ fill: "#00ff00" }] }, gradient);
+  assert.equal(tint.animation, undefined);
+  assert.match(tint.warnings[0], /^a: fill animation skipped: .*gradient/);
+  assert.match(tint.warnings[0], /requires a solid resting fill/);
+  const mixed = build(
+    { keyframes: [{ opacity: 0.2, fill: "#00ff00" }] },
+    gradient,
+  );
+  assert.deepEqual(mixed.animation!.paint, []);
+  assert.deepEqual(mixed.animation!.motion, [
+    { offset: 0, easing: "ease", opacity: 0.9 },
+    { offset: 1, easing: "ease", opacity: 0.2 },
+  ]);
+  assert.equal(mixed.warnings.length, 1);
+  const fade = build({ keyframes: [{ opacity: 0, scale: 1.1 }] }, gradient);
+  assert.deepEqual(fade.warnings, []);
+  assert.equal(fade.animation!.motion.length, 2);
+  // A solid resting fill keeps animating its color.
+  const solid = build({ keyframes: [{ fill: "#00ff00" }] });
+  assert.equal(solid.animation!.paint.length, 2);
+});

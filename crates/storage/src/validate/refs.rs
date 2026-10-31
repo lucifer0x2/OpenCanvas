@@ -45,6 +45,12 @@ impl Candidate {
                             "Style aliases are not supported",
                         ));
                     }
+                    if style.value.get("type").is_some() {
+                        return Err(StorageError::validation(
+                            "color",
+                            "Color must be a solid color; the fill style is a gradient",
+                        ));
+                    }
                     return self.resolve_value(&style.value, "color");
                 }
             }
@@ -94,10 +100,9 @@ impl Candidate {
         out.remove("styleId");
         for (k, v) in out.iter_mut() {
             let expected = match k.as_str() {
-                "fill" => Some("color"),
                 "width" | "height" | "minWidth" | "minHeight" | "maxWidth" | "maxHeight"
-                | "fontSize" | "lineHeight" | "radius" => Some("dimension"),
-                "x" | "y" | "opacity" => Some("number"),
+                | "fontSize" | "lineHeight" => Some("dimension"),
+                "x" | "y" | "opacity" | "fontWeight" | "letterSpacing" => Some("number"),
                 _ => None,
             };
             if let Some(expected) = expected {
@@ -108,6 +113,15 @@ impl Candidate {
             if k == "stroke" {
                 self.resolve_stroke(v)?;
             }
+            if k == "fill" {
+                *v = self.resolve_paint(v)?;
+            }
+            if k == "radius" {
+                self.resolve_quad(v, "dimension", "radius")?;
+            }
+            if k == "shadow" {
+                self.resolve_shadow(v)?;
+            }
             if k == "animations" {
                 self.resolve_animations(v)?;
             }
@@ -117,6 +131,9 @@ impl Candidate {
             if k == "layout" {
                 self.resolve_layout_refs(v)?;
             }
+        }
+        if node.kind == NodeKind::Text {
+            self.select_font_face(&mut out, authored)?;
         }
         Ok(Value::Object(out))
     }
@@ -167,4 +184,29 @@ pub fn resolved_tokens_for_theme(
         .keys()
         .map(|id| Ok((id.clone(), c.token_value(id, theme)?)))
         .collect()
+}
+
+/// Fonts needed to resolve a compact scope under every authored theme.
+/// Scope nodes may be expanded instances and component definitions.
+pub fn referenced_font_ids(
+    snapshot: &Snapshot,
+    nodes: &[&Node],
+) -> Result<std::collections::BTreeSet<String>> {
+    let mut candidate = Candidate::from_snapshot(snapshot);
+    let mut ids = std::collections::BTreeSet::new();
+    for theme in candidate.validate_tokens()? {
+        candidate.theme = theme;
+        for node in nodes {
+            if node.kind == NodeKind::Text {
+                if let Some(id) = candidate
+                    .resolve_props(node)?
+                    .get("fontId")
+                    .and_then(Value::as_str)
+                {
+                    ids.insert(id.into());
+                }
+            }
+        }
+    }
+    Ok(ids)
 }

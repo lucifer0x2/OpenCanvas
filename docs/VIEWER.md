@@ -14,7 +14,26 @@ The Vite server proxies `/api` to `http://127.0.0.1:3847`. Set `OPENCANVAS_API_U
 
 Project → page → frame selectors use authored snapshots; layers are sorted by numeric storage `sortKey`. Viewport choices are frame size, desktop 1440×900, tablet 768×1024, and mobile 390×844. Frame size uses authored numeric width/height with an explicit 800×600 fallback for nonnumeric values. These choices request computed scenes and never change authored data. The inspector separates authored properties from frame-local computed bounds and records the scene revision.
 
-Drag to pan; wheel or the zoom buttons to zoom; Fit or `F` to fit. Wheel zoom is proportional to the wheel delta, so a mouse notch still steps about 1.1x while a trackpad glides in small increments. The frame name and zoom controls float over the canvas, which fills the pane edge to edge. Focus the canvas and use arrow keys to pan and `+`/`-` to zoom. Every layer is a keyboard accessible native button. The header buttons toggle layers and inspector, including at narrow widths. No editing, resizing, chat, terminal, theme toggle, or mutation request is provided.
+Drag to pan; wheel or the zoom buttons to zoom; Fit or `F` to fit. Wheel zoom is proportional to the wheel delta, so a mouse notch still steps about 1.1x while a trackpad glides in small increments. The frame name and zoom controls float over the canvas, which fills the pane edge to edge. Focus the canvas and use arrow keys to pan and `+`/`-` to zoom. Every layer is a keyboard accessible native button. The header buttons toggle layers and inspector, including at narrow widths. The canvas remains read only. Font resource import is the explicit mutation exception described below.
+
+## Project fonts
+
+**Fonts** in the header opens an accessible modal for the selected project. It lists
+family, weight, style, license and whether a font is stored in the project or bundled
+with OpenCanvas. **Download** saves the original font bytes, including bundled
+OpenCanvas Noto Sans. Missing files are labeled unavailable.
+
+**Add font** accepts TTF, OTF or WOFF2 files up to 10 MiB. Select the file and enter
+its family, weight, style and optional license. Fonts are stored with the project;
+there is no OS installation or system-font lookup. Imports do not replace fonts on
+existing text nodes. The modal renders metadata in the UI's normal font and does
+not claim to preview the selected font.
+
+An interrupted response offers **Retry same import**, retaining the exact request
+and idempotency key. A revision conflict refreshes the list and requires an explicit
+new **Add font** submission. Switching projects clears the form and cancels requests
+for the previous project. Escape closes the modal and returns focus to **Fonts**;
+Tab stays within it. The modal scrolls on narrow/short screens.
 
 ## Element actions and links
 
@@ -114,7 +133,8 @@ stream is closed before its backoff timer opens a replacement.
 Code: `useProjectList` (list and refetch), `useProjectStream` (the single stream),
 `useSnapshot` (authoritative snapshot), `useFollowAgent`, composed by `useProject`; pure reducers
 `mergeProjects`, `bumpRevision`, `markActivity`, `clearActivity`, `pickProject` and
-`followTarget` live in `web/src/state.ts` with unit tests. The viewer still sends only GET.
+`followTarget` live in `web/src/state.ts` with unit tests. Passive scene viewing sends only GET;
+explicit font imports and computed exports use their documented POST endpoints.
 
 ## Verification — 2026-10-28
 
