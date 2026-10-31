@@ -36,7 +36,7 @@ export function CanvasView({
   const selected = scene?.nodes.find((node) => node.id === selectedId);
   const viewport = scene?.provenance.viewport;
   const { host, size, transform, zoom, fit, moveTo, handleKeyDown, STEP } =
-    useCanvasTransform(viewport, scene?.provenance.frameId);
+    useCanvasTransform(viewport, view.cameraKey);
   const pixelRatio = window.devicePixelRatio || 1;
   // Whole device pixels, so panning does not shift the painted scene by subpixel amounts.
   const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio;
@@ -47,7 +47,11 @@ export function CanvasView({
       !target.closest("button, a, input, textarea, [role=button]"));
 
   return (
-    <main className="canvas-pane" aria-label="Design canvas">
+    <main
+      className="canvas-pane"
+      aria-label="Design canvas"
+      aria-busy={view.status === "pending"}
+    >
       <div
         className="canvas-host"
         ref={host}
@@ -89,6 +93,10 @@ export function CanvasView({
             scaleX={transform.scale}
             scaleY={transform.scale}
             draggable
+            onDragMove={(event) => {
+              if (event.target === stage.current)
+                moveTo(event.target.x(), event.target.y());
+            }}
             onDragEnd={(event) => {
               if (event.target === stage.current)
                 moveTo(event.target.x(), event.target.y());

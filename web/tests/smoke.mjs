@@ -79,11 +79,11 @@ try {
   fixture.update(8, "pending");
   await authored(8);
   await page.getByText("Scene pending", { exact: true }).waitFor();
-  assert.equal(
-    await page.locator("canvas").count(),
-    0,
-    "old scene must not be mislabeled as the current revision",
+  assert.ok(
+    (await page.locator("canvas").count()) > 0,
+    "last ready scene remains interactive while rendering a new revision",
   );
+  await page.getByText(/Showing scene r7/).waitFor();
   fixture.update(9);
   await ready(9);
   fixture.complete(8);

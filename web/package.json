@@ -11,6 +11,7 @@
     "test:actions": "node tests/node-actions-smoke.mjs",
     "test:preview": "node tests/preview-smoke.mjs",
     "test:browser": "node tests/smoke.mjs",
+    "test:continuity": "node tests/canvas-continuity.mjs",
     "test:zoom": "node tests/zoom.mjs"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 
 export interface Transform {
@@ -45,10 +45,11 @@ export function wheelZoomFactor(wheel: WheelEvent): number {
 /** Pan and zoom of the canvas viewport, with the host element it is measured against. */
 export function useCanvasTransform(
   viewport: Viewport | undefined,
-  frameId: string | undefined,
+  cameraKey: string | undefined,
 ) {
   const host = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 600, height: 500 });
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const fitted = useRef({ cameraKey, done: false });
   const [transform, setTransform] = useState<Transform>({
     x: 60,
     y: 60,
@@ -67,7 +68,7 @@ export function useCanvasTransform(
   }, []);
 
   const fit = () => {
-    if (!viewport) return;
+    if (!viewport || size.width <= 0 || size.height <= 0) return;
     const scale = clampScale(
       Math.min(
         (size.width - FIT_MARGIN.x) / viewport.width,
@@ -81,13 +82,14 @@ export function useCanvasTransform(
       scale,
     });
   };
-  useEffect(fit, [
-    frameId,
-    viewport?.width,
-    viewport?.height,
-    size.width,
-    size.height,
-  ]);
+  useLayoutEffect(() => {
+    if (fitted.current.cameraKey !== cameraKey)
+      fitted.current = { cameraKey, done: false };
+    if (!fitted.current.done && viewport && size.width > 0 && size.height > 0) {
+      fit();
+      fitted.current.done = true;
+    }
+  }, [cameraKey, viewport?.width, viewport?.height, size.width, size.height]);
 
   /** Zoom by `factor`, keeping `point` (host coordinates) over the same scene position. */
   const zoom = (

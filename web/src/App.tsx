@@ -47,7 +47,7 @@ export function App() {
           height: viewport.height || dimension(frame.props.height, 600),
         }
       : null;
-  const view = useScene(request, retryKey);
+  const view = useScene(request, retryKey, preset);
   const selectNode = (nodeId: string) => project.selectScope({ nodeId });
   const sceneStatus =
     view.status === "pending"
@@ -165,7 +165,12 @@ export function App() {
             retry={() => setRetryKey((key) => key + 1)}
             frameName={frame ? nodeName(frame) : ""}
           />
-          {rightOpen && <Inspector node={selectedNode} scene={view.scene} />}
+          {rightOpen && (
+            <Inspector
+              node={selectedNode}
+              scene={view.status === "ready" ? view.scene : undefined}
+            />
+          )}
         </div>
         {(project.error ||
           project.notice ||

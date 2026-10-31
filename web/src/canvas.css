@@ -121,6 +121,28 @@
 .canvas-message button {
   margin-top: 16px;
 }
+.canvas-refresh {
+  position: absolute;
+  top: 44px;
+  left: 14px;
+  right: 14px;
+  width: fit-content;
+  max-width: calc(100% - 28px);
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #485464;
+  pointer-events: none;
+}
+.canvas-refresh h2,
+.canvas-refresh p {
+  font-size: 12px;
+  margin: 0;
+}
+.canvas-refresh button {
+  pointer-events: auto;
+  margin-top: 6px;
+}
 .loading-preview {
   width: 100px;
   height: 72px;

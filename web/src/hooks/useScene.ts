@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { drawScene, loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
 import { fetchSceneJob } from "../sceneJob";
-import { acceptsJob } from "../state";
 import type { SceneRequest } from "../types";
 import { diagnosticLabel } from "../diagnostics";
 
@@ -16,32 +15,57 @@ export interface SceneView {
   missing: string[];
   diagnostics: string[];
   error?: string;
+  /** Requested project/frame/preset identity; revisions and authored dimensions are excluded. */
+  cameraKey?: string;
+  requestedRevision?: number;
 }
 
-export function useScene(request: SceneRequest | null, retryKey: number) {
-  const [view, setView] = useState<SceneView>({
-    status: "empty",
-    missing: [],
-    diagnostics: [],
-  });
+const emptyView = (): SceneView => ({
+  status: "empty",
+  missing: [],
+  diagnostics: [],
+});
+const refreshing = (view: SceneView): SceneView => ({
+  ...view,
+  status: "pending",
+  error: undefined,
+});
+
+export function useScene(
+  request: SceneRequest | null,
+  retryKey: number,
+  preset: string,
+) {
   const key = request ? JSON.stringify(request) : "";
+  const scope = request
+    ? JSON.stringify([request.projectId, request.frameId, preset])
+    : "";
+  const [loaded, setLoaded] = useState({
+    key: "",
+    scope: "",
+    retryKey,
+    view: emptyView(),
+  });
   useEffect(() => {
     if (!request) {
-      setView({ status: "empty", missing: [], diagnostics: [] });
+      setLoaded({ key, scope, retryKey, view: emptyView() });
       return;
     }
     const desired = request;
     let stopped = false;
     const controller = new AbortController();
-    setView({ status: "pending", missing: [], diagnostics: [] });
+    setLoaded((old) => ({
+      key,
+      scope,
+      retryKey,
+      view: refreshing(old.scope === scope ? old.view : emptyView()),
+    }));
     const fail = (message: string) => {
       if (!stopped)
-        setView({
-          status: "failed",
-          missing: [],
-          diagnostics: [],
-          error: message,
-        });
+        setLoaded((old) => ({
+          ...old,
+          view: { ...old.view, status: "failed", error: message },
+        }));
     };
     const load = async () => {
       const job = await fetchSceneJob(desired, controller.signal);
@@ -59,21 +83,26 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
           (resource) =>
             `${resource.kind === "font" ? "Missing font" : "Missing asset"}: ${resource.id}`,
         );
-      setView({
-        status: "ready",
-        scene,
-        canvas,
-        resources,
-        missing,
-        diagnostics: [
-          ...new Set(
-            [
-              ...scene.diagnostics,
-              ...(job.diagnostics ?? []),
-              ...resources.diagnostics,
-            ].map(diagnosticLabel),
-          ),
-        ],
+      setLoaded({
+        key,
+        scope,
+        retryKey,
+        view: {
+          status: "ready",
+          scene,
+          canvas,
+          resources,
+          missing,
+          diagnostics: [
+            ...new Set(
+              [
+                ...scene.diagnostics,
+                ...(job.diagnostics ?? []),
+                ...resources.diagnostics,
+              ].map(diagnosticLabel),
+            ),
+          ],
+        },
       });
     };
     load().catch((cause: Error) => fail(cause.message));
@@ -83,23 +112,14 @@ export function useScene(request: SceneRequest | null, retryKey: number) {
     };
     // The serialized immutable request prevents object identity from restarting jobs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, retryKey]);
-  // Hide the previous request's scene before effects run, including the inspector.
-  const exact =
-    !view.scene ||
-    (request &&
-      acceptsJob(
-        {
-          jobId: "view",
-          status: "ready",
-          projectId: view.scene.provenance.projectId,
-          revision: view.scene.provenance.revision,
-          frameId: view.scene.provenance.frameId,
-          scene: view.scene,
-        },
-        request,
-      ));
-  return exact
-    ? view
-    : ({ status: "pending", missing: [], diagnostics: [] } satisfies SceneView);
+  }, [key, scope, retryKey]);
+  // Derive before effects: retain only this scope, and never label an older request ready.
+  const view = !request
+    ? emptyView()
+    : loaded.key === key &&
+        loaded.scope === scope &&
+        loaded.retryKey === retryKey
+      ? loaded.view
+      : refreshing(loaded.scope === scope ? loaded.view : emptyView());
+  return { ...view, cameraKey: scope, requestedRevision: request?.revision };
 }
