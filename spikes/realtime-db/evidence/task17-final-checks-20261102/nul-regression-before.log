@@ -1,0 +1,25 @@
+   Compiling oc-spike-postgres v0.1.0 (/Users/luis/Workspace/OpenCanvas/spikes/realtime-db/postgres)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.93s
+     Running tests/contract.rs (spikes/realtime-db/postgres/target/debug/deps/contract-4ada0a9770dc9187)
+
+running 1 test
+test delta_failures::postgres_unsafe_target_ids_keep_full_path_error_precedence ... FAILED
+
+failures:
+
+---- delta_failures::postgres_unsafe_target_ids_keep_full_path_error_precedence stdout ----
+postgres: db error
+
+thread 'delta_failures::postgres_unsafe_target_ids_keep_full_path_error_precedence' (10534711) panicked at tests/contract/delta_failures.rs:92:9:
+assertion `left == right` failed
+  left: "INTERNAL_ERROR"
+ right: "VALIDATION_FAILED"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    delta_failures::postgres_unsafe_target_ids_keep_full_path_error_precedence
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 32 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test contract`

@@ -1,0 +1,12 @@
+{"iteration":0,"changedRows":500,"revisionGetMs":1.2597079999995913,"postMs":67.51450000000023,"wholeOperationMs":68.8393329999999,"committedRevision":11}
+{"iteration":1,"changedRows":500,"revisionGetMs":1.0330409999996846,"postMs":69.98937500000011,"wholeOperationMs":71.05841700000019,"committedRevision":12}
+{"iteration":2,"changedRows":500,"revisionGetMs":1.1279999999997017,"postMs":71.67870800000037,"wholeOperationMs":72.83749999999964,"committedRevision":13}
+{"iteration":3,"changedRows":500,"revisionGetMs":0.820582999999715,"postMs":67.41512500000044,"wholeOperationMs":68.26437499999975,"committedRevision":14}
+{"iteration":4,"changedRows":500,"revisionGetMs":0.6617919999998776,"postMs":66.08187499999985,"wholeOperationMs":66.77108399999997,"committedRevision":15}
+{"iteration":5,"changedRows":500,"revisionGetMs":0.8536249999997381,"postMs":65.75270799999998,"wholeOperationMs":66.64320800000041,"committedRevision":16}
+{"iteration":6,"changedRows":500,"revisionGetMs":0.8370420000001104,"postMs":58.98283300000003,"wholeOperationMs":59.86675000000014,"committedRevision":17}
+{"iteration":7,"changedRows":500,"revisionGetMs":0.7777080000005299,"postMs":57.89074999999957,"wholeOperationMs":58.70970899999975,"committedRevision":18}
+{"iteration":8,"changedRows":500,"revisionGetMs":0.7154590000000098,"postMs":69.10699999999997,"wholeOperationMs":69.86279100000047,"committedRevision":19}
+{"iteration":9,"changedRows":500,"revisionGetMs":1.1771669999998267,"postMs":62.539041,"wholeOperationMs":63.76387500000055,"committedRevision":20}
+{"iteration":10,"changedRows":500,"revisionGetMs":0.7096670000000813,"postMs":60.822957999999744,"wholeOperationMs":61.57049999999981,"committedRevision":21}
+{"iteration":11,"changedRows":500,"revisionGetMs":0.8944170000004306,"postMs":63.35579200000029,"wholeOperationMs":64.28979199999958,"committedRevision":22}

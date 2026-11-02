@@ -1,0 +1,192 @@
+{
+  "semantics": {
+    "projectId": "sem-990be618-c967-459e-ad78-a5a3ab01d67b",
+    "checks": [
+      {
+        "name": "invalid late operation rolls back nodes, revision, log and idempotency",
+        "status": "pass"
+      },
+      {
+        "name": "same revision race commits exactly once across two gateway processes",
+        "status": "pass"
+      },
+      {
+        "name": "lost ACK replay on other gateway and key collision",
+        "status": "pass"
+      },
+      {
+        "name": "dry run does not reserve key, change revision or publish event",
+        "status": "pass"
+      },
+      {
+        "name": "cross gateway subscriptions ordered and gapless",
+        "status": "pass"
+      },
+      {
+        "name": "disconnect reconnect replays durable commits exactly once",
+        "status": "pass"
+      },
+      {
+        "name": "partial update failure and cycle leave previous snapshot intact",
+        "status": "pass"
+      },
+      {
+        "name": "project scoped node IDs and idempotency keys",
+        "status": "pass"
+      }
+    ],
+    "finalRevision": 12
+  },
+  "matrix": [
+    {
+      "nodeCount": 100,
+      "writers": 1,
+      "iterations": 12,
+      "projectId": "load-100-19d888f9-e290-4e4c-9d62-41234a50abc4",
+      "successfulCount": 12,
+      "observedCommits": 12,
+      "requestAttempts": 12,
+      "conflictCount": 0,
+      "readCount": 49,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 1,
+      "unchangedNodesVerified": 97,
+      "throughput": 113.0133284340804,
+      "attemptMs": {
+        "p50": 5.00512499999968,
+        "p95": 6.869999999999891,
+        "p99": 6.869999999999891
+      },
+      "retryToSuccessMs": {
+        "p50": 7.543499999999767,
+        "p95": 9.404457999999977,
+        "p99": 9.404457999999977
+      }
+    },
+    {
+      "nodeCount": 100,
+      "writers": 4,
+      "iterations": 12,
+      "projectId": "load-100-dca5e56c-f3df-49e9-b7ac-f7dcffdeab4b",
+      "successfulCount": 48,
+      "observedCommits": 48,
+      "requestAttempts": 125,
+      "conflictCount": 77,
+      "readCount": 176,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 4,
+      "unchangedNodesVerified": 97,
+      "throughput": 107.39108924853272,
+      "attemptMs": {
+        "p50": 5.800207999999657,
+        "p95": 8.262541999999485,
+        "p99": 32.907749999999396
+      },
+      "retryToSuccessMs": {
+        "p50": 8.123083999999835,
+        "p95": 167.95616700000028,
+        "p99": 356.83270899999934
+      }
+    },
+    {
+      "nodeCount": 100,
+      "writers": 8,
+      "iterations": 12,
+      "projectId": "load-100-167664b6-93d8-4f12-8dab-16ed470164cb",
+      "successfulCount": 96,
+      "observedCommits": 96,
+      "requestAttempts": 419,
+      "conflictCount": 323,
+      "readCount": 424,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 8,
+      "unchangedNodesVerified": 97,
+      "throughput": 91.17431084926042,
+      "attemptMs": {
+        "p50": 11.04608300000109,
+        "p95": 15.087290999999823,
+        "p99": 19.277416999999332
+      },
+      "retryToSuccessMs": {
+        "p50": 10.76075000000128,
+        "p95": 423.9132499999996,
+        "p99": 971.1388750000006
+      }
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 1,
+      "iterations": 12,
+      "projectId": "load-5000-5312feb3-22dc-4cd8-8270-874e0867a4e9",
+      "successfulCount": 12,
+      "observedCommits": 12,
+      "requestAttempts": 12,
+      "conflictCount": 0,
+      "readCount": 21,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 1,
+      "unchangedNodesVerified": 4997,
+      "throughput": 10.69947561477698,
+      "attemptMs": {
+        "p50": 39.93587500000103,
+        "p95": 43.13054199999897,
+        "p99": 43.13054199999897
+      },
+      "retryToSuccessMs": {
+        "p50": 89.06216700000004,
+        "p95": 96.72741599999972,
+        "p99": 96.72741599999972
+      }
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 4,
+      "iterations": 12,
+      "projectId": "load-5000-cfbd0c4b-2a1c-41c4-8a9e-03dc20265256",
+      "successfulCount": 48,
+      "observedCommits": 48,
+      "requestAttempts": 120,
+      "conflictCount": 72,
+      "readCount": 86,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 4,
+      "unchangedNodesVerified": 4997,
+      "throughput": 9.428696226121199,
+      "attemptMs": {
+        "p50": 47.44933300000048,
+        "p95": 92.42066700000032,
+        "p99": 109.29629199999908
+      },
+      "retryToSuccessMs": {
+        "p50": 99.09795800000029,
+        "p95": 1588.8991669999996,
+        "p99": 3992.481375000001
+      }
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 8,
+      "iterations": 12,
+      "projectId": "load-5000-aa5cbf38-01c1-4343-ad3e-21e66385d354",
+      "successfulCount": 96,
+      "observedCommits": 96,
+      "requestAttempts": 454,
+      "conflictCount": 358,
+      "readCount": 262,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 8,
+      "unchangedNodesVerified": 4997,
+      "throughput": 5.620384684448808,
+      "attemptMs": {
+        "p50": 136.18216700000266,
+        "p95": 249.6046669999996,
+        "p99": 303.692583
+      },
+      "retryToSuccessMs": {
+        "p50": 172.5205829999977,
+        "p95": 7622.395708,
+        "p99": 15967.395
+      }
+    }
+  ]
+}

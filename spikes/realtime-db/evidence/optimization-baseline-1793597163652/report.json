@@ -1,0 +1,760 @@
+{
+  "startedAt": "2026-11-02T05:26:20.004Z",
+  "status": "pass",
+  "phases": {
+    "startup": {
+      "status": "pass",
+      "durationMs": 734.8150000000005,
+      "result": [
+        {
+          "pid": 84068,
+          "url": "http://127.0.0.1:49894",
+          "startupMs": 628.8404170000013
+        },
+        {
+          "pid": 84069,
+          "url": "http://127.0.0.1:49899",
+          "startupMs": 104.50737499999741
+        }
+      ]
+    },
+    "rustContract": {
+      "status": "pass",
+      "durationMs": 3574.8364589999983,
+      "result": {
+        "log": "rust-contract.txt"
+      }
+    },
+    "contractAndMatrix": {
+      "status": "pass",
+      "durationMs": 28287.331542,
+      "result": {
+        "semantics": {
+          "projectId": "sem-a5588cf6-5815-4406-b256-d0720100f4d3",
+          "checks": [
+            {
+              "name": "invalid late operation rolls back nodes, revision, log and idempotency",
+              "status": "pass"
+            },
+            {
+              "name": "same revision race commits exactly once across two gateway processes",
+              "status": "pass"
+            },
+            {
+              "name": "lost ACK replay on other gateway and key collision",
+              "status": "pass"
+            },
+            {
+              "name": "dry run does not reserve key, change revision or publish event",
+              "status": "pass"
+            },
+            {
+              "name": "cross gateway subscriptions ordered and gapless",
+              "status": "pass"
+            },
+            {
+              "name": "disconnect reconnect replays durable commits exactly once",
+              "status": "pass"
+            },
+            {
+              "name": "partial update failure and cycle leave previous snapshot intact",
+              "status": "pass"
+            },
+            {
+              "name": "project scoped node IDs and idempotency keys",
+              "status": "pass"
+            }
+          ],
+          "finalRevision": 12
+        },
+        "matrix": [
+          {
+            "nodeCount": 100,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-100-ff6a9451-d2a6-41d2-8817-b2bbb9665699",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 47,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 97,
+            "throughput": 116.55035200537147,
+            "attemptMs": {
+              "p50": 5.071332999999868,
+              "p95": 5.885792000000947,
+              "p99": 5.885792000000947
+            },
+            "retryToSuccessMs": {
+              "p50": 7.524874999999156,
+              "p95": 8.37187499999709,
+              "p99": 8.37187499999709
+            }
+          },
+          {
+            "nodeCount": 100,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-100-f5ebc6fa-da6f-4652-93ae-9dae0016d290",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 114,
+            "conflictCount": 66,
+            "readCount": 157,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 97,
+            "throughput": 127.6842793386218,
+            "attemptMs": {
+              "p50": 5.375083999999333,
+              "p95": 7.679665999999997,
+              "p99": 11.106832999998005
+            },
+            "retryToSuccessMs": {
+              "p50": 7.588292000000365,
+              "p95": 101.85745900000256,
+              "p99": 277.98820799999885
+            }
+          },
+          {
+            "nodeCount": 100,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-100-976a0fdf-e56d-4e67-9cf5-bc5bc4dce29c",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 492,
+            "conflictCount": 396,
+            "readCount": 456,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 97,
+            "throughput": 85.11840617997504,
+            "attemptMs": {
+              "p50": 9.999875000001339,
+              "p95": 18.40416699999696,
+              "p99": 23.430834000002505
+            },
+            "retryToSuccessMs": {
+              "p50": 11.866457999996783,
+              "p95": 539.6506249999984,
+              "p99": 967.661458999999
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-5000-a28ed693-af14-4a8c-8568-e376c3758989",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 22,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 4997,
+            "throughput": 10.412738542401048,
+            "attemptMs": {
+              "p50": 41.89112499999828,
+              "p95": 49.648291000001336,
+              "p99": 49.648291000001336
+            },
+            "retryToSuccessMs": {
+              "p50": 90.27774999999747,
+              "p95": 107.22279199999684,
+              "p99": 107.22279199999684
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-5000-99317aed-2405-4ae7-bb74-bb7fc560b702",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 120,
+            "conflictCount": 72,
+            "readCount": 90,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 4997,
+            "throughput": 9.159469585611527,
+            "attemptMs": {
+              "p50": 51.77524999999878,
+              "p95": 93.95050000000265,
+              "p99": 112.79879200000141
+            },
+            "retryToSuccessMs": {
+              "p50": 104.28683399999863,
+              "p95": 1673.8345829999998,
+              "p99": 4099.505250000002
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-5000-86b81c3a-0970-4862-aecc-03b959675a84",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 448,
+            "conflictCount": 352,
+            "readCount": 243,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 4997,
+            "throughput": 6.5075944697826085,
+            "attemptMs": {
+              "p50": 117.10750000000553,
+              "p95": 197.4464169999992,
+              "p99": 222.47212500000023
+            },
+            "retryToSuccessMs": {
+              "p50": 163.91966700000194,
+              "p95": 7654.186499999996,
+              "p99": 13156.529999999999
+            }
+          }
+        ]
+      }
+    },
+    "durableJobsResourcesStaging": {
+      "status": "skipped"
+    },
+    "rollingGateway": {
+      "status": "skipped"
+    },
+    "singleDatabaseOutage": {
+      "status": "skipped"
+    },
+    "historyGrowth": {
+      "status": "skipped"
+    },
+    "additiveMigrationAndBackupRestore": {
+      "status": "skipped"
+    }
+  },
+  "untested": [
+    "real MCP sessions",
+    "actual rendering",
+    "Kubernetes",
+    "HA/failover",
+    "DB major upgrade/mixed version",
+    "SQLite cutover",
+    "external object store"
+  ],
+  "validationScope": [
+    "rustContract",
+    "contractAndMatrix"
+  ],
+  "configuration": {
+    "nodeCounts": "100,5000",
+    "writers": "1,4,8",
+    "iterations": 12,
+    "historyCommits": 1000,
+    "contractTests": true,
+    "skipBuild": false
+  },
+  "runId": "pg-1793597194205-1f5da5d6",
+  "topology": {
+    "runId": "pg-1793597194205-1f5da5d6",
+    "createdAt": "2026-11-02T05:26:34.616Z",
+    "containerId": "d8acf95f05ee6d69e3206145267d2377d6ad35771cd58c0200797fca2138447b",
+    "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "port": 49892,
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "dockerVersion": {
+      "Client": {
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "DefaultAPIVersion": "1.54",
+        "GitCommit": "9d7ad9f",
+        "GoVersion": "go1.26.4",
+        "Os": "darwin",
+        "Arch": "arm64",
+        "BuildTime": "Fri Aug  7 04:38:56 2026",
+        "Context": "orbstack"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Engine - Community"
+        },
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "MinAPIVersion": "1.40",
+        "Os": "linux",
+        "Arch": "arm64",
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "29.4.0",
+            "Details": {
+              "ApiVersion": "1.54",
+              "Arch": "arm64",
+              "BuildTime": "Tue Apr  7 08:35:43 2026",
+              "Experimental": "true",
+              "GitCommit": "daa0cb7f",
+              "GoVersion": "go1.26.1",
+              "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+              "MinAPIVersion": "1.40",
+              "Module": "github.com/moby/moby/v2",
+              "ModuleVersion": "v2.0.0+unknown",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "v2.2.2",
+            "Details": {
+              "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.5.1",
+            "Details": {
+              "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "GitCommit": "daa0cb7f",
+        "GoVersion": "go1.26.1",
+        "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "Experimental": true,
+        "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+      }
+    },
+    "context": "orbstack",
+    "node": "v24.21.0",
+    "gatewayHost": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpuModel": "Apple M5",
+      "logicalCpus": 10,
+      "memoryBytes": 25769803776,
+      "limits": "uncapped host processes"
+    },
+    "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+    "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+    "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "cleanedAt": "2026-11-02T05:27:09.405Z"
+  },
+  "provenance": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "622c47bf8bdb2aeddb25485761543a7cf3fefb6c9365a99d7ab4443b2e82f963"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "28cdf7cf9b83dace271d7ca3196bfb8d086798af39bca54a832c8e6833eca8b1"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "48ada360d188888af96e75d951f35b245ac43deafaed5d5a0f2f3a64cf21ea63"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "92a6647dfbe90ddd49b363ba5816f6cc4a4e55248b5c624c27b5c3dd855665dc"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "e218b203b40ad756485370c81b6f68d527a1fa1867b6840dcf30db11ddf35b31"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "6dc02dd034db6615b1dc221da96f9548fc23ddbfdf878127401a172ae088cb7f"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "c0eb56638c3d0aabe510334814216569da6a6fe37d976a22189e2cd2a8d72aaa"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "ac964397f6ca58b803d7121f34004adaa951b6c93e446b3f05a1a41bbdbe18c4"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "efdb3356e0ffa26ff56fad436defd53f093dc859061ea68d1ad97c3902916f6f"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "1d5c0f8ac86badab941dd3f3ab5d0d1c68992b9ad09d6c6b36da010b659aeb4d"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "provenanceAfter": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "622c47bf8bdb2aeddb25485761543a7cf3fefb6c9365a99d7ab4443b2e82f963"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "28cdf7cf9b83dace271d7ca3196bfb8d086798af39bca54a832c8e6833eca8b1"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "48ada360d188888af96e75d951f35b245ac43deafaed5d5a0f2f3a64cf21ea63"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "92a6647dfbe90ddd49b363ba5816f6cc4a4e55248b5c624c27b5c3dd855665dc"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "e218b203b40ad756485370c81b6f68d527a1fa1867b6840dcf30db11ddf35b31"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "6dc02dd034db6615b1dc221da96f9548fc23ddbfdf878127401a172ae088cb7f"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "c0eb56638c3d0aabe510334814216569da6a6fe37d976a22189e2cd2a8d72aaa"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "ac964397f6ca58b803d7121f34004adaa951b6c93e446b3f05a1a41bbdbe18c4"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "efdb3356e0ffa26ff56fad436defd53f093dc859061ea68d1ad97c3902916f6f"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "1d5c0f8ac86badab941dd3f3ab5d0d1c68992b9ad09d6c6b36da010b659aeb4d"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "cleanup": "owned gateway processes and PostgreSQL container/anonymous volume removed",
+  "finishedAt": "2026-11-02T05:27:09.405Z"
+}

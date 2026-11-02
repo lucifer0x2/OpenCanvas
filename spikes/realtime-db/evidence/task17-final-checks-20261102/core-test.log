@@ -1,0 +1,24 @@
+   Compiling oc_spike_core v0.1.0 (/Users/luis/Workspace/OpenCanvas/spikes/realtime-db/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s
+     Running unittests src/lib.rs (spikes/realtime-db/core/target/debug/deps/oc_spike_core-176fe5ddb00efd41)
+
+running 10 tests
+test tests::full_candidate_allows_forward_parent_and_orders_changed_ids ... ok
+test tests::cycles_and_invalid_parenting_are_rejected_atomically ... ok
+test tests::profiling_preserves_results_errors_and_input ... ok
+test tests::updates_shallow_merge_reparent_and_delete_entire_subtree ... ok
+test tests::strict_operation_and_property_validation ... ok
+test delta_tests::classifier_falls_back_without_rejecting_structural_or_malformed_operations ... ok
+test delta_tests::repeated_ids_missing_nodes_and_invalid_objects_preserve_ordered_errors ... ok
+test tests::canonical_hash_ignores_dry_run_and_object_key_order_but_keeps_operation_order ... ok
+test delta_tests::every_spike_scalar_matches_full_validation_at_final_candidate ... ok
+test tests::limits_and_revision_guard ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Doc-tests oc_spike_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

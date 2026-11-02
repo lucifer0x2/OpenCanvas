@@ -1,0 +1,12 @@
+{"writer":0,"iteration":0,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.549209000000701,"revision":2,"ms":6.297792000001209}
+{"writer":0,"iteration":1,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.45354199999928824,"revision":3,"ms":5.774832999999489}
+{"writer":0,"iteration":2,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.5428750000028231,"revision":4,"ms":4.884916999999405}
+{"writer":0,"iteration":3,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.46920800000225427,"revision":5,"ms":4.5249170000024606}
+{"writer":0,"iteration":4,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.976542000000336,"revision":6,"ms":5.501541999998153}
+{"writer":0,"iteration":5,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.35629100000005565,"revision":7,"ms":5.371041999998852}
+{"writer":0,"iteration":6,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.9704160000001139,"revision":8,"ms":5.11108299999978}
+{"writer":0,"iteration":7,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.37283300000126474,"revision":9,"ms":4.698250000001281}
+{"writer":0,"iteration":8,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.43208299999969313,"revision":10,"ms":5.179291000000376}
+{"writer":0,"iteration":9,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.5022089999984019,"revision":11,"ms":4.931541999998444}
+{"writer":0,"iteration":10,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.3670830000010028,"revision":12,"ms":4.135916999999608}
+{"writer":0,"iteration":11,"retries":0,"networkRetries":0,"sleepMs":0,"revisionReads":1,"revisionReadMs":0.6330420000012964,"revision":13,"ms":4.836916000000201}

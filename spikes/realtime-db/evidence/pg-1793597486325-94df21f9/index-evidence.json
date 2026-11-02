@@ -1,0 +1,665 @@
+{
+  "databaseScope": "fresh disposable database in this run-owned container",
+  "fixture": {
+    "projects": 10000,
+    "nodes": 100000,
+    "populatedProjects": 20,
+    "nodesPerPopulatedProject": 5000,
+    "commits": 20000,
+    "idempotency": 20000,
+    "jobs": 10000,
+    "completedArtifacts": 1
+  },
+  "methodology": "Literal-bound equivalents of gateway parameterized queries; unforced planner; ANALYZE before both stages; one unrecorded warmup and one recorded observation per probe/stage; no timing threshold",
+  "probes": [
+    {
+      "name": "revision",
+      "query": "SELECT revision FROM projects WHERE project_id=$1",
+      "params": [
+        "p11"
+      ],
+      "expectedRows": 1,
+      "index": "projects_pkey"
+    },
+    {
+      "name": "lockedRevision",
+      "query": "SELECT revision FROM projects WHERE project_id=$1 FOR UPDATE",
+      "params": [
+        "p11"
+      ],
+      "expectedRows": 1,
+      "index": "projects_pkey"
+    },
+    {
+      "name": "nodePoint",
+      "query": "SELECT node_id,parent_id,kind,sort_key,props FROM nodes WHERE project_id=$1 AND node_id=$2",
+      "params": [
+        "p11",
+        "n4999"
+      ],
+      "expectedRows": 1,
+      "index": "nodes_pkey"
+    },
+    {
+      "name": "snapshot",
+      "query": "SELECT node_id,parent_id,kind,sort_key,props FROM nodes WHERE project_id=$1 ORDER BY node_id",
+      "params": [
+        "p11"
+      ],
+      "expectedRows": 5000
+    },
+    {
+      "name": "fullTableControl",
+      "query": "SELECT node_id,parent_id,kind,sort_key,props FROM nodes",
+      "params": [],
+      "expectedRows": 100000
+    },
+    {
+      "name": "parentFk",
+      "query": "SELECT 1 FROM ONLY nodes WHERE project_id=$1 AND parent_id=$2 FOR KEY SHARE",
+      "params": [
+        "p11",
+        "n49"
+      ],
+      "expectedRows": 101,
+      "index": "nodes_parent",
+      "added": true
+    },
+    {
+      "name": "parentFkLeaf",
+      "query": "SELECT 1 FROM ONLY nodes WHERE project_id=$1 AND parent_id=$2 FOR KEY SHARE",
+      "params": [
+        "p11",
+        "n4999"
+      ],
+      "expectedRows": 0,
+      "index": "nodes_parent",
+      "added": true
+    },
+    {
+      "name": "commitsCursor",
+      "query": "SELECT revision,changed_ids FROM commits WHERE project_id=$1 AND revision>$2 ORDER BY revision LIMIT 100",
+      "params": [
+        "p11",
+        990
+      ],
+      "expectedRows": 10,
+      "index": "commits_pkey"
+    },
+    {
+      "name": "idempotency",
+      "query": "SELECT request_hash,response FROM idempotency WHERE project_id=$1 AND request_key=$2",
+      "params": [
+        "p11",
+        "key999"
+      ],
+      "expectedRows": 1,
+      "index": "idempotency_pkey"
+    },
+    {
+      "name": "artifact",
+      "query": "SELECT 1 FROM render_jobs WHERE artifact_id=$1 LIMIT 1",
+      "params": [
+        "artifact-fixture"
+      ],
+      "expectedRows": 1,
+      "index": "render_jobs_artifact",
+      "added": true
+    }
+  ],
+  "before": {
+    "revision": {
+      "actualRows": 1,
+      "executionMs": 0.018,
+      "sharedHitBlocks": 3,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "projects_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "lockedRevision": {
+      "actualRows": 1,
+      "executionMs": 0.026,
+      "sharedHitBlocks": 4,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "projects_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "nodePoint": {
+      "actualRows": 1,
+      "executionMs": 0.026,
+      "sharedHitBlocks": 4,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "nodes_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 4,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (node_id = 'n4999'::text))"
+        }
+      ]
+    },
+    "snapshot": {
+      "actualRows": 5000,
+      "executionMs": 2.957,
+      "sharedHitBlocks": 131,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 128,
+          "sharedReadBlocks": 0
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "nodes_pkey",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 36,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "fullTableControl": {
+      "actualRows": 100000,
+      "executionMs": 5.601,
+      "sharedHitBlocks": 1818,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Seq Scan",
+          "actualRows": 100000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 1818,
+          "sharedReadBlocks": 0
+        }
+      ]
+    },
+    "parentFk": {
+      "actualRows": 101,
+      "executionMs": 0.335,
+      "sharedHitBlocks": 229,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 101,
+          "loops": 1,
+          "rowsRemovedByFilter": 4899,
+          "sharedHitBlocks": 128,
+          "sharedReadBlocks": 0,
+          "filter": "(parent_id = 'n49'::text)"
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "nodes_pkey",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 36,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "parentFkLeaf": {
+      "actualRows": 0,
+      "executionMs": 0.302,
+      "sharedHitBlocks": 128,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 0,
+          "loops": 1,
+          "rowsRemovedByFilter": 5000,
+          "sharedHitBlocks": 128,
+          "sharedReadBlocks": 0,
+          "filter": "(parent_id = 'n4999'::text)"
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "nodes_pkey",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 36,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "commitsCursor": {
+      "actualRows": 10,
+      "executionMs": 0.032,
+      "sharedHitBlocks": 9,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 10,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 6,
+          "sharedReadBlocks": 0
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "commits_pkey",
+          "actualRows": 10,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 5,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (revision > 990))"
+        }
+      ]
+    },
+    "idempotency": {
+      "actualRows": 1,
+      "executionMs": 0.021,
+      "sharedHitBlocks": 3,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "idempotency_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (request_key = 'key999'::text))"
+        }
+      ]
+    },
+    "artifact": {
+      "actualRows": 1,
+      "executionMs": 0.385,
+      "sharedHitBlocks": 114,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Seq Scan",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 9999,
+          "sharedHitBlocks": 114,
+          "sharedReadBlocks": 0,
+          "filter": "(artifact_id = 'artifact-fixture'::text)"
+        }
+      ]
+    }
+  },
+  "after": {
+    "revision": {
+      "actualRows": 1,
+      "executionMs": 0.019,
+      "sharedHitBlocks": 3,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "projects_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "lockedRevision": {
+      "actualRows": 1,
+      "executionMs": 0.029,
+      "sharedHitBlocks": 4,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "projects_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "nodePoint": {
+      "actualRows": 1,
+      "executionMs": 0.028,
+      "sharedHitBlocks": 4,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "nodes_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 4,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (node_id = 'n4999'::text))"
+        }
+      ]
+    },
+    "snapshot": {
+      "actualRows": 5000,
+      "executionMs": 3.035,
+      "sharedHitBlocks": 102,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 99,
+          "sharedReadBlocks": 0
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "nodes_parent",
+          "actualRows": 5000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 7,
+          "sharedReadBlocks": 0,
+          "indexCond": "(project_id = 'p11'::text)"
+        }
+      ]
+    },
+    "fullTableControl": {
+      "actualRows": 100000,
+      "executionMs": 5.652,
+      "sharedHitBlocks": 1818,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Seq Scan",
+          "actualRows": 100000,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 1818,
+          "sharedReadBlocks": 0
+        }
+      ]
+    },
+    "parentFk": {
+      "actualRows": 101,
+      "executionMs": 0.104,
+      "sharedHitBlocks": 193,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 101,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 92,
+          "sharedReadBlocks": 0
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "nodes_parent",
+          "actualRows": 101,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 2,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (parent_id = 'n49'::text))"
+        }
+      ]
+    },
+    "parentFkLeaf": {
+      "actualRows": 0,
+      "executionMs": 0.018,
+      "sharedHitBlocks": 2,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "nodes_parent",
+          "actualRows": 0,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 2,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (parent_id = 'n4999'::text))"
+        }
+      ]
+    },
+    "commitsCursor": {
+      "actualRows": 10,
+      "executionMs": 0.035,
+      "sharedHitBlocks": 9,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Bitmap Heap Scan",
+          "actualRows": 10,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 6,
+          "sharedReadBlocks": 0
+        },
+        {
+          "type": "Bitmap Index Scan",
+          "index": "commits_pkey",
+          "actualRows": 10,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 5,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (revision > 990))"
+        }
+      ]
+    },
+    "idempotency": {
+      "actualRows": 1,
+      "executionMs": 0.022,
+      "sharedHitBlocks": 3,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Scan",
+          "index": "idempotency_pkey",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 3,
+          "sharedReadBlocks": 0,
+          "indexCond": "((project_id = 'p11'::text) AND (request_key = 'key999'::text))"
+        }
+      ]
+    },
+    "artifact": {
+      "actualRows": 1,
+      "executionMs": 0.012,
+      "sharedHitBlocks": 2,
+      "sharedReadBlocks": 0,
+      "scans": [
+        {
+          "type": "Index Only Scan",
+          "index": "render_jobs_artifact",
+          "actualRows": 1,
+          "loops": 1,
+          "rowsRemovedByFilter": 0,
+          "sharedHitBlocks": 2,
+          "sharedReadBlocks": 0,
+          "indexCond": "(artifact_id = 'artifact-fixture'::text)"
+        }
+      ]
+    }
+  },
+  "files": [
+    "index-fixture.sql",
+    "index-definitions.sql",
+    "index-evidence.json",
+    "index-before-revision.json",
+    "index-before-lockedRevision.json",
+    "index-before-nodePoint.json",
+    "index-before-snapshot.json",
+    "index-before-fullTableControl.json",
+    "index-before-parentFk.json",
+    "index-before-parentFkLeaf.json",
+    "index-before-commitsCursor.json",
+    "index-before-idempotency.json",
+    "index-before-artifact.json",
+    "index-after-revision.json",
+    "index-after-lockedRevision.json",
+    "index-after-nodePoint.json",
+    "index-after-snapshot.json",
+    "index-after-fullTableControl.json",
+    "index-after-parentFk.json",
+    "index-after-parentFkLeaf.json",
+    "index-after-commitsCursor.json",
+    "index-after-idempotency.json",
+    "index-after-artifact.json"
+  ],
+  "caveats": [
+    "Full snapshots still materialize all 5000 project nodes/JSONB; this index does not remove that cost.",
+    "Parent probes mirror FK predicates; EXPLAIN does not expose the internal deferred-trigger SELECT plan.",
+    "Seq Scan is valid for broad/full-table reads; timing observations are not comparative workload percentiles."
+  ],
+  "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "observedCardinalities": {
+    "projects": 10000,
+    "nodes": 100000,
+    "commits": 20000,
+    "idempotency": 20000,
+    "jobs": 10000,
+    "completedArtifacts": 1
+  },
+  "beforeIndexes": [
+    "commits_pkey",
+    "idempotency_pkey",
+    "nodes_pkey",
+    "projects_pkey",
+    "render_jobs_claim",
+    "render_jobs_pkey",
+    "resources_pkey",
+    "shared_blobs_pkey",
+    "staged_batches_pkey"
+  ],
+  "settings": {
+    "default_statistics_target": "100",
+    "effective_cache_size": "524288",
+    "enable_bitmapscan": "on",
+    "enable_indexscan": "on",
+    "enable_seqscan": "on",
+    "random_page_cost": "4",
+    "seq_page_cost": "1",
+    "shared_buffers": "16384",
+    "work_mem": "4096"
+  },
+  "indexes": [
+    {
+      "name": "commits_pkey",
+      "table": "commits",
+      "definition": "CREATE UNIQUE INDEX commits_pkey ON public.commits USING btree (project_id, revision)",
+      "bytes": 671744
+    },
+    {
+      "name": "idempotency_pkey",
+      "table": "idempotency",
+      "definition": "CREATE UNIQUE INDEX idempotency_pkey ON public.idempotency USING btree (project_id, request_key)",
+      "bytes": 999424
+    },
+    {
+      "name": "nodes_parent",
+      "table": "nodes",
+      "definition": "CREATE INDEX nodes_parent ON public.nodes USING btree (project_id, parent_id)",
+      "bytes": 745472
+    },
+    {
+      "name": "nodes_pkey",
+      "table": "nodes",
+      "definition": "CREATE UNIQUE INDEX nodes_pkey ON public.nodes USING btree (project_id, node_id)",
+      "bytes": 5218304
+    },
+    {
+      "name": "projects_pkey",
+      "table": "projects",
+      "definition": "CREATE UNIQUE INDEX projects_pkey ON public.projects USING btree (project_id)",
+      "bytes": 385024
+    },
+    {
+      "name": "render_jobs_artifact",
+      "table": "render_jobs",
+      "definition": "CREATE INDEX render_jobs_artifact ON public.render_jobs USING btree (artifact_id) WHERE (artifact_id IS NOT NULL)",
+      "bytes": 16384
+    },
+    {
+      "name": "render_jobs_claim",
+      "table": "render_jobs",
+      "definition": "CREATE INDEX render_jobs_claim ON public.render_jobs USING btree (status, lease_expires_at)",
+      "bytes": 81920
+    },
+    {
+      "name": "render_jobs_pkey",
+      "table": "render_jobs",
+      "definition": "CREATE UNIQUE INDEX render_jobs_pkey ON public.render_jobs USING btree (job_id)",
+      "bytes": 385024
+    },
+    {
+      "name": "resources_pkey",
+      "table": "resources",
+      "definition": "CREATE UNIQUE INDEX resources_pkey ON public.resources USING btree (resource_id, kind)",
+      "bytes": 8192
+    },
+    {
+      "name": "shared_blobs_pkey",
+      "table": "shared_blobs",
+      "definition": "CREATE UNIQUE INDEX shared_blobs_pkey ON public.shared_blobs USING btree (blob_id)",
+      "bytes": 16384
+    },
+    {
+      "name": "staged_batches_pkey",
+      "table": "staged_batches",
+      "definition": "CREATE UNIQUE INDEX staged_batches_pkey ON public.staged_batches USING btree (upload_id)",
+      "bytes": 8192
+    }
+  ],
+  "mutations": {
+    "reparent": "pass",
+    "deleteSubtree": "pass",
+    "failedReparentAtomic": "pass",
+    "deferredFkRejectsDanglingParent": "pass",
+    "revision": 4
+  },
+  "status": "pass",
+  "cleanup": "disposable index fixture database removed"
+}

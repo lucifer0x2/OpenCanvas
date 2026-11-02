@@ -1,0 +1,3334 @@
+{
+  "stage": "delta-redis",
+  "status": "pass",
+  "configuration": {
+    "nodeCounts": [
+      100,
+      5000
+    ],
+    "writers": 1,
+    "warmup": 20,
+    "samples": 100,
+    "buildProfile": "cargo dev (unoptimized + debuginfo)",
+    "batchProfiling": true,
+    "buildDuringRun": false,
+    "client": "unchanged singleWriterLoad/commitFixture; revision GET + POST 3-node updates; continuous reader + SSE",
+    "redisProvisionedAllStages": true,
+    "cache": {
+      "ttlSeconds": 3600,
+      "maxBytes": 8388608,
+      "timeoutMs": 100,
+      "enabled": true
+    }
+  },
+  "startedAt": "2026-11-02T09:48:57.445Z",
+  "cells": [
+    {
+      "nodeCount": 100,
+      "writers": 1,
+      "warmup": 20,
+      "samples": 100,
+      "projectId": "load-100-77f6ef24-1813-4323-bac4-b199dd4e7354",
+      "seedCommits": 1,
+      "successfulCount": 120,
+      "observedCommits": 120,
+      "observedEvents": 120,
+      "readCount": 210,
+      "measuredReadCount": 164,
+      "mixedSnapshots": 0,
+      "unchangedNodesVerified": 97,
+      "replayVerified": true,
+      "measuredDurationMs": 403.4513750000001,
+      "throughput": 247.8613438856169,
+      "postMs": {
+        "count": 100,
+        "p50": 3.2967909999997573,
+        "p95": 4.451292000000194,
+        "p99": 5.783457999999882,
+        "min": 2.2744590000002063,
+        "max": 6.213792000000012
+      },
+      "wholeOperationMs": {
+        "count": 100,
+        "p50": 3.9846659999998337,
+        "p95": 5.397832999999991,
+        "p99": 6.552499999999782,
+        "min": 2.686583000000155,
+        "max": 6.994041000000379
+      },
+      "revisionReadMs": {
+        "count": 100,
+        "p50": 0.5480420000003505,
+        "p95": 0.9696659999999611,
+        "p99": 1.1395830000001297,
+        "min": 0.3452919999999722,
+        "max": 1.5086249999999382
+      },
+      "continuousReadMs": {
+        "count": 211,
+        "p50": 2.7010839999998097,
+        "p95": 3.863542000000052,
+        "p99": 4.760459000000083,
+        "min": 0.8448330000001079,
+        "max": 31.851750000000266
+      },
+      "profile": {
+        "serverTotalMs": {
+          "count": 100,
+          "p50": 2.535,
+          "p95": 3.605,
+          "p99": 4.049,
+          "min": 1.665,
+          "max": 4.622
+        },
+        "queriedNodeCount": {
+          "count": 100,
+          "p50": 3,
+          "p95": 3,
+          "p99": 3,
+          "min": 3,
+          "max": 3
+        },
+        "validatedNodeCount": {
+          "count": 100,
+          "p50": 3,
+          "p95": 3,
+          "p99": 3,
+          "min": 3,
+          "max": 3
+        },
+        "writePath": "delta",
+        "phaseMs": {
+          "apply": {
+            "count": 100,
+            "p50": 0.032,
+            "p95": 0.04,
+            "p99": 0.059,
+            "min": 0.028,
+            "max": 0.073
+          },
+          "begin": {
+            "count": 100,
+            "p50": 0.133,
+            "p95": 0.567,
+            "p99": 0.802,
+            "min": 0.08,
+            "max": 0.818
+          },
+          "commit": {
+            "count": 100,
+            "p50": 1.003,
+            "p95": 1.613,
+            "p99": 1.772,
+            "min": 0.643,
+            "max": 1.824
+          },
+          "hash": {
+            "count": 100,
+            "p50": 0.062,
+            "p95": 0.081,
+            "p99": 0.123,
+            "min": 0.054,
+            "max": 0.13
+          },
+          "lock": {
+            "count": 100,
+            "p50": 0.151,
+            "p95": 0.806,
+            "p99": 0.888,
+            "min": 0.112,
+            "max": 0.964
+          },
+          "nodeDecode": {
+            "count": 100,
+            "p50": 0.007,
+            "p95": 0.011,
+            "p99": 0.028,
+            "min": 0.005,
+            "max": 0.028
+          },
+          "nodeQuery": {
+            "count": 100,
+            "p50": 0.167,
+            "p95": 0.746,
+            "p99": 0.793,
+            "min": 0.119,
+            "max": 0.887
+          },
+          "persist": {
+            "count": 100,
+            "p50": 0.365,
+            "p95": 0.892,
+            "p99": 1.179,
+            "min": 0.247,
+            "max": 1.227
+          },
+          "pool": {
+            "count": 100,
+            "p50": 0.001,
+            "p95": 0.001,
+            "p99": 0.003,
+            "min": 0,
+            "max": 0.004
+          },
+          "replay": {
+            "count": 100,
+            "p50": 0.135,
+            "p95": 0.788,
+            "p99": 1.039,
+            "min": 0.091,
+            "max": 1.27
+          }
+        }
+      },
+      "metricsBefore": [
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 0,
+          "malformed": 0,
+          "misses": 0,
+          "nodeQueries": 0,
+          "oversize": 0,
+          "probes": 0,
+          "stores": 0
+        },
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 0,
+          "malformed": 0,
+          "misses": 0,
+          "nodeQueries": 0,
+          "oversize": 0,
+          "probes": 0,
+          "stores": 0
+        }
+      ],
+      "metricsAfter": [
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 33,
+          "malformed": 0,
+          "misses": 75,
+          "nodeQueries": 75,
+          "oversize": 0,
+          "probes": 108,
+          "stores": 75
+        },
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 67,
+          "malformed": 0,
+          "misses": 39,
+          "nodeQueries": 39,
+          "oversize": 0,
+          "probes": 106,
+          "stores": 39
+        }
+      ],
+      "cacheMetrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 100,
+        "malformed": 0,
+        "misses": 114,
+        "nodeQueries": 114,
+        "oversize": 0,
+        "probes": 214,
+        "stores": 114
+      },
+      "provenanceBefore": {
+        "source": {
+          "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+          "files": [
+            {
+              "path": "core/Cargo.lock",
+              "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+            },
+            {
+              "path": "core/Cargo.toml",
+              "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+            },
+            {
+              "path": "core/src/command.rs",
+              "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+            },
+            {
+              "path": "core/src/delta.rs",
+              "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+            },
+            {
+              "path": "core/src/delta_tests.rs",
+              "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+            },
+            {
+              "path": "core/src/lib.rs",
+              "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+            },
+            {
+              "path": "core/src/profile.rs",
+              "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+            },
+            {
+              "path": "core/src/tests.rs",
+              "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+            },
+            {
+              "path": "core/src/validation.rs",
+              "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+            },
+            {
+              "path": "harness/client.mjs",
+              "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+            },
+            {
+              "path": "harness/client.test.mjs",
+              "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+            },
+            {
+              "path": "harness/compare-bulk.mjs",
+              "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+            },
+            {
+              "path": "harness/compare-bulk.test.mjs",
+              "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+            },
+            {
+              "path": "harness/compare.mjs",
+              "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+            },
+            {
+              "path": "harness/compare.test.mjs",
+              "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+            },
+            {
+              "path": "harness/history.mjs",
+              "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+            },
+            {
+              "path": "harness/indexes-fixture.mjs",
+              "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+            },
+            {
+              "path": "harness/indexes.mjs",
+              "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+            },
+            {
+              "path": "harness/indexes.test.mjs",
+              "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+            },
+            {
+              "path": "harness/load.mjs",
+              "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+            },
+            {
+              "path": "harness/migration.mjs",
+              "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+            },
+            {
+              "path": "harness/pg-wire-probe.test.mjs",
+              "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+            },
+            {
+              "path": "harness/query-counts.mjs",
+              "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+            },
+            {
+              "path": "harness/reconnect.mjs",
+              "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+            },
+            {
+              "path": "harness/recovery.mjs",
+              "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+            },
+            {
+              "path": "harness/redis-probe.mjs",
+              "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+            },
+            {
+              "path": "harness/redis-probe.test.mjs",
+              "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+            },
+            {
+              "path": "harness/retry.mjs",
+              "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+            },
+            {
+              "path": "harness/retry.test.mjs",
+              "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+            },
+            {
+              "path": "harness/run-all.mjs",
+              "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+            },
+            {
+              "path": "harness/run.mjs",
+              "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+            },
+            {
+              "path": "harness/semantics.mjs",
+              "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+            },
+            {
+              "path": "harness/single-writer-load.mjs",
+              "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+            },
+            {
+              "path": "harness/single-writer-profiles.mjs",
+              "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+            },
+            {
+              "path": "harness/single-writer-provenance.mjs",
+              "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+            },
+            {
+              "path": "harness/single-writer-summary.mjs",
+              "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+            },
+            {
+              "path": "harness/single-writer.mjs",
+              "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+            },
+            {
+              "path": "harness/single-writer.test.mjs",
+              "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+            },
+            {
+              "path": "harness/task17-benchmark.mjs",
+              "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+            },
+            {
+              "path": "harness/task17-cache-assertions.mjs",
+              "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+            },
+            {
+              "path": "harness/task17-cache-scenarios.mjs",
+              "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+            },
+            {
+              "path": "harness/task17-cache.mjs",
+              "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+            },
+            {
+              "path": "harness/task17-compare.mjs",
+              "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+            },
+            {
+              "path": "harness/task17-hot-load.mjs",
+              "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+            },
+            {
+              "path": "harness/task17-profiles.mjs",
+              "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+            },
+            {
+              "path": "harness/task17-profiles.test.mjs",
+              "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+            },
+            {
+              "path": "harness/task17-provenance.mjs",
+              "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+            },
+            {
+              "path": "infra/engines.mjs",
+              "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+            },
+            {
+              "path": "infra/gateways.mjs",
+              "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+            },
+            {
+              "path": "infra/migration-v2.sql",
+              "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+            },
+            {
+              "path": "infra/pg-wire-probe.mjs",
+              "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+            },
+            {
+              "path": "infra/provenance.mjs",
+              "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+            },
+            {
+              "path": "infra/redis-runtime.mjs",
+              "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+            },
+            {
+              "path": "infra/runtime.mjs",
+              "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+            },
+            {
+              "path": "postgres/Cargo.lock",
+              "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+            },
+            {
+              "path": "postgres/Cargo.toml",
+              "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+            },
+            {
+              "path": "postgres/delta-migration.sql",
+              "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+            },
+            {
+              "path": "postgres/durable-schema.sql",
+              "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+            },
+            {
+              "path": "postgres/indexes.sql",
+              "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+            },
+            {
+              "path": "postgres/schema.sql",
+              "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+            },
+            {
+              "path": "postgres/src/batch.rs",
+              "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+            },
+            {
+              "path": "postgres/src/batch_write.rs",
+              "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+            },
+            {
+              "path": "postgres/src/blobs.rs",
+              "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+            },
+            {
+              "path": "postgres/src/cache_metrics.rs",
+              "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+            },
+            {
+              "path": "postgres/src/compatibility.rs",
+              "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+            },
+            {
+              "path": "postgres/src/db.rs",
+              "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+            },
+            {
+              "path": "postgres/src/delta.rs",
+              "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+            },
+            {
+              "path": "postgres/src/durable_http.rs",
+              "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+            },
+            {
+              "path": "postgres/src/events.rs",
+              "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+            },
+            {
+              "path": "postgres/src/hot_reads.rs",
+              "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+            },
+            {
+              "path": "postgres/src/hot_snapshot.rs",
+              "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+            },
+            {
+              "path": "postgres/src/http.rs",
+              "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+            },
+            {
+              "path": "postgres/src/jobs.rs",
+              "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+            },
+            {
+              "path": "postgres/src/leases.rs",
+              "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+            },
+            {
+              "path": "postgres/src/main.rs",
+              "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+            },
+            {
+              "path": "postgres/src/profile.rs",
+              "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+            },
+            {
+              "path": "postgres/src/redis_cache.rs",
+              "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+            },
+            {
+              "path": "postgres/src/staging.rs",
+              "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+            },
+            {
+              "path": "postgres/src/transport.rs",
+              "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+            },
+            {
+              "path": "postgres/tests/contract.rs",
+              "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+            },
+            {
+              "path": "postgres/tests/contract/atomic.rs",
+              "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_failure.rs",
+              "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_nodes.rs",
+              "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_replay.rs",
+              "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+            },
+            {
+              "path": "postgres/tests/contract/delta.rs",
+              "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+            },
+            {
+              "path": "postgres/tests/contract/delta_failures.rs",
+              "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+            },
+            {
+              "path": "postgres/tests/contract/fast_paths.rs",
+              "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads.rs",
+              "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads_races.rs",
+              "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+            },
+            {
+              "path": "postgres/tests/contract/notifications.rs",
+              "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+            },
+            {
+              "path": "postgres/tests/contract/reads.rs",
+              "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+            },
+            {
+              "path": "postgres/tests/contract/support.rs",
+              "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+            },
+            {
+              "path": "postgres/tests/durability.mjs",
+              "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+            },
+            {
+              "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+              "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+            },
+            {
+              "path": "postgres/tests/fixture-worker.mjs",
+              "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+            },
+            {
+              "path": "postgres/tests/smoke.mjs",
+              "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+            }
+          ]
+        },
+        "binary": {
+          "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+        },
+        "driver": [
+          {
+            "path": "harness/single-writer.mjs",
+            "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+          },
+          {
+            "path": "harness/single-writer-load.mjs",
+            "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+          },
+          {
+            "path": "harness/single-writer-provenance.mjs",
+            "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+          },
+          {
+            "path": "harness/single-writer-profiles.mjs",
+            "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+          },
+          {
+            "path": "harness/client.mjs",
+            "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+          },
+          {
+            "path": "harness/retry.mjs",
+            "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+          },
+          {
+            "path": "harness/load.mjs",
+            "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+          },
+          {
+            "path": "infra/runtime.mjs",
+            "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+          },
+          {
+            "path": "infra/gateways.mjs",
+            "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+          }
+        ],
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+        "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+        "node": "v24.21.0",
+        "task17Driver": [
+          {
+            "path": "harness/task17-benchmark.mjs",
+            "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+          },
+          {
+            "path": "harness/task17-profiles.mjs",
+            "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+          },
+          {
+            "path": "harness/task17-provenance.mjs",
+            "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+          },
+          {
+            "path": "infra/redis-runtime.mjs",
+            "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+          }
+        ]
+      },
+      "provenanceAfter": {
+        "source": {
+          "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+          "files": [
+            {
+              "path": "core/Cargo.lock",
+              "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+            },
+            {
+              "path": "core/Cargo.toml",
+              "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+            },
+            {
+              "path": "core/src/command.rs",
+              "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+            },
+            {
+              "path": "core/src/delta.rs",
+              "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+            },
+            {
+              "path": "core/src/delta_tests.rs",
+              "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+            },
+            {
+              "path": "core/src/lib.rs",
+              "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+            },
+            {
+              "path": "core/src/profile.rs",
+              "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+            },
+            {
+              "path": "core/src/tests.rs",
+              "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+            },
+            {
+              "path": "core/src/validation.rs",
+              "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+            },
+            {
+              "path": "harness/client.mjs",
+              "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+            },
+            {
+              "path": "harness/client.test.mjs",
+              "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+            },
+            {
+              "path": "harness/compare-bulk.mjs",
+              "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+            },
+            {
+              "path": "harness/compare-bulk.test.mjs",
+              "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+            },
+            {
+              "path": "harness/compare.mjs",
+              "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+            },
+            {
+              "path": "harness/compare.test.mjs",
+              "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+            },
+            {
+              "path": "harness/history.mjs",
+              "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+            },
+            {
+              "path": "harness/indexes-fixture.mjs",
+              "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+            },
+            {
+              "path": "harness/indexes.mjs",
+              "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+            },
+            {
+              "path": "harness/indexes.test.mjs",
+              "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+            },
+            {
+              "path": "harness/load.mjs",
+              "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+            },
+            {
+              "path": "harness/migration.mjs",
+              "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+            },
+            {
+              "path": "harness/pg-wire-probe.test.mjs",
+              "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+            },
+            {
+              "path": "harness/query-counts.mjs",
+              "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+            },
+            {
+              "path": "harness/reconnect.mjs",
+              "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+            },
+            {
+              "path": "harness/recovery.mjs",
+              "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+            },
+            {
+              "path": "harness/redis-probe.mjs",
+              "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+            },
+            {
+              "path": "harness/redis-probe.test.mjs",
+              "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+            },
+            {
+              "path": "harness/retry.mjs",
+              "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+            },
+            {
+              "path": "harness/retry.test.mjs",
+              "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+            },
+            {
+              "path": "harness/run-all.mjs",
+              "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+            },
+            {
+              "path": "harness/run.mjs",
+              "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+            },
+            {
+              "path": "harness/semantics.mjs",
+              "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+            },
+            {
+              "path": "harness/single-writer-load.mjs",
+              "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+            },
+            {
+              "path": "harness/single-writer-profiles.mjs",
+              "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+            },
+            {
+              "path": "harness/single-writer-provenance.mjs",
+              "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+            },
+            {
+              "path": "harness/single-writer-summary.mjs",
+              "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+            },
+            {
+              "path": "harness/single-writer.mjs",
+              "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+            },
+            {
+              "path": "harness/single-writer.test.mjs",
+              "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+            },
+            {
+              "path": "harness/task17-benchmark.mjs",
+              "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+            },
+            {
+              "path": "harness/task17-cache-assertions.mjs",
+              "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+            },
+            {
+              "path": "harness/task17-cache-scenarios.mjs",
+              "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+            },
+            {
+              "path": "harness/task17-cache.mjs",
+              "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+            },
+            {
+              "path": "harness/task17-compare.mjs",
+              "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+            },
+            {
+              "path": "harness/task17-hot-load.mjs",
+              "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+            },
+            {
+              "path": "harness/task17-profiles.mjs",
+              "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+            },
+            {
+              "path": "harness/task17-profiles.test.mjs",
+              "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+            },
+            {
+              "path": "harness/task17-provenance.mjs",
+              "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+            },
+            {
+              "path": "infra/engines.mjs",
+              "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+            },
+            {
+              "path": "infra/gateways.mjs",
+              "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+            },
+            {
+              "path": "infra/migration-v2.sql",
+              "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+            },
+            {
+              "path": "infra/pg-wire-probe.mjs",
+              "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+            },
+            {
+              "path": "infra/provenance.mjs",
+              "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+            },
+            {
+              "path": "infra/redis-runtime.mjs",
+              "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+            },
+            {
+              "path": "infra/runtime.mjs",
+              "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+            },
+            {
+              "path": "postgres/Cargo.lock",
+              "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+            },
+            {
+              "path": "postgres/Cargo.toml",
+              "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+            },
+            {
+              "path": "postgres/delta-migration.sql",
+              "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+            },
+            {
+              "path": "postgres/durable-schema.sql",
+              "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+            },
+            {
+              "path": "postgres/indexes.sql",
+              "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+            },
+            {
+              "path": "postgres/schema.sql",
+              "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+            },
+            {
+              "path": "postgres/src/batch.rs",
+              "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+            },
+            {
+              "path": "postgres/src/batch_write.rs",
+              "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+            },
+            {
+              "path": "postgres/src/blobs.rs",
+              "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+            },
+            {
+              "path": "postgres/src/cache_metrics.rs",
+              "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+            },
+            {
+              "path": "postgres/src/compatibility.rs",
+              "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+            },
+            {
+              "path": "postgres/src/db.rs",
+              "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+            },
+            {
+              "path": "postgres/src/delta.rs",
+              "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+            },
+            {
+              "path": "postgres/src/durable_http.rs",
+              "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+            },
+            {
+              "path": "postgres/src/events.rs",
+              "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+            },
+            {
+              "path": "postgres/src/hot_reads.rs",
+              "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+            },
+            {
+              "path": "postgres/src/hot_snapshot.rs",
+              "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+            },
+            {
+              "path": "postgres/src/http.rs",
+              "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+            },
+            {
+              "path": "postgres/src/jobs.rs",
+              "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+            },
+            {
+              "path": "postgres/src/leases.rs",
+              "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+            },
+            {
+              "path": "postgres/src/main.rs",
+              "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+            },
+            {
+              "path": "postgres/src/profile.rs",
+              "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+            },
+            {
+              "path": "postgres/src/redis_cache.rs",
+              "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+            },
+            {
+              "path": "postgres/src/staging.rs",
+              "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+            },
+            {
+              "path": "postgres/src/transport.rs",
+              "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+            },
+            {
+              "path": "postgres/tests/contract.rs",
+              "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+            },
+            {
+              "path": "postgres/tests/contract/atomic.rs",
+              "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_failure.rs",
+              "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_nodes.rs",
+              "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_replay.rs",
+              "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+            },
+            {
+              "path": "postgres/tests/contract/delta.rs",
+              "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+            },
+            {
+              "path": "postgres/tests/contract/delta_failures.rs",
+              "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+            },
+            {
+              "path": "postgres/tests/contract/fast_paths.rs",
+              "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads.rs",
+              "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads_races.rs",
+              "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+            },
+            {
+              "path": "postgres/tests/contract/notifications.rs",
+              "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+            },
+            {
+              "path": "postgres/tests/contract/reads.rs",
+              "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+            },
+            {
+              "path": "postgres/tests/contract/support.rs",
+              "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+            },
+            {
+              "path": "postgres/tests/durability.mjs",
+              "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+            },
+            {
+              "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+              "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+            },
+            {
+              "path": "postgres/tests/fixture-worker.mjs",
+              "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+            },
+            {
+              "path": "postgres/tests/smoke.mjs",
+              "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+            }
+          ]
+        },
+        "binary": {
+          "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+        },
+        "driver": [
+          {
+            "path": "harness/single-writer.mjs",
+            "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+          },
+          {
+            "path": "harness/single-writer-load.mjs",
+            "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+          },
+          {
+            "path": "harness/single-writer-provenance.mjs",
+            "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+          },
+          {
+            "path": "harness/single-writer-profiles.mjs",
+            "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+          },
+          {
+            "path": "harness/client.mjs",
+            "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+          },
+          {
+            "path": "harness/retry.mjs",
+            "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+          },
+          {
+            "path": "harness/load.mjs",
+            "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+          },
+          {
+            "path": "infra/runtime.mjs",
+            "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+          },
+          {
+            "path": "infra/gateways.mjs",
+            "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+          }
+        ],
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+        "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+        "node": "v24.21.0",
+        "task17Driver": [
+          {
+            "path": "harness/task17-benchmark.mjs",
+            "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+          },
+          {
+            "path": "harness/task17-profiles.mjs",
+            "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+          },
+          {
+            "path": "harness/task17-provenance.mjs",
+            "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+          },
+          {
+            "path": "infra/redis-runtime.mjs",
+            "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+          }
+        ]
+      }
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 1,
+      "warmup": 20,
+      "samples": 100,
+      "projectId": "load-5000-b27d7d7e-850b-4b8a-be4e-ee49ef70e8e5",
+      "seedCommits": 10,
+      "successfulCount": 120,
+      "observedCommits": 120,
+      "observedEvents": 120,
+      "readCount": 11,
+      "measuredReadCount": 5,
+      "mixedSnapshots": 0,
+      "unchangedNodesVerified": 4997,
+      "replayVerified": true,
+      "measuredDurationMs": 360.75812499999984,
+      "throughput": 277.1940340914014,
+      "postMs": {
+        "count": 100,
+        "p50": 2.070582999999715,
+        "p95": 4.052874999999858,
+        "p99": 15.871750000000247,
+        "min": 1.6825830000002497,
+        "max": 37.42574999999988
+      },
+      "wholeOperationMs": {
+        "count": 100,
+        "p50": 2.4857919999999467,
+        "p95": 5.5786669999997684,
+        "p99": 37.77316699999983,
+        "min": 1.9839999999999236,
+        "max": 41.35179100000005
+      },
+      "revisionReadMs": {
+        "count": 100,
+        "p50": 0.3781250000001819,
+        "p95": 0.5359580000003916,
+        "p99": 1.16012499999988,
+        "min": 0.2726670000001832,
+        "max": 37.31337499999972
+      },
+      "continuousReadMs": {
+        "count": 12,
+        "p50": 66.18937499999993,
+        "p95": 75.16087500000003,
+        "p99": 75.16087500000003,
+        "min": 20.665458999999828,
+        "max": 75.16087500000003
+      },
+      "profile": {
+        "serverTotalMs": {
+          "count": 100,
+          "p50": 1.543,
+          "p95": 3.443,
+          "p99": 15.283,
+          "min": 1.267,
+          "max": 35.803
+        },
+        "queriedNodeCount": {
+          "count": 100,
+          "p50": 3,
+          "p95": 3,
+          "p99": 3,
+          "min": 3,
+          "max": 3
+        },
+        "validatedNodeCount": {
+          "count": 100,
+          "p50": 3,
+          "p95": 3,
+          "p99": 3,
+          "min": 3,
+          "max": 3
+        },
+        "writePath": "delta",
+        "phaseMs": {
+          "apply": {
+            "count": 100,
+            "p50": 0.028,
+            "p95": 0.033,
+            "p99": 0.049,
+            "min": 0.026,
+            "max": 0.078
+          },
+          "begin": {
+            "count": 100,
+            "p50": 0.095,
+            "p95": 0.212,
+            "p99": 3.205,
+            "min": 0.067,
+            "max": 3.3
+          },
+          "commit": {
+            "count": 100,
+            "p50": 0.672,
+            "p95": 1.309,
+            "p99": 3.783,
+            "min": 0.533,
+            "max": 14.498
+          },
+          "hash": {
+            "count": 100,
+            "p50": 0.056,
+            "p95": 0.064,
+            "p99": 0.106,
+            "min": 0.049,
+            "max": 0.112
+          },
+          "lock": {
+            "count": 100,
+            "p50": 0.119,
+            "p95": 0.219,
+            "p99": 0.334,
+            "min": 0.089,
+            "max": 0.376
+          },
+          "nodeDecode": {
+            "count": 100,
+            "p50": 0.006,
+            "p95": 0.008,
+            "p99": 0.01,
+            "min": 0.005,
+            "max": 0.017
+          },
+          "nodeQuery": {
+            "count": 100,
+            "p50": 0.13,
+            "p95": 0.233,
+            "p99": 0.279,
+            "min": 0.098,
+            "max": 0.318
+          },
+          "persist": {
+            "count": 100,
+            "p50": 0.267,
+            "p95": 0.432,
+            "p99": 0.634,
+            "min": 0.219,
+            "max": 2.524
+          },
+          "pool": {
+            "count": 100,
+            "p50": 0,
+            "p95": 0.001,
+            "p99": 0.004,
+            "min": 0,
+            "max": 0.004
+          },
+          "replay": {
+            "count": 100,
+            "p50": 0.111,
+            "p95": 0.178,
+            "p99": 0.323,
+            "min": 0.083,
+            "max": 31.822
+          }
+        }
+      },
+      "metricsBefore": [
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 33,
+          "malformed": 0,
+          "misses": 75,
+          "nodeQueries": 75,
+          "oversize": 0,
+          "probes": 108,
+          "stores": 75
+        },
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 67,
+          "malformed": 0,
+          "misses": 39,
+          "nodeQueries": 39,
+          "oversize": 0,
+          "probes": 106,
+          "stores": 39
+        }
+      ],
+      "metricsAfter": [
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 35,
+          "malformed": 0,
+          "misses": 81,
+          "nodeQueries": 81,
+          "oversize": 0,
+          "probes": 116,
+          "stores": 81
+        },
+        {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 70,
+          "malformed": 0,
+          "misses": 43,
+          "nodeQueries": 43,
+          "oversize": 0,
+          "probes": 113,
+          "stores": 43
+        }
+      ],
+      "cacheMetrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 5,
+        "malformed": 0,
+        "misses": 10,
+        "nodeQueries": 10,
+        "oversize": 0,
+        "probes": 15,
+        "stores": 10
+      },
+      "provenanceBefore": {
+        "source": {
+          "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+          "files": [
+            {
+              "path": "core/Cargo.lock",
+              "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+            },
+            {
+              "path": "core/Cargo.toml",
+              "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+            },
+            {
+              "path": "core/src/command.rs",
+              "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+            },
+            {
+              "path": "core/src/delta.rs",
+              "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+            },
+            {
+              "path": "core/src/delta_tests.rs",
+              "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+            },
+            {
+              "path": "core/src/lib.rs",
+              "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+            },
+            {
+              "path": "core/src/profile.rs",
+              "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+            },
+            {
+              "path": "core/src/tests.rs",
+              "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+            },
+            {
+              "path": "core/src/validation.rs",
+              "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+            },
+            {
+              "path": "harness/client.mjs",
+              "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+            },
+            {
+              "path": "harness/client.test.mjs",
+              "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+            },
+            {
+              "path": "harness/compare-bulk.mjs",
+              "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+            },
+            {
+              "path": "harness/compare-bulk.test.mjs",
+              "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+            },
+            {
+              "path": "harness/compare.mjs",
+              "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+            },
+            {
+              "path": "harness/compare.test.mjs",
+              "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+            },
+            {
+              "path": "harness/history.mjs",
+              "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+            },
+            {
+              "path": "harness/indexes-fixture.mjs",
+              "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+            },
+            {
+              "path": "harness/indexes.mjs",
+              "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+            },
+            {
+              "path": "harness/indexes.test.mjs",
+              "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+            },
+            {
+              "path": "harness/load.mjs",
+              "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+            },
+            {
+              "path": "harness/migration.mjs",
+              "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+            },
+            {
+              "path": "harness/pg-wire-probe.test.mjs",
+              "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+            },
+            {
+              "path": "harness/query-counts.mjs",
+              "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+            },
+            {
+              "path": "harness/reconnect.mjs",
+              "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+            },
+            {
+              "path": "harness/recovery.mjs",
+              "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+            },
+            {
+              "path": "harness/redis-probe.mjs",
+              "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+            },
+            {
+              "path": "harness/redis-probe.test.mjs",
+              "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+            },
+            {
+              "path": "harness/retry.mjs",
+              "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+            },
+            {
+              "path": "harness/retry.test.mjs",
+              "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+            },
+            {
+              "path": "harness/run-all.mjs",
+              "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+            },
+            {
+              "path": "harness/run.mjs",
+              "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+            },
+            {
+              "path": "harness/semantics.mjs",
+              "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+            },
+            {
+              "path": "harness/single-writer-load.mjs",
+              "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+            },
+            {
+              "path": "harness/single-writer-profiles.mjs",
+              "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+            },
+            {
+              "path": "harness/single-writer-provenance.mjs",
+              "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+            },
+            {
+              "path": "harness/single-writer-summary.mjs",
+              "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+            },
+            {
+              "path": "harness/single-writer.mjs",
+              "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+            },
+            {
+              "path": "harness/single-writer.test.mjs",
+              "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+            },
+            {
+              "path": "harness/task17-benchmark.mjs",
+              "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+            },
+            {
+              "path": "harness/task17-cache-assertions.mjs",
+              "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+            },
+            {
+              "path": "harness/task17-cache-scenarios.mjs",
+              "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+            },
+            {
+              "path": "harness/task17-cache.mjs",
+              "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+            },
+            {
+              "path": "harness/task17-compare.mjs",
+              "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+            },
+            {
+              "path": "harness/task17-hot-load.mjs",
+              "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+            },
+            {
+              "path": "harness/task17-profiles.mjs",
+              "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+            },
+            {
+              "path": "harness/task17-profiles.test.mjs",
+              "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+            },
+            {
+              "path": "harness/task17-provenance.mjs",
+              "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+            },
+            {
+              "path": "infra/engines.mjs",
+              "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+            },
+            {
+              "path": "infra/gateways.mjs",
+              "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+            },
+            {
+              "path": "infra/migration-v2.sql",
+              "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+            },
+            {
+              "path": "infra/pg-wire-probe.mjs",
+              "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+            },
+            {
+              "path": "infra/provenance.mjs",
+              "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+            },
+            {
+              "path": "infra/redis-runtime.mjs",
+              "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+            },
+            {
+              "path": "infra/runtime.mjs",
+              "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+            },
+            {
+              "path": "postgres/Cargo.lock",
+              "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+            },
+            {
+              "path": "postgres/Cargo.toml",
+              "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+            },
+            {
+              "path": "postgres/delta-migration.sql",
+              "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+            },
+            {
+              "path": "postgres/durable-schema.sql",
+              "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+            },
+            {
+              "path": "postgres/indexes.sql",
+              "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+            },
+            {
+              "path": "postgres/schema.sql",
+              "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+            },
+            {
+              "path": "postgres/src/batch.rs",
+              "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+            },
+            {
+              "path": "postgres/src/batch_write.rs",
+              "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+            },
+            {
+              "path": "postgres/src/blobs.rs",
+              "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+            },
+            {
+              "path": "postgres/src/cache_metrics.rs",
+              "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+            },
+            {
+              "path": "postgres/src/compatibility.rs",
+              "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+            },
+            {
+              "path": "postgres/src/db.rs",
+              "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+            },
+            {
+              "path": "postgres/src/delta.rs",
+              "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+            },
+            {
+              "path": "postgres/src/durable_http.rs",
+              "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+            },
+            {
+              "path": "postgres/src/events.rs",
+              "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+            },
+            {
+              "path": "postgres/src/hot_reads.rs",
+              "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+            },
+            {
+              "path": "postgres/src/hot_snapshot.rs",
+              "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+            },
+            {
+              "path": "postgres/src/http.rs",
+              "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+            },
+            {
+              "path": "postgres/src/jobs.rs",
+              "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+            },
+            {
+              "path": "postgres/src/leases.rs",
+              "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+            },
+            {
+              "path": "postgres/src/main.rs",
+              "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+            },
+            {
+              "path": "postgres/src/profile.rs",
+              "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+            },
+            {
+              "path": "postgres/src/redis_cache.rs",
+              "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+            },
+            {
+              "path": "postgres/src/staging.rs",
+              "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+            },
+            {
+              "path": "postgres/src/transport.rs",
+              "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+            },
+            {
+              "path": "postgres/tests/contract.rs",
+              "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+            },
+            {
+              "path": "postgres/tests/contract/atomic.rs",
+              "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_failure.rs",
+              "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_nodes.rs",
+              "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_replay.rs",
+              "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+            },
+            {
+              "path": "postgres/tests/contract/delta.rs",
+              "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+            },
+            {
+              "path": "postgres/tests/contract/delta_failures.rs",
+              "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+            },
+            {
+              "path": "postgres/tests/contract/fast_paths.rs",
+              "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads.rs",
+              "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads_races.rs",
+              "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+            },
+            {
+              "path": "postgres/tests/contract/notifications.rs",
+              "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+            },
+            {
+              "path": "postgres/tests/contract/reads.rs",
+              "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+            },
+            {
+              "path": "postgres/tests/contract/support.rs",
+              "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+            },
+            {
+              "path": "postgres/tests/durability.mjs",
+              "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+            },
+            {
+              "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+              "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+            },
+            {
+              "path": "postgres/tests/fixture-worker.mjs",
+              "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+            },
+            {
+              "path": "postgres/tests/smoke.mjs",
+              "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+            }
+          ]
+        },
+        "binary": {
+          "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+        },
+        "driver": [
+          {
+            "path": "harness/single-writer.mjs",
+            "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+          },
+          {
+            "path": "harness/single-writer-load.mjs",
+            "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+          },
+          {
+            "path": "harness/single-writer-provenance.mjs",
+            "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+          },
+          {
+            "path": "harness/single-writer-profiles.mjs",
+            "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+          },
+          {
+            "path": "harness/client.mjs",
+            "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+          },
+          {
+            "path": "harness/retry.mjs",
+            "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+          },
+          {
+            "path": "harness/load.mjs",
+            "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+          },
+          {
+            "path": "infra/runtime.mjs",
+            "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+          },
+          {
+            "path": "infra/gateways.mjs",
+            "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+          }
+        ],
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+        "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+        "node": "v24.21.0",
+        "task17Driver": [
+          {
+            "path": "harness/task17-benchmark.mjs",
+            "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+          },
+          {
+            "path": "harness/task17-profiles.mjs",
+            "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+          },
+          {
+            "path": "harness/task17-provenance.mjs",
+            "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+          },
+          {
+            "path": "infra/redis-runtime.mjs",
+            "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+          }
+        ]
+      },
+      "provenanceAfter": {
+        "source": {
+          "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+          "files": [
+            {
+              "path": "core/Cargo.lock",
+              "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+            },
+            {
+              "path": "core/Cargo.toml",
+              "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+            },
+            {
+              "path": "core/src/command.rs",
+              "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+            },
+            {
+              "path": "core/src/delta.rs",
+              "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+            },
+            {
+              "path": "core/src/delta_tests.rs",
+              "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+            },
+            {
+              "path": "core/src/lib.rs",
+              "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+            },
+            {
+              "path": "core/src/profile.rs",
+              "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+            },
+            {
+              "path": "core/src/tests.rs",
+              "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+            },
+            {
+              "path": "core/src/validation.rs",
+              "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+            },
+            {
+              "path": "harness/client.mjs",
+              "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+            },
+            {
+              "path": "harness/client.test.mjs",
+              "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+            },
+            {
+              "path": "harness/compare-bulk.mjs",
+              "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+            },
+            {
+              "path": "harness/compare-bulk.test.mjs",
+              "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+            },
+            {
+              "path": "harness/compare.mjs",
+              "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+            },
+            {
+              "path": "harness/compare.test.mjs",
+              "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+            },
+            {
+              "path": "harness/history.mjs",
+              "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+            },
+            {
+              "path": "harness/indexes-fixture.mjs",
+              "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+            },
+            {
+              "path": "harness/indexes.mjs",
+              "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+            },
+            {
+              "path": "harness/indexes.test.mjs",
+              "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+            },
+            {
+              "path": "harness/load.mjs",
+              "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+            },
+            {
+              "path": "harness/migration.mjs",
+              "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+            },
+            {
+              "path": "harness/pg-wire-probe.test.mjs",
+              "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+            },
+            {
+              "path": "harness/query-counts.mjs",
+              "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+            },
+            {
+              "path": "harness/reconnect.mjs",
+              "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+            },
+            {
+              "path": "harness/recovery.mjs",
+              "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+            },
+            {
+              "path": "harness/redis-probe.mjs",
+              "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+            },
+            {
+              "path": "harness/redis-probe.test.mjs",
+              "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+            },
+            {
+              "path": "harness/retry.mjs",
+              "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+            },
+            {
+              "path": "harness/retry.test.mjs",
+              "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+            },
+            {
+              "path": "harness/run-all.mjs",
+              "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+            },
+            {
+              "path": "harness/run.mjs",
+              "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+            },
+            {
+              "path": "harness/semantics.mjs",
+              "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+            },
+            {
+              "path": "harness/single-writer-load.mjs",
+              "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+            },
+            {
+              "path": "harness/single-writer-profiles.mjs",
+              "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+            },
+            {
+              "path": "harness/single-writer-provenance.mjs",
+              "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+            },
+            {
+              "path": "harness/single-writer-summary.mjs",
+              "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+            },
+            {
+              "path": "harness/single-writer.mjs",
+              "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+            },
+            {
+              "path": "harness/single-writer.test.mjs",
+              "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+            },
+            {
+              "path": "harness/task17-benchmark.mjs",
+              "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+            },
+            {
+              "path": "harness/task17-cache-assertions.mjs",
+              "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+            },
+            {
+              "path": "harness/task17-cache-scenarios.mjs",
+              "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+            },
+            {
+              "path": "harness/task17-cache.mjs",
+              "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+            },
+            {
+              "path": "harness/task17-compare.mjs",
+              "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+            },
+            {
+              "path": "harness/task17-hot-load.mjs",
+              "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+            },
+            {
+              "path": "harness/task17-profiles.mjs",
+              "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+            },
+            {
+              "path": "harness/task17-profiles.test.mjs",
+              "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+            },
+            {
+              "path": "harness/task17-provenance.mjs",
+              "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+            },
+            {
+              "path": "infra/engines.mjs",
+              "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+            },
+            {
+              "path": "infra/gateways.mjs",
+              "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+            },
+            {
+              "path": "infra/migration-v2.sql",
+              "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+            },
+            {
+              "path": "infra/pg-wire-probe.mjs",
+              "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+            },
+            {
+              "path": "infra/provenance.mjs",
+              "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+            },
+            {
+              "path": "infra/redis-runtime.mjs",
+              "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+            },
+            {
+              "path": "infra/runtime.mjs",
+              "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+            },
+            {
+              "path": "postgres/Cargo.lock",
+              "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+            },
+            {
+              "path": "postgres/Cargo.toml",
+              "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+            },
+            {
+              "path": "postgres/delta-migration.sql",
+              "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+            },
+            {
+              "path": "postgres/durable-schema.sql",
+              "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+            },
+            {
+              "path": "postgres/indexes.sql",
+              "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+            },
+            {
+              "path": "postgres/schema.sql",
+              "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+            },
+            {
+              "path": "postgres/src/batch.rs",
+              "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+            },
+            {
+              "path": "postgres/src/batch_write.rs",
+              "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+            },
+            {
+              "path": "postgres/src/blobs.rs",
+              "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+            },
+            {
+              "path": "postgres/src/cache_metrics.rs",
+              "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+            },
+            {
+              "path": "postgres/src/compatibility.rs",
+              "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+            },
+            {
+              "path": "postgres/src/db.rs",
+              "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+            },
+            {
+              "path": "postgres/src/delta.rs",
+              "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+            },
+            {
+              "path": "postgres/src/durable_http.rs",
+              "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+            },
+            {
+              "path": "postgres/src/events.rs",
+              "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+            },
+            {
+              "path": "postgres/src/hot_reads.rs",
+              "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+            },
+            {
+              "path": "postgres/src/hot_snapshot.rs",
+              "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+            },
+            {
+              "path": "postgres/src/http.rs",
+              "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+            },
+            {
+              "path": "postgres/src/jobs.rs",
+              "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+            },
+            {
+              "path": "postgres/src/leases.rs",
+              "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+            },
+            {
+              "path": "postgres/src/main.rs",
+              "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+            },
+            {
+              "path": "postgres/src/profile.rs",
+              "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+            },
+            {
+              "path": "postgres/src/redis_cache.rs",
+              "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+            },
+            {
+              "path": "postgres/src/staging.rs",
+              "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+            },
+            {
+              "path": "postgres/src/transport.rs",
+              "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+            },
+            {
+              "path": "postgres/tests/contract.rs",
+              "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+            },
+            {
+              "path": "postgres/tests/contract/atomic.rs",
+              "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_failure.rs",
+              "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_nodes.rs",
+              "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+            },
+            {
+              "path": "postgres/tests/contract/bulk_replay.rs",
+              "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+            },
+            {
+              "path": "postgres/tests/contract/delta.rs",
+              "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+            },
+            {
+              "path": "postgres/tests/contract/delta_failures.rs",
+              "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+            },
+            {
+              "path": "postgres/tests/contract/fast_paths.rs",
+              "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads.rs",
+              "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+            },
+            {
+              "path": "postgres/tests/contract/hot_reads_races.rs",
+              "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+            },
+            {
+              "path": "postgres/tests/contract/notifications.rs",
+              "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+            },
+            {
+              "path": "postgres/tests/contract/reads.rs",
+              "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+            },
+            {
+              "path": "postgres/tests/contract/support.rs",
+              "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+            },
+            {
+              "path": "postgres/tests/durability.mjs",
+              "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+            },
+            {
+              "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+              "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+            },
+            {
+              "path": "postgres/tests/fixture-worker.mjs",
+              "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+            },
+            {
+              "path": "postgres/tests/smoke.mjs",
+              "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+            }
+          ]
+        },
+        "binary": {
+          "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+        },
+        "driver": [
+          {
+            "path": "harness/single-writer.mjs",
+            "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+          },
+          {
+            "path": "harness/single-writer-load.mjs",
+            "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+          },
+          {
+            "path": "harness/single-writer-provenance.mjs",
+            "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+          },
+          {
+            "path": "harness/single-writer-profiles.mjs",
+            "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+          },
+          {
+            "path": "harness/client.mjs",
+            "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+          },
+          {
+            "path": "harness/retry.mjs",
+            "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+          },
+          {
+            "path": "harness/load.mjs",
+            "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+          },
+          {
+            "path": "infra/runtime.mjs",
+            "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+          },
+          {
+            "path": "infra/gateways.mjs",
+            "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+          }
+        ],
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+        "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+        "node": "v24.21.0",
+        "task17Driver": [
+          {
+            "path": "harness/task17-benchmark.mjs",
+            "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+          },
+          {
+            "path": "harness/task17-profiles.mjs",
+            "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+          },
+          {
+            "path": "harness/task17-provenance.mjs",
+            "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+          },
+          {
+            "path": "infra/redis-runtime.mjs",
+            "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+          }
+        ]
+      }
+    }
+  ],
+  "provenance": {
+    "source": {
+      "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+      "files": [
+        {
+          "path": "core/Cargo.lock",
+          "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+        },
+        {
+          "path": "core/Cargo.toml",
+          "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+        },
+        {
+          "path": "core/src/command.rs",
+          "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+        },
+        {
+          "path": "core/src/delta.rs",
+          "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+        },
+        {
+          "path": "core/src/delta_tests.rs",
+          "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+        },
+        {
+          "path": "core/src/lib.rs",
+          "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+        },
+        {
+          "path": "core/src/profile.rs",
+          "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+        },
+        {
+          "path": "core/src/tests.rs",
+          "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+        },
+        {
+          "path": "core/src/validation.rs",
+          "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+        },
+        {
+          "path": "harness/client.mjs",
+          "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+        },
+        {
+          "path": "harness/client.test.mjs",
+          "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+        },
+        {
+          "path": "harness/compare-bulk.mjs",
+          "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+        },
+        {
+          "path": "harness/compare-bulk.test.mjs",
+          "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+        },
+        {
+          "path": "harness/compare.mjs",
+          "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+        },
+        {
+          "path": "harness/compare.test.mjs",
+          "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+        },
+        {
+          "path": "harness/history.mjs",
+          "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+        },
+        {
+          "path": "harness/indexes-fixture.mjs",
+          "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+        },
+        {
+          "path": "harness/indexes.mjs",
+          "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+        },
+        {
+          "path": "harness/indexes.test.mjs",
+          "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+        },
+        {
+          "path": "harness/load.mjs",
+          "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+        },
+        {
+          "path": "harness/migration.mjs",
+          "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+        },
+        {
+          "path": "harness/pg-wire-probe.test.mjs",
+          "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+        },
+        {
+          "path": "harness/query-counts.mjs",
+          "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+        },
+        {
+          "path": "harness/reconnect.mjs",
+          "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+        },
+        {
+          "path": "harness/recovery.mjs",
+          "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+        },
+        {
+          "path": "harness/redis-probe.mjs",
+          "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+        },
+        {
+          "path": "harness/redis-probe.test.mjs",
+          "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+        },
+        {
+          "path": "harness/retry.mjs",
+          "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+        },
+        {
+          "path": "harness/retry.test.mjs",
+          "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+        },
+        {
+          "path": "harness/run-all.mjs",
+          "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+        },
+        {
+          "path": "harness/run.mjs",
+          "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+        },
+        {
+          "path": "harness/semantics.mjs",
+          "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+        },
+        {
+          "path": "harness/single-writer-load.mjs",
+          "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+        },
+        {
+          "path": "harness/single-writer-profiles.mjs",
+          "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+        },
+        {
+          "path": "harness/single-writer-provenance.mjs",
+          "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+        },
+        {
+          "path": "harness/single-writer-summary.mjs",
+          "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+        },
+        {
+          "path": "harness/single-writer.mjs",
+          "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+        },
+        {
+          "path": "harness/single-writer.test.mjs",
+          "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+        },
+        {
+          "path": "harness/task17-benchmark.mjs",
+          "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+        },
+        {
+          "path": "harness/task17-cache-assertions.mjs",
+          "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+        },
+        {
+          "path": "harness/task17-cache-scenarios.mjs",
+          "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+        },
+        {
+          "path": "harness/task17-cache.mjs",
+          "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+        },
+        {
+          "path": "harness/task17-compare.mjs",
+          "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+        },
+        {
+          "path": "harness/task17-hot-load.mjs",
+          "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+        },
+        {
+          "path": "harness/task17-profiles.mjs",
+          "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+        },
+        {
+          "path": "harness/task17-profiles.test.mjs",
+          "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+        },
+        {
+          "path": "harness/task17-provenance.mjs",
+          "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+        },
+        {
+          "path": "infra/engines.mjs",
+          "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+        },
+        {
+          "path": "infra/gateways.mjs",
+          "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+        },
+        {
+          "path": "infra/migration-v2.sql",
+          "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+        },
+        {
+          "path": "infra/pg-wire-probe.mjs",
+          "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+        },
+        {
+          "path": "infra/provenance.mjs",
+          "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+        },
+        {
+          "path": "infra/redis-runtime.mjs",
+          "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+        },
+        {
+          "path": "infra/runtime.mjs",
+          "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+        },
+        {
+          "path": "postgres/Cargo.lock",
+          "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+        },
+        {
+          "path": "postgres/Cargo.toml",
+          "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+        },
+        {
+          "path": "postgres/delta-migration.sql",
+          "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+        },
+        {
+          "path": "postgres/durable-schema.sql",
+          "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+        },
+        {
+          "path": "postgres/indexes.sql",
+          "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+        },
+        {
+          "path": "postgres/schema.sql",
+          "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+        },
+        {
+          "path": "postgres/src/batch.rs",
+          "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+        },
+        {
+          "path": "postgres/src/batch_write.rs",
+          "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+        },
+        {
+          "path": "postgres/src/blobs.rs",
+          "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+        },
+        {
+          "path": "postgres/src/cache_metrics.rs",
+          "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+        },
+        {
+          "path": "postgres/src/compatibility.rs",
+          "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+        },
+        {
+          "path": "postgres/src/db.rs",
+          "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+        },
+        {
+          "path": "postgres/src/delta.rs",
+          "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+        },
+        {
+          "path": "postgres/src/durable_http.rs",
+          "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+        },
+        {
+          "path": "postgres/src/events.rs",
+          "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+        },
+        {
+          "path": "postgres/src/hot_reads.rs",
+          "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+        },
+        {
+          "path": "postgres/src/hot_snapshot.rs",
+          "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+        },
+        {
+          "path": "postgres/src/http.rs",
+          "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+        },
+        {
+          "path": "postgres/src/jobs.rs",
+          "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+        },
+        {
+          "path": "postgres/src/leases.rs",
+          "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+        },
+        {
+          "path": "postgres/src/main.rs",
+          "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+        },
+        {
+          "path": "postgres/src/profile.rs",
+          "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+        },
+        {
+          "path": "postgres/src/redis_cache.rs",
+          "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+        },
+        {
+          "path": "postgres/src/staging.rs",
+          "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+        },
+        {
+          "path": "postgres/src/transport.rs",
+          "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+        },
+        {
+          "path": "postgres/tests/contract.rs",
+          "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+        },
+        {
+          "path": "postgres/tests/contract/atomic.rs",
+          "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_failure.rs",
+          "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_nodes.rs",
+          "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_replay.rs",
+          "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+        },
+        {
+          "path": "postgres/tests/contract/delta.rs",
+          "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+        },
+        {
+          "path": "postgres/tests/contract/delta_failures.rs",
+          "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+        },
+        {
+          "path": "postgres/tests/contract/fast_paths.rs",
+          "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+        },
+        {
+          "path": "postgres/tests/contract/hot_reads.rs",
+          "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+        },
+        {
+          "path": "postgres/tests/contract/hot_reads_races.rs",
+          "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+        },
+        {
+          "path": "postgres/tests/contract/notifications.rs",
+          "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+        },
+        {
+          "path": "postgres/tests/contract/reads.rs",
+          "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+        },
+        {
+          "path": "postgres/tests/contract/support.rs",
+          "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+        },
+        {
+          "path": "postgres/tests/durability.mjs",
+          "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+        },
+        {
+          "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+          "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+        },
+        {
+          "path": "postgres/tests/fixture-worker.mjs",
+          "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+        },
+        {
+          "path": "postgres/tests/smoke.mjs",
+          "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+        }
+      ]
+    },
+    "binary": {
+      "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+    },
+    "driver": [
+      {
+        "path": "harness/single-writer.mjs",
+        "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+      },
+      {
+        "path": "harness/single-writer-load.mjs",
+        "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+      },
+      {
+        "path": "harness/single-writer-provenance.mjs",
+        "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+      },
+      {
+        "path": "harness/single-writer-profiles.mjs",
+        "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/retry.mjs",
+        "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+    "node": "v24.21.0",
+    "task17Driver": [
+      {
+        "path": "harness/task17-benchmark.mjs",
+        "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+      },
+      {
+        "path": "harness/task17-profiles.mjs",
+        "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+      },
+      {
+        "path": "harness/task17-provenance.mjs",
+        "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+      },
+      {
+        "path": "infra/redis-runtime.mjs",
+        "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+      }
+    ]
+  },
+  "topology": {
+    "runId": "pg-1793612937488-fb14cee3",
+    "createdAt": "2026-11-02T09:48:57.723Z",
+    "containerId": "0be45240b2651f96346bc3cc251eada6fe2f21db7fc127e483b9674d39e2adad",
+    "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "port": 65492,
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "dockerVersion": {
+      "Client": {
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "DefaultAPIVersion": "1.54",
+        "GitCommit": "9d7ad9f",
+        "GoVersion": "go1.26.4",
+        "Os": "darwin",
+        "Arch": "arm64",
+        "BuildTime": "Fri Aug  7 04:38:56 2026",
+        "Context": "orbstack"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Engine - Community"
+        },
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "MinAPIVersion": "1.40",
+        "Os": "linux",
+        "Arch": "arm64",
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "29.4.0",
+            "Details": {
+              "ApiVersion": "1.54",
+              "Arch": "arm64",
+              "BuildTime": "Tue Apr  7 08:35:43 2026",
+              "Experimental": "true",
+              "GitCommit": "daa0cb7f",
+              "GoVersion": "go1.26.1",
+              "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+              "MinAPIVersion": "1.40",
+              "Module": "github.com/moby/moby/v2",
+              "ModuleVersion": "v2.0.0+unknown",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "v2.2.2",
+            "Details": {
+              "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.5.1",
+            "Details": {
+              "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "GitCommit": "daa0cb7f",
+        "GoVersion": "go1.26.1",
+        "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "Experimental": true,
+        "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+      }
+    },
+    "context": "orbstack",
+    "node": "v24.21.0",
+    "gatewayHost": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpuModel": "Apple M5",
+      "logicalCpus": 10,
+      "memoryBytes": 25769803776,
+      "limits": "uncapped host processes"
+    },
+    "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+    "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+    "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+  },
+  "redisTopology": {
+    "runId": "redis-task17-1793612939116-a79005b4",
+    "createdAt": "2026-11-02T09:48:59.291Z",
+    "containerId": "704ee98eda6529ad5c818746e7bb42bde4509a7239f387ec7e3edce5a3ddeae6",
+    "image": "redis:7.4.2@sha256:fbdbaea47b9ae4ecc2082ecdb4e1cea81e32176ffb1dcf643d422ad07427e5d9",
+    "imageId": "sha256:fbdbaea47b9ae4ecc2082ecdb4e1cea81e32176ffb1dcf643d422ad07427e5d9",
+    "port": 65496,
+    "cpu": 1,
+    "memoryBytes": 268435456,
+    "maxmemoryBytes": 67108864,
+    "persistence": "disabled (save empty; appendonly no)",
+    "eviction": "allkeys-lru",
+    "loopbackOnly": true,
+    "volumes": [
+      "fed988cee684cab7494c30e830180332254b70a5bfb5234e282eb9cc704b92d6"
+    ],
+    "redisVersion": "7.4.2"
+  },
+  "durability": {
+    "fsync": "on",
+    "synchronousCommit": "on",
+    "fullPageWrites": "on"
+  },
+  "startup": [
+    {
+      "pid": 77457,
+      "url": "http://127.0.0.1:65498",
+      "startupMs": 115.99887500000023
+    },
+    {
+      "pid": 77458,
+      "url": "http://127.0.0.1:65502",
+      "startupMs": 103.6255000000001
+    }
+  ],
+  "databaseCounts": {
+    "projects": 2,
+    "commits": 251,
+    "idempotency": 251
+  },
+  "provenanceAfter": {
+    "source": {
+      "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+      "files": [
+        {
+          "path": "core/Cargo.lock",
+          "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+        },
+        {
+          "path": "core/Cargo.toml",
+          "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+        },
+        {
+          "path": "core/src/command.rs",
+          "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+        },
+        {
+          "path": "core/src/delta.rs",
+          "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+        },
+        {
+          "path": "core/src/delta_tests.rs",
+          "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+        },
+        {
+          "path": "core/src/lib.rs",
+          "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+        },
+        {
+          "path": "core/src/profile.rs",
+          "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+        },
+        {
+          "path": "core/src/tests.rs",
+          "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+        },
+        {
+          "path": "core/src/validation.rs",
+          "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+        },
+        {
+          "path": "harness/client.mjs",
+          "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+        },
+        {
+          "path": "harness/client.test.mjs",
+          "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+        },
+        {
+          "path": "harness/compare-bulk.mjs",
+          "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+        },
+        {
+          "path": "harness/compare-bulk.test.mjs",
+          "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+        },
+        {
+          "path": "harness/compare.mjs",
+          "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+        },
+        {
+          "path": "harness/compare.test.mjs",
+          "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+        },
+        {
+          "path": "harness/history.mjs",
+          "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+        },
+        {
+          "path": "harness/indexes-fixture.mjs",
+          "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+        },
+        {
+          "path": "harness/indexes.mjs",
+          "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+        },
+        {
+          "path": "harness/indexes.test.mjs",
+          "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+        },
+        {
+          "path": "harness/load.mjs",
+          "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+        },
+        {
+          "path": "harness/migration.mjs",
+          "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+        },
+        {
+          "path": "harness/pg-wire-probe.test.mjs",
+          "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+        },
+        {
+          "path": "harness/query-counts.mjs",
+          "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+        },
+        {
+          "path": "harness/reconnect.mjs",
+          "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+        },
+        {
+          "path": "harness/recovery.mjs",
+          "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+        },
+        {
+          "path": "harness/redis-probe.mjs",
+          "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+        },
+        {
+          "path": "harness/redis-probe.test.mjs",
+          "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+        },
+        {
+          "path": "harness/retry.mjs",
+          "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+        },
+        {
+          "path": "harness/retry.test.mjs",
+          "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+        },
+        {
+          "path": "harness/run-all.mjs",
+          "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+        },
+        {
+          "path": "harness/run.mjs",
+          "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+        },
+        {
+          "path": "harness/semantics.mjs",
+          "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+        },
+        {
+          "path": "harness/single-writer-load.mjs",
+          "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+        },
+        {
+          "path": "harness/single-writer-profiles.mjs",
+          "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+        },
+        {
+          "path": "harness/single-writer-provenance.mjs",
+          "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+        },
+        {
+          "path": "harness/single-writer-summary.mjs",
+          "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+        },
+        {
+          "path": "harness/single-writer.mjs",
+          "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+        },
+        {
+          "path": "harness/single-writer.test.mjs",
+          "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+        },
+        {
+          "path": "harness/task17-benchmark.mjs",
+          "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+        },
+        {
+          "path": "harness/task17-cache-assertions.mjs",
+          "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+        },
+        {
+          "path": "harness/task17-cache-scenarios.mjs",
+          "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+        },
+        {
+          "path": "harness/task17-cache.mjs",
+          "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+        },
+        {
+          "path": "harness/task17-compare.mjs",
+          "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+        },
+        {
+          "path": "harness/task17-hot-load.mjs",
+          "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+        },
+        {
+          "path": "harness/task17-profiles.mjs",
+          "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+        },
+        {
+          "path": "harness/task17-profiles.test.mjs",
+          "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+        },
+        {
+          "path": "harness/task17-provenance.mjs",
+          "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+        },
+        {
+          "path": "infra/engines.mjs",
+          "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+        },
+        {
+          "path": "infra/gateways.mjs",
+          "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+        },
+        {
+          "path": "infra/migration-v2.sql",
+          "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+        },
+        {
+          "path": "infra/pg-wire-probe.mjs",
+          "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+        },
+        {
+          "path": "infra/provenance.mjs",
+          "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+        },
+        {
+          "path": "infra/redis-runtime.mjs",
+          "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+        },
+        {
+          "path": "infra/runtime.mjs",
+          "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+        },
+        {
+          "path": "postgres/Cargo.lock",
+          "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+        },
+        {
+          "path": "postgres/Cargo.toml",
+          "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+        },
+        {
+          "path": "postgres/delta-migration.sql",
+          "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+        },
+        {
+          "path": "postgres/durable-schema.sql",
+          "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+        },
+        {
+          "path": "postgres/indexes.sql",
+          "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+        },
+        {
+          "path": "postgres/schema.sql",
+          "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+        },
+        {
+          "path": "postgres/src/batch.rs",
+          "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+        },
+        {
+          "path": "postgres/src/batch_write.rs",
+          "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+        },
+        {
+          "path": "postgres/src/blobs.rs",
+          "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+        },
+        {
+          "path": "postgres/src/cache_metrics.rs",
+          "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+        },
+        {
+          "path": "postgres/src/compatibility.rs",
+          "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+        },
+        {
+          "path": "postgres/src/db.rs",
+          "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+        },
+        {
+          "path": "postgres/src/delta.rs",
+          "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+        },
+        {
+          "path": "postgres/src/durable_http.rs",
+          "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+        },
+        {
+          "path": "postgres/src/events.rs",
+          "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+        },
+        {
+          "path": "postgres/src/hot_reads.rs",
+          "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+        },
+        {
+          "path": "postgres/src/hot_snapshot.rs",
+          "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+        },
+        {
+          "path": "postgres/src/http.rs",
+          "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+        },
+        {
+          "path": "postgres/src/jobs.rs",
+          "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+        },
+        {
+          "path": "postgres/src/leases.rs",
+          "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+        },
+        {
+          "path": "postgres/src/main.rs",
+          "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+        },
+        {
+          "path": "postgres/src/profile.rs",
+          "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+        },
+        {
+          "path": "postgres/src/redis_cache.rs",
+          "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+        },
+        {
+          "path": "postgres/src/staging.rs",
+          "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+        },
+        {
+          "path": "postgres/src/transport.rs",
+          "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+        },
+        {
+          "path": "postgres/tests/contract.rs",
+          "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+        },
+        {
+          "path": "postgres/tests/contract/atomic.rs",
+          "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_failure.rs",
+          "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_nodes.rs",
+          "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+        },
+        {
+          "path": "postgres/tests/contract/bulk_replay.rs",
+          "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+        },
+        {
+          "path": "postgres/tests/contract/delta.rs",
+          "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+        },
+        {
+          "path": "postgres/tests/contract/delta_failures.rs",
+          "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+        },
+        {
+          "path": "postgres/tests/contract/fast_paths.rs",
+          "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+        },
+        {
+          "path": "postgres/tests/contract/hot_reads.rs",
+          "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+        },
+        {
+          "path": "postgres/tests/contract/hot_reads_races.rs",
+          "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+        },
+        {
+          "path": "postgres/tests/contract/notifications.rs",
+          "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+        },
+        {
+          "path": "postgres/tests/contract/reads.rs",
+          "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+        },
+        {
+          "path": "postgres/tests/contract/support.rs",
+          "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+        },
+        {
+          "path": "postgres/tests/durability.mjs",
+          "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+        },
+        {
+          "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+          "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+        },
+        {
+          "path": "postgres/tests/fixture-worker.mjs",
+          "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+        },
+        {
+          "path": "postgres/tests/smoke.mjs",
+          "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+        }
+      ]
+    },
+    "binary": {
+      "sha256": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91"
+    },
+    "driver": [
+      {
+        "path": "harness/single-writer.mjs",
+        "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+      },
+      {
+        "path": "harness/single-writer-load.mjs",
+        "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+      },
+      {
+        "path": "harness/single-writer-provenance.mjs",
+        "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+      },
+      {
+        "path": "harness/single-writer-profiles.mjs",
+        "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/retry.mjs",
+        "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+    "node": "v24.21.0",
+    "task17Driver": [
+      {
+        "path": "harness/task17-benchmark.mjs",
+        "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+      },
+      {
+        "path": "harness/task17-profiles.mjs",
+        "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+      },
+      {
+        "path": "harness/task17-provenance.mjs",
+        "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+      },
+      {
+        "path": "infra/redis-runtime.mjs",
+        "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+      }
+    ]
+  },
+  "cleanup": {
+    "postgresContainerAbsent": true,
+    "postgresVolumesAbsent": true,
+    "gatewayProcessesAbsent": true,
+    "postgresCredentialsRemoved": true
+  },
+  "redisCleanup": {
+    "containerAbsent": true,
+    "volumesAbsent": true,
+    "credentialsRemoved": true
+  },
+  "finishedAt": "2026-11-02T09:49:02.598Z"
+}

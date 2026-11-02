@@ -1,0 +1,42 @@
+   Compiling oc_spike_core v0.1.0 (/Users/luis/Workspace/OpenCanvas/spikes/realtime-db/core)
+   Compiling oc-spike-postgres v0.1.0 (/Users/luis/Workspace/OpenCanvas/spikes/realtime-db/postgres)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running tests/contract.rs (spikes/realtime-db/postgres/target/debug/deps/contract-4ada0a9770dc9187)
+
+running 33 tests
+test atomic::held_project_lock_does_not_block_another_project ... ok
+test atomic::late_validation_and_late_sql_failure_leave_no_partial_records ... ok
+test atomic::same_project_race_and_stale_replay_are_atomic ... ok
+test blobs::tests::known_hash_and_corruption ... ok
+test bulk_failure::deferred_foreign_key_failure_rolls_back_every_row_and_queued_notification ... ok
+test bulk_nodes::bulk_mixed_create_update_delete_and_reparent_matches_complete_candidate ... ok
+test bulk_nodes::five_hundred_operation_create_update_delete_batches_are_atomic ... ok
+test bulk_nodes::one_subtree_delete_can_touch_more_than_the_operation_limit ... ok
+test bulk_nodes::same_id_recreated_or_created_then_deleted_uses_only_final_candidate_rows ... ok
+test bulk_replay::concurrent_same_key_replays_after_waiting_for_the_committing_writer ... ok
+test delta_contract::additive_migration_is_idempotent_and_old_rows_start_uncertified ... ok
+test delta_contract::certified_scalar_updates_select_and_validate_only_unique_touched_rows ... ok
+test delta_contract::dry_run_does_not_create_or_advance_a_certificate ... ok
+test delta_contract::missing_wrong_version_and_wrong_revision_certificates_force_full_validation ... ok
+test delta_contract::uncertified_baseline_checks_untouched_rows_and_does_not_stamp_invalid_candidates ... ok
+test delta_failures::delta_validation_sql_and_deferred_commit_failures_preserve_certificate_and_state ... ok
+test delta_failures::postgres_unsafe_target_ids_keep_full_path_error_precedence ... ok
+test fast_paths::revision_http_route_handles_missing_malformed_and_snapshot_paths ... ok
+test fast_paths::stale_replay_collision_and_revision_read_do_not_touch_nodes ... ok
+test hot_reads_contract::cold_then_hot_get_skips_locked_nodes_with_cold_positive_control ... ok
+test hot_reads_contract::concurrent_unavailable_redis_is_bounded_and_pg_remains_authoritative ... ok
+test hot_reads_contract::malformed_evicted_wrong_binding_and_oversized_entries_fall_back ... ok
+test hot_reads_races::cold_snapshot_keeps_metadata_and_nodes_consistent_during_commit ... ok
+test hot_reads_races::commit_between_probe_and_fill_caches_the_actual_snapshot_revision ... ok
+test hot_reads_races::failed_pg_commit_does_not_publish_or_modify_a_cached_candidate ... ok
+test hot_reads_races::second_gateway_and_recreated_project_ignore_old_revision_entries ... ok
+test notifications::invalid_future_stream_cursor_gets_reset_then_closes ... ok
+test notifications::notifications_are_post_commit_dry_run_silent_and_listener_recovers ... ok
+test notifications::polling_and_reconnected_stream_catch_up_without_any_notify_listener ... ok
+test reads::concurrent_snapshots_match_gapless_revision_and_both_entity_values ... ok
+test reads::dry_run_and_validation_failure_reserve_no_key_or_durable_rows ... ok
+test reads::future_cursor_and_missing_commit_are_explicit_errors ... ok
+test reads::snapshot_keeps_revision_and_paired_entities_from_one_database_snapshot ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.72s
+

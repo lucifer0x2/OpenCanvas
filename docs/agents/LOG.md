@@ -176,3 +176,20 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Nhận worker hoàn tất; root đã build release và restart native với public3848/domain đã cung cấp, kiểm live local/public capability cùng6 probe chặn ghi/MCP pass. Không file mã thay đổi vượt250 dòng. [Report](../PUBLIC-VIEWER-REPORT.md) ghi kiểm16 Rust/25 web/HTTPS browser và runtime. Bước bật Funnel bị auto-review từ chối vì cần đồng ý rõ phạm vi công khai toàn bộ project/tài nguyên, nên chưa bật hoặc kiểm truy cập internet; dừng chờ xác nhận này. Giữ nguyên nhật ký/thay đổi của phiên Git song song.
 - Người dùng yêu cầu tắt để tự chạy: root đã gửi SIGINT đúng native server, kiểm cả3847/3848 không còn listener. Funnel chưa từng bật bởi phiên này. Người dùng tự quản lý khởi động/chia sẻ; không tự restart hoặc tiếp tục xin bật Funnel.
 - Người dùng yêu cầu commit và push phần public viewer. Root kiểm lại diff/nhánh, giữ riêng ghi chú chưa commit của các phiên phân tích và chỉnh lịch sử Git; chỉ stage mã/tài liệu của task này và mục nhật ký tương ứng. Không force-push hoặc sửa lịch sử cũ.
+
+### PostgreSQL realtime spike và tối ưu — 2026-11-02
+
+- Người dùng chọn PostgreSQL; Task15 triển khai spike cô lập với contract, contention, jobs/resources, recovery và migration/backup fixtures. Root kiểm độc lập và giữ raw/source archives, gồm các lượt thất bại; xem [Task15 report](../TASK15-REPORT.md).
+- Fast path/retry/index và bulk SQL đã kiểm riêng; kết quả latency có cell/regression, không suy correctness hoặc giảm truy vấn thành SLA. Xem [optimization](../TASK15-OPTIMIZATION-REPORT.md), [bulk SQL](../TASK15-BULK-SQL-REPORT.md) và [single-writer baseline](../SINGLE-WRITER-BENCHMARK.md).
+- Research thiết kế delta/cache và proposal gốc được lưu trước Task17; runtime vẫn SQLite, chưa port sản phẩm, migration dữ liệu thật hoặc deploy Kubernetes. [Research](../DATABASE-WRITE-DESIGN-RESEARCH.md).
+
+### PostgreSQL delta commit + Redis HOT reads — 2026-11-02
+
+- Người dùng duyệt Task17: PG commit delta trước ACK, Redis HOT reads; Redis-primary/write-behind giữ [Task18 backlog](../../tasks/18-redis-primary-write-behind-research.md).
+- Root kiểm độc lập core10, PGv1/v2 và Node harness, đối chiếu ba stage writer1/HOT-read counterfactual, hashes và cleanup; review không còn finding bắt buộc. Có giới hạn/regression theo workload. [Task17 report](../TASK17-REPORT.md), [review](../TASK17-REVIEW.md).
+- Các PG/Redis/gateway và credentials riêng đã dọn sau kiểm; giữ source/evidence, SQLite và dữ liệu/dịch vụ thật. Không tiếp tục tối ưu sau yêu cầu dừng của người dùng.
+
+### Commit và push PostgreSQL/Redis — 2026-11-02
+
+- Người dùng yêu cầu commit/push tiến độ. Đóng gói riêng Task15/17, Task18 backlog và báo cáo/evidence liên quan trên nhánh `codex/pg-delta-redis-hot-reads` từ main sạch `b7178be`; giữ nguyên checkout/index và các thay đổi task khác trong workspace gốc.
+- Kiểm source bytes/hashes, evidence/source archives, nội dung nhạy cảm và phạm vi staged trước commit/push thường nhánh mới. Không force-push, tạo PR, cập nhật main hoặc deploy Kubernetes.

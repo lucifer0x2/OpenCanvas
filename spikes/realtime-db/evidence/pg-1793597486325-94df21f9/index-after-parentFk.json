@@ -1,0 +1,110 @@
+{
+  "query": "SELECT 1 FROM ONLY nodes WHERE project_id=$1 AND parent_id=$2 FOR KEY SHARE",
+  "params": [
+    "p11",
+    "n49"
+  ],
+  "boundQuery": "SELECT 1 FROM ONLY nodes WHERE project_id='p11' AND parent_id='n49' FOR KEY SHARE",
+  "explain": [
+    {
+      "Plan": {
+        "Node Type": "LockRows",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Startup Cost": 5.35,
+        "Total Cost": 340.51,
+        "Plan Rows": 103,
+        "Plan Width": 10,
+        "Actual Startup Time": 0.028,
+        "Actual Total Time": 0.088,
+        "Actual Rows": 101,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 193,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Bitmap Heap Scan",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Relation Name": "nodes",
+            "Alias": "nodes",
+            "Startup Cost": 5.35,
+            "Total Cost": 339.48,
+            "Plan Rows": 103,
+            "Plan Width": 10,
+            "Actual Startup Time": 0.02,
+            "Actual Total Time": 0.068,
+            "Actual Rows": 101,
+            "Actual Loops": 1,
+            "Recheck Cond": "((project_id = 'p11'::text) AND (parent_id = 'n49'::text))",
+            "Rows Removed by Index Recheck": 0,
+            "Exact Heap Blocks": 90,
+            "Lossy Heap Blocks": 0,
+            "Shared Hit Blocks": 92,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Index Name": "nodes_parent",
+                "Startup Cost": 0,
+                "Total Cost": 5.32,
+                "Plan Rows": 103,
+                "Plan Width": 0,
+                "Actual Startup Time": 0.009,
+                "Actual Total Time": 0.009,
+                "Actual Rows": 101,
+                "Actual Loops": 1,
+                "Index Cond": "((project_id = 'p11'::text) AND (parent_id = 'n49'::text))",
+                "Shared Hit Blocks": 2,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          }
+        ]
+      },
+      "Planning": {
+        "Shared Hit Blocks": 92,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.12,
+      "Triggers": [],
+      "Execution Time": 0.104
+    }
+  ]
+}

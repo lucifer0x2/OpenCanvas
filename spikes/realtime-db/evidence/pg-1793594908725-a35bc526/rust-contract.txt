@@ -1,0 +1,15 @@
+
+running 10 tests
+test atomic::held_project_lock_does_not_block_another_project ... ok
+test atomic::late_validation_and_late_sql_failure_leave_no_partial_records ... ok
+test atomic::same_project_race_and_stale_replay_are_atomic ... ok
+test notifications::invalid_future_stream_cursor_gets_reset_then_closes ... ok
+test notifications::notifications_are_post_commit_dry_run_silent_and_listener_recovers ... ok
+test notifications::polling_and_reconnected_stream_catch_up_without_any_notify_listener ... ok
+test reads::concurrent_snapshots_match_gapless_revision_and_both_entity_values ... ok
+test reads::dry_run_and_validation_failure_reserve_no_key_or_durable_rows ... ok
+test reads::future_cursor_and_missing_commit_are_explicit_errors ... ok
+test reads::snapshot_keeps_revision_and_paired_entities_from_one_database_snapshot ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+

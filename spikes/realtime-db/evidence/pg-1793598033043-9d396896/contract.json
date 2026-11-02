@@ -1,0 +1,567 @@
+{
+  "clientModes": [
+    "optimized"
+  ],
+  "semantics": {
+    "projectId": "sem-31211bfe-ce0a-4822-8a0f-5c23735bc0ec",
+    "checks": [
+      {
+        "name": "invalid late operation rolls back nodes, revision, log and idempotency",
+        "status": "pass"
+      },
+      {
+        "name": "same revision race commits exactly once across two gateway processes",
+        "status": "pass"
+      },
+      {
+        "name": "lost ACK replay on other gateway and key collision",
+        "status": "pass"
+      },
+      {
+        "name": "dry run does not reserve key, change revision or publish event",
+        "status": "pass"
+      },
+      {
+        "name": "cross gateway subscriptions ordered and gapless",
+        "status": "pass"
+      },
+      {
+        "name": "disconnect reconnect replays durable commits exactly once",
+        "status": "pass"
+      },
+      {
+        "name": "partial update failure and cycle leave previous snapshot intact",
+        "status": "pass"
+      },
+      {
+        "name": "project scoped node IDs and idempotency keys",
+        "status": "pass"
+      }
+    ],
+    "finalRevision": 12
+  },
+  "matrix": [
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 100,
+      "writers": 1,
+      "iterations": 12,
+      "projectId": "load-100-329c2ade-65fc-42c0-9c63-d8f74da44119",
+      "successfulCount": 12,
+      "observedCommits": 12,
+      "requestAttempts": 12,
+      "conflictCount": 0,
+      "readCount": 39,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 1,
+      "unchangedNodesVerified": 97,
+      "throughput": 144.4229420079776,
+      "attemptMs": {
+        "p50": 4.943084000000454,
+        "p95": 6.696249999999964,
+        "p99": 6.696249999999964
+      },
+      "retryToSuccessMs": {
+        "p50": 5.513582999999926,
+        "p95": 7.569833999999901,
+        "p99": 7.569833999999901
+      },
+      "maxRetries": 0,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 0,
+          "maxRetries": 0,
+          "totalOperationMs": 69.01216499999919,
+          "retryToSuccessMs": {
+            "p50": 5.513582999999926,
+            "p95": 7.569833999999901,
+            "p99": 7.569833999999901
+          }
+        }
+      ]
+    },
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 100,
+      "writers": 4,
+      "iterations": 12,
+      "projectId": "load-100-43226818-c8bc-4c76-9724-58daa65cd887",
+      "successfulCount": 48,
+      "observedCommits": 48,
+      "requestAttempts": 81,
+      "conflictCount": 33,
+      "readCount": 166,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 4,
+      "unchangedNodesVerified": 97,
+      "throughput": 120.5253525355263,
+      "attemptMs": {
+        "p50": 4.875165999999808,
+        "p95": 23.16912500000035,
+        "p99": 30.87120800000048
+      },
+      "retryToSuccessMs": {
+        "p50": 5.891083000000435,
+        "p95": 146.83016599999974,
+        "p99": 295.81487500000003
+      },
+      "maxRetries": 9,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 6,
+          "maxRetries": 6,
+          "totalOperationMs": 229.345041999999,
+          "retryToSuccessMs": {
+            "p50": 5.386665999999423,
+            "p95": 168.57124999999996,
+            "p99": 168.57124999999996
+          }
+        },
+        {
+          "writer": 1,
+          "successfulCount": 12,
+          "totalRetries": 9,
+          "maxRetries": 9,
+          "totalOperationMs": 384.9174150000008,
+          "retryToSuccessMs": {
+            "p50": 5.734000000000378,
+            "p95": 295.81487500000003,
+            "p99": 295.81487500000003
+          }
+        },
+        {
+          "writer": 2,
+          "successfulCount": 12,
+          "totalRetries": 9,
+          "maxRetries": 5,
+          "totalOperationMs": 245.27341799999886,
+          "retryToSuccessMs": {
+            "p50": 6.9140419999994265,
+            "p95": 78.11520800000017,
+            "p99": 78.11520800000017
+          }
+        },
+        {
+          "writer": 3,
+          "successfulCount": 12,
+          "totalRetries": 9,
+          "maxRetries": 6,
+          "totalOperationMs": 289.6227480000007,
+          "retryToSuccessMs": {
+            "p50": 6.0266249999995125,
+            "p95": 146.83016599999974,
+            "p99": 146.83016599999974
+          }
+        }
+      ]
+    },
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 100,
+      "writers": 8,
+      "iterations": 12,
+      "projectId": "load-100-3e419e59-01ec-472e-b5a6-c561d5ec2c6c",
+      "successfulCount": 96,
+      "observedCommits": 96,
+      "requestAttempts": 197,
+      "conflictCount": 101,
+      "readCount": 272,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 8,
+      "unchangedNodesVerified": 97,
+      "throughput": 139.95190010639246,
+      "attemptMs": {
+        "p50": 5.187875000000531,
+        "p95": 10.991790999999466,
+        "p99": 34.94116699999995
+      },
+      "retryToSuccessMs": {
+        "p50": 6.119582999999693,
+        "p95": 325.3192079999999,
+        "p99": 507.75858400000016
+      },
+      "maxRetries": 11,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 8,
+          "maxRetries": 8,
+          "totalOperationMs": 382.5726259999983,
+          "retryToSuccessMs": {
+            "p50": 5.0700000000006185,
+            "p95": 325.3192079999999,
+            "p99": 325.3192079999999
+          }
+        },
+        {
+          "writer": 1,
+          "successfulCount": 12,
+          "totalRetries": 18,
+          "maxRetries": 11,
+          "totalOperationMs": 671.2235000000001,
+          "retryToSuccessMs": {
+            "p50": 9.406667000000198,
+            "p95": 388.5071250000001,
+            "p99": 388.5071250000001
+          }
+        },
+        {
+          "writer": 2,
+          "successfulCount": 12,
+          "totalRetries": 9,
+          "maxRetries": 6,
+          "totalOperationMs": 318.86262499999884,
+          "retryToSuccessMs": {
+            "p50": 7.804374999999709,
+            "p95": 204.9983749999992,
+            "p99": 204.9983749999992
+          }
+        },
+        {
+          "writer": 3,
+          "successfulCount": 12,
+          "totalRetries": 3,
+          "maxRetries": 3,
+          "totalOperationMs": 138.15841699999964,
+          "retryToSuccessMs": {
+            "p50": 6.1548329999995985,
+            "p95": 69.22654200000034,
+            "p99": 69.22654200000034
+          }
+        },
+        {
+          "writer": 4,
+          "successfulCount": 12,
+          "totalRetries": 18,
+          "maxRetries": 10,
+          "totalOperationMs": 589.1945390000019,
+          "retryToSuccessMs": {
+            "p50": 6.261333000000377,
+            "p95": 345.2607080000007,
+            "p99": 345.2607080000007
+          }
+        },
+        {
+          "writer": 5,
+          "successfulCount": 12,
+          "totalRetries": 20,
+          "maxRetries": 7,
+          "totalOperationMs": 603.4730820000004,
+          "retryToSuccessMs": {
+            "p50": 5.734124999999949,
+            "p95": 219.2047079999993,
+            "p99": 219.2047079999993
+          }
+        },
+        {
+          "writer": 6,
+          "successfulCount": 12,
+          "totalRetries": 11,
+          "maxRetries": 11,
+          "totalOperationMs": 565.1552919999986,
+          "retryToSuccessMs": {
+            "p50": 5.152791999999863,
+            "p95": 507.75858400000016,
+            "p99": 507.75858400000016
+          }
+        },
+        {
+          "writer": 7,
+          "successfulCount": 12,
+          "totalRetries": 14,
+          "maxRetries": 11,
+          "totalOperationMs": 498.4292059999989,
+          "retryToSuccessMs": {
+            "p50": 6.119582999999693,
+            "p95": 374.9185830000006,
+            "p99": 374.9185830000006
+          }
+        }
+      ]
+    },
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 5000,
+      "writers": 1,
+      "iterations": 12,
+      "projectId": "load-5000-7b2acb0a-e12a-42b2-b93d-1cd84f60fbd8",
+      "successfulCount": 12,
+      "observedCommits": 12,
+      "requestAttempts": 12,
+      "conflictCount": 0,
+      "readCount": 12,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 1,
+      "unchangedNodesVerified": 4997,
+      "throughput": 20.523792848227803,
+      "attemptMs": {
+        "p50": 34.514499999999316,
+        "p95": 65.51745800000026,
+        "p99": 65.51745800000026
+      },
+      "retryToSuccessMs": {
+        "p50": 35.11412500000006,
+        "p95": 66.16929199999868,
+        "p99": 66.16929199999868
+      },
+      "maxRetries": 0,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 0,
+          "maxRetries": 0,
+          "totalOperationMs": 484.4088350000002,
+          "retryToSuccessMs": {
+            "p50": 35.11412500000006,
+            "p95": 66.16929199999868,
+            "p99": 66.16929199999868
+          }
+        }
+      ]
+    },
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 5000,
+      "writers": 4,
+      "iterations": 12,
+      "projectId": "load-5000-d0dec26b-0977-4d49-938c-9887812748a9",
+      "successfulCount": 48,
+      "observedCommits": 48,
+      "requestAttempts": 107,
+      "conflictCount": 59,
+      "readCount": 44,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 4,
+      "unchangedNodesVerified": 4997,
+      "throughput": 19.06370909800142,
+      "attemptMs": {
+        "p50": 38.53162499999962,
+        "p95": 81.53750000000036,
+        "p99": 103.45633300000009
+      },
+      "retryToSuccessMs": {
+        "p50": 58.62137499999881,
+        "p95": 748.7016670000012,
+        "p99": 1733.8716669999994
+      },
+      "maxRetries": 21,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 24,
+          "maxRetries": 21,
+          "totalOperationMs": 2458.850958000001,
+          "retryToSuccessMs": {
+            "p50": 40.36637499999961,
+            "p95": 1733.8716669999994,
+            "p99": 1733.8716669999994
+          }
+        },
+        {
+          "writer": 1,
+          "successfulCount": 12,
+          "totalRetries": 3,
+          "maxRetries": 1,
+          "totalOperationMs": 823.9605849999971,
+          "retryToSuccessMs": {
+            "p50": 58.62137499999881,
+            "p95": 162.80295800000022,
+            "p99": 162.80295800000022
+          }
+        },
+        {
+          "writer": 2,
+          "successfulCount": 12,
+          "totalRetries": 18,
+          "maxRetries": 10,
+          "totalOperationMs": 1917.094164,
+          "retryToSuccessMs": {
+            "p50": 69.23462499999914,
+            "p95": 880.156583,
+            "p99": 880.156583
+          }
+        },
+        {
+          "writer": 3,
+          "successfulCount": 12,
+          "totalRetries": 14,
+          "maxRetries": 10,
+          "totalOperationMs": 1522.8292910000018,
+          "retryToSuccessMs": {
+            "p50": 44.83441599999969,
+            "p95": 748.7016670000012,
+            "p99": 748.7016670000012
+          }
+        }
+      ]
+    },
+    {
+      "clientMode": "optimized",
+      "retryPolicy": {
+        "maxConflicts": 1000,
+        "maxNetworkRetries": 3,
+        "baseMs": 2,
+        "capMs": 64
+      },
+      "nodeCount": 5000,
+      "writers": 8,
+      "iterations": 12,
+      "projectId": "load-5000-31d6dd5c-7d83-4e28-9764-8a258dc8d0b7",
+      "successfulCount": 96,
+      "observedCommits": 96,
+      "requestAttempts": 434,
+      "conflictCount": 338,
+      "readCount": 86,
+      "mixedSnapshots": 0,
+      "writerCountersVerified": 8,
+      "unchangedNodesVerified": 4997,
+      "throughput": 20.268985445132703,
+      "attemptMs": {
+        "p50": 39.004124999999476,
+        "p95": 68.55962499999805,
+        "p99": 87.69062499999927
+      },
+      "retryToSuccessMs": {
+        "p50": 69.36187500000051,
+        "p95": 1718.0014999999985,
+        "p99": 2630.3406670000004
+      },
+      "maxRetries": 30,
+      "fairness": [
+        {
+          "writer": 0,
+          "successfulCount": 12,
+          "totalRetries": 57,
+          "maxRetries": 23,
+          "totalOperationMs": 4682.154373999998,
+          "retryToSuccessMs": {
+            "p50": 98.3747919999987,
+            "p95": 1954.9398330000004,
+            "p99": 1954.9398330000004
+          }
+        },
+        {
+          "writer": 1,
+          "successfulCount": 12,
+          "totalRetries": 34,
+          "maxRetries": 12,
+          "totalOperationMs": 2885.8394169999865,
+          "retryToSuccessMs": {
+            "p50": 72.27595799999835,
+            "p95": 930.8451669999995,
+            "p99": 930.8451669999995
+          }
+        },
+        {
+          "writer": 2,
+          "successfulCount": 12,
+          "totalRetries": 18,
+          "maxRetries": 17,
+          "totalOperationMs": 2162.2855420000014,
+          "retryToSuccessMs": {
+            "p50": 47.697166999998444,
+            "p95": 1589.2532920000012,
+            "p99": 1589.2532920000012
+          }
+        },
+        {
+          "writer": 3,
+          "successfulCount": 12,
+          "totalRetries": 52,
+          "maxRetries": 24,
+          "totalOperationMs": 4457.619081999999,
+          "retryToSuccessMs": {
+            "p50": 62.62249999999949,
+            "p95": 2072.2846250000002,
+            "p99": 2072.2846250000002
+          }
+        },
+        {
+          "writer": 4,
+          "successfulCount": 12,
+          "totalRetries": 42,
+          "maxRetries": 27,
+          "totalOperationMs": 3896.0952930000003,
+          "retryToSuccessMs": {
+            "p50": 69.64333299999998,
+            "p95": 2489.460792,
+            "p99": 2489.460792
+          }
+        },
+        {
+          "writer": 5,
+          "successfulCount": 12,
+          "totalRetries": 34,
+          "maxRetries": 19,
+          "totalOperationMs": 3025.872916999995,
+          "retryToSuccessMs": {
+            "p50": 55.49933299999975,
+            "p95": 1561.2558750000007,
+            "p99": 1561.2558750000007
+          }
+        },
+        {
+          "writer": 6,
+          "successfulCount": 12,
+          "totalRetries": 47,
+          "maxRetries": 30,
+          "totalOperationMs": 4336.077876999992,
+          "retryToSuccessMs": {
+            "p50": 39.80400000000009,
+            "p95": 2630.3406670000004,
+            "p99": 2630.3406670000004
+          }
+        },
+        {
+          "writer": 7,
+          "successfulCount": 12,
+          "totalRetries": 54,
+          "maxRetries": 22,
+          "totalOperationMs": 4546.533997999997,
+          "retryToSuccessMs": {
+            "p50": 80.3605000000025,
+            "p95": 1718.0014999999985,
+            "p99": 1718.0014999999985
+          }
+        }
+      ]
+    }
+  ]
+}

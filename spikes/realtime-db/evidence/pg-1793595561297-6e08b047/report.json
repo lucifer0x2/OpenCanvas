@@ -1,0 +1,3686 @@
+{
+  "startedAt": "2026-11-02T04:59:10.701Z",
+  "status": "pass",
+  "phases": {
+    "startup": {
+      "status": "pass",
+      "durationMs": 737.0351659999997,
+      "result": [
+        {
+          "pid": 60342,
+          "url": "http://127.0.0.1:58789",
+          "startupMs": 632.249749999999
+        },
+        {
+          "pid": 60350,
+          "url": "http://127.0.0.1:58793",
+          "startupMs": 103.01170900000034
+        }
+      ]
+    },
+    "rustContract": {
+      "status": "pass",
+      "durationMs": 3940.877457999999,
+      "result": {
+        "log": "rust-contract.txt"
+      }
+    },
+    "contractAndMatrix": {
+      "status": "pass",
+      "durationMs": 35046.247375000006,
+      "result": {
+        "semantics": {
+          "projectId": "sem-fadae299-5c38-4d03-b64c-42dcd400c971",
+          "checks": [
+            {
+              "name": "invalid late operation rolls back nodes, revision, log and idempotency",
+              "status": "pass"
+            },
+            {
+              "name": "same revision race commits exactly once across two gateway processes",
+              "status": "pass"
+            },
+            {
+              "name": "lost ACK replay on other gateway and key collision",
+              "status": "pass"
+            },
+            {
+              "name": "dry run does not reserve key, change revision or publish event",
+              "status": "pass"
+            },
+            {
+              "name": "cross gateway subscriptions ordered and gapless",
+              "status": "pass"
+            },
+            {
+              "name": "disconnect reconnect replays durable commits exactly once",
+              "status": "pass"
+            },
+            {
+              "name": "partial update failure and cycle leave previous snapshot intact",
+              "status": "pass"
+            },
+            {
+              "name": "project scoped node IDs and idempotency keys",
+              "status": "pass"
+            }
+          ],
+          "finalRevision": 12
+        },
+        "matrix": [
+          {
+            "nodeCount": 100,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-100-98a2183e-b1fb-4d2e-a62e-e82094c3d93f",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 49,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 97,
+            "throughput": 108.18392652263111,
+            "attemptMs": {
+              "p50": 5.564416000001074,
+              "p95": 6.899042000000918,
+              "p99": 6.899042000000918
+            },
+            "retryToSuccessMs": {
+              "p50": 7.996875000000728,
+              "p95": 9.203541999999288,
+              "p99": 9.203541999999288
+            }
+          },
+          {
+            "nodeCount": 100,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-100-c87c2bb8-12b9-44d6-b10b-9403bec28926",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 122,
+            "conflictCount": 74,
+            "readCount": 180,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 97,
+            "throughput": 101.6582562532197,
+            "attemptMs": {
+              "p50": 6.139541000000463,
+              "p95": 9.788916999998037,
+              "p99": 33.13920800000051
+            },
+            "retryToSuccessMs": {
+              "p50": 8.582290999998804,
+              "p95": 128.60483300000124,
+              "p99": 373.99524999999994
+            }
+          },
+          {
+            "nodeCount": 100,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-100-4c9cdd78-2d93-4968-8ce2-d702bc6d887f",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 536,
+            "conflictCount": 440,
+            "readCount": 489,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 97,
+            "throughput": 59.58812501774834,
+            "attemptMs": {
+              "p50": 13.374542000001384,
+              "p95": 30.05841600000349,
+              "p99": 52.99204199999804
+            },
+            "retryToSuccessMs": {
+              "p50": 15.935375000000931,
+              "p95": 856.1968749999978,
+              "p99": 1456.232250000001
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-5000-ca1514c5-021b-42f0-8ca4-7bb84e01aeb2",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 24,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 4997,
+            "throughput": 8.872389530432478,
+            "attemptMs": {
+              "p50": 41.98816700000316,
+              "p95": 72.54449999999997,
+              "p99": 72.54449999999997
+            },
+            "retryToSuccessMs": {
+              "p50": 104.0057080000006,
+              "p95": 135.15875000000233,
+              "p99": 135.15875000000233
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-5000-27dc068c-5b96-44f5-bd65-7631d417c865",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 122,
+            "conflictCount": 74,
+            "readCount": 92,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 4997,
+            "throughput": 8.03728227337208,
+            "attemptMs": {
+              "p50": 57.697791999999026,
+              "p95": 107.88045899999997,
+              "p99": 126.18575000000055
+            },
+            "retryToSuccessMs": {
+              "p50": 122.11491699999897,
+              "p95": 1735.4107919999988,
+              "p99": 4672.718916000002
+            }
+          },
+          {
+            "nodeCount": 5000,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-5000-e42409c3-2d51-475b-8419-1e090136a9ca",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 461,
+            "conflictCount": 365,
+            "readCount": 267,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 4997,
+            "throughput": 4.864133704308494,
+            "attemptMs": {
+              "p50": 150.83662499999627,
+              "p95": 282.6268330000021,
+              "p99": 350.47533300000214
+            },
+            "retryToSuccessMs": {
+              "p50": 198.0322079999969,
+              "p95": 11044.317416999998,
+              "p99": 17505.573750000003
+            }
+          }
+        ]
+      }
+    },
+    "durableJobsResourcesStaging": {
+      "status": "pass",
+      "durationMs": 1045.3863340000025,
+      "result": {
+        "ok": true,
+        "projectId": "durable_aa44d1a6172d48279f653b502014ffe1",
+        "lifecyclePerformed": true,
+        "workerKilled": "SIGKILL",
+        "resourceIds": [
+          "ce02e608234a1fc36803f5a93e7adc5ed8ef7c44cfdc40cebd6073130a7eb312",
+          "e43da4ff5a3b6ae04ecf0d61e14422762354aedc921d11b3cc9368f1a1f51529"
+        ],
+        "uploadId": "1cb80e94604f4df44bc67d9a471b4ac9d839ba0dc9cb7f3f0a0771fff9e0140e",
+        "jobIds": [
+          "012afadffa6abfc02973e6d72d63c9545735b64306025d51408c9ef31ff908ac",
+          "ae6c2ada47e663b4a2d523e50b2d2a9e65f9962ac7e00ae14fb6082989a3512e"
+        ],
+        "artifactIds": [
+          "a9a39ae8c9effa806afc60baf16ddcbaf026b0c386241fdef1d234d212367378",
+          "17c1d5f8b8e2458697d971c1e441e5351f093bca5e9e60ae11d06e1a5076d9ea"
+        ],
+        "checks": [
+          "shared resources and verified bytes",
+          "bounded project-scoped JSON staging",
+          "inline replay",
+          "staged dry-run has no revision/commit/job/key reservation",
+          "pending survives gateway death",
+          "real claimed worker SIGKILL and expired lease retry",
+          "attempt and owner fencing",
+          "immutable pinned input",
+          "older pipeline/revision cannot replace newer output",
+          "shared artifact retrieval after gateway death"
+        ]
+      }
+    },
+    "rollingGateway": {
+      "status": "pass",
+      "durationMs": 1105.0069589999985,
+      "result": {
+        "label": "Two gateway process kills/restarts one at a time; no Kubernetes rollout",
+        "projectId": "load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+        "disruptionResult": {
+          "first": {
+            "pid": 61471,
+            "url": "http://127.0.0.1:58789",
+            "startupMs": 171.08595899999636,
+            "totalRestartMs": 322.7017910000068
+          },
+          "second": {
+            "pid": 61482,
+            "url": "http://127.0.0.1:58793",
+            "startupMs": 104.0412920000017,
+            "totalRestartMs": 256.7267079999947
+          }
+        },
+        "successfulCount": 34,
+        "disruptionWindowMs": [
+          150.33150000000023,
+          729.815333999999
+        ],
+        "overlappingRequests": 76,
+        "readCount": 50,
+        "mixedSnapshots": 0,
+        "rawErrorCount": 49,
+        "rawErrors": [
+          {
+            "atMs": 157.41820899999584,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5185830000045826,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 167.01087499999994,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2659589999966556,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 177.87079199999425,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3353750000023865,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 179.36299999999756,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.13179200000013225,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 188.8054589999956,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.31520799999998417,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 200.5124999999971,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2884170000033919,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 202.93391699999484,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21029200000339188,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 211.0823339999988,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4928749999962747,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 222.22141700000066,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1748749999969732,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 226.4730419999978,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1787079999994603,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 233.4452089999977,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27179099999921164,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 243.41191699999763,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1534170000013546,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 252.60045900000114,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23054099999717437,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 253.98812499999622,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.17045900000084657,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 264.8787919999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2867079999996349,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 278.66949999999633,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4806670000034501,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 278.9126669999969,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2797080000018468,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 290.4720840000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 1.432874999998603,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 302.0415839999987,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5109579999989364,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 311.6819169999944,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.6840420000007725,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 312.40116699999635,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 2.9714999999996508,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 325.1131669999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 1.0067920000001322,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 336.88054199999897,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5941669999956503,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 342.072791999999,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4810829999987618,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 348.3087499999965,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.37183399999776157,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 468.75295899999765,
+            "path": "/batch",
+            "status": 0,
+            "ms": 5.824500000002445,
+            "error": "/batch: fetch failed"
+          },
+          {
+            "atMs": 489.062708999998,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27504100000078324,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 513.3014999999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2426670000058948,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 518.4187089999978,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.19779099999868777,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 529.0596669999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.22133300000132294,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 538.3287500000006,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.20879199999762932,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 539.7032919999983,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.17533299999922747,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 550.0274999999965,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21083399999770336,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 560.8835839999956,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3529580000031274,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 564.6671249999999,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.24087499999586726,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 572.8322919999991,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2122499999968568,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 583.7743750000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.18566699999792036,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 589.6312089999992,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.22774999999819556,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 595.5180419999961,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.16500000000087311,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 606.0749169999981,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.20033300000068266,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 615.3307089999944,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3131250000005821,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 616.8243339999972,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23045799999817973,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 627.288916999998,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27141699999629054,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 637.6804169999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.34862499999871943,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 642.5631670000002,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.19491700000071432,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 649.5388749999984,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2055419999960577,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 660.1767919999984,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21970799999689916,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 668.1829999999973,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3343749999985448,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 670.6404169999951,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23400000000401633,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          }
+        ],
+        "raw": [
+          {
+            "atMs": 0.05945899999642279,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 31.12891600000148
+          },
+          {
+            "atMs": 0.02145899999595713,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 31.365208000002895
+          },
+          {
+            "atMs": 31.397375000000466,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.712791999998444
+          },
+          {
+            "atMs": 42.507541999999376,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.238499999999476
+          },
+          {
+            "atMs": 42.692416999998386,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.586290999999619
+          },
+          {
+            "atMs": 46.2867499999993,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.094583000005514
+          },
+          {
+            "atMs": 55.844749999996566,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.444666999996116
+          },
+          {
+            "atMs": 58.62662499999715,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.4723750000048312
+          },
+          {
+            "atMs": 61.10858399999415,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.351333999999042
+          },
+          {
+            "atMs": 69.30170899999939,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.4407500000015716
+          },
+          {
+            "atMs": 71.81833399999596,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.796249999999418
+          },
+          {
+            "atMs": 74.6272089999984,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.615625000005821
+          },
+          {
+            "atMs": 81.3680419999946,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.55304199999955
+          },
+          {
+            "atMs": 86.2935839999991,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.47491699999955
+          },
+          {
+            "atMs": 88.78824999999779,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.796957999998995
+          },
+          {
+            "atMs": 93.76524999999674,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.116042000001471
+          },
+          {
+            "atMs": 99.27145899999596,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.4957920000015292
+          },
+          {
+            "atMs": 101.77733399999852,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.566791999997804
+          },
+          {
+            "atMs": 106.66229200000089,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.1093330000003334
+          },
+          {
+            "atMs": 113.2990839999984,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6467499999998836
+          },
+          {
+            "atMs": 115.95820899999671,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.625166999998328
+          },
+          {
+            "atMs": 119.59274999999616,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.5586249999978463
+          },
+          {
+            "atMs": 126.31570899999497,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6040420000063023
+          },
+          {
+            "atMs": 128.93137500000012,
+            "path": "/batch",
+            "status": 200,
+            "ms": 4.425791000001482
+          },
+          {
+            "atMs": 132.56658400000015,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.3000000000029104
+          },
+          {
+            "atMs": 138.35491699999693,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7205830000020796
+          },
+          {
+            "atMs": 141.08358399999997,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.2774589999971795
+          },
+          {
+            "atMs": 144.69858399999794,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.007958999995026
+          },
+          {
+            "atMs": 152.45791699999972,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.488208000002487
+          },
+          {
+            "atMs": 157.41820899999584,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5185830000045826,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 154.9582919999957,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.334167000000889
+          },
+          {
+            "atMs": 167.01087499999994,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2659589999966556,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 167.14808400000038,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.767707999999402
+          },
+          {
+            "atMs": 177.87079199999425,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3353750000023865,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 179.36299999999756,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.13179200000013225,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 188.8054589999956,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.31520799999998417,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 189.13254199999938,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.4277080000028946
+          },
+          {
+            "atMs": 200.5124999999971,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2884170000033919,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 202.93391699999484,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21029200000339188,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 211.0823339999988,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4928749999962747,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 213.0512499999968,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.479583000000275
+          },
+          {
+            "atMs": 222.22141700000066,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1748749999969732,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 226.4730419999978,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1787079999994603,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 233.4452089999977,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27179099999921164,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 237.12733399999706,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.8927500000063446
+          },
+          {
+            "atMs": 243.41191699999763,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.1534170000013546,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 252.60045900000114,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23054099999717437,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 253.98812499999622,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.17045900000084657,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 264.8787919999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2867079999996349,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 263.23766700000124,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.315167000000656
+          },
+          {
+            "atMs": 278.66949999999633,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4806670000034501,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 278.9126669999969,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2797080000018468,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 290.4720840000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 1.432874999998603,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 291.4300839999996,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 9.545541999999841
+          },
+          {
+            "atMs": 302.0415839999987,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5109579999989364,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 311.6819169999944,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.6840420000007725,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 312.40116699999635,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 2.9714999999996508,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 325.1131669999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 1.0067920000001322,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 324.1187920000011,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 6.916958000001614
+          },
+          {
+            "atMs": 336.88054199999897,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.5941669999956503,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 342.072791999999,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.4810829999987618,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 348.3087499999965,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.37183399999776157,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 353.7207920000001,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 22.15612500000134
+          },
+          {
+            "atMs": 363.90108399999735,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 84.85016600000381
+          },
+          {
+            "atMs": 448.7604169999977,
+            "path": "/batch",
+            "status": 200,
+            "ms": 11.594124999995984
+          },
+          {
+            "atMs": 465.7779589999991,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.9705829999948037
+          },
+          {
+            "atMs": 468.75295899999765,
+            "path": "/batch",
+            "status": 0,
+            "ms": 5.824500000002445,
+            "error": "/batch: fetch failed"
+          },
+          {
+            "atMs": 387.2387499999968,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 91.46329100000003
+          },
+          {
+            "atMs": 489.062708999998,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27504100000078324,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 485.5103339999987,
+            "path": "/batch",
+            "status": 200,
+            "ms": 10.608416000002762
+          },
+          {
+            "atMs": 499.3499589999992,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.3381250000020373
+          },
+          {
+            "atMs": 501.79083399999945,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.3247080000001006
+          },
+          {
+            "atMs": 513.3014999999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2426670000058948,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 505.12079199999425,
+            "path": "/batch",
+            "status": 200,
+            "ms": 8.549333000002662
+          },
+          {
+            "atMs": 518.4187089999978,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.19779099999868777,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 524.2864589999954,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.599584000003233
+          },
+          {
+            "atMs": 529.0596669999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.22133300000132294,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 538.3287500000006,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.20879199999762932,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 539.7032919999983,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.17533299999922747,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 550.0274999999965,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21083399999770336,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 549.9260839999988,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 4.696374999999534
+          },
+          {
+            "atMs": 560.8835839999956,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3529580000031274,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 564.6671249999999,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.24087499999586726,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 572.8322919999991,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2122499999968568,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 574.2147089999999,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 5.009333000001789
+          },
+          {
+            "atMs": 583.7743750000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.18566699999792036,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 589.6312089999992,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.22774999999819556,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 595.5180419999961,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.16500000000087311,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 600.2259169999961,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 4.666041000004043
+          },
+          {
+            "atMs": 606.0749169999981,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.20033300000068266,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 615.3307089999944,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3131250000005821,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 616.8243339999972,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23045799999817973,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 627.288916999998,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.27141699999629054,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 625.8211669999946,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 6.1588750000009895
+          },
+          {
+            "atMs": 637.6804169999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.34862499999871943,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 642.5631670000002,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.19491700000071432,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 649.5388749999984,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.2055419999960577,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 653.1481249999997,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 4.729416000001947
+          },
+          {
+            "atMs": 660.1767919999984,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.21970799999689916,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 668.1829999999973,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.3343749999985448,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 670.6404169999951,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 0,
+            "ms": 0.23400000000401633,
+            "error": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f: fetch failed"
+          },
+          {
+            "atMs": 679.0247919999965,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.6142089999993914
+          },
+          {
+            "atMs": 680.6100000000006,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 49.54254200000287
+          },
+          {
+            "atMs": 693.726834000001,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 39.39358300000458
+          },
+          {
+            "atMs": 730.1625839999979,
+            "path": "/batch",
+            "status": 200,
+            "ms": 8.568500000001222
+          },
+          {
+            "atMs": 744.3123750000013,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6834170000001905
+          },
+          {
+            "atMs": 744.1296249999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.126624999997148
+          },
+          {
+            "atMs": 747.0021249999991,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.464083999999275
+          },
+          {
+            "atMs": 757.5525839999973,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.222249999998894
+          },
+          {
+            "atMs": 758.9574169999978,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.8060830000031274
+          },
+          {
+            "atMs": 761.7692499999976,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.244832999997016
+          },
+          {
+            "atMs": 769.8691669999971,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.097417000004498
+          },
+          {
+            "atMs": 773.153833999997,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.1572919999962323
+          },
+          {
+            "atMs": 775.3159589999996,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.451374999996915
+          },
+          {
+            "atMs": 782.4535839999953,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.229624999999942
+          },
+          {
+            "atMs": 787.0242919999946,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.600749999997788
+          },
+          {
+            "atMs": 789.6295839999948,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.812833999996656
+          },
+          {
+            "atMs": 795.2455839999966,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6161670000001322
+          },
+          {
+            "atMs": 801.3074999999953,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.3168750000040745
+          },
+          {
+            "atMs": 803.6307499999966,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.496792000005371
+          },
+          {
+            "atMs": 808.3889589999962,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7805829999997513
+          },
+          {
+            "atMs": 814.6463749999966,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6367909999971744
+          },
+          {
+            "atMs": 817.2883339999971,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.784416000002238
+          },
+          {
+            "atMs": 821.9353750000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6882909999985714
+          },
+          {
+            "atMs": 829.458584,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.4704169999968144
+          },
+          {
+            "atMs": 834.3769169999941,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.320207999997365
+          },
+          {
+            "atMs": 831.9345839999951,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.0237080000006245
+          },
+          {
+            "atMs": 844.5936250000013,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7652500000040163
+          },
+          {
+            "atMs": 846.9747500000012,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.264333999999508
+          },
+          {
+            "atMs": 847.3672499999957,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.1019590000069
+          },
+          {
+            "atMs": 859.0750419999968,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.017334000003757
+          },
+          {
+            "atMs": 858.9470419999998,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.319999999999709
+          },
+          {
+            "atMs": 862.2722089999952,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.3911669999943115
+          },
+          {
+            "atMs": 873.2309590000004,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.0013749999998254
+          },
+          {
+            "atMs": 873.1258749999979,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.343542000002344
+          },
+          {
+            "atMs": 876.2355419999949,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.192167000001064
+          },
+          {
+            "atMs": 886.8579170000012,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6083750000034343
+          },
+          {
+            "atMs": 888.140625,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.380791000003228
+          },
+          {
+            "atMs": 890.5247919999965,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.2100830000053975
+          },
+          {
+            "atMs": 898.9897500000006,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.550583000003826
+          },
+          {
+            "atMs": 902.7292919999963,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.758417000004556
+          },
+          {
+            "atMs": 905.4919169999994,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.341207999998005
+          },
+          {
+            "atMs": 912.4700000000012,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.793791999996756
+          },
+          {
+            "atMs": 917.5817499999976,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.814041999998153
+          },
+          {
+            "atMs": 920.4001250000001,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.983916999997746
+          },
+          {
+            "atMs": 926.1417499999952,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.892041999999492
+          },
+          {
+            "atMs": 932.4784999999974,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6633339999971213
+          },
+          {
+            "atMs": 935.1458339999954,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.829166999996232
+          },
+          {
+            "atMs": 939.8237499999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.894124999998894
+          },
+          {
+            "atMs": 947.6384169999947,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.173625000003085
+          },
+          {
+            "atMs": 952.128208999995,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 3.0664160000014817
+          },
+          {
+            "atMs": 950.8158340000009,
+            "path": "/batch",
+            "status": 200,
+            "ms": 11.77341599999636
+          },
+          {
+            "atMs": 965.9954999999973,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7724159999997937
+          },
+          {
+            "atMs": 967.276417000001,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7695410000014817
+          },
+          {
+            "atMs": 970.0484999999971,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.830207999999402
+          },
+          {
+            "atMs": 978.3783340000009,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.8835410000028787
+          },
+          {
+            "atMs": 981.3125419999997,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.7492910000000848
+          },
+          {
+            "atMs": 984.0671670000011,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.621749999998428
+          },
+          {
+            "atMs": 991.5896670000002,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.3972500000018044
+          },
+          {
+            "atMs": 995.1885839999959,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.832249999999476
+          },
+          {
+            "atMs": 998.0267919999969,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.687834000003932
+          },
+          {
+            "atMs": 1004.8613340000011,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.6870419999977457
+          },
+          {
+            "atMs": 1008.7922499999986,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.535374999999476
+          },
+          {
+            "atMs": 1011.3361249999944,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.025249999998778
+          },
+          {
+            "atMs": 1018.1817919999958,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.8997500000041327
+          },
+          {
+            "atMs": 1023.4421670000011,
+            "path": "/projects/load-100-56f70e18-2be3-4a11-a9d8-7799a554e94f",
+            "status": 200,
+            "ms": 2.834958999999799
+          },
+          {
+            "atMs": 1026.2818340000013,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.048041999994894
+          }
+        ],
+        "successful": [
+          {
+            "atMs": 37.11858399999619,
+            "iteration": 0,
+            "revision": 2,
+            "retries": 0,
+            "ms": 37.11866700000246
+          },
+          {
+            "atMs": 52.38562499999534,
+            "iteration": 1,
+            "revision": 3,
+            "retries": 0,
+            "ms": 9.6939579999962
+          },
+          {
+            "atMs": 66.46637499999633,
+            "iteration": 2,
+            "revision": 4,
+            "retries": 0,
+            "ms": 7.841874999998254
+          },
+          {
+            "atMs": 81.25516699999571,
+            "iteration": 3,
+            "revision": 5,
+            "retries": 0,
+            "ms": 9.438042000001587
+          },
+          {
+            "atMs": 94.59966699999495,
+            "iteration": 4,
+            "revision": 6,
+            "retries": 0,
+            "ms": 8.309915999998339
+          },
+          {
+            "atMs": 107.3506669999988,
+            "iteration": 5,
+            "revision": 7,
+            "retries": 0,
+            "ms": 8.081875000003492
+          },
+          {
+            "atMs": 121.58995899999718,
+            "iteration": 6,
+            "revision": 8,
+            "retries": 0,
+            "ms": 8.295249999995576
+          },
+          {
+            "atMs": 133.36083399999916,
+            "iteration": 7,
+            "revision": 9,
+            "retries": 0,
+            "ms": 7.047207999996317
+          },
+          {
+            "atMs": 147.3650839999973,
+            "iteration": 8,
+            "revision": 10,
+            "retries": 0,
+            "ms": 9.012291999999434
+          },
+          {
+            "atMs": 161.2955839999995,
+            "iteration": 9,
+            "revision": 11,
+            "retries": 0,
+            "ms": 8.838999999999942
+          },
+          {
+            "atMs": 460.35795900000085,
+            "iteration": 10,
+            "revision": 12,
+            "retries": 0,
+            "ms": 96.45891700000357
+          },
+          {
+            "atMs": 496.1214589999945,
+            "iteration": 11,
+            "revision": 13,
+            "retries": 1,
+            "ms": 30.344333000000915
+          },
+          {
+            "atMs": 513.6714169999977,
+            "iteration": 12,
+            "revision": 14,
+            "retries": 0,
+            "ms": 11.881042000000889
+          },
+          {
+            "atMs": 738.7333749999962,
+            "iteration": 13,
+            "revision": 15,
+            "retries": 0,
+            "ms": 58.124500000005355
+          },
+          {
+            "atMs": 753.4676669999972,
+            "iteration": 14,
+            "revision": 16,
+            "retries": 0,
+            "ms": 9.155624999999418
+          },
+          {
+            "atMs": 768.0165839999972,
+            "iteration": 15,
+            "revision": 17,
+            "retries": 0,
+            "ms": 9.059582999994745
+          },
+          {
+            "atMs": 781.7707089999967,
+            "iteration": 16,
+            "revision": 18,
+            "retries": 0,
+            "ms": 8.617666999998619
+          },
+          {
+            "atMs": 795.4443339999998,
+            "iteration": 17,
+            "revision": 19,
+            "retries": 0,
+            "ms": 8.421167000000423
+          },
+          {
+            "atMs": 809.1289169999945,
+            "iteration": 18,
+            "revision": 20,
+            "retries": 0,
+            "ms": 7.822667000000365
+          },
+          {
+            "atMs": 823.0737089999966,
+            "iteration": 19,
+            "revision": 21,
+            "retries": 0,
+            "ms": 8.428957999996783
+          },
+          {
+            "atMs": 837.9593339999992,
+            "iteration": 20,
+            "revision": 22,
+            "retries": 0,
+            "ms": 8.509040999997524
+          },
+          {
+            "atMs": 853.4699169999949,
+            "iteration": 21,
+            "revision": 23,
+            "retries": 0,
+            "ms": 8.876792000002752
+          },
+          {
+            "atMs": 868.664417,
+            "iteration": 22,
+            "revision": 24,
+            "retries": 0,
+            "ms": 9.718625000001339
+          },
+          {
+            "atMs": 883.4289169999975,
+            "iteration": 23,
+            "revision": 25,
+            "retries": 0,
+            "ms": 10.198457999998936
+          },
+          {
+            "atMs": 897.7365419999987,
+            "iteration": 24,
+            "revision": 26,
+            "retries": 0,
+            "ms": 9.596417000000656
+          },
+          {
+            "atMs": 912.8340839999946,
+            "iteration": 25,
+            "revision": 27,
+            "retries": 0,
+            "ms": 10.105750000002445
+          },
+          {
+            "atMs": 927.3848339999968,
+            "iteration": 26,
+            "revision": 28,
+            "retries": 0,
+            "ms": 9.804166999994777
+          },
+          {
+            "atMs": 941.9759999999951,
+            "iteration": 27,
+            "revision": 29,
+            "retries": 0,
+            "ms": 9.498500000001513
+          },
+          {
+            "atMs": 962.5906249999971,
+            "iteration": 28,
+            "revision": 30,
+            "retries": 0,
+            "ms": 14.953332999997656
+          },
+          {
+            "atMs": 976.8797500000001,
+            "iteration": 29,
+            "revision": 31,
+            "retries": 0,
+            "ms": 9.603917000000365
+          },
+          {
+            "atMs": 990.692959,
+            "iteration": 30,
+            "revision": 32,
+            "retries": 0,
+            "ms": 9.381042000000889
+          },
+          {
+            "atMs": 1003.7160839999997,
+            "iteration": 31,
+            "revision": 33,
+            "retries": 0,
+            "ms": 8.528040999997756
+          },
+          {
+            "atMs": 1018.3624169999966,
+            "iteration": 32,
+            "revision": 34,
+            "retries": 0,
+            "ms": 9.570749999998952
+          },
+          {
+            "atMs": 1033.3311669999966,
+            "iteration": 33,
+            "revision": 35,
+            "retries": 0,
+            "ms": 9.890374999995402
+          }
+        ],
+        "retryToSuccessMs": {
+          "p95": 58.124500000005355,
+          "p99": 96.45891700000357
+        },
+        "sse": {
+          "attempts": 8,
+          "reconnectGapsMs": [
+            299.28466599999956
+          ],
+          "errors": [
+            {
+              "attempt": 1,
+              "cursor": 10,
+              "error": "SSE EOF"
+            },
+            {
+              "attempt": 2,
+              "cursor": 10,
+              "error": "fetch failed"
+            },
+            {
+              "attempt": 3,
+              "cursor": 10,
+              "error": "fetch failed"
+            },
+            {
+              "attempt": 4,
+              "cursor": 10,
+              "error": "fetch failed"
+            },
+            {
+              "attempt": 5,
+              "cursor": 10,
+              "error": "fetch failed"
+            },
+            {
+              "attempt": 6,
+              "cursor": 10,
+              "error": "fetch failed"
+            },
+            {
+              "attempt": 7,
+              "cursor": 10,
+              "error": "fetch failed"
+            }
+          ],
+          "duplicateCommits": 0,
+          "missingCommits": [],
+          "observed": 34
+        },
+        "finalRevision": 35
+      }
+    },
+    "singleDatabaseOutage": {
+      "status": "pass",
+      "durationMs": 1974.340707999996,
+      "result": {
+        "label": "Stop/start sole database host; expected availability outage; not HA or rolling host upgrade",
+        "projectId": "load-100-e233321f-1661-4482-9f45-81935c145873",
+        "disruptionResult": {
+          "outageAndRecoveryMs": 1466.1521670000002
+        },
+        "successfulCount": 26,
+        "disruptionWindowMs": [
+          149.88445800000045,
+          1616.0889160000006
+        ],
+        "overlappingRequests": 40,
+        "readCount": 28,
+        "mixedSnapshots": 0,
+        "rawErrorCount": 26,
+        "rawErrors": [
+          {
+            "atMs": 411.36562499999854,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 6.19141700000182,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 417.6599999999962,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 3.7524170000033337,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 428.01991599999747,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.42908300000272,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 431.6542909999989,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.5322910000031698,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 441.34891599999537,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.392041999999492,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 442.8498749999999,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 4.8177079999950365,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 454.55425000000105,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 5.515416000002006,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 458.41187499999796,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 4.987790999999561,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 469.525999999998,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.6491660000028787,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 473.3875829999961,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1786659999997937,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 481.81095800000185,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.2680419999960577,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 485.40358299999934,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.2207080000007409,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 493.44949999999517,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.6415410000045085,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 497.40587499999674,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1269580000007409,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 505.3461659999957,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.3564580000020214,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 509.0489579999994,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.0477090000058524,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 518.0611250000002,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1976660000000265,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 520.4642079999976,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.015584000000672,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 528.7257909999971,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.0551669999986188,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 532.0872079999972,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.1912090000041644,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 540.4800830000022,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1433329999999842,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 543.9641249999986,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 0.7374999999956344,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 554.4218330000003,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 0.8851670000003651,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 552.4625830000004,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.953208999999333,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 565.9064999999973,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.176207999997132,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 565.5424579999963,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.7121250000054715,
+            "error": "INTERNAL_ERROR"
+          }
+        ],
+        "raw": [
+          {
+            "atMs": 0.001958000000740867,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.601083000001381
+          },
+          {
+            "atMs": 0.045540999999502674,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.15479200000118
+          },
+          {
+            "atMs": 2.612457999995968,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.7409999999945285
+          },
+          {
+            "atMs": 13.852874999996857,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.4557499999937136
+          },
+          {
+            "atMs": 13.633540999995603,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.0075419999993755
+          },
+          {
+            "atMs": 16.315957999999227,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.489208999999391
+          },
+          {
+            "atMs": 28.203457999996317,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.285291000000143
+          },
+          {
+            "atMs": 28.021583000001556,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.761291999995592
+          },
+          {
+            "atMs": 30.495332999998936,
+            "path": "/batch",
+            "status": 200,
+            "ms": 4.93583299999591
+          },
+          {
+            "atMs": 42.147250000001804,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.6546660000021802
+          },
+          {
+            "atMs": 41.936540999995486,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.3398749999978463
+          },
+          {
+            "atMs": 44.807583000001614,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.402125000000524
+          },
+          {
+            "atMs": 55.30054099999688,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.760083000001032
+          },
+          {
+            "atMs": 55.48520799999824,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.713999999999942
+          },
+          {
+            "atMs": 58.202540999998746,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.46379199999501
+          },
+          {
+            "atMs": 68.8758749999979,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.136208000003535
+          },
+          {
+            "atMs": 69.06166600000142,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.1143749999973807
+          },
+          {
+            "atMs": 72.1804159999956,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.359540999997989
+          },
+          {
+            "atMs": 82.71270799999911,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.560541999999259
+          },
+          {
+            "atMs": 82.88820799999667,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.874667000003683
+          },
+          {
+            "atMs": 85.76900000000023,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.147792000003392
+          },
+          {
+            "atMs": 94.81683299999713,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.8344169999982114
+          },
+          {
+            "atMs": 96.25691599999845,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.025374999997439
+          },
+          {
+            "atMs": 99.28870800000004,
+            "path": "/batch",
+            "status": 200,
+            "ms": 4.875291999996989
+          },
+          {
+            "atMs": 108.85904099999607,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.800041999995301
+          },
+          {
+            "atMs": 108.64170799999556,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.601334000006318
+          },
+          {
+            "atMs": 111.66470799999661,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.158917000000656
+          },
+          {
+            "atMs": 122.00741600000038,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.5624170000010054
+          },
+          {
+            "atMs": 124.63945799999783,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.1019169999999576
+          },
+          {
+            "atMs": 126.74716600000102,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.143875000001572
+          },
+          {
+            "atMs": 135.85108300000138,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.46650000000227
+          },
+          {
+            "atMs": 137.5668749999968,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.8704999999972642
+          },
+          {
+            "atMs": 140.44616600000154,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.264000000002852
+          },
+          {
+            "atMs": 149.64649999999529,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 178.51304199999868
+          },
+          {
+            "atMs": 324.3518330000006,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 4.368624999995518
+          },
+          {
+            "atMs": 328.7295000000013,
+            "path": "/batch",
+            "status": 200,
+            "ms": 13.463708000002953
+          },
+          {
+            "atMs": 339.1804159999956,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.231167000005371
+          },
+          {
+            "atMs": 348.2214160000003,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.778375000001688
+          },
+          {
+            "atMs": 353.42179100000067,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 8.832167000000481
+          },
+          {
+            "atMs": 352.00554099999863,
+            "path": "/batch",
+            "status": 200,
+            "ms": 20.78191700000025
+          },
+          {
+            "atMs": 372.48212500000227,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 14.310083999997005
+          },
+          {
+            "atMs": 381.54108299999643,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 5.808874999995169
+          },
+          {
+            "atMs": 387.3548329999976,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.406416999998328
+          },
+          {
+            "atMs": 396.93229099999735,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 4.059708000000683
+          },
+          {
+            "atMs": 401.08533299999544,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.8799589999980526
+          },
+          {
+            "atMs": 403.9732079999958,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.830541999996058
+          },
+          {
+            "atMs": 411.36562499999854,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 6.19141700000182,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 417.6599999999962,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 3.7524170000033337,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 428.01991599999747,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.42908300000272,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 431.6542909999989,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.5322910000031698,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 441.34891599999537,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.392041999999492,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 442.8498749999999,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 4.8177079999950365,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 454.55425000000105,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 5.515416000002006,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 458.41187499999796,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 4.987790999999561,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 469.525999999998,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.6491660000028787,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 473.3875829999961,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1786659999997937,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 481.81095800000185,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.2680419999960577,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 485.40358299999934,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.2207080000007409,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 493.44949999999517,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.6415410000045085,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 497.40587499999674,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1269580000007409,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 505.3461659999957,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.3564580000020214,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 509.0489579999994,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.0477090000058524,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 518.0611250000002,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1976660000000265,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 520.4642079999976,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.015584000000672,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 528.7257909999971,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.0551669999986188,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 532.0872079999972,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.1912090000041644,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 540.4800830000022,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.1433329999999842,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 543.9641249999986,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 0.7374999999956344,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 554.4218330000003,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 0.8851670000003651,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 552.4625830000004,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 2.953208999999333,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 565.9064999999973,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.176207999997132,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 565.5424579999963,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 500,
+            "ms": 1.7121250000054715,
+            "error": "INTERNAL_ERROR"
+          },
+          {
+            "atMs": 578.4754580000008,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 1073.5242919999946
+          },
+          {
+            "atMs": 579.3570829999953,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 1072.973417000001
+          },
+          {
+            "atMs": 1652.3535409999968,
+            "path": "/batch",
+            "status": 200,
+            "ms": 7.161500000001979
+          },
+          {
+            "atMs": 1661.8398329999982,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 77.45970800000214
+          },
+          {
+            "atMs": 1665.5506249999962,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 75.09504200000083
+          },
+          {
+            "atMs": 1740.65625,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.396166999998968
+          },
+          {
+            "atMs": 1749.0047909999994,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.1722089999966556
+          },
+          {
+            "atMs": 1751.2306249999965,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 1.9558749999996508
+          },
+          {
+            "atMs": 1753.1918749999968,
+            "path": "/batch",
+            "status": 200,
+            "ms": 4.759666000005382
+          },
+          {
+            "atMs": 1760.7462909999958,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 5.100458000000799
+          },
+          {
+            "atMs": 1765.9091249999983,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.049834000004921
+          },
+          {
+            "atMs": 1767.964165999998,
+            "path": "/batch",
+            "status": 200,
+            "ms": 6.204875000003085
+          },
+          {
+            "atMs": 1809.883249999999,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 9.216166999998677
+          },
+          {
+            "atMs": 1776.0529160000006,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 44.00470800000039
+          },
+          {
+            "atMs": 1819.1081659999982,
+            "path": "/batch",
+            "status": 200,
+            "ms": 10.110583000001498
+          },
+          {
+            "atMs": 1830.5528750000012,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.4422909999993863
+          },
+          {
+            "atMs": 1834.0875410000008,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.821209000001545
+          },
+          {
+            "atMs": 1843.9086249999964,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 5.491374999997788
+          },
+          {
+            "atMs": 1836.921000000002,
+            "path": "/batch",
+            "status": 200,
+            "ms": 12.919999999998254
+          },
+          {
+            "atMs": 1855.3686660000021,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.5197920000064187
+          },
+          {
+            "atMs": 1860.3989159999983,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.7690829999992275
+          },
+          {
+            "atMs": 1857.8984159999964,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.628333000000566
+          },
+          {
+            "atMs": 1869.974540999996,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.9151249999995343
+          },
+          {
+            "atMs": 1873.0963330000013,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.340749999995751
+          },
+          {
+            "atMs": 1872.9007500000007,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.160084000002826
+          },
+          {
+            "atMs": 1883.3831659999996,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.2290829999983544
+          },
+          {
+            "atMs": 1885.7374159999963,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.475957999995444
+          },
+          {
+            "atMs": 1885.6163329999981,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.739166999999725
+          },
+          {
+            "atMs": 1896.6275000000023,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.293042000004789
+          },
+          {
+            "atMs": 1898.0553749999963,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 2.043874999995751
+          },
+          {
+            "atMs": 1898.9285830000008,
+            "path": "/batch",
+            "status": 200,
+            "ms": 4.788374999996449
+          },
+          {
+            "atMs": 1909.1480410000004,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.1288750000021537
+          },
+          {
+            "atMs": 1909.424874999997,
+            "path": "/projects/load-100-e233321f-1661-4482-9f45-81935c145873",
+            "status": 200,
+            "ms": 3.08283400000073
+          },
+          {
+            "atMs": 1912.2816659999953,
+            "path": "/batch",
+            "status": 200,
+            "ms": 5.64445899999555
+          }
+        ],
+        "successful": [
+          {
+            "atMs": 8.358749999999418,
+            "iteration": 0,
+            "revision": 2,
+            "retries": 0,
+            "ms": 8.357582999997248
+          },
+          {
+            "atMs": 21.808665999997174,
+            "iteration": 1,
+            "revision": 3,
+            "retries": 0,
+            "ms": 7.956332999994629
+          },
+          {
+            "atMs": 35.43620799999917,
+            "iteration": 2,
+            "revision": 4,
+            "retries": 0,
+            "ms": 7.233124999998836
+          },
+          {
+            "atMs": 50.21354099999735,
+            "iteration": 3,
+            "revision": 5,
+            "retries": 0,
+            "ms": 8.06670799999847
+          },
+          {
+            "atMs": 63.669332999998005,
+            "iteration": 4,
+            "revision": 6,
+            "retries": 0,
+            "ms": 8.184666999994079
+          },
+          {
+            "atMs": 77.54249999999593,
+            "iteration": 5,
+            "revision": 7,
+            "retries": 0,
+            "ms": 8.481291000003694
+          },
+          {
+            "atMs": 90.91929099999834,
+            "iteration": 6,
+            "revision": 8,
+            "retries": 0,
+            "ms": 8.03141599999799
+          },
+          {
+            "atMs": 104.16908300000068,
+            "iteration": 7,
+            "revision": 9,
+            "retries": 0,
+            "ms": 7.913709000000381
+          },
+          {
+            "atMs": 118.82758299999841,
+            "iteration": 8,
+            "revision": 10,
+            "retries": 0,
+            "ms": 9.968957999997656
+          },
+          {
+            "atMs": 131.89670800000022,
+            "iteration": 9,
+            "revision": 11,
+            "retries": 0,
+            "ms": 7.257749999997031
+          },
+          {
+            "atMs": 146.71483299999818,
+            "iteration": 10,
+            "revision": 12,
+            "retries": 0,
+            "ms": 9.149333999994269
+          },
+          {
+            "atMs": 342.1980829999957,
+            "iteration": 11,
+            "revision": 13,
+            "retries": 0,
+            "ms": 17.84754200000316
+          },
+          {
+            "atMs": 372.7899580000012,
+            "iteration": 12,
+            "revision": 14,
+            "retries": 0,
+            "ms": 25.852459000001545
+          },
+          {
+            "atMs": 394.7729580000014,
+            "iteration": 13,
+            "revision": 15,
+            "retries": 0,
+            "ms": 13.232624999996915
+          },
+          {
+            "atMs": 411.80779099999927,
+            "iteration": 14,
+            "revision": 16,
+            "retries": 0,
+            "ms": 10.72308399999747
+          },
+          {
+            "atMs": 1659.5176659999997,
+            "iteration": 15,
+            "revision": 17,
+            "retries": 0,
+            "ms": 1080.1619999999966
+          },
+          {
+            "atMs": 1746.0550000000003,
+            "iteration": 16,
+            "revision": 18,
+            "retries": 0,
+            "ms": 80.50520800000231
+          },
+          {
+            "atMs": 1757.954165999996,
+            "iteration": 17,
+            "revision": 19,
+            "retries": 0,
+            "ms": 6.724207999999635
+          },
+          {
+            "atMs": 1774.1712499999994,
+            "iteration": 18,
+            "revision": 20,
+            "retries": 0,
+            "ms": 8.262540999996418
+          },
+          {
+            "atMs": 1829.2289999999994,
+            "iteration": 19,
+            "revision": 21,
+            "retries": 0,
+            "ms": 19.347125000000233
+          },
+          {
+            "atMs": 1849.8432079999984,
+            "iteration": 20,
+            "revision": 22,
+            "retries": 0,
+            "ms": 15.756249999998545
+          },
+          {
+            "atMs": 1863.528790999997,
+            "iteration": 21,
+            "revision": 23,
+            "retries": 0,
+            "ms": 8.161582999993698
+          },
+          {
+            "atMs": 1878.062582999999,
+            "iteration": 22,
+            "revision": 24,
+            "retries": 0,
+            "ms": 8.089290999996592
+          },
+          {
+            "atMs": 1891.356915999997,
+            "iteration": 23,
+            "revision": 25,
+            "retries": 0,
+            "ms": 7.97491699999955
+          },
+          {
+            "atMs": 1903.718832999999,
+            "iteration": 24,
+            "revision": 26,
+            "retries": 0,
+            "ms": 7.101499999997031
+          },
+          {
+            "atMs": 1917.9300000000003,
+            "iteration": 25,
+            "revision": 27,
+            "retries": 0,
+            "ms": 8.783250000000407
+          }
+        ],
+        "retryToSuccessMs": {
+          "p95": 80.50520800000231,
+          "p99": 1080.1619999999966
+        },
+        "sse": {
+          "attempts": 1,
+          "reconnectGapsMs": [],
+          "errors": [],
+          "duplicateCommits": 0,
+          "missingCommits": [],
+          "observed": 26
+        },
+        "finalRevision": 27
+      }
+    },
+    "historyGrowth": {
+      "status": "pass",
+      "durationMs": 47399.3435,
+      "result": {
+        "projectId": "load-5000-4c0de0be-3703-41f2-8aaa-3009d9259f35",
+        "fixtureNodes": 5000,
+        "additionalHistoryCommits": 1000,
+        "samples": [
+          {
+            "addedCommits": 0,
+            "docker": {
+              "BlockIO": "2.81MB / 2.87MB",
+              "CPUPerc": "0.04%",
+              "Container": "54fb55637fa6fea79c666b4836b8e37ffdf9f410889e0f605ffbe087acfbcc0f",
+              "ID": "54fb55637fa6",
+              "MemPerc": "1.52%",
+              "MemUsage": "31.16MiB / 2GiB",
+              "Name": "pg-1793595561297-6e08b047",
+              "NetIO": "3.51MB / 4.24MB",
+              "PIDs": "13"
+            },
+            "databaseBytes": 15012323,
+            "commitRows": 433,
+            "idempotencyRows": 433,
+            "rssBytes": 197586944,
+            "rssDefinition": "Sum process VmRSS; shared pages may be counted multiple times; docker memory usage recorded separately"
+          },
+          {
+            "addedCommits": 250,
+            "docker": {
+              "BlockIO": "3.22MB / 6.31MB",
+              "CPUPerc": "0.45%",
+              "Container": "54fb55637fa6fea79c666b4836b8e37ffdf9f410889e0f605ffbe087acfbcc0f",
+              "ID": "54fb55637fa6",
+              "MemPerc": "1.58%",
+              "MemUsage": "32.35MiB / 2GiB",
+              "Name": "pg-1793595561297-6e08b047",
+              "NetIO": "5.53MB / 116MB",
+              "PIDs": "13"
+            },
+            "databaseBytes": 15208931,
+            "commitRows": 683,
+            "idempotencyRows": 683,
+            "rssBytes": 201203712,
+            "rssDefinition": "Sum process VmRSS; shared pages may be counted multiple times; docker memory usage recorded separately"
+          },
+          {
+            "addedCommits": 1000,
+            "docker": {
+              "BlockIO": "9.69MB / 17.4MB",
+              "CPUPerc": "0.06%",
+              "Container": "54fb55637fa6fea79c666b4836b8e37ffdf9f410889e0f605ffbe087acfbcc0f",
+              "ID": "54fb55637fa6",
+              "MemPerc": "1.79%",
+              "MemUsage": "36.61MiB / 2GiB",
+              "Name": "pg-1793595561297-6e08b047",
+              "NetIO": "11.5MB / 452MB",
+              "PIDs": "13"
+            },
+            "databaseBytes": 15790563,
+            "commitRows": 1433,
+            "idempotencyRows": 1433,
+            "rssBytes": 211509248,
+            "rssDefinition": "Sum process VmRSS; shared pages may be counted multiple times; docker memory usage recorded separately"
+          }
+        ],
+        "restart": {
+          "pid": 62255,
+          "url": "http://127.0.0.1:58793",
+          "startupMs": 101.52774999999383,
+          "totalRestartMs": 105.02324999999837
+        },
+        "gatewayRestartAndSnapshotMs": 161.77666699999827,
+        "databaseRestartAndSnapshotMs": 674.5830419999984,
+        "replayAfterDatabaseRestart": 1000,
+        "afterRestart": {
+          "docker": {
+            "BlockIO": "16.4MB / 61.4kB",
+            "CPUPerc": "0.06%",
+            "Container": "54fb55637fa6fea79c666b4836b8e37ffdf9f410889e0f605ffbe087acfbcc0f",
+            "ID": "54fb55637fa6",
+            "MemPerc": "2.00%",
+            "MemUsage": "40.94MiB / 2GiB",
+            "Name": "pg-1793595561297-6e08b047",
+            "NetIO": "9.27kB / 503kB",
+            "PIDs": "10"
+          },
+          "databaseBytes": 15790563,
+          "commitRows": 1433,
+          "idempotencyRows": 1433,
+          "rssBytes": 136552448,
+          "rssDefinition": "Sum process VmRSS; shared pages may be counted multiple times; docker memory usage recorded separately"
+        },
+        "scope": "Synthetic bounded growth only; no retention/GC or production capacity/SLA inference"
+      }
+    },
+    "additiveMigrationAndBackupRestore": {
+      "status": "pass",
+      "durationMs": 1982.1076250000042,
+      "result": {
+        "projectId": "migration-b7f2ddb3-4c7d-45d5-b926-1acd298ccce5",
+        "additiveMigration": "pass",
+        "clientV1AfterV2": "pass",
+        "clientV2Description": "client-v2",
+        "codeRollback": "pass: actual compat-v2 feature binary replaced by v1 binary; v1 writes succeed and later v2 reads retain description",
+        "gatewayRestart": {
+          "pid": 62296,
+          "url": "http://127.0.0.1:58789",
+          "startupMs": 102.60033299999486,
+          "totalRestartMs": 104.32508299998881
+        },
+        "backupRestore": "pass",
+        "dumpBytes": 337786,
+        "dumpSha256": "5eeb17abdc55878949eff052abcff83e43dc28757ea305339ad4678ce110ec07",
+        "restoredRevision": 3,
+        "resourceSha256": "05ad285de80e893671f9aeeafe1fa4a1104e2be127b5469b7cd85c0f52a50ab7",
+        "restoredBlobCount": 7,
+        "allRestoredBlobHashesVerified": true,
+        "resourcesRestored": 3,
+        "jobsRestored": 2,
+        "stagedUploadsRestored": 2,
+        "scope": "pg_dump consistent DB snapshot including fixture resources stored bytea; no external object store or SQLite import"
+      }
+    }
+  },
+  "untested": [
+    "real MCP sessions",
+    "actual rendering",
+    "Kubernetes",
+    "HA/failover",
+    "DB major upgrade/mixed version",
+    "SQLite cutover",
+    "external object store"
+  ],
+  "validationScope": "full default phase sequence",
+  "configuration": {
+    "nodeCounts": "100,5000",
+    "writers": "1,4,8",
+    "iterations": 12,
+    "historyCommits": 1000,
+    "contractTests": true,
+    "skipBuild": false
+  },
+  "runId": "pg-1793595561297-6e08b047",
+  "topology": {
+    "runId": "pg-1793595561297-6e08b047",
+    "createdAt": "2026-11-02T04:59:21.729Z",
+    "containerId": "54fb55637fa6fea79c666b4836b8e37ffdf9f410889e0f605ffbe087acfbcc0f",
+    "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "port": 58786,
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "dockerVersion": {
+      "Client": {
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "DefaultAPIVersion": "1.54",
+        "GitCommit": "9d7ad9f",
+        "GoVersion": "go1.26.4",
+        "Os": "darwin",
+        "Arch": "arm64",
+        "BuildTime": "Fri Aug  7 04:38:56 2026",
+        "Context": "orbstack"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Engine - Community"
+        },
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "MinAPIVersion": "1.40",
+        "Os": "linux",
+        "Arch": "arm64",
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "29.4.0",
+            "Details": {
+              "ApiVersion": "1.54",
+              "Arch": "arm64",
+              "BuildTime": "Tue Apr  7 08:35:43 2026",
+              "Experimental": "true",
+              "GitCommit": "daa0cb7f",
+              "GoVersion": "go1.26.1",
+              "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+              "MinAPIVersion": "1.40",
+              "Module": "github.com/moby/moby/v2",
+              "ModuleVersion": "v2.0.0+unknown",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "v2.2.2",
+            "Details": {
+              "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.5.1",
+            "Details": {
+              "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "GitCommit": "daa0cb7f",
+        "GoVersion": "go1.26.1",
+        "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "Experimental": true,
+        "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+      }
+    },
+    "context": "orbstack",
+    "node": "v24.21.0",
+    "gatewayHost": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpuModel": "Apple M5",
+      "logicalCpus": 10,
+      "memoryBytes": 25769803776,
+      "limits": "uncapped host processes"
+    },
+    "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+    "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+    "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "cleanedAt": "2026-11-02T05:00:57.012Z"
+  },
+  "provenance": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "622c47bf8bdb2aeddb25485761543a7cf3fefb6c9365a99d7ab4443b2e82f963"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "28cdf7cf9b83dace271d7ca3196bfb8d086798af39bca54a832c8e6833eca8b1"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "48ada360d188888af96e75d951f35b245ac43deafaed5d5a0f2f3a64cf21ea63"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "92a6647dfbe90ddd49b363ba5816f6cc4a4e55248b5c624c27b5c3dd855665dc"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "e218b203b40ad756485370c81b6f68d527a1fa1867b6840dcf30db11ddf35b31"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "6dc02dd034db6615b1dc221da96f9548fc23ddbfdf878127401a172ae088cb7f"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "c0eb56638c3d0aabe510334814216569da6a6fe37d976a22189e2cd2a8d72aaa"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "ac964397f6ca58b803d7121f34004adaa951b6c93e446b3f05a1a41bbdbe18c4"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "2b2ed2e7dabaad525c87525b1150868f89e191abef0cc5d484fc2533aa0b16da"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "db33703d723519735e023f0716040f8a891f2fe82b229484d264e80b23a55b76"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "provenanceAfter": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "622c47bf8bdb2aeddb25485761543a7cf3fefb6c9365a99d7ab4443b2e82f963"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "28cdf7cf9b83dace271d7ca3196bfb8d086798af39bca54a832c8e6833eca8b1"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "48ada360d188888af96e75d951f35b245ac43deafaed5d5a0f2f3a64cf21ea63"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "92a6647dfbe90ddd49b363ba5816f6cc4a4e55248b5c624c27b5c3dd855665dc"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "e218b203b40ad756485370c81b6f68d527a1fa1867b6840dcf30db11ddf35b31"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "6dc02dd034db6615b1dc221da96f9548fc23ddbfdf878127401a172ae088cb7f"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "c0eb56638c3d0aabe510334814216569da6a6fe37d976a22189e2cd2a8d72aaa"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "ac964397f6ca58b803d7121f34004adaa951b6c93e446b3f05a1a41bbdbe18c4"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "2b2ed2e7dabaad525c87525b1150868f89e191abef0cc5d484fc2533aa0b16da"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "db33703d723519735e023f0716040f8a891f2fe82b229484d264e80b23a55b76"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "cleanup": "owned gateway processes and PostgreSQL container/anonymous volume removed",
+  "finishedAt": "2026-11-02T05:00:57.013Z"
+}

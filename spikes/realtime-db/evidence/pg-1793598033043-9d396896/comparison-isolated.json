@@ -1,0 +1,243 @@
+{
+  "methodology": "Sequential fresh owned PostgreSQL runtimes. Baseline six-cell prefix, server-only first legacy six-cell prefix of full run, optimized-client separate six-cell prefix of fresh runtime; same fixtures, continuous reader/SSE, dev toolchain/resources. Other full-run optimized mode retained as corroboration, not used for primary comparison due accumulated legacy data.",
+  "runs": [
+    "optimization-baseline-clean-1793597163652",
+    "pg-1793597580146-67e95999",
+    "pg-1793598033043-9d396896"
+  ],
+  "sourceFingerprints": [
+    "a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24",
+    "a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed",
+    "a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed"
+  ],
+  "rows": [
+    {
+      "nodes": 100,
+      "writers": 1,
+      "baseline": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 6.630041999999776,
+        "postP99Ms": 6.630041999999776,
+        "p95Ms": 35.762542000000394,
+        "p99Ms": 35.762542000000394,
+        "throughput": 92.84299717651302,
+        "maxRetries": 0,
+        "readCount": 50
+      },
+      "serverOnly": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 5.964915999999903,
+        "postP99Ms": 5.964915999999903,
+        "p95Ms": 34.50304199999937,
+        "p99Ms": 34.50304199999937,
+        "throughput": 93.66079102344985,
+        "maxRetries": 0,
+        "readCount": 50
+      },
+      "serverAndClient": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 6.696249999999964,
+        "postP99Ms": 6.696249999999964,
+        "p95Ms": 7.569833999999901,
+        "p99Ms": 7.569833999999901,
+        "throughput": 144.4229420079776,
+        "maxRetries": 0,
+        "readCount": 39
+      },
+      "p99Speedup": 4.724349569620795
+    },
+    {
+      "nodes": 100,
+      "writers": 4,
+      "baseline": {
+        "successes": 48,
+        "conflicts": 78,
+        "postP95Ms": 10.960000000000036,
+        "postP99Ms": 30.651874999999563,
+        "p95Ms": 184.04562500000065,
+        "p99Ms": 315.80875000000015,
+        "throughput": 102.61090409907521,
+        "maxRetries": 28,
+        "readCount": 176
+      },
+      "serverOnly": {
+        "successes": 48,
+        "conflicts": 74,
+        "postP95Ms": 6.124582999999802,
+        "postP99Ms": 6.851375000000189,
+        "p95Ms": 95.707042,
+        "p99Ms": 231.5217079999993,
+        "throughput": 131.65896339214837,
+        "maxRetries": 23,
+        "readCount": 145
+      },
+      "serverAndClient": {
+        "successes": 48,
+        "conflicts": 33,
+        "postP95Ms": 23.16912500000035,
+        "postP99Ms": 30.87120800000048,
+        "p95Ms": 146.83016599999974,
+        "p99Ms": 295.81487500000003,
+        "throughput": 120.5253525355263,
+        "maxRetries": 9,
+        "readCount": 166
+      },
+      "p99Speedup": 1.067589146759439
+    },
+    {
+      "nodes": 100,
+      "writers": 8,
+      "baseline": {
+        "successes": 96,
+        "conflicts": 409,
+        "postP95Ms": 17.972583000000668,
+        "postP99Ms": 23.264750000000276,
+        "p95Ms": 628.2683749999997,
+        "p99Ms": 966.9111250000005,
+        "throughput": 80.31620039664033,
+        "maxRetries": 75,
+        "readCount": 482
+      },
+      "serverOnly": {
+        "successes": 96,
+        "conflicts": 388,
+        "postP95Ms": 11.156499999999141,
+        "postP99Ms": 15.3134170000003,
+        "p95Ms": 497.35162499999933,
+        "p99Ms": 654.2464590000009,
+        "throughput": 105.95362326912512,
+        "maxRetries": 70,
+        "readCount": 348
+      },
+      "serverAndClient": {
+        "successes": 96,
+        "conflicts": 101,
+        "postP95Ms": 10.991790999999466,
+        "postP99Ms": 34.94116699999995,
+        "p95Ms": 325.3192079999999,
+        "p99Ms": 507.75858400000016,
+        "throughput": 139.95190010639246,
+        "maxRetries": 11,
+        "readCount": 272
+      },
+      "p99Speedup": 1.9042733209607348
+    },
+    {
+      "nodes": 5000,
+      "writers": 1,
+      "baseline": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 60.18987500000003,
+        "postP99Ms": 60.18987500000003,
+        "p95Ms": 130.32116700000006,
+        "p99Ms": 130.32116700000006,
+        "throughput": 10.07891263651021,
+        "maxRetries": 0,
+        "readCount": 22
+      },
+      "serverOnly": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 63.365874999999505,
+        "postP99Ms": 63.365874999999505,
+        "p95Ms": 108.60916600000019,
+        "p99Ms": 108.60916600000019,
+        "throughput": 10.807776600555728,
+        "maxRetries": 0,
+        "readCount": 22
+      },
+      "serverAndClient": {
+        "successes": 12,
+        "conflicts": 0,
+        "postP95Ms": 65.51745800000026,
+        "postP99Ms": 65.51745800000026,
+        "p95Ms": 66.16929199999868,
+        "p99Ms": 66.16929199999868,
+        "throughput": 20.523792848227803,
+        "maxRetries": 0,
+        "readCount": 12
+      },
+      "p99Speedup": 1.9695112802476815
+    },
+    {
+      "nodes": 5000,
+      "writers": 4,
+      "baseline": {
+        "successes": 48,
+        "conflicts": 72,
+        "postP95Ms": 100.46329100000003,
+        "postP99Ms": 104.40008299999863,
+        "p95Ms": 1595.0173329999998,
+        "p99Ms": 4036.938333,
+        "throughput": 9.481975636163558,
+        "maxRetries": 36,
+        "readCount": 88
+      },
+      "serverOnly": {
+        "successes": 48,
+        "conflicts": 107,
+        "postP95Ms": 77.1755409999987,
+        "postP99Ms": 96.49158399999942,
+        "p95Ms": 1280.087125,
+        "p99Ms": 2329.8377920000003,
+        "throughput": 10.04762250286485,
+        "maxRetries": 22,
+        "readCount": 80
+      },
+      "serverAndClient": {
+        "successes": 48,
+        "conflicts": 59,
+        "postP95Ms": 81.53750000000036,
+        "postP99Ms": 103.45633300000009,
+        "p95Ms": 748.7016670000012,
+        "p99Ms": 1733.8716669999994,
+        "throughput": 19.06370909800142,
+        "maxRetries": 21,
+        "readCount": 44
+      },
+      "p99Speedup": 2.328279774007058
+    },
+    {
+      "nodes": 5000,
+      "writers": 8,
+      "baseline": {
+        "successes": 96,
+        "conflicts": 335,
+        "postP95Ms": 203.35008300000118,
+        "postP99Ms": 223.43341599999985,
+        "p95Ms": 7492.757333000001,
+        "p99Ms": 13253.198625,
+        "throughput": 6.654396794935404,
+        "maxRetries": 84,
+        "readCount": 248
+      },
+      "serverOnly": {
+        "successes": 96,
+        "conflicts": 520,
+        "postP95Ms": 105.63670900000216,
+        "postP99Ms": 138.75058299999728,
+        "p95Ms": 2658.256540999999,
+        "p99Ms": 5620.667458,
+        "throughput": 8.93981885063473,
+        "maxRetries": 46,
+        "readCount": 158
+      },
+      "serverAndClient": {
+        "successes": 96,
+        "conflicts": 338,
+        "postP95Ms": 68.55962499999805,
+        "postP99Ms": 87.69062499999927,
+        "p95Ms": 1718.0014999999985,
+        "p99Ms": 2630.3406670000004,
+        "throughput": 20.268985445132703,
+        "maxRetries": 30,
+        "readCount": 86
+      },
+      "p99Speedup": 5.038586366881427
+    }
+  ]
+}

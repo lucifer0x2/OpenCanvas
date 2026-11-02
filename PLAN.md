@@ -15,6 +15,8 @@ Mục tiêu: agent tạo và đọc thiết kế qua MCP; người dùng nhìn k
 - Agent trò chuyện với người dùng trong Codex/Claude bên ngoài OpenCanvas.
 - Agent đọc/ghi nodes, styles, layout, tokens và asset metadata qua MCP ngay trong MVP.
 - Storage dùng SQLite; mỗi project là thư mục `~/.opencanvas/<project>/`, chứa `db.sql` và `assets/` cho mọi asset/font của project.
+- Ngày 2026-11-02 người dùng chốt PostgreSQL cho hướng nhiều backend/redeploy liên tục và yêu cầu triển khai Task15. Trước mắt hoàn thiện spike cô lập theo `tasks/15-realtime-database-kubernetes-research.md`; runtime SQLite hiện tại và dữ liệu thật chưa chuyển. Việc chọn engine không có nghĩa port sản phẩm hoặc Kubernetes HA đã hoàn tất.
+- Ngày 2026-11-02 người dùng duyệt Task17: PostgreSQL commit delta trước ACK, Redis phục vụ HOT reads trong spike Task15; không đổi runtime/dữ liệu thật. Redis-primary/write-behind được lưu Task18 để nghiên cứu sau. AC và ranh giới tại `tasks/17-postgres-delta-redis-hot-reads.md`.
 - File `db.sql` là SQLite binary; giữ nguyên đuôi `.sql` người dùng đã chọn.
 - Browser local ưu tiên hiển thị thiết kế chỉ đọc; không có editing, chat hoặc terminal trong sản phẩm.
 - Bổ sung được người dùng yêu cầu ngày 2026-10-30: UI quản lý tài nguyên font cho project được thêm/import và tải xuống font; scene vẫn chỉ đọc. Font dùng file bytes đã lưu cùng project hoặc font bundled đã ghim hash, không yêu cầu cài font hệ thống. SVG export cần mang theo font đã dùng để mở ở máy khác; không tự đổi font của design. Chi tiết hành vi và bằng chứng tại `docs/FONTS.md` sau triển khai.

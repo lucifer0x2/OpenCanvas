@@ -1,0 +1,12 @@
+{"writer":0,"iteration":0,"retry":0,"key":"f26277b6-dfa8-4bca-9b41-0a291b7cd137","expectedRevision":1,"status":200,"ms":5.4250410000004194}
+{"writer":0,"iteration":1,"retry":0,"key":"1350cf3b-e5c8-4b89-914b-610429d88997","expectedRevision":2,"status":200,"ms":4.728249999999207}
+{"writer":0,"iteration":2,"retry":0,"key":"965421e4-678e-4d2e-899c-43a75d3468f2","expectedRevision":3,"status":200,"ms":5.831750000000284}
+{"writer":0,"iteration":3,"retry":0,"key":"e6d181c8-7dfa-4870-8775-ccfdd16273a5","expectedRevision":4,"status":200,"ms":4.38720899999953}
+{"writer":0,"iteration":4,"retry":0,"key":"262c49eb-3be6-4a9b-8777-c3c6cf0f3786","expectedRevision":5,"status":200,"ms":5.964915999999903}
+{"writer":0,"iteration":5,"retry":0,"key":"211e0908-d5ac-410c-85eb-6d7e0fea4870","expectedRevision":6,"status":200,"ms":5.799834000000374}
+{"writer":0,"iteration":6,"retry":0,"key":"bcc21520-9f9f-4349-be0b-11dda71b940f","expectedRevision":7,"status":200,"ms":4.719165999999859}
+{"writer":0,"iteration":7,"retry":0,"key":"219d9e04-c0fc-4f06-b7dd-bdc71a029f63","expectedRevision":8,"status":200,"ms":4.9429999999993015}
+{"writer":0,"iteration":8,"retry":0,"key":"69501221-0229-4edd-841f-68f58f6c7f24","expectedRevision":9,"status":200,"ms":4.648291999999856}
+{"writer":0,"iteration":9,"retry":0,"key":"8eb13465-55de-407e-8743-bc38f9019207","expectedRevision":10,"status":200,"ms":4.9308750000000146}
+{"writer":0,"iteration":10,"retry":0,"key":"af82679d-0b30-413e-ad7e-71e86903274e","expectedRevision":11,"status":200,"ms":4.771875000000364}
+{"writer":0,"iteration":11,"retry":0,"key":"0ffc98d7-797b-418e-afcc-2d48fddd7c71","expectedRevision":12,"status":200,"ms":5.6603329999998095}

@@ -1,0 +1,130 @@
+{
+  "description": "Immutable raw baseline repetitions, verified summary and exact measured source/driver archives",
+  "files": [
+    {
+      "path": "single-writer-baseline-r1-20261102/100-attempts.jsonl",
+      "bytes": 19657,
+      "sha256": "97ac69ca7252fe6da8ba9c6132e1256eb2acace0fdf77759670d262519ceabd8"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/100-profiles-all.jsonl",
+      "bytes": 38976,
+      "sha256": "612c5a6a54e4e69453c2c63c89648168047baff19ba2ee26325aaddb179bc64f"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/100-profiles-measured.jsonl",
+      "bytes": 32206,
+      "sha256": "7c8e705fc5ebb2ff77c88c668600e7ecfc0cfb971777934bf31e95cdf80846f0"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/100-reads.jsonl",
+      "bytes": 9836,
+      "sha256": "9b0fab72b10451d247391addde560d002d00d49237fefd820434062c1448de88"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/100-successes.jsonl",
+      "bytes": 20124,
+      "sha256": "840c46df7d5d1b8a1d32fda1d4558142847c6f8f04001d51ead53cb6c5802aab"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/5000-attempts.jsonl",
+      "bytes": 19643,
+      "sha256": "27b0d5b2324f14c0d9395fc8843ff71f9f6245a7ebf2465938fdb3113c8da00f"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/5000-profiles-all.jsonl",
+      "bytes": 43645,
+      "sha256": "edca1b4ee13c5766b3d19f5cab30b8182691701bebace13db4e1cc881aa41625"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/5000-profiles-measured.jsonl",
+      "bytes": 33532,
+      "sha256": "734ac600a4f23dc8ac3ee6910770bd90e1450d167d6842959b83a33bc460e80e"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/5000-reads.jsonl",
+      "bytes": 3784,
+      "sha256": "7489d7ea857ca1575c3a0b5f3ed1f5127a05b80d76ab0140cef12b9c1d0170b3"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/5000-successes.jsonl",
+      "bytes": 20113,
+      "sha256": "546364dff0a154d4743d781ab48cd980cfe3e79e65380fa03e86bb21fee10b76"
+    },
+    {
+      "path": "single-writer-baseline-r1-20261102/report.json",
+      "bytes": 91043,
+      "sha256": "9cde29c30544c6e7503456e4716162ea7044f208d20826343d2c7778a91dc813"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/100-attempts.jsonl",
+      "bytes": 19653,
+      "sha256": "1c11469ac1a2b497d3577cd0cc255362999352ccea0f875acc052069abced6af"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/100-profiles-all.jsonl",
+      "bytes": 38945,
+      "sha256": "5fe6a987d13a6ee78458f669bfe2997c6dde62dcb244763712e2d1a8320067d6"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/100-profiles-measured.jsonl",
+      "bytes": 32173,
+      "sha256": "c4685681d056cd4ba72677f6dd20b6194458c44b38bdbc2b81f3091cbdb10c96"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/100-reads.jsonl",
+      "bytes": 9775,
+      "sha256": "a8d4fd4919bb068607fc4ab83108bb5f4f060635af2bbbfee993ef6e0a78bef2"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/100-successes.jsonl",
+      "bytes": 20133,
+      "sha256": "9790e1e1ca236f463293f09a514bef87e8b762807ede61b0e978146995d5c109"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/5000-attempts.jsonl",
+      "bytes": 19625,
+      "sha256": "69286585e45ca746f8d2b76834e894177460b84b75f42b8d61fec855ee4902a8"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/5000-profiles-all.jsonl",
+      "bytes": 43656,
+      "sha256": "54b0fe9dd44334e2048c5e9f03389475cf5d28c69043776f90b531945239287c"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/5000-profiles-measured.jsonl",
+      "bytes": 33533,
+      "sha256": "d6b8607c6ff3ce9a03a9d2a18db181883d00a51d2b7dd18512bc94b102fa2d8c"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/5000-reads.jsonl",
+      "bytes": 3872,
+      "sha256": "4db22a550952017dade9c8c80f58124eac19eeefb0fc5220606d0f3eb52db473"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/5000-successes.jsonl",
+      "bytes": 20081,
+      "sha256": "54a6213511ab0518e4ee8a2f8a87598b5aac35d9389dd3fae0bc5c2ac3cf7e2a"
+    },
+    {
+      "path": "single-writer-baseline-r2-20261102/report.json",
+      "bytes": 91046,
+      "sha256": "61c2c4bde3a44de4f377c931ae1672cf718ad6c202997d19a213291309cbb755"
+    },
+    {
+      "path": "single-writer-baseline-repetitions-verified-20261102.json",
+      "bytes": 31490,
+      "sha256": "3c105c14d0bb8bc8c0e31d62a0b3797f3973428c71a46b1d7981a3f134d38b61"
+    },
+    {
+      "path": "single-writer-baseline-source-20261102.tar.gz",
+      "bytes": 74482,
+      "sha256": "013429590ad49f72bc759c4f914005150a5b582466be1bf0bfc15345ca116d35"
+    },
+    {
+      "path": "single-writer-measured-driver-20261102.tar.gz",
+      "bytes": 12394,
+      "sha256": "5af6807f9af6bb4785a6fee85159baa6ea1f857be30bfe86b1a9799766e3df0d"
+    }
+  ]
+}

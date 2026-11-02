@@ -1,0 +1,83 @@
+{
+  "runId": "pg-1793594908725-a35bc526",
+  "createdAt": "2026-11-02T04:48:29.024Z",
+  "containerId": "e24a81b0eeb3c95a8ed500338e97acea015c93d952f0dddd01977a2b0d768600",
+  "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+  "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+  "port": 32772,
+  "cpu": 2,
+  "memoryBytes": 2147483648,
+  "dockerVersion": {
+    "Client": {
+      "Version": "29.4.0",
+      "ApiVersion": "1.54",
+      "DefaultAPIVersion": "1.54",
+      "GitCommit": "9d7ad9f",
+      "GoVersion": "go1.26.4",
+      "Os": "darwin",
+      "Arch": "arm64",
+      "BuildTime": "Fri Aug  7 04:38:56 2026",
+      "Context": "orbstack"
+    },
+    "Server": {
+      "Platform": {
+        "Name": "Docker Engine - Community"
+      },
+      "Version": "29.4.0",
+      "ApiVersion": "1.54",
+      "MinAPIVersion": "1.40",
+      "Os": "linux",
+      "Arch": "arm64",
+      "Components": [
+        {
+          "Name": "Engine",
+          "Version": "29.4.0",
+          "Details": {
+            "ApiVersion": "1.54",
+            "Arch": "arm64",
+            "BuildTime": "Tue Apr  7 08:35:43 2026",
+            "Experimental": "true",
+            "GitCommit": "daa0cb7f",
+            "GoVersion": "go1.26.1",
+            "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+            "MinAPIVersion": "1.40",
+            "Module": "github.com/moby/moby/v2",
+            "ModuleVersion": "v2.0.0+unknown",
+            "Os": "linux"
+          }
+        },
+        {
+          "Name": "containerd",
+          "Version": "v2.2.2",
+          "Details": {
+            "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+          }
+        },
+        {
+          "Name": "runc",
+          "Version": "1.5.1",
+          "Details": {
+            "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+          }
+        },
+        {
+          "Name": "docker-init",
+          "Version": "0.19.0",
+          "Details": {
+            "GitCommit": "de40ad0"
+          }
+        }
+      ],
+      "GitCommit": "daa0cb7f",
+      "GoVersion": "go1.26.1",
+      "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+      "Experimental": true,
+      "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+    }
+  },
+  "context": "orbstack",
+  "node": "v24.21.0",
+  "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+  "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+  "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+}

@@ -1,5 +1,24 @@
 # OpenCanvas — bản đồ nghiệm thu
 
+Task17 ngày 2026-11-02: spike PostgreSQL certified scalar delta commit trước ACK
+và Redis opt-in HOT reads đã qua core10, PGv133/v234, Node26 cùng review/raw audit
+và lifecycle Redis thật. Root kiểm độc lập; code/binary đóng băng trong ba stage
+writer1 và HOT-read counterfactual. Có cell/regression và giới hạn cache được
+công bố; xem [`TASK17-REPORT.md`](TASK17-REPORT.md), [`TASK17-REVIEW.md`](TASK17-REVIEW.md).
+Runtime sản phẩm vẫn SQLite; chưa port PostgreSQL/MCP đầy đủ hoặc chuyển dữ liệu.
+Task18 Redis-primary/write-behind chỉ là backlog research.
+
+Task15 ngày 2026-11-02: người dùng chọn PostgreSQL; spike độc lập đã được root kiểm
+đủ matrix100/5000 nodes×1/4/8 writers, history1000, recovery và migration/backup
+fixture. Tối ưu fast path/retry và hai index đã kiểm tiếp bằng full9pha, EXPLAIN
+thật và matrix trên DB mới; xem [`TASK15-OPTIMIZATION-REPORT.md`](TASK15-OPTIMIZATION-REPORT.md).
+Tối ưu bulk SQL tiếp theo đã qua root full9pha/19contract/18Node và wire probe:
+batch1/3/500changedIDs dùng6lệnh cố định; latency matrix có kết quả hỗn hợp,
+không coi giảm truy vấn là SLA. Xem [`TASK15-BULK-SQL-REPORT.md`](TASK15-BULK-SQL-REPORT.md).
+Runtime sản phẩm vẫn SQLite; chưa nghiệm thu PostgreSQL storage/MCP đầy đủ,
+migration dữ liệu thật, Kubernetes rollout hoặc HA. Bằng chứng và giới hạn ở
+[`TASK15-REPORT.md`](TASK15-REPORT.md).
+
 Task04 đã được root review và nghiệm thu độc lập: xem
 `docs/TASK04-REPORT.md` và `artifacts/e2e/wrap.json`. Row wrap opt-in đã qua
 pipeline16 tests (giữ11 cũ), storage41 tests/14 suites, server19 tests (giữ18 cũ),

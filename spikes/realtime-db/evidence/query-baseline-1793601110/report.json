@@ -1,0 +1,1204 @@
+{
+  "startedAt": "2026-11-02T08:25:23.320Z",
+  "status": "pass",
+  "phases": {
+    "startup": {
+      "status": "pass",
+      "durationMs": 745.224792,
+      "result": [
+        {
+          "pid": 31539,
+          "url": "http://127.0.0.1:62280",
+          "startupMs": 637.2310000000002
+        },
+        {
+          "pid": 31542,
+          "url": "http://127.0.0.1:62284",
+          "startupMs": 106.09524999999985
+        }
+      ]
+    },
+    "contractAndMatrix": {
+      "status": "pass",
+      "durationMs": 13953.245375,
+      "result": {
+        "clientModes": [
+          "optimized"
+        ],
+        "semantics": {
+          "projectId": "sem-1334be91-550a-4bdc-9b6b-a29a0f38ff4e",
+          "checks": [
+            {
+              "name": "invalid late operation rolls back nodes, revision, log and idempotency",
+              "status": "pass"
+            },
+            {
+              "name": "same revision race commits exactly once across two gateway processes",
+              "status": "pass"
+            },
+            {
+              "name": "lost ACK replay on other gateway and key collision",
+              "status": "pass"
+            },
+            {
+              "name": "dry run does not reserve key, change revision or publish event",
+              "status": "pass"
+            },
+            {
+              "name": "cross gateway subscriptions ordered and gapless",
+              "status": "pass"
+            },
+            {
+              "name": "disconnect reconnect replays durable commits exactly once",
+              "status": "pass"
+            },
+            {
+              "name": "partial update failure and cycle leave previous snapshot intact",
+              "status": "pass"
+            },
+            {
+              "name": "project scoped node IDs and idempotency keys",
+              "status": "pass"
+            }
+          ],
+          "finalRevision": 12
+        },
+        "matrix": [
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 100,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-100-600c77ea-898c-4254-b1ee-738949d9ff12",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 52,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 97,
+            "throughput": 64.95984669476184,
+            "attemptMs": {
+              "p50": 5.979417000000012,
+              "p95": 44.21437500000002,
+              "p99": 44.21437500000002
+            },
+            "retryToSuccessMs": {
+              "p50": 6.865041999999903,
+              "p95": 50.476542000000336,
+              "p99": 50.476542000000336
+            },
+            "maxRetries": 0,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 0,
+                "maxRetries": 0,
+                "totalOperationMs": 156.69254300000011,
+                "retryToSuccessMs": {
+                  "p50": 6.865041999999903,
+                  "p95": 50.476542000000336,
+                  "p99": 50.476542000000336
+                }
+              }
+            ]
+          },
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 100,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-100-08f062c9-450d-466f-ade0-11aec9b3690e",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 88,
+            "conflictCount": 40,
+            "readCount": 161,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 97,
+            "throughput": 131.7408546397568,
+            "attemptMs": {
+              "p50": 5.097458000000188,
+              "p95": 7.599333999999999,
+              "p99": 30.92120900000009
+            },
+            "retryToSuccessMs": {
+              "p50": 5.792292000000089,
+              "p95": 80.458709,
+              "p99": 230.62462500000038
+            },
+            "maxRetries": 8,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 11,
+                "maxRetries": 5,
+                "totalOperationMs": 263.33020799999986,
+                "retryToSuccessMs": {
+                  "p50": 6.086957999999868,
+                  "p95": 89.90499999999975,
+                  "p99": 89.90499999999975
+                }
+              },
+              {
+                "writer": 1,
+                "successfulCount": 12,
+                "totalRetries": 7,
+                "maxRetries": 4,
+                "totalOperationMs": 184.09103999999888,
+                "retryToSuccessMs": {
+                  "p50": 6.127790999999888,
+                  "p95": 57.246458000000075,
+                  "p99": 57.246458000000075
+                }
+              },
+              {
+                "writer": 2,
+                "successfulCount": 12,
+                "totalRetries": 11,
+                "maxRetries": 5,
+                "totalOperationMs": 222.60908199999994,
+                "retryToSuccessMs": {
+                  "p50": 5.763124999999945,
+                  "p95": 76.27154100000007,
+                  "p99": 76.27154100000007
+                }
+              },
+              {
+                "writer": 3,
+                "successfulCount": 12,
+                "totalRetries": 11,
+                "maxRetries": 8,
+                "totalOperationMs": 350.50729000000047,
+                "retryToSuccessMs": {
+                  "p50": 5.611790999999357,
+                  "p95": 230.62462500000038,
+                  "p99": 230.62462500000038
+                }
+              }
+            ]
+          },
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 100,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-100-470409b2-bd2f-4e25-9c10-f5cfece78b02",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 216,
+            "conflictCount": 120,
+            "readCount": 298,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 97,
+            "throughput": 142.74987694588853,
+            "attemptMs": {
+              "p50": 5.077541999999994,
+              "p95": 30.572250000000167,
+              "p99": 33.83262500000001
+            },
+            "retryToSuccessMs": {
+              "p50": 6.035249999999905,
+              "p95": 197.80116699999962,
+              "p99": 600.69625
+            },
+            "maxRetries": 13,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 10,
+                "maxRetries": 10,
+                "totalOperationMs": 460.3015829999995,
+                "retryToSuccessMs": {
+                  "p50": 5.642334000000119,
+                  "p95": 399.180292,
+                  "p99": 399.180292
+                }
+              },
+              {
+                "writer": 1,
+                "successfulCount": 12,
+                "totalRetries": 15,
+                "maxRetries": 9,
+                "totalOperationMs": 518.7346239999988,
+                "retryToSuccessMs": {
+                  "p50": 5.951624999999694,
+                  "p95": 337.85862499999985,
+                  "p99": 337.85862499999985
+                }
+              },
+              {
+                "writer": 2,
+                "successfulCount": 12,
+                "totalRetries": 17,
+                "maxRetries": 11,
+                "totalOperationMs": 589.690748,
+                "retryToSuccessMs": {
+                  "p50": 7.427082999999584,
+                  "p95": 415.50424999999996,
+                  "p99": 415.50424999999996
+                }
+              },
+              {
+                "writer": 3,
+                "successfulCount": 12,
+                "totalRetries": 12,
+                "maxRetries": 6,
+                "totalOperationMs": 306.3787489999995,
+                "retryToSuccessMs": {
+                  "p50": 6.308791999999812,
+                  "p95": 129.3094999999994,
+                  "p99": 129.3094999999994
+                }
+              },
+              {
+                "writer": 4,
+                "successfulCount": 12,
+                "totalRetries": 13,
+                "maxRetries": 13,
+                "totalOperationMs": 658.9038760000021,
+                "retryToSuccessMs": {
+                  "p50": 5.224624999999833,
+                  "p95": 600.69625,
+                  "p99": 600.69625
+                }
+              },
+              {
+                "writer": 5,
+                "successfulCount": 12,
+                "totalRetries": 13,
+                "maxRetries": 5,
+                "totalOperationMs": 269.3289990000012,
+                "retryToSuccessMs": {
+                  "p50": 6.571875000000546,
+                  "p95": 67.70524999999998,
+                  "p99": 67.70524999999998
+                }
+              },
+              {
+                "writer": 6,
+                "successfulCount": 12,
+                "totalRetries": 19,
+                "maxRetries": 8,
+                "totalOperationMs": 541.6339989999979,
+                "retryToSuccessMs": {
+                  "p50": 5.796291999999994,
+                  "p95": 197.80116699999962,
+                  "p99": 197.80116699999962
+                }
+              },
+              {
+                "writer": 7,
+                "successfulCount": 12,
+                "totalRetries": 21,
+                "maxRetries": 6,
+                "totalOperationMs": 489.8745430000017,
+                "retryToSuccessMs": {
+                  "p50": 5.861249999999927,
+                  "p95": 181.67500000000018,
+                  "p99": 181.67500000000018
+                }
+              }
+            ]
+          },
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 5000,
+            "writers": 1,
+            "iterations": 12,
+            "projectId": "load-5000-7c7736ff-8106-489a-b19e-9fcdf5859add",
+            "successfulCount": 12,
+            "observedCommits": 12,
+            "requestAttempts": 12,
+            "conflictCount": 0,
+            "readCount": 11,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 1,
+            "unchangedNodesVerified": 4997,
+            "throughput": 21.538314293708808,
+            "attemptMs": {
+              "p50": 34.63891600000079,
+              "p95": 68.93283299999985,
+              "p99": 68.93283299999985
+            },
+            "retryToSuccessMs": {
+              "p50": 35.24683300000015,
+              "p95": 69.75658299999941,
+              "p99": 69.75658299999941
+            },
+            "maxRetries": 0,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 0,
+                "maxRetries": 0,
+                "totalOperationMs": 489.82774900000004,
+                "retryToSuccessMs": {
+                  "p50": 35.24683300000015,
+                  "p95": 69.75658299999941,
+                  "p99": 69.75658299999941
+                }
+              }
+            ]
+          },
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 5000,
+            "writers": 4,
+            "iterations": 12,
+            "projectId": "load-5000-a8a3517c-96d1-43a0-b1be-e2b0bd16170e",
+            "successfulCount": 48,
+            "observedCommits": 48,
+            "requestAttempts": 101,
+            "conflictCount": 53,
+            "readCount": 43,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 4,
+            "unchangedNodesVerified": 4997,
+            "throughput": 21.928091803348764,
+            "attemptMs": {
+              "p50": 35.40083299999969,
+              "p95": 63.32145799999853,
+              "p99": 66.62099999999919
+            },
+            "retryToSuccessMs": {
+              "p50": 38.01024999999936,
+              "p95": 604.1990000000005,
+              "p99": 1215.5110000000004
+            },
+            "maxRetries": 17,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 10,
+                "maxRetries": 9,
+                "totalOperationMs": 1101.3426249999993,
+                "retryToSuccessMs": {
+                  "p50": 39.21641699999964,
+                  "p95": 599.2832920000001,
+                  "p99": 599.2832920000001
+                }
+              },
+              {
+                "writer": 1,
+                "successfulCount": 12,
+                "totalRetries": 25,
+                "maxRetries": 15,
+                "totalOperationMs": 2135.1602900000016,
+                "retryToSuccessMs": {
+                  "p50": 37.93037499999991,
+                  "p95": 1091.8240829999995,
+                  "p99": 1091.8240829999995
+                }
+              },
+              {
+                "writer": 2,
+                "successfulCount": 12,
+                "totalRetries": 1,
+                "maxRetries": 1,
+                "totalOperationMs": 545.6499569999978,
+                "retryToSuccessMs": {
+                  "p50": 38.09458300000006,
+                  "p95": 74.30533300000025,
+                  "p99": 74.30533300000025
+                }
+              },
+              {
+                "writer": 3,
+                "successfulCount": 12,
+                "totalRetries": 17,
+                "maxRetries": 17,
+                "totalOperationMs": 1653.6944570000014,
+                "retryToSuccessMs": {
+                  "p50": 35.99370799999997,
+                  "p95": 1215.5110000000004,
+                  "p99": 1215.5110000000004
+                }
+              }
+            ]
+          },
+          {
+            "clientMode": "optimized",
+            "retryPolicy": {
+              "maxConflicts": 1000,
+              "maxNetworkRetries": 3,
+              "baseMs": 2,
+              "capMs": 64
+            },
+            "nodeCount": 5000,
+            "writers": 8,
+            "iterations": 12,
+            "projectId": "load-5000-e380e85c-409b-45be-84c3-6379f3ad7550",
+            "successfulCount": 96,
+            "observedCommits": 96,
+            "requestAttempts": 374,
+            "conflictCount": 278,
+            "readCount": 86,
+            "mixedSnapshots": 0,
+            "writerCountersVerified": 8,
+            "unchangedNodesVerified": 4997,
+            "throughput": 20.58637556673849,
+            "attemptMs": {
+              "p50": 37.62920900000063,
+              "p95": 66.04462500000045,
+              "p99": 115.1025840000002
+            },
+            "retryToSuccessMs": {
+              "p50": 47.82075000000077,
+              "p95": 1663.026667,
+              "p99": 3353.467541
+            },
+            "maxRetries": 37,
+            "fairness": [
+              {
+                "writer": 0,
+                "successfulCount": 12,
+                "totalRetries": 53,
+                "maxRetries": 31,
+                "totalOperationMs": 4609.399707999997,
+                "retryToSuccessMs": {
+                  "p50": 37.96700000000055,
+                  "p95": 2645.113083,
+                  "p99": 2645.113083
+                }
+              },
+              {
+                "writer": 1,
+                "successfulCount": 12,
+                "totalRetries": 21,
+                "maxRetries": 10,
+                "totalOperationMs": 1737.564749000001,
+                "retryToSuccessMs": {
+                  "p50": 65.4514169999984,
+                  "p95": 674.3570830000008,
+                  "p99": 674.3570830000008
+                }
+              },
+              {
+                "writer": 2,
+                "successfulCount": 12,
+                "totalRetries": 39,
+                "maxRetries": 37,
+                "totalOperationMs": 3930.5502079999987,
+                "retryToSuccessMs": {
+                  "p50": 41.537625000000844,
+                  "p95": 3353.467541,
+                  "p99": 3353.467541
+                }
+              },
+              {
+                "writer": 3,
+                "successfulCount": 12,
+                "totalRetries": 45,
+                "maxRetries": 29,
+                "totalOperationMs": 3939.779709000002,
+                "retryToSuccessMs": {
+                  "p50": 72.48704200000066,
+                  "p95": 2261.7922089999993,
+                  "p99": 2261.7922089999993
+                }
+              },
+              {
+                "writer": 4,
+                "successfulCount": 12,
+                "totalRetries": 14,
+                "maxRetries": 11,
+                "totalOperationMs": 1435.8181650000006,
+                "retryToSuccessMs": {
+                  "p50": 38.554582999999184,
+                  "p95": 797.4008330000015,
+                  "p99": 797.4008330000015
+                }
+              },
+              {
+                "writer": 5,
+                "successfulCount": 12,
+                "totalRetries": 22,
+                "maxRetries": 21,
+                "totalOperationMs": 2191.280957000001,
+                "retryToSuccessMs": {
+                  "p50": 41.75633300000118,
+                  "p95": 1663.026667,
+                  "p99": 1663.026667
+                }
+              },
+              {
+                "writer": 6,
+                "successfulCount": 12,
+                "totalRetries": 47,
+                "maxRetries": 20,
+                "totalOperationMs": 4152.1135829999985,
+                "retryToSuccessMs": {
+                  "p50": 60.35041700000147,
+                  "p95": 1815.7918330000011,
+                  "p99": 1815.7918330000011
+                }
+              },
+              {
+                "writer": 7,
+                "successfulCount": 12,
+                "totalRetries": 37,
+                "maxRetries": 15,
+                "totalOperationMs": 3249.8492480000004,
+                "retryToSuccessMs": {
+                  "p50": 45.96070800000052,
+                  "p95": 1176.6512500000008,
+                  "p99": 1176.6512500000008
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "durableJobsResourcesStaging": {
+      "status": "skipped"
+    },
+    "rollingGateway": {
+      "status": "skipped"
+    },
+    "singleDatabaseOutage": {
+      "status": "skipped"
+    },
+    "historyGrowth": {
+      "status": "skipped"
+    },
+    "additiveMigrationAndBackupRestore": {
+      "status": "skipped"
+    },
+    "indexEvidence": {
+      "status": "skipped"
+    }
+  },
+  "untested": [
+    "real MCP sessions",
+    "actual rendering",
+    "Kubernetes",
+    "HA/failover",
+    "DB major upgrade/mixed version",
+    "SQLite cutover",
+    "external object store"
+  ],
+  "validationScope": [
+    "contractAndMatrix"
+  ],
+  "configuration": {
+    "nodeCounts": "100,5000",
+    "writers": "1,4,8",
+    "iterations": 12,
+    "historyCommits": 1000,
+    "clientModes": "optimized",
+    "buildProfile": "cargo dev (unoptimized + debuginfo)",
+    "contractTests": false,
+    "skipBuild": true
+  },
+  "runId": "pg-1793607923321-d51bc20e",
+  "topology": {
+    "runId": "pg-1793607923321-d51bc20e",
+    "createdAt": "2026-11-02T08:25:23.827Z",
+    "containerId": "96a3df0fbe042d875df35b1da0a1234220caf4fca24498db93bf92bf167346f4",
+    "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "port": 62275,
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "dockerVersion": {
+      "Client": {
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "DefaultAPIVersion": "1.54",
+        "GitCommit": "9d7ad9f",
+        "GoVersion": "go1.26.4",
+        "Os": "darwin",
+        "Arch": "arm64",
+        "BuildTime": "Fri Aug  7 04:38:56 2026",
+        "Context": "orbstack"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Engine - Community"
+        },
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "MinAPIVersion": "1.40",
+        "Os": "linux",
+        "Arch": "arm64",
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "29.4.0",
+            "Details": {
+              "ApiVersion": "1.54",
+              "Arch": "arm64",
+              "BuildTime": "Tue Apr  7 08:35:43 2026",
+              "Experimental": "true",
+              "GitCommit": "daa0cb7f",
+              "GoVersion": "go1.26.1",
+              "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+              "MinAPIVersion": "1.40",
+              "Module": "github.com/moby/moby/v2",
+              "ModuleVersion": "v2.0.0+unknown",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "v2.2.2",
+            "Details": {
+              "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.5.1",
+            "Details": {
+              "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "GitCommit": "daa0cb7f",
+        "GoVersion": "go1.26.1",
+        "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "Experimental": true,
+        "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+      }
+    },
+    "context": "orbstack",
+    "node": "v24.21.0",
+    "gatewayHost": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpuModel": "Apple M5",
+      "logicalCpus": 10,
+      "memoryBytes": 25769803776,
+      "limits": "uncapped host processes"
+    },
+    "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+    "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+    "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "cleanedAt": "2026-11-02T08:25:41.218Z"
+  },
+  "provenance": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/compare.mjs",
+        "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+      },
+      {
+        "path": "harness/compare.test.mjs",
+        "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/indexes-fixture.mjs",
+        "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+      },
+      {
+        "path": "harness/indexes.mjs",
+        "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+      },
+      {
+        "path": "harness/indexes.test.mjs",
+        "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/retry.mjs",
+        "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+      },
+      {
+        "path": "harness/retry.test.mjs",
+        "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "96365e970db3779d427e31f5e94542ee7c279072f4967018f694abe173270ec8"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/indexes.sql",
+        "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "b4fd30efc43e947d5cae5a774912456681cabe21e4c85b1aa5cd0b3a3819d8f6"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "b6952c682a5455be71d541c04a10ebbb4e4edf524eb5118349d0bc26d5cc0ff5"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "0257d2d05850e4016df7a9988333ffb32b0fc3fe8abcc61ea6b9f6ea87b007eb"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "2675f2bc79ad6b727c913869597056324895623143506c7bfbb07a13c5f8ae2e"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "c7a3891f4f3cbac13be6d98691344b71d491552d624e5ec08702342d4f481c2b"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/fast_paths.rs",
+        "sha256": "cf8a8699b5a4c806b5c5ad6bb6a881af0330461c7ce3327537c3c180d7189ab8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "becd4fa43cd317070e33353c9aced06e7ae6776541553319ccd2185fde4ff0eb"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "30fcb5baff9ef9d7e82b15f5be822ff49f24e0e04fb17bbcf41cfcaa0ad7d856"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "provenanceAfter": {
+    "baseline": "438254936823cb4ef8639d85c1404302c608f7f7",
+    "sourceFingerprint": "a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed",
+    "sourceFiles": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "b179bad1d0fec6b2b0b087610bbeb4278d76a6f77b7948334e2d8600fc481ae3"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "0bd69f066da76d34b76bd75b76fe502a4accbaf2de542f017443ebaa2e32fdf3"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "928480b6d53e3643a9be56e623ea00b3ae189f39d04496c1698ca4873f98dd63"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "ac23b9f42b5236bbde8a32821f614e3af45f8dc27e4d6aa5f8ce2d64196679fc"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/compare.mjs",
+        "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+      },
+      {
+        "path": "harness/compare.test.mjs",
+        "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/indexes-fixture.mjs",
+        "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+      },
+      {
+        "path": "harness/indexes.mjs",
+        "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+      },
+      {
+        "path": "harness/indexes.test.mjs",
+        "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/retry.mjs",
+        "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+      },
+      {
+        "path": "harness/retry.test.mjs",
+        "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "96365e970db3779d427e31f5e94542ee7c279072f4967018f694abe173270ec8"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "f2429dd7c5e4662cf4a1e2228b49b0c14a09b13ed020e435169fb4e06aaecc43"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "f4591027d971cb34a71bb54f3be3c7d09b216e34e8064d0e1112b92172993b6c"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/indexes.sql",
+        "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "bbec7de3d8e02c6d4a8f3e3fbbfa8d36df5c5c8d059739850f53fbf5b734d46f"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "b4fd30efc43e947d5cae5a774912456681cabe21e4c85b1aa5cd0b3a3819d8f6"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "a2f7de86f848f722e3733d031febe677ca441b66322cb1942da344903438d245"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "b6952c682a5455be71d541c04a10ebbb4e4edf524eb5118349d0bc26d5cc0ff5"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "0257d2d05850e4016df7a9988333ffb32b0fc3fe8abcc61ea6b9f6ea87b007eb"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "2675f2bc79ad6b727c913869597056324895623143506c7bfbb07a13c5f8ae2e"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "5cb846e2b39e6594ae5a70db4ab4979dc9364d6a973c192a42888bc44faeab76"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "c7a3891f4f3cbac13be6d98691344b71d491552d624e5ec08702342d4f481c2b"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/fast_paths.rs",
+        "sha256": "cf8a8699b5a4c806b5c5ad6bb6a881af0330461c7ce3327537c3c180d7189ab8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "851ad23b52b9937f0de6caa8a7a4e45b54fd17ae92476ee11ceb15949ea0a568"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "cb47b17bc6d4e90be22c84b884cc19daad6ff6baeea0f5a287d8b7c3269f7ed3"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ],
+    "binaries": [
+      {
+        "path": "postgres/target/debug/oc-spike-postgres",
+        "sha256": "becd4fa43cd317070e33353c9aced06e7ae6776541553319ccd2185fde4ff0eb"
+      },
+      {
+        "path": ".runtime/v2-target/debug/oc-spike-postgres",
+        "sha256": "30fcb5baff9ef9d7e82b15f5be822ff49f24e0e04fb17bbcf41cfcaa0ad7d856"
+      }
+    ],
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "cleanup": "owned gateway processes and PostgreSQL container/anonymous volume removed",
+  "finishedAt": "2026-11-02T08:25:41.218Z"
+}

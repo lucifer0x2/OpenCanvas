@@ -1,0 +1,115 @@
+{
+  "query": "SELECT node_id,parent_id,kind,sort_key,props FROM nodes WHERE project_id=$1 ORDER BY node_id",
+  "params": [
+    "p11"
+  ],
+  "boundQuery": "SELECT node_id,parent_id,kind,sort_key,props FROM nodes WHERE project_id='p11' ORDER BY node_id",
+  "explain": [
+    {
+      "Plan": {
+        "Node Type": "Sort",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Startup Cost": 2239.89,
+        "Total Cost": 2252.2,
+        "Plan Rows": 4923,
+        "Plan Width": 102,
+        "Actual Startup Time": 3.059,
+        "Actual Total Time": 3.146,
+        "Actual Rows": 5000,
+        "Actual Loops": 1,
+        "Sort Key": [
+          "node_id"
+        ],
+        "Sort Method": "quicksort",
+        "Sort Space Used": 857,
+        "Sort Space Type": "Memory",
+        "Shared Hit Blocks": 102,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Bitmap Heap Scan",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Relation Name": "nodes",
+            "Alias": "nodes",
+            "Startup Cost": 58.45,
+            "Total Cost": 1937.98,
+            "Plan Rows": 4923,
+            "Plan Width": 102,
+            "Actual Startup Time": 0.059,
+            "Actual Total Time": 0.323,
+            "Actual Rows": 5000,
+            "Actual Loops": 1,
+            "Recheck Cond": "(project_id = 'p11'::text)",
+            "Rows Removed by Index Recheck": 0,
+            "Exact Heap Blocks": 92,
+            "Lossy Heap Blocks": 0,
+            "Shared Hit Blocks": 99,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Index Name": "nodes_parent",
+                "Startup Cost": 0,
+                "Total Cost": 57.21,
+                "Plan Rows": 4923,
+                "Plan Width": 0,
+                "Actual Startup Time": 0.049,
+                "Actual Total Time": 0.049,
+                "Actual Rows": 5000,
+                "Actual Loops": 1,
+                "Index Cond": "(project_id = 'p11'::text)",
+                "Shared Hit Blocks": 7,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          }
+        ]
+      },
+      "Planning": {
+        "Shared Hit Blocks": 99,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.125,
+      "Triggers": [],
+      "Execution Time": 3.25
+    }
+  ]
+}

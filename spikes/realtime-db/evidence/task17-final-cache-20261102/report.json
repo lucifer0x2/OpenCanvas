@@ -1,0 +1,1485 @@
+{
+  "status": "pass",
+  "startedAt": "2026-11-02T09:47:58.426Z",
+  "source": {
+    "fingerprint": "74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38",
+    "files": [
+      {
+        "path": "core/Cargo.lock",
+        "sha256": "91c665d4d4762616c5266bdfdfb5cc0bcdceaab51e2b3a871d62616f283551ba"
+      },
+      {
+        "path": "core/Cargo.toml",
+        "sha256": "d7ef01900bcfd6c2a63f7c656dd8941e22c47c5033d778fee3aa24f7d41c7742"
+      },
+      {
+        "path": "core/src/command.rs",
+        "sha256": "52409ffb9f153c24165ec48fac9a211a7e4f2faec7d8cebf5079686a0bae6456"
+      },
+      {
+        "path": "core/src/delta.rs",
+        "sha256": "f3f63d2788e03ff54d098dfe9c83b42b295cfdae44b76bfa5dd555a5b6927184"
+      },
+      {
+        "path": "core/src/delta_tests.rs",
+        "sha256": "5b49d5d721d065cb7c94966b8033b8a22c7c30fe3ff9d8f0505e61a8cd788f12"
+      },
+      {
+        "path": "core/src/lib.rs",
+        "sha256": "54d2964a844a89c5a87a0d8f2f8221b455b8755c484bd12965854ebd4de76cc8"
+      },
+      {
+        "path": "core/src/profile.rs",
+        "sha256": "726d9a2a01a8744c3396598a52e20ea3a8116c9d395389a9d3829bebe41accfd"
+      },
+      {
+        "path": "core/src/tests.rs",
+        "sha256": "e89aeb1de495243c5f4ef3dc005ab35c1d386ad872c1fba19ecb0484eb815210"
+      },
+      {
+        "path": "core/src/validation.rs",
+        "sha256": "595906282572074a43f809feb8ee2caf7b763fa8064d61f50442261815decb22"
+      },
+      {
+        "path": "harness/client.mjs",
+        "sha256": "797ee8189cdfbd2920adddf03897917a9d529574596790d7db3d9b7a59e0fd8f"
+      },
+      {
+        "path": "harness/client.test.mjs",
+        "sha256": "6d0cc9d3249cf5ecb058f8a34fe500c7447b9c6e39b2a2f91517e085bb505348"
+      },
+      {
+        "path": "harness/compare-bulk.mjs",
+        "sha256": "7931eb611f550625ad98859e9f4260d3774e161308887fd2492068f927022053"
+      },
+      {
+        "path": "harness/compare-bulk.test.mjs",
+        "sha256": "3311aeb405e158f3286a436df0c2fbb85b48d36b5f39b8257eaccd848502cdb4"
+      },
+      {
+        "path": "harness/compare.mjs",
+        "sha256": "c4f6fb4ac47efb522362d31eaa6b30312f3b1203b6fabce8ceca1fa788c571b6"
+      },
+      {
+        "path": "harness/compare.test.mjs",
+        "sha256": "7394a7138d5d1e992725ef6306b5abc393ca9d60de248794479d9bca64543135"
+      },
+      {
+        "path": "harness/history.mjs",
+        "sha256": "f36a79ae8899e0f4249cfb4e58236ca4e7698cf76e297f4186591a35f066cbc3"
+      },
+      {
+        "path": "harness/indexes-fixture.mjs",
+        "sha256": "cb61d2424902bbf744be0b0d5e674d04d88af118f7151baa80484376daa12482"
+      },
+      {
+        "path": "harness/indexes.mjs",
+        "sha256": "4b1cf6dda70f9520aab11c85eb1a65a0183582a33b062bb123473957964cd2d1"
+      },
+      {
+        "path": "harness/indexes.test.mjs",
+        "sha256": "42e04141645de63323adc7e6b076dfe3817ece8bf447c7e141e0d4256de9cb4f"
+      },
+      {
+        "path": "harness/load.mjs",
+        "sha256": "121ef9b6282be9b26991aabf45a5437238d893091f26badbad1ac3e172abd902"
+      },
+      {
+        "path": "harness/migration.mjs",
+        "sha256": "03332fd71671ab75542e3f058890dd6340ae312a7d733dbe2a1f9458dba50e98"
+      },
+      {
+        "path": "harness/pg-wire-probe.test.mjs",
+        "sha256": "be5aa639f13181e282765a5f88d56764c18ad1a324838b024bd115318eba7b42"
+      },
+      {
+        "path": "harness/query-counts.mjs",
+        "sha256": "c78ca3e7129669f35f511c259c31426d03cd5bc1c856cf92f3c8f47770572f1f"
+      },
+      {
+        "path": "harness/reconnect.mjs",
+        "sha256": "8e0231742c4f19f47ff25e665117819f628175e05cd86b6b3ec5a0e50d3aa45c"
+      },
+      {
+        "path": "harness/recovery.mjs",
+        "sha256": "a57c18603b82b6d024f89108dbef704f2913991637248ca525752aeb77a65823"
+      },
+      {
+        "path": "harness/redis-probe.mjs",
+        "sha256": "b61da5cc01138e81149718670a56f7cd95c28f6dc085bfdfa3553527ab440996"
+      },
+      {
+        "path": "harness/redis-probe.test.mjs",
+        "sha256": "72ab251dd2f6d4cf3a4fc54e6bef8daf1cdb7540e3c360711015eb8ff6035231"
+      },
+      {
+        "path": "harness/retry.mjs",
+        "sha256": "e36fe811e1ab5e5c0b1d4db536dc8040d93df0b6f963b83c534dfcf7de271483"
+      },
+      {
+        "path": "harness/retry.test.mjs",
+        "sha256": "3c0d4c0522d71622567b6ea2e0a014ab1bf452add2b04c51150c18d03972f21b"
+      },
+      {
+        "path": "harness/run-all.mjs",
+        "sha256": "1e4be7738a770e604353657c98bf4f1fcd79f196f9c43b27cf6d135e72dc277a"
+      },
+      {
+        "path": "harness/run.mjs",
+        "sha256": "749bbf229a29441b2115ef9daa555a307d9a984be747777fd6567ebc55a190d1"
+      },
+      {
+        "path": "harness/semantics.mjs",
+        "sha256": "1c154204ff5c781098f4420b570fd86eb51343d8d5553ffb461dd5c46cb2f037"
+      },
+      {
+        "path": "harness/single-writer-load.mjs",
+        "sha256": "8ebbbaed559bc7515187023c2d0156cd56f5557920d8e26d15e9c80a1386e7ca"
+      },
+      {
+        "path": "harness/single-writer-profiles.mjs",
+        "sha256": "b9e0e52255bf2b6cae8616498063b3983b45cac8d6db3b517a053a7a99a7b7e1"
+      },
+      {
+        "path": "harness/single-writer-provenance.mjs",
+        "sha256": "98a15007964cabd473defe4b6681cd5b4da888f975f0169f5032caf49b0315fe"
+      },
+      {
+        "path": "harness/single-writer-summary.mjs",
+        "sha256": "df94811599335acaf7ad04bc5e60d4271747f486f41e80a9f967c1408c4b038e"
+      },
+      {
+        "path": "harness/single-writer.mjs",
+        "sha256": "5883945d255cb467e2f9b6a6ee3fabec50715f8989074a421608fe73c6976a41"
+      },
+      {
+        "path": "harness/single-writer.test.mjs",
+        "sha256": "06f5925eb1043bc1a9b3f78fd125c569f8d10cfe0695f874fc297a29cf92ae51"
+      },
+      {
+        "path": "harness/task17-benchmark.mjs",
+        "sha256": "e69be7c72281cf032e7cfe9398069206f7fcc8e4fdc52c7c0ab3edd24196819c"
+      },
+      {
+        "path": "harness/task17-cache-assertions.mjs",
+        "sha256": "686f96a822c3dab3ee210d56fd8da5b670f4da7e17ad38babab38270b992b65b"
+      },
+      {
+        "path": "harness/task17-cache-scenarios.mjs",
+        "sha256": "f199ddc0a012ecfd53c95f4a47dfd45770c756ffa4b437fcb83672254979a5b4"
+      },
+      {
+        "path": "harness/task17-cache.mjs",
+        "sha256": "42dbc479114ffa5dd4032f583f11e4f6e5d05ce4f11622c593546392fb7f6cb8"
+      },
+      {
+        "path": "harness/task17-compare.mjs",
+        "sha256": "2ce52f617cb75ddb9fbcdc55a4d00aeaeb85adc464d393f4824a0fccfa85e9f8"
+      },
+      {
+        "path": "harness/task17-hot-load.mjs",
+        "sha256": "a1529b16077e889fad5451488ef53d3a169f168da2524ab00ecda51251d368ef"
+      },
+      {
+        "path": "harness/task17-profiles.mjs",
+        "sha256": "31c7a3b8685d2e0cba45e4dc99fc54eff1eec54afea1fa1ed04b79a5d08635c8"
+      },
+      {
+        "path": "harness/task17-profiles.test.mjs",
+        "sha256": "6951e34cbb71b74e8bfc21b8bd4fc381d243fd7b7e9b7ed5df44ae4522cfee3f"
+      },
+      {
+        "path": "harness/task17-provenance.mjs",
+        "sha256": "52b8da7541510a0b6fab9eeb4296efc16e73938033ca81b5ab1fd7cd877c50fd"
+      },
+      {
+        "path": "infra/engines.mjs",
+        "sha256": "1a0e8a599ae8041480b3046df6e2bcf3e2b8c867fa8982a765e5e1715c2a882e"
+      },
+      {
+        "path": "infra/gateways.mjs",
+        "sha256": "75054759ec555f06e1efec698036ec2cc48b9cdc14eb5f395cbe86426f6a196f"
+      },
+      {
+        "path": "infra/migration-v2.sql",
+        "sha256": "e7b477a8e3d2c9c1cca960c74f19e5bb1afc80893db8cbbdc79bb74153820b6d"
+      },
+      {
+        "path": "infra/pg-wire-probe.mjs",
+        "sha256": "89896fc38290bbc94d6e6e9179deb575757069e51d2af74c826446e6493bc095"
+      },
+      {
+        "path": "infra/provenance.mjs",
+        "sha256": "7e0afbf80508b8eb5cb79faa4de8641870da3d7d7e31ee610118241a0739ab5e"
+      },
+      {
+        "path": "infra/redis-runtime.mjs",
+        "sha256": "79b2cf88bddd2f6d7efc393f91ec3046f983cb3c1a9b0a9b8b8c1a98c15cab4d"
+      },
+      {
+        "path": "infra/runtime.mjs",
+        "sha256": "621cd6fc6025dd54a141f148268eaeff51c24961e7f4814459ebba452c2b7047"
+      },
+      {
+        "path": "postgres/Cargo.lock",
+        "sha256": "c18de428488387b59d16a566774eb6c0168183dfd521cf02dc484f38e05b3b47"
+      },
+      {
+        "path": "postgres/Cargo.toml",
+        "sha256": "6ee779aba2b82e3213cedaa2e1f3bb0c8a4bd99144555b1e986bb0a95b25d0d7"
+      },
+      {
+        "path": "postgres/delta-migration.sql",
+        "sha256": "2dce5f90fc7281472cbfb8781e1dfe2020dba337b776059f8544b6d07c349a69"
+      },
+      {
+        "path": "postgres/durable-schema.sql",
+        "sha256": "ff847a103390f45353b7c862ec2593e4ce6c9c6706a429b25fb8e5ccd5b0d006"
+      },
+      {
+        "path": "postgres/indexes.sql",
+        "sha256": "ace1990c1353e86fda188020cadc7e9db2cbe67aab19faae7a3ff328ae612f5b"
+      },
+      {
+        "path": "postgres/schema.sql",
+        "sha256": "c8c2857498fc9bf21969a0978405766102ab2589afea1f733aab77e9c1431c13"
+      },
+      {
+        "path": "postgres/src/batch.rs",
+        "sha256": "ab22b5d662c4608864ee52be01636ac2e7f7665387649ab5acdc244c24324339"
+      },
+      {
+        "path": "postgres/src/batch_write.rs",
+        "sha256": "d0c2bf19880828fb286ad8b87bbab2fbd71f45c41c90ce638cff1e27a5f58270"
+      },
+      {
+        "path": "postgres/src/blobs.rs",
+        "sha256": "af48a9df5ecb37893d2dfe06d21e92582dc9eeafea31eb516aa4fa910256103e"
+      },
+      {
+        "path": "postgres/src/cache_metrics.rs",
+        "sha256": "42574ef7396ad31ecbf86fda395713cc8c866feac154fbb6aad5fe362ad3511b"
+      },
+      {
+        "path": "postgres/src/compatibility.rs",
+        "sha256": "e1d99ad1760c4488668c12e72f31060498f65f21b29979af341ad60f5d65eb7a"
+      },
+      {
+        "path": "postgres/src/db.rs",
+        "sha256": "1fe553c1dc59dca8a36435c1873176bbde33d4fcf7a7400583fcd9919aeef905"
+      },
+      {
+        "path": "postgres/src/delta.rs",
+        "sha256": "dedd43bc27be85dfc3d1535ccf8bf0543bfd6d63635677dfa7b3486bf19e68d0"
+      },
+      {
+        "path": "postgres/src/durable_http.rs",
+        "sha256": "476f96d1be2087c18d1c3b06e687ffb9eecb6c8ac93195ff632ad69ce24dbce2"
+      },
+      {
+        "path": "postgres/src/events.rs",
+        "sha256": "32a3ae113370e20df1be4d16a0cb8a18e81cf67e8b9156899b8e2c513bb83137"
+      },
+      {
+        "path": "postgres/src/hot_reads.rs",
+        "sha256": "958ce855904c179bd8a5beb3336ac9f425b80d14794ed3b7f6727ddebc342909"
+      },
+      {
+        "path": "postgres/src/hot_snapshot.rs",
+        "sha256": "66a3a1147c1483c9db1cb298b52ca529084e804778bf416578e086d278c050b4"
+      },
+      {
+        "path": "postgres/src/http.rs",
+        "sha256": "82ec8e9b33eaca7fd23d89df96480325fdeb52a8bbfe4e2403e0632beb510abf"
+      },
+      {
+        "path": "postgres/src/jobs.rs",
+        "sha256": "bce642c6b9850fecc7779b10388e22da43f9636d481cf4307d0fe9f207cb6436"
+      },
+      {
+        "path": "postgres/src/leases.rs",
+        "sha256": "7b3bdc8a6504271c787d239217b0b81b01e09329ca805cd2471e6b047d2b507d"
+      },
+      {
+        "path": "postgres/src/main.rs",
+        "sha256": "c71b9e19e6a3b03a6d55b18e95af0cc0b641fa2865a16f286484099c1c0a6920"
+      },
+      {
+        "path": "postgres/src/profile.rs",
+        "sha256": "86cf8acd8b9d2ac777d0eab46a80d4c555e9a14854c6f9d4894cfed2e0efa446"
+      },
+      {
+        "path": "postgres/src/redis_cache.rs",
+        "sha256": "49ae317069f21f8f0e9b654f1dcf80890c01ffe3f00145e12f620be90baff03f"
+      },
+      {
+        "path": "postgres/src/staging.rs",
+        "sha256": "4177f6306c95f058a1dd0fba79e54992232a91f46926da78a61a528c944ab6aa"
+      },
+      {
+        "path": "postgres/src/transport.rs",
+        "sha256": "92b3f28d3eeb9da52c5b4bea3d022da1d832fd07a06f3b96b93e74beb0b21ce1"
+      },
+      {
+        "path": "postgres/tests/contract.rs",
+        "sha256": "1f1d71c324ec6549792352eb11e3a273878160b044c2461097853ce32da6c98d"
+      },
+      {
+        "path": "postgres/tests/contract/atomic.rs",
+        "sha256": "bc853a0a5aab042394ccd6206ad79b687a89c69d2cb6c4073a4d418a32c508f8"
+      },
+      {
+        "path": "postgres/tests/contract/bulk_failure.rs",
+        "sha256": "9ec136b7ef55c3568d9c5beb9a2de27abf139f19f327532436cc9bee1a0b87ae"
+      },
+      {
+        "path": "postgres/tests/contract/bulk_nodes.rs",
+        "sha256": "54c06ac7d1e6cf597ab7906a4d3da181839dc035f7a8c34ca854364a934aec3d"
+      },
+      {
+        "path": "postgres/tests/contract/bulk_replay.rs",
+        "sha256": "dc42b4a89a9fe8e55934165879139c7cc0b955218bf21b314daa681f18339af5"
+      },
+      {
+        "path": "postgres/tests/contract/delta.rs",
+        "sha256": "587ee88e6c508bcb262beafddc9bd618ff76d7980bc88bcc5ab0ca1da8fe3343"
+      },
+      {
+        "path": "postgres/tests/contract/delta_failures.rs",
+        "sha256": "af7d9b89564b6b7c9a5ea1f78caae55167626c064946d67c9b90ecca921d200f"
+      },
+      {
+        "path": "postgres/tests/contract/fast_paths.rs",
+        "sha256": "1406304ff675324ec6ef641449c3089ba40838b1341fa550d340a476d94344ae"
+      },
+      {
+        "path": "postgres/tests/contract/hot_reads.rs",
+        "sha256": "b62ead7f3306a72dc861d43bffc7cf76bc8d63a9584824df65a49b346ad65c21"
+      },
+      {
+        "path": "postgres/tests/contract/hot_reads_races.rs",
+        "sha256": "b5e35901350e6c07e398887e285d6726e0a34c8acabf14819f75b81d73f958e8"
+      },
+      {
+        "path": "postgres/tests/contract/notifications.rs",
+        "sha256": "9ab47143ea54b7cb6d1838e8b372484b6971a933b2cd4c02abc95d5a7869da95"
+      },
+      {
+        "path": "postgres/tests/contract/reads.rs",
+        "sha256": "26f881a5a6d118d626b52441e4e9839dd78381bb766690549d13caf2fd8cfe7a"
+      },
+      {
+        "path": "postgres/tests/contract/support.rs",
+        "sha256": "9ac70c37efaccee37922cd4ea1b45ba0c70d532f46e760ca36fabe9bee9ed2ec"
+      },
+      {
+        "path": "postgres/tests/durability.mjs",
+        "sha256": "d7d109e07c06269e6fe5a96351eda86c511f49e188e18e1a985c7919a6c93c5a"
+      },
+      {
+        "path": "postgres/tests/evidence/retired-runtime-connection-failure.log",
+        "sha256": "3824d4bd53f572f025d4bac2e42960e2e3153837235ad890e5fc239db2982db6"
+      },
+      {
+        "path": "postgres/tests/fixture-worker.mjs",
+        "sha256": "1982e143053b4f702f88751fabce328a1b1ebf2ee8e52206044873085014f94d"
+      },
+      {
+        "path": "postgres/tests/smoke.mjs",
+        "sha256": "9473b387aeb62d348466d3a1c18d53a85713ff97d7ea07a644b3d4a46a87c9ee"
+      }
+    ]
+  },
+  "binary": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91",
+  "cache": {
+    "ttlSeconds": 3600,
+    "maxBytes": 8388608,
+    "timeoutMs": 100
+  },
+  "buildDuringRun": false,
+  "topology": {
+    "runId": "pg-1793612878441-f54ffdf3",
+    "createdAt": "2026-11-02T09:47:58.809Z",
+    "containerId": "f056b26b1fda7b516664722cba67cdc05e46e5ba6ffd49e6e8298dde6d501875",
+    "image": "postgres:16.9@sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "imageId": "sha256:ddfe3e8713e3ee5b8f286082cb12512488dfbf3f5a1ecb0b74a42e6055af0a5f",
+    "port": 62822,
+    "cpu": 2,
+    "memoryBytes": 2147483648,
+    "dockerVersion": {
+      "Client": {
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "DefaultAPIVersion": "1.54",
+        "GitCommit": "9d7ad9f",
+        "GoVersion": "go1.26.4",
+        "Os": "darwin",
+        "Arch": "arm64",
+        "BuildTime": "Fri Aug  7 04:38:56 2026",
+        "Context": "orbstack"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Engine - Community"
+        },
+        "Version": "29.4.0",
+        "ApiVersion": "1.54",
+        "MinAPIVersion": "1.40",
+        "Os": "linux",
+        "Arch": "arm64",
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "29.4.0",
+            "Details": {
+              "ApiVersion": "1.54",
+              "Arch": "arm64",
+              "BuildTime": "Tue Apr  7 08:35:43 2026",
+              "Experimental": "true",
+              "GitCommit": "daa0cb7f",
+              "GoVersion": "go1.26.1",
+              "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+              "MinAPIVersion": "1.40",
+              "Module": "github.com/moby/moby/v2",
+              "ModuleVersion": "v2.0.0+unknown",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "v2.2.2",
+            "Details": {
+              "GitCommit": "301b2dac98f15c27117da5c8af12118a041a31d9"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.5.1",
+            "Details": {
+              "GitCommit": "bb14dabeb7185bb72c8c86735d090dcb20f36587"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "GitCommit": "daa0cb7f",
+        "GoVersion": "go1.26.1",
+        "KernelVersion": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "Experimental": true,
+        "BuildTime": "2026-04-07T08:35:43.000000000+00:00"
+      }
+    },
+    "context": "orbstack",
+    "node": "v24.21.0",
+    "gatewayHost": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpuModel": "Apple M5",
+      "logicalCpus": 10,
+      "memoryBytes": 25769803776,
+      "limits": "uncapped host processes"
+    },
+    "topology": "One PostgreSQL container; two independent host gateway processes; loopback only; no Kubernetes",
+    "inheritedRuntimePolicy": "Never read or stop resources from earlier .runtime/engines.json",
+    "postgresVersion": "PostgreSQL 16.9 (Debian 16.9-1.pgdg130+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+  },
+  "redisTopology": {
+    "runId": "redis-task17-1793612880296-9c195c3a",
+    "createdAt": "2026-11-02T09:48:00.447Z",
+    "containerId": "089b148c8d5396d38eccce1006c3d176b03d6a600fa0f9fc4c4ceb22cec46667",
+    "image": "redis:7.4.2@sha256:fbdbaea47b9ae4ecc2082ecdb4e1cea81e32176ffb1dcf643d422ad07427e5d9",
+    "imageId": "sha256:fbdbaea47b9ae4ecc2082ecdb4e1cea81e32176ffb1dcf643d422ad07427e5d9",
+    "port": 62826,
+    "cpu": 1,
+    "memoryBytes": 268435456,
+    "maxmemoryBytes": 67108864,
+    "persistence": "disabled (save empty; appendonly no)",
+    "eviction": "allkeys-lru",
+    "loopbackOnly": true,
+    "volumes": [
+      "db67998e88bbb2cf3ddced1e0ed1eae2387ffcc4832d6001c94803dd1d411b22"
+    ],
+    "redisVersion": "7.4.2"
+  },
+  "checks": {
+    "cold": {
+      "status": 200,
+      "ms": 5.091167000000041,
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 1,
+        "nodeQueries": 1,
+        "oversize": 0,
+        "probes": 1,
+        "stores": 1
+      }
+    },
+    "hot": {
+      "count": 100,
+      "latencyMs": {
+        "count": 100,
+        "p50": 1.182582999999795,
+        "p95": 1.6072920000001432,
+        "p99": 2.7487080000000788,
+        "min": 0.9939580000000205,
+        "max": 15.188125000000127
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 100,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 0,
+        "oversize": 0,
+        "probes": 100,
+        "stores": 0
+      },
+      "rawMs": [
+        1.5089160000002266,
+        2.2819589999999152,
+        1.2274170000000595,
+        1.2632909999997537,
+        1.2580840000000535,
+        1.3034169999996266,
+        1.28512499999988,
+        1.3717090000000098,
+        1.3178750000001855,
+        1.2382079999997586,
+        1.147291000000223,
+        1.3725830000003043,
+        1.372624999999971,
+        1.174666999999772,
+        1.185667000000194,
+        1.3002910000000156,
+        1.1393749999997453,
+        1.405999999999949,
+        1.337999999999738,
+        1.7168329999999514,
+        1.2160420000000158,
+        1.1940410000001975,
+        1.2334160000000338,
+        1.2342079999998532,
+        1.2854580000002898,
+        1.3007090000000971,
+        15.188125000000127,
+        1.590874999999869,
+        1.4692919999997684,
+        1.3417089999998097,
+        1.5064589999997224,
+        1.182582999999795,
+        1.193667000000005,
+        1.6177079999997659,
+        1.2327080000000024,
+        1.1352500000002692,
+        1.1965420000001359,
+        1.5249579999999696,
+        1.2234159999998155,
+        1.368666000000303,
+        1.3507089999998243,
+        1.0752079999997477,
+        1.1111249999999018,
+        1.0875839999998789,
+        1.0687920000000304,
+        1.1152500000002874,
+        1.2207499999999527,
+        1.4113330000000133,
+        1.1434170000002268,
+        1.101875000000291,
+        1.0806250000000546,
+        1.0730829999997695,
+        1.1110410000001139,
+        1.258958999999777,
+        1.2730419999998048,
+        1.067417000000205,
+        1.0405409999998483,
+        1.1516669999996338,
+        2.7487080000000788,
+        1.6072920000001432,
+        1.1604170000000522,
+        1.1811659999998483,
+        1.1152090000000499,
+        1.2061250000001564,
+        1.192667000000256,
+        1.3789170000000013,
+        1.2156660000000556,
+        1.0634169999998448,
+        1.1693750000004002,
+        1.0725830000001224,
+        1.0430419999997866,
+        1.1529999999997926,
+        1.0986669999997503,
+        1.095542000000023,
+        1.0739590000002863,
+        1.0838330000001406,
+        1.083625000000211,
+        1.062666000000263,
+        1.0081670000004124,
+        1.1422910000001139,
+        1.2812909999997828,
+        1.2303749999996398,
+        1.063542000000325,
+        1.0475000000001273,
+        1.1040830000001733,
+        1.0343330000000606,
+        1.0438750000002983,
+        1.0290420000001177,
+        1.1416250000002037,
+        1.2554169999998521,
+        1.1371250000001965,
+        1.0428750000000946,
+        1.106249999999818,
+        0.9939580000000205,
+        1.003458000000137,
+        1.1802499999998872,
+        1.2000420000003942,
+        1.0285000000003492,
+        1.1643330000001697,
+        1.0799999999999272
+      ]
+    },
+    "ttlSeconds": 3600,
+    "nodesLock": {
+      "exclusiveNodesLockHeld": true,
+      "status": 200,
+      "ms": 2.2681250000000546,
+      "uncachedPositiveControl": {
+        "nodesLockWaitObserved": true,
+        "status": 200,
+        "ms": 160.6505830000001
+      }
+    },
+    "malformed": {
+      "dbErrors": 0,
+      "disabled": 0,
+      "fallbacks": 0,
+      "hits": 0,
+      "malformed": 1,
+      "misses": 1,
+      "nodeQueries": 1,
+      "oversize": 0,
+      "probes": 1,
+      "stores": 1
+    },
+    "oversizedEntry": {
+      "storedBytes": 8388645,
+      "gatewayBodyLimitBytes": 8388608,
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 1,
+        "nodeQueries": 1,
+        "oversize": 0,
+        "probes": 1,
+        "stores": 1
+      }
+    },
+    "eviction": {
+      "evictedKeys": 50,
+      "fillerKeys": 64,
+      "ms": 27.34570799999983,
+      "fallbackMetrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 1,
+        "nodeQueries": 1,
+        "oversize": 0,
+        "probes": 1,
+        "stores": 1
+      }
+    },
+    "restart": {
+      "emptyAfterRestart": true,
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 1,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 1,
+        "oversize": 0,
+        "probes": 1,
+        "stores": 1
+      }
+    },
+    "timeout": {
+      "pauseMs": 800,
+      "ms": 207.26800000000003,
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 2,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 1,
+        "oversize": 0,
+        "probes": 1,
+        "stores": 0
+      }
+    },
+    "unavailable": {
+      "ms": 7.684083000000101,
+      "commitMs": 6.210040999999364,
+      "writeMetrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 0,
+        "oversize": 0,
+        "probes": 0,
+        "stores": 0
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 4,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 2,
+        "oversize": 0,
+        "probes": 2,
+        "stores": 0
+      }
+    },
+    "lostResponse": {
+      "replayed": true,
+      "commitsAdded": 1,
+      "revision": 3
+    },
+    "bursts": [
+      {
+        "readsPerCommit": 1,
+        "commits": 10,
+        "reads": 10,
+        "metrics": {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 0,
+          "malformed": 0,
+          "misses": 10,
+          "nodeQueries": 10,
+          "oversize": 0,
+          "probes": 10,
+          "stores": 10
+        },
+        "latencyMs": {
+          "count": 10,
+          "p50": 2.8271670000003724,
+          "p95": 4.173666000000594,
+          "p99": 4.173666000000594,
+          "min": 2.662583000000268,
+          "max": 4.173666000000594
+        },
+        "rawMs": [
+          4.173666000000594,
+          3.068207999999686,
+          3.070042000000285,
+          2.8387080000002243,
+          3.062166000000616,
+          2.691084000000046,
+          2.6933749999998327,
+          2.8271670000003724,
+          2.662583000000268,
+          2.765792000000147
+        ]
+      },
+      {
+        "readsPerCommit": 10,
+        "commits": 10,
+        "reads": 100,
+        "metrics": {
+          "dbErrors": 0,
+          "disabled": 0,
+          "fallbacks": 0,
+          "hits": 90,
+          "malformed": 0,
+          "misses": 10,
+          "nodeQueries": 10,
+          "oversize": 0,
+          "probes": 100,
+          "stores": 10
+        },
+        "latencyMs": {
+          "count": 100,
+          "p50": 0.9852920000002996,
+          "p95": 2.631040999999641,
+          "p99": 2.7014170000002196,
+          "min": 0.8670000000001892,
+          "max": 2.7038329999995767
+        },
+        "rawMs": [
+          2.5189170000003287,
+          1.3970830000007481,
+          1.122750000000451,
+          1.1069170000000668,
+          1.0827500000004875,
+          1.0702919999994265,
+          1.0545419999998558,
+          1.2226670000000013,
+          1.0625419999996666,
+          1.001166000000012,
+          2.6394579999996495,
+          0.9720839999999953,
+          0.9297919999999067,
+          0.9565000000002328,
+          0.9968749999998181,
+          1.0252499999996871,
+          1.0735420000000886,
+          1.008708000000297,
+          0.9401670000006561,
+          1.003208000000086,
+          2.7014170000002196,
+          1.0472920000001977,
+          1.1208749999996144,
+          1.0160839999998643,
+          0.9550409999992553,
+          0.9171249999999418,
+          0.9231250000002547,
+          0.9328329999998459,
+          0.962416000000303,
+          0.9400420000001759,
+          2.571291000000201,
+          0.9850839999999152,
+          0.9913329999999405,
+          1.0342909999999392,
+          1.0045419999996739,
+          0.939792000000125,
+          0.9304590000001554,
+          0.9677920000003724,
+          0.9272499999997308,
+          0.9659590000001117,
+          2.669457999999395,
+          0.9756659999993644,
+          0.9025410000003831,
+          0.9811670000008235,
+          1.040291000000252,
+          0.961250000000291,
+          0.8927090000006501,
+          0.8943330000001879,
+          0.9034579999997732,
+          0.8937919999998485,
+          2.631040999999641,
+          0.9116669999993974,
+          0.956000000000131,
+          0.9714589999994132,
+          0.9916250000005675,
+          0.9279169999999795,
+          0.8670000000001892,
+          0.8697080000001733,
+          0.9065840000002936,
+          0.9688750000004802,
+          2.456709000000046,
+          0.887166999999863,
+          0.9535830000004353,
+          0.927375000000211,
+          1.0715829999999187,
+          0.9476670000003651,
+          1.1204170000000886,
+          1.0111249999999927,
+          1.0670000000000073,
+          1.0591660000000047,
+          2.7038329999995767,
+          1.0047080000003916,
+          0.9760000000005675,
+          0.9139999999997599,
+          1.0835409999999683,
+          0.9852920000002996,
+          1.019916999999623,
+          1.0413330000001224,
+          1.3246250000001965,
+          1.0929579999992711,
+          2.6897919999992155,
+          1.111750000000029,
+          1.0065830000003189,
+          1.0880830000005517,
+          0.98174999999992,
+          1.1823330000006536,
+          1.043416999999863,
+          0.9609169999994265,
+          0.9660000000003492,
+          1.008708000000297,
+          2.5924170000007507,
+          0.9407089999995151,
+          0.9312909999998737,
+          0.8862499999995634,
+          0.95049999999992,
+          0.9650839999994787,
+          0.9472919999998339,
+          0.9457090000005337,
+          0.9683750000003783,
+          1.0234590000000026
+        ]
+      }
+    ],
+    "structuralAndRollback": {
+      "structuralRevision": 24,
+      "rejectedStatus": 400
+    },
+    "databaseOutage": {
+      "status": 500,
+      "ms": 0.7629170000000158,
+      "cachedSuccessRefused": true
+    },
+    "recreatedId": {
+      "reusedProjectId": true,
+      "sameRevision": 1,
+      "generationChanged": true,
+      "nodes": [
+        "new"
+      ]
+    },
+    "elapsedFinishedAt": "2026-11-02T09:48:04.819Z"
+  },
+  "hotReadNoCache": [
+    {
+      "nodeCount": 100,
+      "writers": 0,
+      "warmup": 20,
+      "samples": 100,
+      "latencyMs": {
+        "count": 100,
+        "p50": 2.9945840000000317,
+        "p95": 3.7261250000001382,
+        "p99": 4.116917000000285,
+        "min": 2.114166999999725,
+        "max": 4.384124999999585
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 100,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 100,
+        "oversize": 0,
+        "probes": 0,
+        "stores": 0
+      },
+      "rawMs": [
+        2.6297080000003916,
+        2.5331670000005033,
+        3.2837500000005093,
+        3.288374999999178,
+        2.6382919999996375,
+        2.5439589999996315,
+        2.535084000000097,
+        2.6298750000005384,
+        2.578958000000057,
+        2.391791000000012,
+        2.276625000000422,
+        2.630167000000256,
+        2.504041000000143,
+        2.3507089999993696,
+        2.47387499999968,
+        2.4633340000000317,
+        2.500625000000582,
+        2.238083000000188,
+        2.114166999999725,
+        2.4661669999995866,
+        2.19104199999947,
+        2.4861659999996846,
+        2.858208999999988,
+        2.2460000000000946,
+        2.2155830000001515,
+        2.767166999999972,
+        2.140124999999898,
+        2.2995840000003227,
+        2.966500000000451,
+        2.611959000000752,
+        2.606292000000394,
+        2.859625000000051,
+        2.8355409999994663,
+        2.644208000000617,
+        3.4451669999998558,
+        3.135707999999795,
+        3.1705420000007507,
+        3.2821249999997235,
+        3.4567919999999503,
+        3.2729999999992287,
+        3.3703749999995125,
+        3.520332999999482,
+        3.3299999999999272,
+        3.4475000000002183,
+        3.2704579999999623,
+        3.3761670000003505,
+        3.2426249999998618,
+        3.2681249999996,
+        3.646582999999737,
+        3.253541000000041,
+        3.3174159999998665,
+        3.3544590000001335,
+        3.219708999999966,
+        3.6012500000006185,
+        3.3345829999998386,
+        3.391708999999537,
+        3.4379170000001977,
+        3.7717499999998836,
+        3.4990829999997004,
+        3.360541999999441,
+        3.4986250000001746,
+        3.2504170000001977,
+        3.3359169999994265,
+        3.7335000000002765,
+        4.116917000000285,
+        4.11029199999939,
+        2.570708000000195,
+        3.2637500000000728,
+        2.756416000000172,
+        2.314292000000023,
+        3.411124999999629,
+        3.681999999999789,
+        4.384124999999585,
+        2.508708000000297,
+        2.6295000000000073,
+        2.5714170000001104,
+        3.4606659999999465,
+        3.305333000000246,
+        3.7261250000001382,
+        2.523250000000189,
+        2.5513750000000073,
+        2.506083000000217,
+        3.287959000000228,
+        3.2773339999994278,
+        3.031665999999859,
+        2.385250000000269,
+        2.6414999999997235,
+        3.6133340000005774,
+        3.393833999999515,
+        3.3944579999997586,
+        3.6207500000000437,
+        3.21349999999984,
+        3.2152500000001965,
+        2.9945840000000317,
+        2.718374999999469,
+        2.7630830000007336,
+        2.7950000000000728,
+        2.645416999999725,
+        2.5427499999996144,
+        2.6096669999997175
+      ]
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 0,
+      "warmup": 20,
+      "samples": 100,
+      "latencyMs": {
+        "count": 100,
+        "p50": 54.9903749999994,
+        "p95": 61.963958000000275,
+        "p99": 77.56366600000001,
+        "min": 49.972625000000335,
+        "max": 84.59570899999926
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 100,
+        "fallbacks": 0,
+        "hits": 0,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 100,
+        "oversize": 0,
+        "probes": 0,
+        "stores": 0
+      },
+      "rawMs": [
+        53.07208400000127,
+        52.475125000000844,
+        53.7280410000003,
+        58.826999999999316,
+        55.05116699999962,
+        55.26458300000013,
+        53.40045799999825,
+        53.4955000000009,
+        54.191124999999374,
+        57.48254199999974,
+        56.51629200000025,
+        55.54191699999865,
+        52.9278749999994,
+        54.13695799999914,
+        54.68208299999969,
+        54.3159169999999,
+        56.74466600000051,
+        54.9903749999994,
+        61.29191700000047,
+        55.55720900000051,
+        60.93345899999986,
+        59.06512499999917,
+        61.963958000000275,
+        57.39091600000029,
+        55.58637500000077,
+        70.63745799999924,
+        60.45154099999854,
+        60.98350000000028,
+        60.80370900000162,
+        51.809417000000394,
+        52.34804199999962,
+        53.58454200000051,
+        54.79462500000045,
+        59.15887500000099,
+        72.86575000000084,
+        84.59570899999926,
+        58.983916999999565,
+        61.83274999999958,
+        54.00200000000041,
+        59.25883299999987,
+        53.09812500000044,
+        55.2627909999992,
+        53.08849999999984,
+        56.581333000000086,
+        56.20600000000013,
+        55.486667000001034,
+        54.31737500000054,
+        53.564291000000594,
+        52.520166000000245,
+        53.12629100000049,
+        52.102875000000495,
+        57.27624999999898,
+        51.2924579999999,
+        50.91858400000092,
+        50.44512500000019,
+        52.4721669999999,
+        52.41862500000025,
+        56.1606670000001,
+        55.77008299999943,
+        50.27020900000025,
+        52.393167000000176,
+        57.40695799999958,
+        54.97416600000179,
+        53.40929200000028,
+        58.632832999999664,
+        55.253333999999086,
+        52.86662500000057,
+        57.01591700000063,
+        55.929707999999664,
+        54.887917000000016,
+        58.77091699999983,
+        55.088707999999315,
+        56.845666999999594,
+        58.17370800000026,
+        55.40020899999945,
+        57.88220899999942,
+        52.33520900000076,
+        53.88983299999927,
+        55.1762920000001,
+        56.62220900000102,
+        55.17395800000122,
+        53.70062500000131,
+        56.13183299999946,
+        53.99620900000082,
+        49.972625000000335,
+        51.88170799999898,
+        52.36133300000074,
+        52.222625000000335,
+        54.35429199999999,
+        53.553249999999025,
+        53.211708999999246,
+        50.287625000000844,
+        51.491667000000234,
+        52.05504199999996,
+        77.56366600000001,
+        56.22099999999955,
+        56.93762499999866,
+        62.267165999999634,
+        53.87029199999961,
+        53.57145800000035
+      ]
+    }
+  ],
+  "hotReadRedis": [
+    {
+      "nodeCount": 100,
+      "writers": 0,
+      "warmup": 20,
+      "samples": 100,
+      "latencyMs": {
+        "count": 100,
+        "p50": 1.1073340000002645,
+        "p95": 1.6427500000008877,
+        "p99": 1.9967080000005808,
+        "min": 0.9122499999994034,
+        "max": 2.0646669999987353
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 100,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 0,
+        "oversize": 0,
+        "probes": 100,
+        "stores": 0
+      },
+      "rawMs": [
+        1.057833999999275,
+        1.421834000000672,
+        1.002042000000074,
+        0.934291999999914,
+        1.5796250000003056,
+        1.1462499999997817,
+        1.6164999999982683,
+        1.231999999999971,
+        1.226291000000856,
+        1.255833999999595,
+        1.316541000000143,
+        1.425708000000668,
+        1.4691249999996217,
+        1.291917000000467,
+        1.2486660000013217,
+        1.6427500000008877,
+        1.719082999999955,
+        1.9967080000005808,
+        1.2750409999989643,
+        1.2615420000001905,
+        1.5796250000003056,
+        1.2268330000006245,
+        1.1123330000009446,
+        1.6257080000013957,
+        1.2409580000003189,
+        1.7043749999993452,
+        1.0756669999991573,
+        1.2057920000006561,
+        1.6074170000010781,
+        0.997957999999926,
+        1.4980830000004062,
+        1.5774170000004233,
+        1.0253339999999298,
+        1.4837079999997513,
+        1.2905419999988226,
+        0.994250000001557,
+        1.4184999999997672,
+        1.360499999998865,
+        1.6830420000005688,
+        1.3075000000008004,
+        1.455374999999549,
+        1.3906669999996666,
+        1.5113339999988966,
+        1.482624999998734,
+        1.4664580000007845,
+        1.2488329999996495,
+        1.2848329999997077,
+        1.2652909999997064,
+        1.0962499999986903,
+        1.1170000000001892,
+        1.0925829999996495,
+        1.098416000000725,
+        1.0947910000013508,
+        1.055583999999726,
+        1.006666999999652,
+        1.0574160000014672,
+        1.0116670000006707,
+        1.0869999999995343,
+        1.0915829999994457,
+        1.1123750000006112,
+        0.9992500000007567,
+        1.1326250000001892,
+        1.1402500000003783,
+        1.081000000000131,
+        1.0669159999997646,
+        1.0252909999999247,
+        1.0005000000001019,
+        0.9908330000016576,
+        0.9961670000011509,
+        1.052708999999595,
+        0.9122499999994034,
+        0.9895419999993464,
+        1.0332080000007409,
+        1.0048340000012104,
+        1.0292499999995925,
+        1.0108749999999418,
+        1.0171250000003056,
+        0.9866249999995489,
+        1.2202089999991586,
+        0.9929169999995793,
+        0.991041999999652,
+        0.9845000000004802,
+        0.9669580000008864,
+        0.9825839999994059,
+        0.9822089999997843,
+        0.9705420000009326,
+        1.1309580000015558,
+        1.1443749999998545,
+        1.0757080000003043,
+        1.192166000000725,
+        1.0995829999992566,
+        1.0413749999988795,
+        1.0712910000002012,
+        1.1062500000007276,
+        1.0814169999994192,
+        1.091167000000496,
+        1.1073340000002645,
+        1.0815830000010465,
+        2.0646669999987353,
+        1.0461660000000848
+      ]
+    },
+    {
+      "nodeCount": 5000,
+      "writers": 0,
+      "warmup": 20,
+      "samples": 100,
+      "latencyMs": {
+        "count": 100,
+        "p50": 21.15508300000147,
+        "p95": 23.290666999999303,
+        "p99": 24.40533299999879,
+        "min": 19.964665999999852,
+        "max": 24.61737500000163
+      },
+      "metrics": {
+        "dbErrors": 0,
+        "disabled": 0,
+        "fallbacks": 0,
+        "hits": 100,
+        "malformed": 0,
+        "misses": 0,
+        "nodeQueries": 0,
+        "oversize": 0,
+        "probes": 100,
+        "stores": 0
+      },
+      "rawMs": [
+        20.85370800000055,
+        20.72149999999965,
+        21.234166000000187,
+        22.01079100000061,
+        22.02941700000156,
+        21.464874999999665,
+        23.290666999999303,
+        23.192958999999973,
+        20.644125000000713,
+        22.699749999999767,
+        22.871415999999954,
+        22.502540999999837,
+        23.221874999999272,
+        20.224041999999827,
+        23.59504200000083,
+        21.629791000001205,
+        22.413040999999794,
+        23.917749999998705,
+        21.375583000000915,
+        22.150707999999213,
+        21.177709000001414,
+        20.92741600000045,
+        21.304792000000816,
+        20.62800000000061,
+        20.98620800000026,
+        20.680167000000438,
+        20.424958999999944,
+        21.370750000000044,
+        20.621666000000914,
+        20.970416000000114,
+        20.581041000001278,
+        20.544832999999926,
+        20.198750000001382,
+        20.75945800000045,
+        21.56316700000025,
+        20.44616699999824,
+        21.958209000000352,
+        22.75420800000211,
+        22.208999999998923,
+        20.026707999997598,
+        20.429166999998415,
+        20.928584000001138,
+        22.204791000000114,
+        21.15508300000147,
+        20.926167000001442,
+        20.56737499999872,
+        20.859709000000294,
+        21.10974999999962,
+        20.35504199999923,
+        20.94354200000089,
+        22.020833999999013,
+        20.75404200000048,
+        21.059625000001688,
+        20.72345900000073,
+        21.026457999996637,
+        22.20245799999975,
+        21.580792000000656,
+        20.307624999997643,
+        20.94433299999946,
+        21.219625000001543,
+        20.784083999998984,
+        21.97283299999981,
+        21.110583000001498,
+        23.877666999997018,
+        21.453957999998238,
+        21.470040999996854,
+        20.983499999998457,
+        20.690167000000656,
+        21.070749999998952,
+        20.948832999998558,
+        22.08233399999881,
+        21.609624999997322,
+        20.403332999998383,
+        20.765290999999706,
+        20.891250000000582,
+        21.31054099999892,
+        20.51887500000157,
+        21.702792000000045,
+        21.046125000000757,
+        22.615624999998545,
+        21.693959000000177,
+        22.076709000000847,
+        23.00512499999968,
+        21.61395900000207,
+        19.964665999999852,
+        20.010874999999942,
+        20.52966699999888,
+        20.048125000001164,
+        20.94908299999952,
+        20.71862500000134,
+        21.938124999996944,
+        21.626000000000204,
+        24.40533299999879,
+        21.42991699999766,
+        24.61737500000163,
+        21.923750000001746,
+        21.12104200000249,
+        21.617167000000336,
+        22.80662499999744,
+        23.06750000000102
+      ]
+    }
+  ],
+  "binaryAfter": "8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91",
+  "cleanup": {
+    "postgresContainerAbsent": true,
+    "postgresVolumesAbsent": true,
+    "gatewayProcessesAbsent": true,
+    "postgresCredentialsRemoved": true
+  },
+  "redisCleanup": {
+    "containerAbsent": true,
+    "volumesAbsent": true,
+    "credentialsRemoved": true
+  },
+  "finishedAt": "2026-11-02T09:48:16.772Z"
+}

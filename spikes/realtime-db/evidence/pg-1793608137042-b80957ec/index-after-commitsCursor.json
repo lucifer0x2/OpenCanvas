@@ -1,0 +1,142 @@
+{
+  "query": "SELECT revision,changed_ids FROM commits WHERE project_id=$1 AND revision>$2 ORDER BY revision LIMIT 100",
+  "params": [
+    "p11",
+    990
+  ],
+  "boundQuery": "SELECT revision,changed_ids FROM commits WHERE project_id='p11' AND revision>990 ORDER BY revision LIMIT 100",
+  "explain": [
+    {
+      "Plan": {
+        "Node Type": "Limit",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Startup Cost": 36.32,
+        "Total Cost": 36.35,
+        "Plan Rows": 10,
+        "Plan Width": 13,
+        "Actual Startup Time": 0.022,
+        "Actual Total Time": 0.022,
+        "Actual Rows": 10,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 9,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 36.32,
+            "Total Cost": 36.35,
+            "Plan Rows": 10,
+            "Plan Width": 13,
+            "Actual Startup Time": 0.021,
+            "Actual Total Time": 0.021,
+            "Actual Rows": 10,
+            "Actual Loops": 1,
+            "Sort Key": [
+              "revision"
+            ],
+            "Sort Method": "quicksort",
+            "Sort Space Used": 25,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 9,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "commits",
+                "Alias": "commits",
+                "Startup Cost": 4.39,
+                "Total Cost": 36.15,
+                "Plan Rows": 10,
+                "Plan Width": 13,
+                "Actual Startup Time": 0.011,
+                "Actual Total Time": 0.011,
+                "Actual Rows": 10,
+                "Actual Loops": 1,
+                "Recheck Cond": "((project_id = 'p11'::text) AND (revision > 990))",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 1,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 6,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "commits_pkey",
+                    "Startup Cost": 0,
+                    "Total Cost": 4.39,
+                    "Plan Rows": 10,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.009,
+                    "Actual Total Time": 0.009,
+                    "Actual Rows": 10,
+                    "Actual Loops": 1,
+                    "Index Cond": "((project_id = 'p11'::text) AND (revision > 990))",
+                    "Shared Hit Blocks": 5,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "Planning": {
+        "Shared Hit Blocks": 94,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.111,
+      "Triggers": [],
+      "Execution Time": 0.034
+    }
+  ]
+}
