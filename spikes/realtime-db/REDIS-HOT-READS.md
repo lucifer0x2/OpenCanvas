@@ -1,5 +1,9 @@
 # Task17 Redis HOT snapshot reads
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 Implementation scope: `spikes/realtime-db/postgres`; default SQLite runtime is unchanged.
 Redis is optional, disposable derived storage. PostgreSQL owns project identity,
 revision, entities, idempotency and durable commit. No batch mutation imports or invokes
@@ -92,8 +96,8 @@ timed workloads belong to the separate Task17 lifecycle/evidence harness.
 
 Current integrated results after the ordered-error NUL-ID regression: default v1
 **33passed**, compat-v2 **34passed**. Strict offline/locked all-target Clippy for
-both features and core/PostgreSQL formatting passed; raw logs are in
-`evidence/task17-final-checks-20261102/` and the Task17 completion report.
+both features and core/PostgreSQL formatting passed; counts and rerun commands are
+retained in the [Task17 report](../../docs/TASK17-REPORT.md).
 Initial invocations without exported fixture variables or without sandbox socket access
 were setup failures, corrected before the successful real-service runs.
 

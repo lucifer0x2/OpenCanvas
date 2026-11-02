@@ -1,5 +1,9 @@
 # Task17 — review độc lập, 2026-11-02
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Kết luận: **không còn finding bắt buộc sửa** trong phạm vi spike Task17 sau
 bản sửa NUL target ID. PostgreSQL vẫn là nguồn authoritative và COMMIT trước
 ACK; Redis chỉ phục vụ dữ liệu đọc dẫn xuất. Review không xác nhận production
@@ -20,8 +24,8 @@ nên PostgreSQL trả lỗi bind và API thành `INTERNAL_ERROR`; đường full
 lỗi `Props must be an object` của operation trước. Đây là lệch AC1 về error
 parity, không làm partial commit.
 
-Integration worker đã tái hiện đỏ bằng PostgreSQL thật; log giữ tại
-`spikes/realtime-db/evidence/task17-final-checks-20261102/nul-regression-before.log`.
+Integration worker đã tái hiện đỏ bằng PostgreSQL thật trước sửa và ghi lại
+`INTERNAL_ERROR` thay vì `VALIDATION_FAILED`.
 Bản sửa ở `spikes/realtime-db/core/src/delta.rs:18` trả classifier fallback khi
 target chứa NUL, để full executor quyết định lỗi theo thứ tự cũ. Regression tại
 `spikes/realtime-db/postgres/tests/contract/delta_failures.rs:73` so code/message
@@ -53,19 +57,16 @@ revision/history/idempotency không đổi. Reviewer đã kiểm source của re
 
 ## Kiểm bằng chứng
 
-Đã đọc log trong
-`spikes/realtime-db/evidence/task17-final-checks-20261102/`: core **10 passed**,
+Reviewer đã đọc log tại thời điểm nghiệm thu: core **10 passed**,
 PostgreSQL v1 **33 passed**, compat-v2 **34 passed**. Integration worker báo
 strict locked/offline all-target Clippy cho core/v1/v2, fmt core/PostgreSQL và
 default binary build đều pass; log Clippy/build có completion, fmt log rỗng như
 mong đợi. Reviewer không diễn giải log rỗng riêng lẻ thành một lần tự chạy pass.
 
-Raw review dùng:
-
-- `spikes/realtime-db/evidence/task17-final-cache-20261102/report.json`.
-- `spikes/realtime-db/evidence/task17-final-{baseline,delta-only,delta-redis}-20261102/`
-  và các JSONL trong từng thư mục.
-- `spikes/realtime-db/evidence/task17-final-comparison-20261102.json`.
+Raw review khi đó gồm lifecycle report, ba stage baseline/delta-only/delta-Redis,
+các attempts/successes/reads/profiles JSONL và comparison verifier. Các outputs này
+không còn nằm trong cây hiện tại; [Task17 report](TASK17-REPORT.md) giữ số đo,
+lệnh kiểm và cách chạy lại.
 
 Một script Node chỉ đọc của reviewer độc lập tính lại nearest-rank quantiles,
 120 attempts/successes và revision liên tiếp mỗi cell, 100 measured samples,
@@ -76,12 +77,8 @@ Driver/toolchain đồng nhất, baseline → delta-only → delta-Redis tuần 
 trước/sau khớp và off/on dùng cùng source/binary. Rehash từng source file thực
 và binary cũng khớp manifest: current **96 files**, baseline **72 files**.
 
-Current source fingerprint:
+Nguồn cuối của lượt đo có fingerprint
 `74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38`.
-Current binary SHA-256:
-`8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91`.
-Baseline source fingerprint:
-`addb25db682b7514fa5556835b49a9903b581e99d92b02b591a187496f782f81`.
 
 Lifecycle evidence có positive control: HOT HTTP thành công dưới exclusive nodes
 lock, xóa đúng key rồi HTTP cold thực sự chờ lock; oversized/malformed entries

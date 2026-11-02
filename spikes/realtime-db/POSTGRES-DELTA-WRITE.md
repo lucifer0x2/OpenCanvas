@@ -1,5 +1,9 @@
 # PostgreSQL selected-row delta writes
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 Task17, 2026-11-02. This is the isolated Task15 spike. The SQLite runtime,
 production validator and user data are outside this change.
 
@@ -106,8 +110,9 @@ PostgreSQL binary check passed. A fresh completion worker then verified core
 10 tests, real PostgreSQL contracts 33 (v1) / 34 (`compat-v2`) serially on the
 owned disposable PG/Redis fixture, and strict `--offline --locked --all-targets`
 Clippy for core and both PostgreSQL feature configurations. Core/PostgreSQL
-format checks passed. Sanitized raw logs, including the NUL regression failing
-before the fix, are in `evidence/task17-final-checks-20261102/`.
+format checks passed. The historical NUL regression failed before the fix and passed
+afterward; final counts and commands are retained in the
+[Task17 report](../../docs/TASK17-REPORT.md).
 
 ## Modules and limits
 

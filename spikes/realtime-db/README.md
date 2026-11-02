@@ -1,8 +1,11 @@
 # PostgreSQL realtime spike
 
 Research fixture only: this does not replace OpenCanvas SQLite storage or start the real
-3847/3848 services. The user selected PostgreSQL for further work. The older
-`spacetimedb/` files and evidence at the evidence root are historical, not this run's results.
+3847/3848 services. The user selected PostgreSQL for further work.
+
+Generated run outputs are ignored; only the handwritten [output policy](evidence/README.md)
+is tracked under `evidence/`. Dated reports retain historical measurements and limits.
+Old raw outputs remain in prior Git commit `71e2142`, outside the current tree.
 
 From the worktree root, with Docker running, Rust dependencies cached and the pinned
 image available:
@@ -63,18 +66,12 @@ The default sequence checks:
 
 `CLIENT_MODES=legacy` or `CLIENT_MODES=optimized` selects one client for investigation;
 the default runs both complete six-cell matrices (624 successful edits in total).
-Raw filenames include mode and output directories must be fresh. To compare the captured
-original server/client baseline with server-only and server+client optimization:
-
-```sh
-node spikes/realtime-db/harness/compare.mjs \
-  spikes/realtime-db/evidence/optimization-baseline-clean-1793597163652/report.json \
-  spikes/realtime-db/evidence/NEW-RUN/report.json \
-  spikes/realtime-db/evidence/NEW-RUN/comparison.json
-```
-
-Comparison refuses mismatched resource/workload settings, missing modes, empty traffic,
-overlapping run times or source changes. Baseline raw evidence remains unchanged.
+Raw filenames include mode and output directories must be fresh. A new default run
+measures current source. Historical before/after comparisons additionally require the
+matching frozen baseline source, binaries and fresh compatible reports; removed output
+paths are not available as inputs in a clean checkout. Comparison helpers refuse
+mismatched resource/workload settings, missing modes, empty traffic, overlapping run
+times or source changes.
 The client retry helper is only a fixture policy for known independent assignments;
 it does not merge arbitrary authoring intent. Uncertain POST outcomes retry the exact
 same body/key; only a definite revision conflict allows a fresh revision/key.

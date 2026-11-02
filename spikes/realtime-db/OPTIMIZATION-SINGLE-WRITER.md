@@ -1,5 +1,9 @@
 # Single-writer phase diagnosis — 2026-11-02
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 The measured 5,000-node workload spends **81.38–82.87%** of server elapsed time
 loading, decoding and applying the complete project for a three-node edit.
 Set-based persistence accounts for 2.68–2.81%; durable COMMIT accounts for
@@ -50,10 +54,8 @@ one root page and text children; the edits change three `name` values. These
 results do not measure deep trees, structural edits or production release builds.
 No build or other database workload ran during either timed repetition.
 
-Raw reports and per-request/profile JSONL records:
-[`r1`](evidence/single-writer-baseline-r1-20261102/report.json),
-[`r2`](evidence/single-writer-baseline-r2-20261102/report.json).
-Client latency, workload details and repetition comparison are documented in
+The historical repetitions were recorded as r1 and r2. Client latency, workload
+details and repetition comparison are documented in
 [`SINGLE-WRITER-BENCHMARK.md`](../../docs/SINGLE-WRITER-BENCHMARK.md).
 
 | 5,000-node elapsed time, ms | r1 p50 | r2 p50 |

@@ -1,5 +1,9 @@
 # PostgreSQL batch and realtime contract spike
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 Task15, 2026-11-02. Workspace `codex/task15-realtime-db-spike`, baseline
 `438254936823cb4ef8639d85c1404302c608f7f7`. This lane changes only the isolated
 spike. It does not change the production storage engine, MCP sessions or services.
@@ -50,7 +54,7 @@ rtk bypass cargo clippy --manifest-path spikes/realtime-db/postgres/Cargo.toml \
 Core: **6 passed**. Real-DB suite: **10 passed, 0 failed**, 2.23 seconds on the
 first isolated fixture. Strict Clippy for both crates/all targets: passed. The
 fresh integrated harness also records **10 passed**, 2.16 seconds, in
-[`rust-contract.txt`](evidence/pg-1793594925396-085690ee/rust-contract.txt) before
+`rust-contract.txt` before
 benchmarking. Later durability-lane issues in that run are tracked separately;
 this result is limited to the contract suite.
 

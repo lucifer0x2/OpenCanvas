@@ -1,5 +1,9 @@
 # PostgreSQL fast-path optimization — 2026-11-02
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 This change is confined to the isolated Task15 spike. It does not migrate the
 product runtime, open user data, or start native listeners on 3847/3848.
 
@@ -57,11 +61,11 @@ Executed checks, all exit 0:
   and `git diff --check -- spikes/realtime-db/postgres`.
 - Harness-owned `PHASES=rustContract,indexEvidence node
   spikes/realtime-db/harness/run-all.mjs` completed against disposable PostgreSQL
-  16.9. [Raw Rust output](evidence/pg-1793597486325-94df21f9/rust-contract.txt)
+  16.9. Raw Rust output
   records **13 passed**: 10 existing DB contract scenarios, the 2 new scenarios,
   and the existing blob hash/corruption unit test now included through HTTP imports.
   The regression target itself finished in 2.43 seconds.
-- [Integration report](evidence/pg-1793597486325-94df21f9/report.json) records passing
+- Integration report records passing
   real-DB contracts and index plans/mutations, matching before/after source
   fingerprint `a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed`,
   and cleanup of that run's gateway processes/container/anonymous volume. Other

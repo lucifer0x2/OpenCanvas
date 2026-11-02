@@ -212,6 +212,10 @@ Phiên chính giao mỗi phần độc lập cho một worker mới, worker khô
 8. Với `apply_batch_file`, không giả định inbox Pod-local xuất hiện ở Pod khác;
    quyết định upload ID/shared staging có giới hạn và giữ inline batch tương thích.
 
+Generated manifests/logs/raw outputs không version trong cây hiện tại; xem
+[chính sách output](../spikes/realtime-db/evidence/README.md). Báo cáo giữ kết luận,
+giới hạn và lệnh tái chạy; không coi đường dẫn output lịch sử là input sẵn có.
+
 **Đầu ra cần có:** code spike tối thiểu, version/topology manifest, lệnh chạy,
 raw evidence và bảng đạt/chưa đạt từng AC; nêu self-host support còn thiếu và chi phí
 port domain. Engine đã chốt PostgreSQL theo quyết định trên; không tự provision sản phẩm.

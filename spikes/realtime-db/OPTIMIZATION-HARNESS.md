@@ -1,26 +1,33 @@
 # Task15 optimization harness — 2026-11-02
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 This is isolated PostgreSQL fixture work. Product SQLite storage, real services and
-user data remain outside this lane. The original accepted evidence is preserved.
+user data remain outside this lane. Original results are summarized in the
+[Task15 report](../../docs/TASK15-REPORT.md).
 
 ## Frozen original source and baseline
 
 Before any optimization source mutation, copied all source bytes in `core/`,
 `postgres/`, `harness/`, `infra/`, including embedded public test evidence, to ignored
-`.runtime/optimization-baseline-1793597163652/`. Excluded only generated `target/`,
+a temporary `.runtime/` baseline directory. Excluded only generated `target/`,
 `node_modules/`, `.runtime/` and root evidence. The 46-file source fingerprint is
 `a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24`, identical to
-the previously accepted source. `baseline-capture.json` records each source hash.
+the previously accepted source. The historical capture recorded each source hash;
+that temporary baseline is not supplied in the current tree.
 The captured runner reads Git HEAD from its ancestor repository; source hashes and
 binary hashes, rather than dirty checkout HEAD alone, identify the actual program.
 
-Clean baseline command, run from that frozen capture:
+The historical baseline selected `PHASES=rustContract,contractAndMatrix` in that
+frozen capture. To exercise those phases against current source from repo root:
 
 ```sh
-PHASES=rustContract,contractAndMatrix \
-EVIDENCE_DIR=/Users/luis/Workspace/OpenCanvas/spikes/realtime-db/evidence/optimization-baseline-clean-1793597163652 \
-node harness/run-all.mjs
+PHASES=rustContract,contractAndMatrix node spikes/realtime-db/harness/run-all.mjs
 ```
+
+This creates fresh ignored outputs; it does not reproduce the old algorithm.
 
 No matrix/count/build overrides were set. Result: exit0, Rust DB contracts10/10,
 full 100/5000×1/4/8 matrix,12 iterations/writer,312 successful edits. Sources stayed
@@ -41,8 +48,7 @@ Operation latency includes revision snapshot reads and every retry. These number
 are a fresh baseline, not replacements for earlier accepted measurements. The first
 capture run also finished all measured phases and cleanup, but the old runner exited1
 after saving its pass report because its omitted root evidence parent did not exist
-for `latest.json`. That complete raw directory is retained at
-`evidence/optimization-baseline-1793597163652/`; it is not the clean comparison input.
+for `latest.json`. That failed invocation was not used as the clean comparison input.
 Only the ignored evidence parent was created before the clean rerun, without changing
 captured source. No benchmark ran concurrently with other lane builds or benchmarks.
 

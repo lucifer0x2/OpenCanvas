@@ -1,5 +1,9 @@
 # Task15 — tối ưu PostgreSQL và index, 2026-11-02
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Đã tối ưu spike PostgreSQL theo yêu cầu người dùng và kiểm độc lập. Với cùng
 project 5.000 nodes/8 writers, p99 toàn thao tác giảm **13,25 → 2,63 giây** trong
 lượt đối chiếu trên database mới, khoảng **5,04 lần**; throughput 6,65 → 20,27
@@ -37,17 +41,17 @@ Mỗi run xác minh source trước/sau không đổi, lưu binary hashes/config
 Các run tuần tự, không benchmark đồng thời với build; PostgreSQL 16.9 cùng image
 digest, 2 CPU/2 GiB, cùng host/toolchain và Cargo dev profile.
 
-1. [Baseline đo lại](../spikes/realtime-db/evidence/optimization-baseline-clean-1793597163652/report.json):
+1. Baseline đo lại:
    server/client cũ, đủ 6 cells, 312 edits, exit0 và cleanup đạt.
-2. [Run đầy đủ mã mới](../spikes/realtime-db/evidence/pg-1793597580146-67e95999/report.json):
+2. Run đầy đủ mã mới:
    9/9 pha đạt, 624 edits cho hai modes, history1000 và toàn bộ recovery/backup/index.
    Sáu cells `legacy` chạy đầu tiên được lấy làm cột **chỉ backend mới**.
-3. [Client tối ưu trên DB mới](../spikes/realtime-db/evidence/pg-1793598033043-9d396896/report.json):
+3. Client tối ưu trên DB mới:
    đủ 6 cells/312 edits và DB contract; các pha recovery/history/index cố ý bỏ vì
    đã kiểm trong run đầy đủ cùng nguồn/binaries. Cột **backend + client mới** dùng
    run riêng này để tránh trộn dữ liệu tích lũy của mode legacy chạy trước.
 
-[comparison-isolated.json](../spikes/realtime-db/evidence/pg-1793598033043-9d396896/comparison-isolated.json)
+comparison-isolated.json
 kiểm cùng cấu hình/tài nguyên/binary mới, đủ traffic, nonempty reader, revisions/
 commits khớp; chứa cả p95/p99 POST, toàn thao tác, throughput, conflicts và max retry.
 
@@ -74,7 +78,7 @@ mỗi cell chỉ có 12 edits/writer, nên p99 ở cell96 mẫu gần với mẫ
 
 ## Index đã được xác minh
 
-[Index evidence của lượt root](../spikes/realtime-db/evidence/pg-1793597580146-67e95999/index-evidence.json)
+Index evidence của lượt root
 chứa 20 EXPLAIN trước/sau, actual rows/buffers/timing, SQL/params, inventory/index
 sizes và planner settings. Fixture riêng 100.000 nodes, 10.000 projects, 20.000
 commits/keys, 10.000 jobs; chạy sau matrix trong DB dùng một lần rồi dọn.
@@ -96,7 +100,7 @@ không quy toàn bộ cải thiện latency cho index. Cơ sở phương pháp �
 
 - Node tests **12/12**: SSE, retry bounds/jitter, mất response giữ body/key,
   lỗi không được rebase, guards cho comparison/index evidence.
-- [Rust target **13/13**](../spikes/realtime-db/evidence/pg-1793597580146-67e95999/rust-contract.txt):
+- Rust target **13/13**:
   12 DB contract scenarios +1 blob/hash unit, không gọi nhầm thành13DB tests.
 - Test giữ `ACCESS EXCLUSIVE` trên nodes: stale/replay/collision/dry-run stale,
   revision HTTP và SSE headers vẫn trả; valid write thực sự chờ khóa rồi commit.
@@ -116,15 +120,14 @@ PHASES=rustContract,contractAndMatrix CLIENT_MODES=optimized \
 ```
 
 Khi root chạy đã bỏ các override counts/build/history/evidence khỏi môi trường.
-[Cleanup verification](../spikes/realtime-db/evidence/pg-1793598033043-9d396896/cleanup-verification.json):
+Cleanup verification:
 ba run baseline/full/isolated không còn container/gateway riêng; không mật khẩu
 test trong evidence. Thư mục `.runtime/` vẫn ignore các credential/cache/dump để
 debug, không đưa chúng vào source. Các workload kế thừa không bị chạm.
 
 46 file mã viết tay trong spike, lớn nhất193 dòng; không file nào quá250.
-Raw test logs giữ blank lines gốc, không sửa raw để làm whitespace đẹp.
-Đã giữ toàn bộ evidence lịch sử, gồm các lượt điều tra thất bại; không coi chúng
-là nghiệm thu. Lượt bổ sung từng bị hệ thống duyệt lệnh chặn do usage limit;
+Các lượt điều tra thất bại được ghi riêng tại thời điểm đo và không được tính
+là nghiệm thu; generated outputs hiện đã bỏ khỏi cây versioned. Lượt bổ sung từng bị hệ thống duyệt lệnh chặn do usage limit;
 sau người dùng yêu cầu tiếp tục, cùng hành động được duyệt/chạy và hoàn tất.
 
 ## Giới hạn còn lại

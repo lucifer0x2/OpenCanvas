@@ -1,5 +1,9 @@
 # PostgreSQL durability fixture (Task15 AC5/AC8)
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 This is an isolated fixture, not a production storage port or renderer. Existing
 SQLite runtime, MCP sessions, real services and user resources are unchanged.
 
@@ -109,6 +113,6 @@ integration run. Gateway/database recovery and history-growth phases passed too.
 Earlier runs exposed a Docker random-port restart issue in the harness and a
 TCP reset hiding the oversized-upload JSON rejection. The transport now sends
 its error/FIN and drains pending input for at most 250 ms with constant memory.
-Failed attempts remain recorded separately; they are not passing evidence.
+Failed attempts were recorded separately and were not counted as passing evidence.
 
 All new Rust modules and the modified HTTP/main modules are below 200 lines.

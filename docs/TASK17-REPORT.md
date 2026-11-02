@@ -1,5 +1,9 @@
 # Task17 — PostgreSQL delta commit và Redis HOT reads
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Ngày 2026-11-02. Đã triển khai và kiểm trong spike `spikes/realtime-db/` theo
 [Task17](../tasks/17-postgres-delta-redis-hot-reads.md). PostgreSQL vẫn là nguồn
 dữ liệu authoritative và COMMIT thành công trước ACK. Redis chỉ cache response
@@ -43,17 +47,27 @@ Redis credentials chỉ dành cho writer được tin cậy. Compat-v2 vẫn c�
 Kiểm tra cuối sau sửa NUL target: core **10/10**, PostgreSQL default v1 **33/33**,
 compat-v2 **34/34**; strict offline/locked all-target Clippy core/v1/v2 và fmt
 core/PostgreSQL đạt. Binary default v1 được build cuối, trước mọi timing.
-Lệnh, raw logs, failing regression trước fix và source checksum tại
-[final checks](../spikes/realtime-db/evidence/task17-final-checks-20261102/VERIFICATION.md).
+Các lệnh kiểm đã chạy (DB contracts cần cả `PG_URL` và `REDIS_URL` của fixture
+tạm; migration v2 được cài riêng cho compat-v2):
+
+| Lệnh | Kết quả lịch sử |
+| --- | --- |
+| `cargo test --manifest-path spikes/realtime-db/core/Cargo.toml --offline --locked` | 10 passed |
+| `cargo test --manifest-path spikes/realtime-db/postgres/Cargo.toml --offline --locked --test contract -- --test-threads=1` | 33 passed |
+| Lệnh PG trên thêm `--features compat-v2` trước `--test contract` | 34 passed |
+| `cargo clippy --manifest-path spikes/realtime-db/core/Cargo.toml --offline --locked --all-targets -- -D warnings` | Đạt |
+| Lệnh Clippy đổi manifest sang PostgreSQL, chạy default và `--features compat-v2` | Đạt cả hai |
+| `cargo fmt --manifest-path spikes/realtime-db/core/Cargo.toml -- --check`, rồi manifest PostgreSQL | Đạt cả hai |
+| `cargo build --manifest-path spikes/realtime-db/postgres/Cargo.toml --offline --locked --bin oc-spike-postgres` | Default v1 build cuối |
 
 Node targeted **16/16** đạt với `--test-concurrency=1`: client SSE, retry,
 single-writer quantiles/provenance, RESP probe và Task17 profiling guards. Syntax
 checks cho năm entry/helper đã sửa đạt. Hai SSE tests ban đầu gặp EPERM bind
 loopback trong sandbox; chạy lại với quyền loopback của fixture thì đạt, không
-đổi implementation. [Node check record](../spikes/realtime-db/evidence/task17-final-checks-20261102/node-checks.json).
+đổi implementation.
 
-Phiên chính kiểm độc lập lại core10, PGv133/v234 và bộ Node harness26/26;
-[raw root checks](../spikes/realtime-db/evidence/task17-root-checks-20261102/).
+Phiên chính kiểm độc lập lại core10, PGv133/v234 và bộ Node harness26/26.
+Lệnh Node toàn harness: `node --test --test-concurrency=1 spikes/realtime-db/harness/*.test.mjs`.
 [Review độc lập](TASK17-REVIEW.md) kiểm lại raw quantiles/counts/profile slices,
 600measured write samples và400dedicated HOT-read samples, cùng manifest96/72files
 và hai binary hashes; không còn required finding.
@@ -66,8 +80,8 @@ Compat-v2 thêm description thay đổi không tăng revision. Không chạy l�
 
 ## Lifecycle thật và HOT reads
 
-[Raw lifecycle report](../spikes/realtime-db/evidence/task17-final-cache-20261102/report.json)
-đạt trên hai gateway process, PostgreSQL và Redis container mới, dữ liệu tạm:
+Lượt lifecycle lịch sử đạt trên hai gateway process, PostgreSQL và Redis
+container mới, dữ liệu tạm:
 
 | Probe thực | Bằng chứng |
 | --- | --- |
@@ -85,7 +99,7 @@ Compat-v2 thêm description thay đổi không tăng revision. Không chạy l�
 
 Burst sau mỗi commit cho thấy cache cần lặp đọc cùng revision: 10commits với
 1GET/commit cho hit0/miss10/query10; 10GET/commit cho hit90/miss10/query10.
-p50 GET tương ứng2,827ms và0,985ms; raw latencies nằm trong report, không gộp với
+p50 GET tương ứng2,827ms và0,985ms; không gộp các latencies này với
 workload một writer liên tục.
 
 Đo riêng **zero writers, cùng revision**, tắt/bật Redis tuần tự trên cùng binary
@@ -97,8 +111,8 @@ và PG resources; mỗi cell warmup20 +100samples, hai gateways luân phiên:
 | 5.000 | 54,990 / 61,964 | 21,155 / 23,291 | 100 / 100 / 0 |
 
 HTTP latency gồm truyền và parse toàn JSON ở client; hit không làm response nhỏ
-hơn. Mỗi cell tắt cache có100nodes SELECT. Raw100latencies/cell và counters được
-lưu riêng trong `hotReadNoCache`/`hotReadRedis` của lifecycle report.
+hơn. Mỗi cell tắt cache có100nodes SELECT. Raw100latencies/cell và counters
+đã được ghi riêng trong `hotReadNoCache`/`hotReadRedis` của lượt lifecycle.
 
 ## So sánh một writer
 
@@ -150,36 +164,44 @@ khi head liên tục đổi còn thêm chi phí. HOT counterfactual ở trên đ
 
 Mỗi cell kiểm đủ120commits/SSE events, snapshot không mixed, untouched nodes và
 idempotent replay. Mỗi stage đúng2projects/251commits/251idempotency rows.
-[Raw comparison verifier](../spikes/realtime-db/evidence/task17-final-comparison-20261102.json)
-đã đọc lại attempts/successes/reads/profiles, đối chiếu quantiles, workload,
+Verifier của lượt đo đã đọc lại attempts/successes/reads/profiles, đối chiếu quantiles, workload,
 source/binary/driver/toolchain freeze, resources, sequential timestamps và cleanup.
 
 ## Evidence, tái chạy và dọn tài nguyên
 
-Raw reports: [baseline](../spikes/realtime-db/evidence/task17-final-baseline-20261102/report.json),
-[delta-only](../spikes/realtime-db/evidence/task17-final-delta-only-20261102/report.json),
-[delta+Redis](../spikes/realtime-db/evidence/task17-final-delta-redis-20261102/report.json).
-Các raw cũ và baseline report cũ giữ nguyên; lượt cuối dùng chung Task17 wrapper
-để có continuous-reader counters/latencies và strict comparison tương ứng.
+Các kết quả trên giữ nguyên dưới dạng báo cáo lịch sử. Raw reports, logs,
+JSONL, danh mục hash và source archives đã bỏ khỏi cây hiện tại; commit cũ
+`71e2142` vẫn chứa chúng trong Git history. Cleanup bằng commit nối tiếp không
+làm giảm dung lượng lịch sử Git.
 
-Baseline source fingerprint `addb25db682b7514fa5556835b49a9903b581e99d92b02b591a187496f782f81`,
-binary `e79ddc8cfaa0a512f607781a06ff340a0858c3d49b2a401534138994a93f2a59`.
-Final fingerprint gồm core/postgres/harness/infra
-`74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38`,
-binary `8ac73be9d0d99eaf2f0faea61759568fe4e3e168fc05f8214c21090ed4893a91`.
-Nguồn/binary/client/driver không đổi suốt các lượt đo. Hai source archives đã
-extract vào thư mục tạm và so manifest từng file với report: baseline72files,
-final96files, đều khớp. SHA-256 và danh mục raw ở
-[evidence manifest](../spikes/realtime-db/evidence/task17-final-manifest-20261102.json).
+Nguồn đo cuối có **96 files** trong core/postgres/harness/infra, fingerprint
+`74512a42e342811c9916a7e843d6d90bf52bd3a595519ebe6eb257ac680c4b38`;
+baseline có **72 files**. Nguồn, binary và driver đã được đối chiếu trước/sau
+các lượt đo. Build lại có thể đổi binary hash; mỗi lượt mới phải freeze riêng.
 
-Tái chạy từ repo root với evidence directory **mới** mỗi lần:
+Tái chạy từ repo root, Docker/loopback được phép, pinned images và dependencies
+đã có; dựng default binary trước, rồi để cửa sổ đo yên. Mỗi output directory phải
+**mới**, parent đã tồn tại; outputs được ignore:
 
 ```sh
-EVIDENCE_DIR=/absolute/new-cache-directory node spikes/realtime-db/harness/task17-cache.mjs
-STAGE=baseline SPIKE_SOURCE=/absolute/baseline-source SPIKE_BINARY=/absolute/baseline-binary EVIDENCE_DIR=/absolute/new-baseline-directory node spikes/realtime-db/harness/task17-benchmark.mjs
-STAGE=delta-only EVIDENCE_DIR=/absolute/new-off-directory node spikes/realtime-db/harness/task17-benchmark.mjs
-STAGE=delta-redis EVIDENCE_DIR=/absolute/new-on-directory node spikes/realtime-db/harness/task17-benchmark.mjs
-node spikes/realtime-db/harness/task17-compare.mjs /absolute/new-baseline-directory/report.json /absolute/new-off-directory/report.json /absolute/new-on-directory/report.json /absolute/new-comparison.json
+cargo build --manifest-path spikes/realtime-db/postgres/Cargo.toml --offline --locked --bin oc-spike-postgres
+EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/cache-NEW" node spikes/realtime-db/harness/task17-cache.mjs
+STAGE=delta-only EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/off-NEW" node spikes/realtime-db/harness/task17-benchmark.mjs
+STAGE=delta-redis EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/on-NEW" node spikes/realtime-db/harness/task17-benchmark.mjs
+```
+
+Các lệnh trên đo **nguồn hiện tại**. Muốn so ba stage phải cung cấp baseline
+source/binary trước Task17 đã freeze riêng (archive lịch sử có trong commit cũ,
+không nằm ở checkout hiện tại). Dựng cả hai binary trước cửa sổ đo, rồi chạy trọn
+baseline → off → on → compare với bộ output directories **mới khác** ở trên:
+
+```sh
+cargo build --manifest-path /absolute/baseline-source/postgres/Cargo.toml --offline --locked --bin oc-spike-postgres
+cargo build --manifest-path spikes/realtime-db/postgres/Cargo.toml --offline --locked --bin oc-spike-postgres
+STAGE=baseline SPIKE_SOURCE=/absolute/baseline-source SPIKE_BINARY=/absolute/baseline-source/postgres/target/debug/oc-spike-postgres EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/baseline-COMPARE-NEW" node spikes/realtime-db/harness/task17-benchmark.mjs
+STAGE=delta-only EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/off-COMPARE-NEW" node spikes/realtime-db/harness/task17-benchmark.mjs
+STAGE=delta-redis EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/on-COMPARE-NEW" node spikes/realtime-db/harness/task17-benchmark.mjs
+node spikes/realtime-db/harness/task17-compare.mjs spikes/realtime-db/evidence/baseline-COMPARE-NEW/report.json spikes/realtime-db/evidence/off-COMPARE-NEW/report.json spikes/realtime-db/evidence/on-COMPARE-NEW/report.json spikes/realtime-db/evidence/comparison-COMPARE-NEW.json
 ```
 
 Harness tự tạo PG/Redis cô lập, loopback ports ngẫu nhiên, nhãn ownership và
@@ -193,8 +215,7 @@ Không đưa credentials vào logs/evidence. Redis-primary/write-behind vẫn l�
 Bốn lượt cuối đều xác minh containers, anonymous volumes, gateway processes và
 private credentials do chính lượt đó tạo đã xóa. Sau kiểm độc lập, fixture contract
 dùng chung cũng đã xác minh lại đúng ownership labels rồi xóa PG/Redis containers,
-anonymous volumes, private directories, credential file và fixture pointer:
-[cleanup record](../spikes/realtime-db/evidence/task17-final-shared-fixture-cleanup-20261102.json).
+anonymous volumes, private directories, credential file và fixture pointer.
 Không đụng resource thừa kế khác, không ghi `~/.opencanvas`, không commit/push/restart3847.
 
 Harness/infra mới hoặc sửa lớn nhất120dòng; mỗi module một trách nhiệm. Các

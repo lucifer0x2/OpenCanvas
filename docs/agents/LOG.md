@@ -193,3 +193,8 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Người dùng yêu cầu commit/push tiến độ. Đóng gói riêng Task15/17, Task18 backlog và báo cáo/evidence liên quan trên nhánh `codex/pg-delta-redis-hot-reads` từ main sạch `b7178be`; giữ nguyên checkout/index và các thay đổi task khác trong workspace gốc.
 - Kiểm source bytes/hashes, evidence/source archives, nội dung nhạy cảm và phạm vi staged trước commit/push thường nhánh mới. Không force-push, tạo PR, cập nhật main hoặc deploy Kubernetes.
+
+### Dọn generated PostgreSQL/Redis outputs — 2026-11-02
+
+- Theo yêu cầu người dùng, bỏ raw logs/JSON/JSONL/manifests/source archives khỏi cây versioned; giữ source/tests, báo cáo kết luận và lệnh chạy lại. Output mới được ignore, chỉ giữ README chính sách ở evidence.
+- Dọn bằng commit nối tiếp trên nhánh PG/Redis; commit cũ vẫn giữ blobs trong Git history. Không sửa runtime, dữ liệu thật hoặc thay đổi sản phẩm khác; xem [Task17 report](../TASK17-REPORT.md).

@@ -1,5 +1,9 @@
 # Thiết kế ghi dữ liệu PostgreSQL theo phần thay đổi
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Ngày nghiên cứu: 2026-11-02. Phạm vi: một writer, spike PostgreSQL; chỉ đọc mã và tài liệu, chưa triển khai hoặc đo phương án đề xuất. Runtime sản phẩm vẫn SQLite qua `StorageBackend`; không migration hoặc đụng dữ liệu/dịch vụ thật.
 
 ## Quyết định đề xuất
@@ -23,9 +27,9 @@ Lát cắt đầu nên chỉ mở đường nhanh cho `update_node` sửa litera
 
 Probe giao thức cũ đo batch 1/3/500 changed IDs đều dùng sáu SQL executions sau bulk, gồm BEGIN/COMMIT. Giảm tiếp số SQL không tự loại được việc truyền/deserialize/clone/validate cả project.
 
-EXPLAIN đã lưu cho fixture index riêng, **không phải profile của batch hoặc tải sản phẩm**: [`snapshot`](../spikes/realtime-db/evidence/pg-1793608137042-b80957ec/index-after-snapshot.json) trả 5.000 rows, execution 3,25 ms; [`nodePoint`](../spikes/realtime-db/evidence/pg-1793608137042-b80957ec/index-after-nodePoint.json) trả một row, 0,033 ms. Hai con số không được trừ khỏi latency HTTP hoặc nhân ba để dự báo đường ghi mới.
+EXPLAIN đã lưu cho fixture index riêng, **không phải profile của batch hoặc tải sản phẩm**: `snapshot` trả 5.000 rows, execution 3,25 ms; `nodePoint` trả một row, 0,033 ms. Hai con số không được trừ khỏi latency HTTP hoặc nhân ba để dự báo đường ghi mới.
 
-Profile một writer mới đã có trên **baseline chưa tối ưu**, hai lượt độc lập: [r1](../spikes/realtime-db/evidence/single-writer-baseline-r1-20261102/report.json), [r2](../spikes/realtime-db/evidence/single-writer-baseline-r2-20261102/report.json). Mỗi cell100/5.000nodes có20warmup+100measured samples, continuous reader+SSE, PG16.9/2CPU/2GiB, gateway dev build trên host. Cùng source fingerprint `73dc2a1d588f452a212c5d7a1d0dbdd9d55c2c008f6563cdf53beb90735a97cc`; cleanup được lưu trong mỗi report.
+Profile một writer mới đã có trên **baseline chưa tối ưu**, hai lượt độc lập: r1, r2. Mỗi cell100/5.000nodes có20warmup+100measured samples, continuous reader+SSE, PG16.9/2CPU/2GiB, gateway dev build trên host. Cùng source fingerprint `73dc2a1d588f452a212c5d7a1d0dbdd9d55c2c008f6563cdf53beb90735a97cc`; cleanup được lưu trong mỗi report.
 
 | 5.000nodes, một writer | Lượt1 | Lượt2 |
 | --- | ---: | ---: |
@@ -208,4 +212,4 @@ Các ngưỡng latency cụ thể, mức fan-out dự kiến của project thậ
 
 ## Nguồn và giới hạn kiểm chứng
 
-Tài liệu kỹ thuật chính thức PostgreSQL16/Redis đã mở ngày2026-11-02, gắn trực tiếp tại claim tương ứng. Code/evidence dùng working tree dirty hiện tại và raw Task15 được link ở trên; researcher chỉ đọc và đối chiếu reports, không tự chạy database/benchmark. Hai baseline profiles được worker benchmark thực hiện trong cùng phiên, không phải kết quả phương án đề xuất. Nghiên cứu này không sửa schema/code và không có số đo hiệu năng delta/cache.
+Tài liệu kỹ thuật chính thức PostgreSQL16/Redis đã mở ngày2026-11-02, gắn trực tiếp tại claim tương ứng. Nghiên cứu khi đó dùng working tree dirty và raw Task15 đã đối chiếu; researcher chỉ đọc và đối chiếu reports, không tự chạy database/benchmark. Hai baseline profiles được worker benchmark thực hiện trong cùng phiên, không phải kết quả phương án đề xuất. Nghiên cứu này không sửa schema/code và không có số đo hiệu năng delta/cache.

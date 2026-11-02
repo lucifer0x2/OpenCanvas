@@ -1,11 +1,15 @@
 # PostgreSQL spike — indexes và query-plan evidence
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](spikes/realtime-db/evidence/README.md).
+
 Ngày kiểm: 2026-11-02. Phạm vi chỉ là spike `spikes/realtime-db`; runtime SQLite,
 dữ liệu người dùng và dịch vụ thật không thay đổi.
 
 ## Kết quả đã kiểm
 
-Run [pg-1793597486325-94df21f9](spikes/realtime-db/evidence/pg-1793597486325-94df21f9/report.json)
+Run pg-1793597486325-94df21f9
 đạt `rustContract` 12/12 và `indexEvidence`; nguồn giữ nguyên trong run, gateway,
 database fixture và container do run sở hữu đã dọn. Fingerprint nguồn:
 `a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed`.
@@ -32,8 +36,7 @@ phù hợp equality trên leading columns.
 
 ## Phương pháp và số đo
 
-PG 16.9 được ghim image digest, container 2 CPU/2 GiB; topology ở
-[topology.json](spikes/realtime-db/evidence/pg-1793597486325-94df21f9/topology.json).
+PG 16.9 được ghim image digest, container 2 CPU/2 GiB.
 Một database dùng một lần được tạo riêng **sau** các phase workload; không thêm
 fixture vào database đang đo matrix. Fixture có 10.000 projects; 20 projects có
 mỗi project 5.000 nodes (100.000 tổng); 20.000 commits, 20.000 idempotency rows,
@@ -43,9 +46,8 @@ Mỗi stage chạy `ANALYZE`; before chỉ có indexes gốc, after thêm đúng
 Mỗi probe có một lần warmup và một lần ghi
 `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`. Không tắt sequential scan hoặc ép
 planner. Settings thực (`enable_seqscan/indexscan/bitmapscan=on`, cost/cache/
-statistics), SQL có placeholders, params và SQL literal đã bind đều lưu trong
-[index-evidence.json](spikes/realtime-db/evidence/pg-1793597486325-94df21f9/index-evidence.json)
-và 20 file raw `index-before-*.json` / `index-after-*.json` cùng thư mục.
+statistics), SQL có placeholders, params và SQL literal đã bind đều được ghi trong
+lượt đo cùng 20 before/after plans.
 Các literal được tạo trong fixture, không lấy SQL từ client bên ngoài.
 
 | Probe | Before → after | Buffer hits tại root plan | Execution ms |
@@ -87,7 +89,7 @@ node --test spikes/realtime-db/harness/indexes.test.mjs
 PHASES=rustContract,indexEvidence node spikes/realtime-db/harness/run-all.mjs
 ```
 
-Run thử trước `pg-1793597367324-ef89a496` đã giữ nguyên raw evidence: plans đạt,
+Run thử trước `pg-1793597367324-ef89a496` có plans đạt,
 mutation fixture dùng kind `rectangle` không được spike hỗ trợ nên run thất bại;
 đã sửa fixture thành `group` trước run đạt nêu trên. Không dùng run thất bại làm
 bằng chứng nghiệm thu. Sandbox không truy cập Docker được; run thực dùng quyền

@@ -1,8 +1,12 @@
 # Task15 — PostgreSQL spike, nghiệm thu 2026-11-02
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Đây là mốc **trước tối ưu**. Phần tối ưu fast path/retry/index và kết quả kiểm mới
-nằm ở [`TASK15-OPTIMIZATION-REPORT.md`](TASK15-OPTIMIZATION-REPORT.md); số đo và raw
-evidence dưới đây giữ nguyên lịch sử, không đại diện nguồn mới.
+nằm ở [`TASK15-OPTIMIZATION-REPORT.md`](TASK15-OPTIMIZATION-REPORT.md); số đo dưới đây
+là lịch sử, không đại diện nguồn mới.
 
 Người dùng đã chốt **PostgreSQL**. Spike PostgreSQL đã được đưa vào
 [`spikes/realtime-db/`](../spikes/realtime-db/README.md) và root kiểm độc lập trong
@@ -11,14 +15,14 @@ chuyển dữ liệu thật hoặc deploy workload Kubernetes sản phẩm.
 
 ## Bằng chứng quyết định
 
-- Run nghiệm thu: [`pg-1793595561297-6e08b047/report.json`](../spikes/realtime-db/evidence/pg-1793595561297-6e08b047/report.json),
+- Run nghiệm thu: `pg-1793595561297-6e08b047/report.json`,
   `status: pass`, đủ 8 pha, không bỏ pha hoặc giảm matrix/history.
 - Bắt đầu 11:59:10, hoàn tất 12:00:57 ngày 2026-11-02, giờ Việt Nam.
 - Nguồn không đổi trong run; baseline `438254936823cb4ef8639d85c1404302c608f7f7`,
   fingerprint `a26d059225c86212e490bac395516b7d6c0281ec603c2a939362c234deba7d24`.
-  [Provenance](../spikes/realtime-db/evidence/pg-1793595561297-6e08b047/provenance.json)
-  chứa hash từng source và hai binary thực đã chạy; không suy Git HEAD bao trùm dirty tree.
-- [Topology](../spikes/realtime-db/evidence/pg-1793595561297-6e08b047/topology.json):
+  Provenance của lượt đo đã đối chiếu từng source và hai binary thực; không suy
+  Git HEAD bao trùm dirty tree.
+- Topology:
   PostgreSQL 16.9/Debian arm64, image pin digest, Docker OrbStack, 2 CPU/2 GiB;
   hai gateway Rust process độc lập trên host Apple M5/10 logical CPUs/24 GiB,
   không áp CPU/RSS cap cho gateway. Rust/Cargo 1.99.1, Node 24.21.0.
@@ -54,8 +58,7 @@ vào đây. Các báo cáo lane: [contract](../spikes/realtime-db/POSTGRES-CONTR
 
 ## Số đo của lượt root
 
-[Contract/matrix JSON](../spikes/realtime-db/evidence/pg-1793595561297-6e08b047/contract.json)
-và các file `postgres-*-attempts.jsonl`/`*-successes.jsonl` cùng thư mục giữ raw data.
+Lượt đo đã ghi contract/matrix cùng attempts/successes riêng cho từng cell.
 Thời gian dưới đây là **retry-to-success**, gồm đọc snapshot và conflict retries,
 khác latency của riêng request thành công. Cùng project vẫn tuần tự theo revision.
 
@@ -110,7 +113,7 @@ test này không chứng minh backup tài nguyên nằm ngoài PostgreSQL.
 Root đã chạy trong workspace chính:
 
 - Core tests **6/6**, PostgreSQL blob/hash unit **1/1**;
-  [DB contract **10/10**](../spikes/realtime-db/evidence/pg-1793595561297-6e08b047/rust-contract.txt).
+  DB contract **10/10**.
 - Node parser/empty-traffic tests **3/3**; 17 JavaScript syntax checks khi tích hợp.
 - Strict Clippy core all-targets và PostgreSQL all-targets/all-features; fmt cả hai crate.
 - Default full runner **8/8 pha đạt**, không skipped; source fingerprint trước/sau khớp.
@@ -124,8 +127,7 @@ env -u PHASES -u SKIP_BUILD -u CONTRACT_TESTS -u NODE_COUNTS \
 ```
 
 Không chạy lại full app/frontend vì chỉ thêm spike độc lập. 38 file mã viết tay,
-file lớn nhất 176 dòng; không file nào quá 250 dòng. Code/docs whitespace sạch;
-raw Rust test logs giữ nguyên blank lines của output gốc.
+file lớn nhất 176 dòng; không file nào quá 250 dòng. Code/docs whitespace sạch.
 
 Root kiểm sau run: không còn container/gateway thuộc run này, container anonymous
 volume đã dọn; không có mật khẩu test trong evidence. Runtime files riêng phục vụ

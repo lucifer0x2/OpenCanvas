@@ -1,5 +1,9 @@
 # Task15 — ghi PostgreSQL theo lô, 2026-11-02
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Đã bỏ vòng gọi SQL theo từng changed ID trong PostgreSQL spike. Một batch ghi
 thành công dùng **6 lệnh cố định**, gồm BEGIN/COMMIT, thay vì **N+9**. Candidate
 validation, khóa project, revision, replay, dry run và indexes giữ nguyên.
@@ -28,8 +32,8 @@ Semantics CTE đối chiếu với [PostgreSQL16 WITH](https://www.postgresql.or
 Probe loopback PostgreSQL v3 riêng đếm Execute/SimpleQuery và Sync, đối chiếu
 ReadyForQuery. Không đưa proxy vào matrix latency; không lưu auth, Bind values,
 row payloads hoặc raw SQL. Cả hai phía dùng cùng runner/hash và DB mới riêng:
-[before](../spikes/realtime-db/evidence/query-counts-baseline-1793608180/query-counts.json),
-[after](../spikes/realtime-db/evidence/query-counts-optimized-1793608180/query-counts.json).
+before,
+after.
 
 | Changed IDs | SQL executions trước → sau | Protocol completion cycles trước → sau |
 | ---: | ---: | ---: |
@@ -48,13 +52,13 @@ matcher; tổng protocol counters không dựa vào tên nhóm đó.
 
 Baseline nguồn trước sửa được chụp vào `.runtime/query-baseline.kRJExD`, fingerprint
 `a792088d464857c9c551608463a7df857014a84f25503d8f85c45efcd3e19aed`.
-[Baseline mới](../spikes/realtime-db/evidence/query-baseline-1793601110/report.json)
+Baseline mới
 đã chạy đủ6cells/312edits và cleanup. Không lấy riêng số baseline cũ tốt/xấu để so.
 
 Root chạy độc lập bản mới bằng full harness:
-[pg-1793608137042-b80957ec](../spikes/realtime-db/evidence/pg-1793608137042-b80957ec/report.json),
+pg-1793608137042-b80957ec,
 fingerprint `d661d3bc3ec25ac560f0e508520f33d1e4ba34a3d797a3aa28b7b987ce71d7eb`.
-Nguồn và binaries không đổi trong run. [Comparison root](../spikes/realtime-db/evidence/pg-1793608137042-b80957ec/comparison-root.json)
+Nguồn và binaries không đổi trong run. Comparison root
 kiểm cùng client, nodes/writers/iterations, dev build, host/toolchain và PG16.9
 2CPU/2GiB, hai database mới độc lập, chạy tuần tự. Client/retry/load, core,
 schema/indexes và Cargo.lock giữ nguyên byte; continuous reader và SSE vẫn chạy.

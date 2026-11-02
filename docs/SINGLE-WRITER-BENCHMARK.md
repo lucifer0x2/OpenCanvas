@@ -1,5 +1,9 @@
 # PostgreSQL một writer — baseline và phân rã chi phí, 2026-11-02
 
+Số đo và kết quả kiểm dưới đây là lịch sử của ngày ghi báo cáo. Raw logs,
+JSON/JSONL, manifests và archives được sinh tự động không còn được version trong
+cây hiện tại; xem [chính sách output và cách chạy lại](../spikes/realtime-db/evidence/README.md).
+
 Với project 5.000 nodes và mỗi batch sửa 3 nodes, đường tải toàn bộ nodes,
 decode JSONB và dựng/kiểm candidate chiếm **81,4–82,9% tổng thời gian server
 đã đo**. Median toàn thao tác là **36,6–36,9 ms**. Phần ghi bulk SQL chiếm
@@ -9,9 +13,7 @@ chưa chứng minh một thiết kế thay thế cụ thể nhanh hơn.
 
 ## Bằng chứng và điều kiện đo
 
-- [Run 1](../spikes/realtime-db/evidence/single-writer-baseline-r1-20261102/report.json),
-  [Run 2](../spikes/realtime-db/evidence/single-writer-baseline-r2-20261102/report.json),
-  [đối chiếu đã kiểm lại raw JSONL](../spikes/realtime-db/evidence/single-writer-baseline-repetitions-verified-20261102.json).
+- Hai lượt baseline độc lập và một verifier đã đối chiếu lại raw JSONL tại thời điểm đo.
 - Mỗi run tạo database/container/volume mới, chạy tuần tự 100 rồi 5.000 nodes;
   mỗi size dùng project mới, **20 warmup + 100 mẫu đo**, một writer duy nhất.
   Hai run tuần tự lúc 08:47:01–08:47:10 và 08:47:21–08:47:30 UTC.
@@ -29,8 +31,8 @@ chưa chứng minh một thiết kế thay thế cụ thể nhanh hơn.
 
 Fingerprint nguồn: `73dc2a1d588f452a212c5d7a1d0dbdd9d55c2c008f6563cdf53beb90735a97cc`.
 Binary dev: `7ea05f6bc3b3c1de8c817173d018b8575453c934492e7453d4159bd4f6d9c327`.
-Danh sách hash từng file nằm trong mỗi report. Bản nguồn dựng binary ở
-`/private/tmp/opencanvas-single-writer-baseline.FfXbTP`; không cần Git checkout.
+Danh sách hash từng file đã được đối chiếu tại thời điểm đo; temporary source
+snapshot không được giả định còn tồn tại.
 
 ## Latency: tách từng run, không gộp hoặc chọn mẫu tốt nhất
 
@@ -118,34 +120,24 @@ sở hữu và cổng loopback ngẫu nhiên; không chép credential vào evide
 
 ## Tái lập và kiểm chứng
 
-[Source archive](../spikes/realtime-db/evidence/single-writer-baseline-source-20261102.tar.gz)
-đã giải nén kiểm lại đúng toàn bộ source manifest. SHA256:
-`013429590ad49f72bc759c4f914005150a5b582466be1bf0bfc15345ca116d35`.
-[Driver archive](../spikes/realtime-db/evidence/single-writer-measured-driver-20261102.tar.gz)
-giữ đúng 9 file driver/helper được hash trong run; SHA256:
-`5af6807f9af6bb4785a6fee85159baa6ea1f857be30bfe86b1a9799766e3df0d`.
-
-Runner không build trong cửa sổ đo; dựng binary trước, ngừng các tác vụ đo/build
-cạnh tranh do agent quản lý, rồi dùng evidence directory mới mỗi lần:
+Source/driver archives và raw outputs lịch sử đã bỏ khỏi cây hiện tại, vẫn có
+trong Git commit cũ `71e2142`. Không dùng đường dẫn snapshot tạm cũ làm input
+cho checkout mới. Chạy lại trên nguồn hiện tại từ repo root:
 
 ```sh
-cargo build --offline --locked --manifest-path \
-  /private/tmp/opencanvas-single-writer-baseline.FfXbTP/postgres/Cargo.toml
-SPIKE_SOURCE=/private/tmp/opencanvas-single-writer-baseline.FfXbTP \
-  EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/single-writer-NEW" \
-  node spikes/realtime-db/harness/single-writer.mjs
-
+cargo build --offline --locked --manifest-path spikes/realtime-db/postgres/Cargo.toml
+EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/single-writer-current-r1-NEW" node spikes/realtime-db/harness/single-writer.mjs
+EVIDENCE_DIR="$PWD/spikes/realtime-db/evidence/single-writer-current-r2-NEW" node spikes/realtime-db/harness/single-writer.mjs
 node --test spikes/realtime-db/harness/single-writer.test.mjs
-node spikes/realtime-db/harness/single-writer-summary.mjs \
-  spikes/realtime-db/evidence/single-writer-baseline-r1-20261102/report.json \
-  spikes/realtime-db/evidence/single-writer-baseline-r2-20261102/report.json \
-  /private/tmp/single-writer-recheck-NEW.json
+node spikes/realtime-db/harness/single-writer-summary.mjs spikes/realtime-db/evidence/single-writer-current-r1-NEW/report.json spikes/realtime-db/evidence/single-writer-current-r2-NEW/report.json /private/tmp/single-writer-recheck-NEW.json
 ```
 
-Nếu snapshot tạm đã mất, giải nén source archive vào thư mục mới và đặt
-SPIKE_SOURCE tương ứng; driver archive cho phép khôi phục đúng driver đã đo.
-Build lại có thể khác binary hash do đường dẫn/toolchain; từng run vẫn phải
-đóng băng binary và đối chiếu đầy đủ, không lấy số cũ làm so sánh mặc định.
+Dựng binary trước cửa sổ đo, chạy hai lượt tuần tự, ngừng build/load cạnh tranh
+do agent quản lý. Các lệnh này đo nguồn hiện tại có delta Task17, không tái tạo
+baseline lịch sử chưa tối ưu. Muốn đo đúng baseline cũ cần khôi phục source/driver
+archives từ commit cũ vào thư mục tạm, build và truyền `SPIKE_SOURCE`/`SPIKE_BINARY`
+tương ứng; không coi binary hash build lại phải giống hash cũ. Kết quả Task17
+và lệnh so delta/cache tại [Task17 report](TASK17-REPORT.md).
 
 Node guard tests **5/5 pass**: quantiles, warmup/profile mapping, phase interval
 validation/privacy và chống so sánh sai nguồn/resource/workload/cleanup.
@@ -155,7 +147,7 @@ recovery/migration hoặc test PostgreSQL production adapter/Kubernetes/HA.
 Lệnh contract root đã chạy với PG_URL riêng là `cargo test --offline --locked
 --manifest-path spikes/realtime-db/postgres/Cargo.toml --test contract --
 --test-threads=1` (19 pass, 3,31 s; compile 2,22 s). Output đó nằm trong tool
-trace của root, không có file raw riêng; tách khỏi raw benchmark được lưu ở trên.
+trace của root, không có file raw riêng; đây là kết quả lịch sử của lượt kiểm đó.
 
 Các module mới tách workload, lifecycle, provenance, profile parser, validator và
 test; lần lượt 98/88/35/42/86/79 dòng. Không file mã mới nào quá 250 dòng.

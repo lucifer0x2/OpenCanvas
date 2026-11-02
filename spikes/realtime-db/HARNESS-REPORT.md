@@ -1,12 +1,16 @@
 # PostgreSQL harness acceptance report
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 Implementation workspace: isolated Task15 worktree, baseline `438254936823cb4ef8639d85c1404302c608f7f7`.
 This report covers the PostgreSQL-only fixture, not a production storage switch.
 The user's subsequent PostgreSQL selection supersedes the original two-engine comparison.
 
-The authoritative invocation and exact versions are in `evidence/latest.json` and its
-timestamped report/topology/provenance. Root-level old evidence is historical. Failed
-invocations remain available: the first found an unsupported fixture property; the second
+This worker report predates root's final default run, summarized with exact versions in
+the [Task15 acceptance report](../../docs/TASK15-REPORT.md). Historical failed
+invocations found an unsupported fixture property; another
 found oversized HTTP bodies could hide a validation response behind TCP reset. Both were
 corrected and owned containers were removed. No inherited runtime was stopped.
 
@@ -29,7 +33,8 @@ Worker evidence before the coordinator's final default run:
 Additional harness defects found by investigation were fixed: explicit OS-selected random
 port mapping is stable across database restart; recovery traffic has a30s total retry
 deadline and2s per-request timeout; each gateway pool has unique readiness logs; empty
-backup tables are handled. Failed run evidence remains available rather than overwritten.
+backup tables are handled. Failed invocations were recorded separately and never
+counted as successful acceptance.
 
 | AC | Status | Scope and acceptance evidence |
 | --- | --- | --- |

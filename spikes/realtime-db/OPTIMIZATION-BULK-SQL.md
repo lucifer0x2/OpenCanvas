@@ -1,5 +1,9 @@
 # PostgreSQL batch: bulk SQL — 2026-11-02
 
+Measurements and checks below describe the dated historical run. Generated raw
+logs, JSON/JSONL, manifests and archives are no longer versioned in the current
+tree; see [output policy and reruns](evidence/README.md).
+
 The spike batch writer now persists all touched node rows and commit metadata in
 one parameterized statement. This report covers the implementation lane and its
 isolated contract run; it makes no latency claim. Root's independent harness and
@@ -70,7 +74,7 @@ cargo test --offline --locked \
 It used a new isolated PostgreSQL 16.9 container created through `startEngine`.
 Run `pg-1793608038446-c9607491` was removed through `stopEngine`; no inherited
 runtime, real service or user data was used. Raw output:
-[`contract.txt`](evidence/bulk-sql-worker-1793608038446/contract.txt).
+`contract.txt`.
 
 Six added regression scenarios cover:
 

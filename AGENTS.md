@@ -13,6 +13,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Ưu tiên RTK tường minh khi hỗ trợ (`rtk ls`, `rtk git status`); dùng output gốc cho diff, điều tra lỗi và bằng chứng. Không tự bật hook/proxy/experimental. Xem `/Users/luis/.codex/RTK.md`.
 - Ghi chú công cụ: `fork_turns`, `apply_patch` và hướng dẫn RTK ở `~/.codex/RTK.md` dành cho Codex. Trong Claude Code, tương đương là subagent mới không fork ngữ cảnh và sửa bằng Edit/Write.
 - Chỉ chạy kiểm tra nhắm đúng vùng thay đổi, hạn chế song song; không ghi pass khi chưa chạy. Không tự tạo chat độc lập.
+- Chỉ version source, tests, báo cáo kết luận và lệnh tái chạy; generated logs/JSON/JSONL/manifests/archives của benchmark phải ignore, không commit. Xem `spikes/realtime-db/evidence/README.md`.
 - Không ghi dữ liệu demo vào `~/.opencanvas`; tests dùng data root tạm. Chỉ API create_project thực mới khởi tạo project người dùng.
 - Ghi `docs/agents/LOG.md` tại mỗi lần giao việc, nhận kết quả, phát hiện blocker và trước khi dừng (cách ghi ở mục "Nhật ký và memory"). Không ghi secret hoặc đường dẫn dữ liệu riêng của người dùng vào API.
 

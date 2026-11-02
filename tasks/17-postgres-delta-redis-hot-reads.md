@@ -2,6 +2,8 @@
 
 **Trạng thái:** Đã triển khai và root kiểm độc lập trong spike ngày 2026-11-02.
 Xem [báo cáo](../docs/TASK17-REPORT.md) và [review](../docs/TASK17-REVIEW.md).
+Generated outputs đã bỏ khỏi cây versioned; giữ kết luận/lệnh tái chạy trong báo
+cáo, output mới được ignore theo [chính sách](../spikes/realtime-db/evidence/README.md).
 **Workspace/branch:** `/Users/luis/Workspace/OpenCanvas`, checkout dirty
 `claude/design-properties`; giữ mọi thay đổi có sẵn, không commit/push/reset/stash.
 **Phạm vi:** Tiếp tục spike Task15 trong `spikes/realtime-db/`. Không chuyển
