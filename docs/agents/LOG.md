@@ -104,3 +104,10 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 ### Commit và push Kubernetes/Task21 — 2026-11-03
 
 - Người dùng yêu cầu commit và push. Root xác nhận nhánh `codex/kubernetes-local`, đích `origin`; giao worker mới kiểm các file chờ version, gom commit theo phạm vi và push nhánh hiện tại. Không thay code/runtime/data, không force-push hoặc mở PR; giữ thay đổi đồng thời của phiên khác.
+- Đã commit và push `origin/codex/kubernetes-local`: `bb200ea` triển khai/public viewer, `f470f0b` ink fix và `c91c209` bằng chứng migration/tiến độ. Bash/Node syntax, hai Kustomize render offline và diff check đạt; không chạy lại build/test hoặc smoke có ghi dữ liệu. Không đưa hostname riêng, credential hoặc capture vào commit; mọi module mới dưới200 dòng, PLAN440 dòng là tài liệu yêu cầu hiện có.
+- Điểm dừng: push chính thành công, cập nhật trạng thái Task20/20b/21 và lưu kết quả bằng commit tài liệu cuối. Không mở PR hoặc thay đổi runtime/dữ liệu; các kết quả kiểm chứng Task21 đã có vẫn giữ phạm vi báo cáo.
+
+### Khảo sát chuyển Kubernetes sang Docker Compose — 2026-11-03
+
+- Giao và nhận khảo sát chỉ đọc về Compose, dữ liệu PostgreSQL và public viewer. Root xác nhận hai project trên 3857, PostgreSQL 16 và PVC đang hoạt động. Compose mặc định dùng SQLite.
+- Điểm dừng: phương án là dump/restore toàn bộ PostgreSQL vào volume Docker riêng, kiểm parity trước khi mở ghi, giữ PVC nguồn để quay lại và giữ cổng 3857/3858. Chưa tạo backup hay chuyển dịch vụ.
