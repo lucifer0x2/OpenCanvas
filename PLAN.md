@@ -117,6 +117,10 @@ sidebar/body minima, fixed chart/progress và fixed text heights vẫn cần aut
 Ngoài phạm vi: user editing, drag/drop sửa node, undo UI, chat, terminal và AI provider API.
 Ngoài phạm vi: cộng tác nhiều người, cloud hosting, plugin Figma và full Figma clone.
 Ngoài phạm vi: full CSS/Grid, rich text, vector path editor, prototype tương tác (trừ link điều hướng khai báo `links`/`flowStart`: click/hover → navigate/overlay/back/close) và animation (trừ `animations` khai báo trên node: opacity/translate/scale/rotate/fill; load/hover/click; không layout, không chuyển cảnh).
+Hover có thể dùng `triggerNodeId` trên từng animation để lấy vùng hover từ
+group/frame tổ tiên cùng root frame. Mỗi node giữ keyframe và timing riêng.
+Preview dùng chung vùng hover cho mọi track cùng nguồn, đảo chiều từ tiến độ
+hiện tại khi rời vùng. MCP công bố nguồn hover để agent triển khai.
 Không xây Postgres adapter, kiến trúc đa dịch vụ hoặc event sourcing tổng quát trước khi cần.
 
 ## 3. Luồng kiến trúc và quyền sở hữu dữ liệu

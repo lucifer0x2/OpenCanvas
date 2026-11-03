@@ -31,6 +31,7 @@ pub const FILL_MODES: [&str; 4] = ["none", "forwards", "backwards", "both"];
 pub const ANIMATION_KEYS: &[AnimationKey] = &[
     key("name", "slug of lowercase letters, digits and internal hyphens, at most 64, unique in the node; required. \"<nodeId>:<name>\" refers to it", &["id", "label", "animationName"]),
     key("on", "\"load\" (default, when the node appears), \"hover\" (transition to the one keyframe while hovered, back on leave) or \"click\" (restart on every click)", &["trigger", "event", "when"]),
+    key("triggerNodeId", "literal ID of an authored group or frame that is a strict ancestor in the same root frame; only with on:\"hover\". Omit to hover the animated node itself", &[]),
     key("duration", "milliseconds 16..60000 (not seconds), or {\"tokenId\"} of a number token; required", &["durationMs", "time", "length"]),
     key("delay", "milliseconds 0..60000 or number token; default 0", &["delayMs", "wait"]),
     key("easing", "linear, ease (default), ease-in, ease-out, ease-in-out, cubic-bezier(x1,y1,x2,y2) with x1,x2 in 0..1, or steps(n[, start|end|jump-start|jump-end]); applies to each segment between keyframes, like CSS", &["ease", "timing", "timingFunction", "curve"]),

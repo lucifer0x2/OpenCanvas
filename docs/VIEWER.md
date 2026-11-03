@@ -218,7 +218,12 @@ antialiasing) on the smoke fixture.
   unresolvable reference skips that property and is listed under the stage as a warning.
 - `load` plays when the frame mounts; **Replay** resets every animation and restarts the load
   ones. `hover` plays forward on `pointerenter` and reverses from its current time on
-  `pointerleave` (no snap). `click` restarts on every click.
+  `pointerleave`. By default the animated node receives these events. Set
+  `triggerNodeId` to an ancestor group or frame in the same root frame to make its hover
+  area drive one or more descendants' animations. Moving between descendants or across gaps
+  inside the source keeps those animations active. Explicit triggers ignore touch pointer
+  events. A missing source produces a warning and skips its animation. `click` restarts on
+  every click.
 - **Reduced motion** starts from `prefers-reduced-motion` and can be toggled: triggers jump to
   their end state (`finish()`), an infinite animation stays at rest, hover leave returns to rest.
 

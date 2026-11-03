@@ -2,6 +2,14 @@ use super::{values::*, Candidate};
 use crate::{error::*, model::*};
 use std::collections::BTreeSet;
 impl Candidate {
+    pub(super) fn ancestors(&self, id: &str) -> impl Iterator<Item = &Node> {
+        let parent = |node: &Node| node.parent_id.as_ref().and_then(|id| self.nodes.get(id));
+        std::iter::successors(self.nodes.get(id).and_then(parent), move |node| {
+            parent(node)
+        })
+        .take(128)
+    }
+
     pub(super) fn style(&self, style: &Style) -> Result<()> {
         id(&style.id)?;
         if style.name.len() > 256 {

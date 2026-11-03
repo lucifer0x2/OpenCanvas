@@ -128,3 +128,20 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 ### Xuất bản nhánh Docker Compose PostgreSQL — 2026-11-03
 
 - Người dùng yêu cầu commit và push nhánh mới. Giao worker tách cấu hình/runbook Compose và nhật ký liên quan từ `codex/kubernetes-local`; giữ các ghi chú khảo sát khác ở working tree.
+
+### Khảo sát hover của nhóm kích hoạt animation con — 2026-11-03
+
+- Fast-forward `main` đến `256554b` và khảo sát trong worktree riêng do cây Kubernetes/Compose đang có thay đổi cục bộ. Đề xuất `triggerNodeId` tùy chọn trên từng hover animation, xuất qua `get_design_context.animated`; agent nhóm theo node nguồn và chọn cơ chế hover của framework đích.
+- Điểm dừng: ưu tiên validation, MCP và hướng dẫn agent. Preview để sau. Danh sách `animated` hiện lặp trên mọi trang và chiếm ngân sách metadata; cần kiểm trường hợp frame nhiều animation. Chưa triển khai.
+
+- Người dùng duyệt triển khai. Giao worker mới cho hợp đồng storage/MCP và hướng dẫn agent trên `codex/hover-animation-trigger` từ `256554b`. Preview là phần tiếp theo sau khi kiểm hợp đồng.
+- Giao worker riêng chuẩn bị preview theo tên trường đã chốt. Smoke qua server thật phụ thuộc phần validation/MCP và dùng data root tạm.
+- Nhận phần preview đã qua Chromium và 26 web unit. Hai worker chạm giới hạn phiên sau khi để lại mã và test. Root chạy lại kiểm tra Rust/MCP trong worktree riêng và giao một lượt hoàn thiện phần còn dở.
+- Nhận bản hoàn thiện: MCP công bố `triggerNodeId`, giữ nguyên self-hover cũ, giới hạn summary theo ngân sách và hướng dẫn truy vấn lại theo frame/revision khi có `animatedTruncated`. Preview dùng chung vùng hover theo ID nguồn. Đã sửa fixture cho ca ngân sách và ca nguồn hover thiếu.
+- Điểm dừng: root kiểm 9 test storage, 7 test MCP, 26 web unit, 11 bước Chromium, typecheck, fmt và Clippy lib đạt. Fixture 240 animation giữ giới hạn 64 KiB và đọc đủ khai báo. `tools/list` 26.575→26.825 byte (baseline tính từ delta mô tả), dưới 32 KiB. Mã nguồn và test chạm tối đa 232 dòng. Thay đổi nằm trong worktree `codex/hover-animation-trigger`, chưa commit hay cập nhật runtime.
+
+### Đồng bộ nhánh hover với main — 2026-11-03
+
+- Fast-forward `main` và nhánh hover lên `62f258a`. Merge ba chiều tự gộp `PLAN.md` và chỉ xung đột ở hai đoạn nối cuối nhật ký. Giữ cả hai đoạn, đặt mục hover sau nhật ký từ main. Các thay đổi hover vẫn ở worktree chưa commit.
+- Điểm dừng: không còn mục unmerged. `git diff --check`, Rust fmt và 6 test MCP hover đạt sau khi cấp dependency Playwright tạm cho worktree.
+- Người dùng duyệt commit và push `codex/hover-animation-trigger`. Phạm vi gồm hợp đồng hover, preview, test và tài liệu liên quan trên nền `62f258a`.

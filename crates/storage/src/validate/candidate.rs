@@ -58,6 +58,7 @@ impl Candidate {
             themed.theme = theme;
             themed.validate_content()?;
         }
+        self.validate_animation_triggers()?;
         self.validate_instances()?;
         Ok(())
     }

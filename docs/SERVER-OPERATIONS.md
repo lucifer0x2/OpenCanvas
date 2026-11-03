@@ -196,4 +196,33 @@ together: an older layout binary cannot deserialize a padding list.
 
 ## Declared animations: `props.animations`
 
-Layer nodes (not pages) may author `animations`: up to 8 `{name, on?, duration, delay?, easing?, iterations?, direction?, fillMode?, keyframes}` with 1..16 WAAPI-shaped keyframes of `opacity`, `translateX`, `translateY`, `scale`, `rotate` and `fill`. Times are milliseconds; `fillMode` defaults to `both`; missing 0/1 keyframes take the authored (resting) props. Errors are `VALIDATION_FAILED` with the full path (`props.animations[0].keyframes[1].offset`), `nodeId`, `nodeKind`, and `allowedKeys`/`suggestion` for unknown keys. Number tokens resolve in timing and numeric keyframe values, color tokens and fill styles in `fill`; `resolvedProps.animations` holds theme literals. `get_design_context` adds `animated: [{ref:"<nodeId>:<name>", on}]` over the whole scope (same on every page), absent when the frame has none. Static renders ignore animations (resting state). Full key table: `skill://opencanvas/props.md`. `tools/list` is unchanged (props schema is a free object).
+Layer nodes may author up to 8 `animations`, each with 1..16 WAAPI-shaped
+keyframes of `opacity`, `translateX`, `translateY`, `scale`, `rotate` and `fill`.
+Times are milliseconds. `fillMode` defaults to `both`. Missing 0/1 keyframes
+take the authored resting props. Number tokens resolve in timing and numeric
+keyframe values, and color tokens and fill styles resolve in `fill`.
+`resolvedProps.animations` holds the theme literals.
+
+`triggerNodeId` is optional per entry and requires `on:"hover"`. Use the
+literal ID of an authored group or frame that is a strict ancestor of the
+animated node within the same root frame. Omit it for self-hover. Batch
+validation checks the final authored tree, so reparent and repair can occur
+in either order within one batch. Errors report `VALIDATION_FAILED`, the
+precise field (e.g. `props.animations[0].triggerNodeId`), `nodeId` and
+`nodeKind`, plus `allowedKeys` and `suggestion` for unknown keys.
+
+`get_design_context` repeats an `animated` summary of the whole requested
+scope in preorder on each page, independent of depth, property filter and node
+format. Entries are `{ref:"<nodeId>:<name>", on}` with `triggerNodeId` when
+explicitly authored. The summary is absent for scopes without animations.
+When `animatedTruncated:true`, the page can carry a shorter prefix or only
+the flag, depending on available bytes. For all declarations, use
+`find_nodes` with the same `frameId` and `revision`,
+`properties:["animations"]`, and known node `ids` or
+`kinds:["frame","group","rectangle","text","image"]`. Follow its `nextCursor`
+and use each match's authored `props.animations`. A nested frame's summary
+can reference an ancestor outside that scope. Read such sources by ID at the
+same revision.
+
+Static renders show resting props. The complete animation key table is in
+`skill://opencanvas/props.md`.

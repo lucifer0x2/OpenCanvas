@@ -123,6 +123,16 @@ Expansion retains master-root and descendant interaction states. The instance
 override whitelist does not include states; opt-in `resolvedStates` also applies
 to reference component definitions. See [Components and instances](COMPONENTS.md).
 
+### Hover animation sources
+
+An authored `props.animations` entry may carry a literal `triggerNodeId` on
+`on:"hover"`. It identifies an authored group or frame ancestor in the
+same root frame. The keyframe and timing belong to the animated node.
+Without a source ID the animated node supplies its own hover region.
+`get_design_context.animated` includes an explicit source ID alongside
+`ref` and `on`. See [Declared animations](SERVER-OPERATIONS.md#declared-animations-propsanimations)
+for summary budgets and complete discovery.
+
 ### Multi-viewport context (additive)
 
 Only `get_design_context` adds optional `viewports: [{width,height}, ...]`.
