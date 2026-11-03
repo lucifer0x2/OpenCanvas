@@ -53,3 +53,54 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Root kiểm độc lập: lib 24/24, 12 binary PG storage 24/24, server `postgres_backend` 2/2, events/startup/snapshot_http/storage_backend đạt, clippy storage all-targets + server lib/bins sạch, file chạm ≤233 dòng, không còn container. Release p50 5.000 node: commit PG 30,2→25,4 ms, snapshot PG 7,0→5,2 ms, Moka hit 1,33→1,05 ms. [Run E](../RUNTIME-STORAGE-BENCHMARK.md#results--release-run-e-after-the-postgresql-review-fixes-2026-11-03).
 - Điểm dừng: 7 mục đã triển khai, chưa commit/push/restart dịch vụ thật. Còn mở: validate tăng dần (~10 ms/commit, dùng chung SQLite), `get_changes` vẫn đọc full snapshot, single-flight miss bị bỏ có chủ đích.
 - Người dùng bỏ kế hoạch validate tăng dần (scout bị dừng, không để lại file) và yêu cầu commit/push. Nhánh hiện tại chứa `claude` và lịch sử cũ, nên root tạo `feat/postgres-runtime-storage` từ `origin/main` (cùng tree với HEAD) và commit toàn bộ thay đổi thành 2 commit: spike/research (giống hệt nhánh spike đã push) và runtime storage. Đã quét secret/attribution, push branch; chưa mở PR. Test `stroke_props` của props_catalog vẫn fail trong commit.
+
+### Task20 — Kubernetes local — 2026-11-03
+
+- Người dùng yêu cầu nhánh mới từ `feat/postgres-runtime-storage` và chốt triển khai local. Root tạo `codex/kubernetes-local` từ `d93db07`; Docker/cluster OrbStack sẵn có, chưa có namespace ứng dụng.
+- Giao fresh worker theo [handoff](../../tasks/20-local-kubernetes.md): cấu hình module nhỏ, PostgreSQL PVC, một app replica, truy cập loopback cổng riêng, build/deploy/smoke và kiểm persistence. Không chạm native server/dữ liệu thật, không commit/push.
+- Image nguồn hiện tại đã build; root kiểm độc lập app/PG Ready, PVC Bound, viewer200, Host/Origin guard403, MCP initialize/list, revision1 và conditional GET304 body rỗng. Worker đã kiểm render PNG và persistence qua thay Pod app/PG; đang hoàn thiện lifecycle, kiểm apply lặp và dọn fixture trước nghiệm thu.
+- Nhận kết quả cuối: apply giữ Secret/PVC, dừng SIGINT có `Stopping…`, DB outage làm NotReady/503 nhưng viewer200 và không restart app; phục hồi giữ dữ liệu. Fixture được xoá đúng ID+slug, app thay lần cuối để dọn cache/jobs.
+- Điểm dừng: root kiểm lại app/PG Ready1/1, PVC cũ Bound2Gi, HTTP200 với danh sách project rỗng; deployment/port-forward3857 giữ chạy. [Runbook](../KUBERNETES.md), toàn bộ source/config mới dưới200 dòng; chỉ PLAN438 dòng là tài liệu yêu cầu gốc. Không commit/push, không HA/migration hay đổi native server/dữ liệu thật.
+
+### Trao đổi kiến trúc GPU renderer — 2026-11-03
+
+- Root đọc viewer, painter, text, compositing và worker export: nội dung scene đi qua shared Canvas2D `paintScene`; Konva giữ stage/camera/events và overlay, hit-test riêng theo scene.
+- Kết luận tư vấn: có thể thêm GPU backend giữ buffers/textures và cập nhật delta; cần xử lý glyph shaping, clip/group opacity và parity với PNG. Chưa triển khai hoặc giao task; Task09–13 vẫn gác lại, chưa có benchmark GPU để kết luận mức tăng tốc.
+
+### Task20b — Kubernetes public viewer 3858 — 2026-11-03
+
+- Người dùng yêu cầu thêm listener chỉ đọc3858 để forward Funnel. Root lấy HTTPS origin từ Tailscale local, xác nhận chưa có serve config; giao fresh worker theo [handoff](../../tasks/20b-kubernetes-public-viewer.md).
+- Phạm vi: cấu hình public router hiện có, triển khai namespace local, kiểm read/export và chặn MCP/mutation, giữ port-forward3857/3858. Không tự bật Funnel, không đổi native/DB thật, không commit/push.
+- Nhận overlay đã rollout; worker kiểm34 đường MCP/ghi bị chặn, read/font/scene/PNG8544byte/export SVG+PNG và snapshot bất biến. Root kiểm độc lập viewer200/readOnly=true, Host/Origin403, MCP/create/import/delete403 dù spoof headers, font200, project parity và MCP local hoạt động. Đang kiểm apply lặp và dọn fixture trước điểm dừng.
+- Điểm dừng: apply lặp và smoke lần2 đạt, Secret/PVC giữ UID, fixture đã dọn và cache/jobs đã xoá qua restart app. Root xác nhận app/PG Ready, PVC Bound2Gi, hai forward chỉ bind127.0.0.1 và Tailscale chưa có serve config. [Runbook](../KUBERNETES-PUBLIC-VIEWER.md); mọi module mới dưới200 dòng, không rebuild/commit/push hoặc đổi native. Listener sẵn cho người dùng tự bật Funnel.
+
+### Đổi kết nối MCP sang 3857 — 2026-11-03
+
+- Người dùng yêu cầu đổi cổng MCP OpenCanvas sang3857. Giao worker mới chỉ sửa URL kết nối Codex và kiểm MCP initialize chỉ đọc; giữ cấu hình approval của tool và các dịch vụ hiện có.
+- Nhận kết quả: chỉ URL3847→3857 thay đổi trong cấu hình Codex, approval giữ nguyên. Root kiểm `codex mcp get opencanvas` xác nhận3857; worker kiểm initialize HTTP200 và đóng session HTTP202. Điểm dừng: cấu hình đã đổi, không restart dịch vụ hoặc chạm dữ liệu.
+
+### Chuyển hai project 3847 sang 3857 — 2026-11-03
+
+- Người dùng yêu cầu lấy hai project trên server cũ và migrate sang MCP mới. Root xác nhận nguồn có `axis-courses` revision206 và `axis-workspace-login` revision21; đích trống. Giao worker mới capture nhất quán, nhập PostgreSQL đích nguyên tử và kiểm parity, giữ ID/revision/resources/history; nguồn chỉ đọc, không sửa cấu hình hoặc restart dịch vụ.
+- Người dùng chỉnh phạm vi: chỉ đọc API nguồn và ghi bằng MCP đích. Đã ngắt worker DB và huỷ hướng import trực tiếp; giao worker mới theo phạm vi API/MCP, không đọc thêm code hoặc DB. Native MCP handle của chat vẫn trỏ3847 nên worker phải kết nối MCP tường minh3857 để tránh ghi nhầm nguồn.
+- Nhận kết quả API/MCP: Courses đích `p_493b127cceb1474d9c0ce8a0dae32227` revision60; Login đích `p_96bb45df27b649abb2bc04cfba803864` revision18. Root đối chiếu toàn bộ snapshot: khớp khi chỉ chuẩn hoá projectId/revision và thứ tự mảng; nguồn vẫn206/21. Worker kiểm62binary cùng bundled font khớp hash/size, MCP readback và render cả hai đạt. Lịch sử cũ không chuyển qua create/apply MCP; xem [báo cáo](../API-MCP-MIGRATION.md).
+- Người dùng phản hồi client Node và10cảnh báo U07. Root xác nhận script đã gửi Structured Operations qua MCP nhưng dùng Node client; native tool handle vẫn3847. Kiểm cùng frame `u07-a3-tile`: nguồn0cảnh báo, đích10; authored nodes/font hashes khớp nhưng ink metrics khác. Render smoke trước thiếu frame này; fidelity dữ liệu không chứng minh parity render. Điểm dừng: đã ghi bằng chứng vào báo cáo, chưa cô lập nguyên nhân nền tảng hoặc sửa renderer/design.
+
+### Task21 — U07 text ink diagnostics — 2026-11-03
+
+- Người dùng yêu cầu rà và sửa10cảnh báo. Root đọc measurement/diagnostics: dùng cùng ngưỡng0,5px cho advance, ink và clip;10ca thực tế có advance vừa hộp, không clip, ink nhô tối đa1px trên Linux. Giao fresh worker theo [handoff](../../tasks/21-text-ink-rounding.md): điều tra và sửa có đối chứng overflow thật; root review trước cập nhật app Kubernetes, giữ dữ liệu/native/public overlay.
+- Nhận bản sửa: chỉ own-box ink ngang được nới tối đa1px khi hai đầu advance khớp hộp trong1/64px; clip/advance/vertical giữ0,5px. Root review diff và tự chạy14test đạt, gồm10ca thực tế và overflow/clip đối chứng. Cho worker build image/cập nhật riêng app Kubernetes, chưa nghiệm thu runtime trước khi so PNG/snapshot.
+- Root kiểm độc lập sau rollout: U07 ready, diagnostics rỗng; PNG146169byte giữ nguyên SHA256 và hai snapshot đích khớp byte trước sửa, revision60/18. Nguồn vẫn206/21; GET trực tiếp3858 bị guard403 như thiết kế, worker đang xác nhận public origin và identity hạ tầng trước chốt báo cáo.
+- Điểm dừng: worker xác nhận public3858 đúng origin200/readOnly, sai Host403, PG/Secret/PVC và public overlay giữ nguyên, hai loopback forward hoạt động; tài nguyên/snapshot không đổi. Task21 đã kiểm và deploy riêng app,14test/fmt/clippy đạt, code chạm tối đa132dòng. [Báo cáo](../TEXT-INK-DIAGNOSTICS-FIX.md); không sửa design/native, không commit/push.
+
+### Đối chiếu cấu hình MCP sau migration — 2026-11-03
+
+- CLI trong profile CodexPortable `account-2` báo OpenCanvas ở 3847; cấu hình `~/.codex` trỏ 3857. Kết quả khớp với việc phiên migration phải dùng client MCP tường minh để gửi Structured Operations tới đích. Điểm dừng ở chẩn đoán cấu hình.
+
+- Người dùng xác nhận migration chạy ở profile khác và yêu cầu đổi endpoint của profile phiên hiện tại. Giao worker chỉ đổi URL OpenCanvas của `account-2`; root tách điều tra phiên migration khỏi cấu hình này.
+- Nhận thay đổi đúng một dòng ở `account-2`; CLI đọc 3857 và endpoint trả danh sách tool. Root gọi `list_projects` trực tiếp trong chat đang mở, vẫn trả ID SQLite từ 3847. Settings và CLI hiện tại chưa cung cấp đường nạp lại cho chat này.
+- Điểm dừng: trace của phiên migration trong profile kia cũng cho thấy `list_projects` trực tiếp trả hai ID nguồn sau khi file cấu hình đã đổi sang 3857. Worker dùng Node để khởi tạo kết nối đích mới rồi gửi Structured Operations qua `apply_batch`. Sự khác biệt profile giải thích các file cấu hình riêng; kết nối còn giữ cổng cũ trong chat mới là nguyên nhân của fallback.
+
+### Commit và push Kubernetes/Task21 — 2026-11-03
+
+- Người dùng yêu cầu commit và push. Root xác nhận nhánh `codex/kubernetes-local`, đích `origin`; giao worker mới kiểm các file chờ version, gom commit theo phạm vi và push nhánh hiện tại. Không thay code/runtime/data, không force-push hoặc mở PR; giữ thay đổi đồng thời của phiên khác.
