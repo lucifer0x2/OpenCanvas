@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opencanvas
+spec:
+  ports:
+    - name: public-viewer
+      port: 3858
+      targetPort: public-viewer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opencanvas
+spec:
+  template:
+    spec:
+      containers:
+        - name: opencanvas
+          args:
+            - --workspace
+            - /app
+            - --data-root
+            - /data
+            - --host
+            - 0.0.0.0
+            - --public-viewer-port
+            - "3858"
+            - --public-viewer-origin
+            - $(PUBLIC_VIEWER_ORIGIN)
+          env:
+            - name: PUBLIC_VIEWER_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: opencanvas-public-viewer
+                  key: origin
+          ports:
+            - name: public-viewer
+              containerPort: 3858

@@ -117,6 +117,9 @@ Inside the container the server listens on `0.0.0.0` (`--host 0.0.0.0`), and `co
 
 The supplied Compose file runs SQLite and passes an explicit `--port` based on `OPENCANVAS_PORT`. A PostgreSQL container deployment must pass `DATABASE_PROVIDER` and `DATABASE_URL` to the server container explicitly.
 
+For the isolated local PostgreSQL deployment on OrbStack, see [Local Kubernetes](docs/KUBERNETES.md). It builds a separate image, keeps database data in a PVC and exposes the viewer/MCP only through loopback port-forward on port 3857.
+The opt-in [Kubernetes public viewer](docs/KUBERNETES-PUBLIC-VIEWER.md) adds a separate read-only listener on loopback 3858 for later user-managed Funnel.
+
 ## Verification
 
 ```sh
