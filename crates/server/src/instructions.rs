@@ -94,7 +94,12 @@ action: navigate|overlay with to = a root frame ID, or back|close}) and flowStar
 get_design_context returns them as navigation {out, in}. Implement declared links as routes and \
 overlays. Motion a design declares is props.animations on a node: CSS-like keyframes of opacity, \
 translateX/Y, scale, rotate and fill, played on load, hover or click; get_design_context lists \
-them in animated. Implement exactly those. Screen transitions, route paths, overlay placement and \
+them in animated, including triggerNodeId for ancestor hover. When animatedTruncated is true, \
+page find_nodes in the frame with properties:[\"animations\"] and known IDs or the rendered kinds. \
+Group hover tracks by triggerNodeId, or by animated node if omitted. Use framework-native hover \
+state or handlers for one region per source. Moving between its descendants keeps progress, and \
+leaving reverses from current progress. Ignore touch contact for explicit hover sources. Keep states \
+and links independent. Screen transitions, route paths, overlay placement and \
 data are not in the design: ask rather than invent. Notes: put intent props cannot carry (behavior, constraints, unsupported \
 effects) in create_note on its node; get_design_context returns the open notes of the frame, its \
 descendants and ancestors. After implementing one, reply_note, then update_note resolved:true. \

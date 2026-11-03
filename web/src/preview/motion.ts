@@ -71,6 +71,15 @@ class Track {
         else animation.cancel();
         continue;
       }
+      const time = animation.currentTime;
+      if (
+        rate === -1 &&
+        (time === null || (typeof time === "number" && time <= 0))
+      ) {
+        // Playing backwards at the start makes WAAPI jump to the end.
+        animation.cancel();
+        continue;
+      }
       animation.playbackRate = rate;
       animation.play();
     }
@@ -92,11 +101,12 @@ export function wireMotion(
   const warnings: string[] = [];
   const tracks: Track[] = [];
   const loads: Track[] = [];
+  const hovers = new Map<HTMLElement, { track: Track; explicit: boolean }[]>();
   const cleanups: (() => void)[] = [];
-  const listen = (
+  const listen = <K extends keyof HTMLElementEventMap>(
     target: HTMLElement,
-    type: string,
-    handler: (event: Event) => void,
+    type: K,
+    handler: (event: HTMLElementEventMap[K]) => void,
   ) => {
     target.addEventListener(type, handler);
     cleanups.push(() => target.removeEventListener(type, handler));
@@ -111,11 +121,7 @@ export function wireMotion(
       text: node.kind === "text",
       gradient: typeof node.fill === "object" && node.fill !== null,
     };
-    const byTrigger = {
-      load: [] as Track[],
-      hover: [] as Track[],
-      click: [] as Track[],
-    };
+    const clicks: Track[] = [];
     for (const def of declared.animations) {
       const id = `${node.id}:${def.name}`;
       const result = buildAnimation(
@@ -129,6 +135,18 @@ export function wireMotion(
       );
       warnings.push(...result.warnings);
       if (!result.animation) continue;
+      const trigger = result.animation.trigger;
+      const explicit = def.triggerNodeId !== undefined;
+      const source =
+        trigger === "hover"
+          ? dom.elements.get(def.triggerNodeId ?? node.id)?.node
+          : undefined;
+      if (trigger === "hover" && !source) {
+        warnings.push(
+          `${id}: hover trigger "${def.triggerNodeId}" is missing from the preview; animation skipped`,
+        );
+        continue;
+      }
       const track = new Track(
         id,
         result.animation,
@@ -136,16 +154,13 @@ export function wireMotion(
         options.reducedMotion,
       );
       tracks.push(track);
-      byTrigger[result.animation.trigger].push(track);
-    }
-    loads.push(...byTrigger.load);
-    if (byTrigger.hover.length) {
-      listen(elements.node, "pointerenter", () =>
-        byTrigger.hover.forEach((t) => t.direct(1)),
-      );
-      listen(elements.node, "pointerleave", () =>
-        byTrigger.hover.forEach((t) => t.direct(-1)),
-      );
+      if (trigger === "load") loads.push(track);
+      if (trigger === "click") clicks.push(track);
+      if (source) {
+        const bindings = hovers.get(source) ?? [];
+        bindings.push({ track, explicit });
+        hovers.set(source, bindings);
+      }
     }
     const clickLink = declared.links.find(
       (link) => (link.on ?? "click") === "click",
@@ -155,15 +170,23 @@ export function wireMotion(
         warnings.push(
           `${node.id}: hover ${link.action ?? "navigate"} link is not supported in preview`,
         );
-    if (byTrigger.click.length || clickLink) {
+    if (clicks.length || clickLink) {
       elements.node.classList.add("oc-clickable");
       listen(elements.node, "click", (event) => {
-        byTrigger.click.forEach((track) => track.restart());
+        clicks.forEach((track) => track.restart());
         if (!clickLink) return;
         event.stopPropagation();
         options.onLink(clickLink, node.id);
       });
     }
+  }
+  for (const [source, bindings] of hovers) {
+    const direct = (event: PointerEvent, rate: 1 | -1) => {
+      for (const { track, explicit } of bindings)
+        if (!explicit || event.pointerType !== "touch") track.direct(rate);
+    };
+    listen(source, "pointerenter", (event) => direct(event, 1));
+    listen(source, "pointerleave", (event) => direct(event, -1));
   }
   const replay = () => {
     tracks.forEach((track) => track.reset());

@@ -3,7 +3,7 @@
 use super::{
     easing::check_easing,
     keyframes::{check_keyframes, in_range, reject_unknown},
-    values::validate_slug,
+    values::{valid_id, validate_slug},
 };
 use crate::{
     animation_catalog::{
@@ -85,6 +85,21 @@ fn check_name<'a>(animation: &'a Map<String, Value>, at: &str) -> Result<&'a str
 fn check_timing(animation: &Map<String, Value>, at: &str) -> Result<bool> {
     let field = |key: &str| format!("{at}.{key}");
     let on = one_of(animation.get("on"), &TRIGGERS, &field("on"))?;
+    if let Some(trigger) = animation.get("triggerNodeId") {
+        let field = field("triggerNodeId");
+        if on != "hover" {
+            return Err(StorageError::validation(
+                &field,
+                "triggerNodeId requires on:\"hover\"",
+            ));
+        }
+        if !trigger.as_str().is_some_and(valid_id) {
+            return Err(StorageError::validation(
+                &field,
+                "triggerNodeId must be a literal authored node ID",
+            ));
+        }
+    }
     let duration = animation.get("duration").ok_or_else(|| {
         StorageError::validation(&field("duration"), "duration is required (milliseconds)")
     })?;

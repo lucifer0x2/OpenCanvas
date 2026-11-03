@@ -19,6 +19,8 @@ async fn fixture(s: &Server) -> String {
             {"name":"lift","on":"hover","duration":200,"keyframes":[{"scale":1.02}]}]}},
         {"op":"create_node","id":"label","kind":"text","parentId":"frame","props":{"text":"Hello","width":200,"height":"hug","fontId":"font_bundled","fontSize":16,"lineHeight":24,
             "animations":[{"name":"pulse","on":"click","duration":800,"iterations":"infinite","direction":"alternate","keyframes":[{"fill":{"tokenId":"color-brand"}}]}]}},
+        {"op":"create_node","id":"nested","kind":"frame","parentId":"frame","props":{"width":100,"height":100,
+            "animations":[{"name":"fade","on":"hover","triggerNodeId":"frame","duration":250,"delay":25,"keyframes":[{"opacity":0.5}]}]}},
         {"op":"create_node","id":"still","kind":"frame","parentId":"page","props":{"width":100,"height":100}}
     ]);
     let r = s.batch(&p, 0, "fixture", ops).await;
@@ -47,13 +49,30 @@ async fn animated_lists_every_animation_on_every_page_and_only_when_present() {
     let expected = json!([
         {"ref":"card:enter","on":"load"},
         {"ref":"card:lift","on":"hover"},
-        {"ref":"label:pulse","on":"click"}
+        {"ref":"label:pulse","on":"click"},
+        {"ref":"nested:fade","on":"hover","triggerNodeId":"frame"}
     ]);
     let paged = pages(&s, json!({"projectId":p,"frameId":"frame","limit":1})).await;
     assert!(paged.len() > 1, "fixture must page");
     for page in &paged {
         assert_eq!(page["animated"], expected);
+        assert!(page.get("animatedTruncated").is_none());
     }
+    let rows = pages(
+        &s,
+        json!({"projectId":p,"frameId":"frame","limit":2,"nodeFormat":"rows","compact":true,"properties":["name"]}),
+    )
+    .await;
+    for page in rows {
+        assert_eq!(page["animated"], expected);
+    }
+    let nested = s
+        .call(
+            "get_design_context",
+            json!({"projectId":p,"frameId":"nested","depth":0,"properties":["name"]}),
+        )
+        .await;
+    assert_eq!(nested["animated"], json!([expected[3]]));
     let still = s
         .call(
             "get_design_context",
@@ -140,8 +159,19 @@ async fn props_reference_instructions_and_skills_declare_animations() {
     }
     assert!(props.contains("## Animations"));
     assert!(props.contains("| `translateY` |"));
+    assert!(props.contains("| `triggerNodeId` |"));
     let author = read("skill://opencanvas/author-frame.md").await;
     assert!(author.contains("## Animation"));
+    assert!(author.contains("\"triggerNodeId\":\"card\""));
+    let implement = read("skill://opencanvas/implement-frame.md").await;
+    assert!(implement.contains("animatedTruncated:true"));
+    assert!(implement.contains("reverses each track from its current progress"));
+    let capabilities: Value =
+        serde_json::from_str(&read("opencanvas://capabilities").await).unwrap();
+    assert!(capabilities["restrictions"]["animations"]
+        .as_str()
+        .unwrap()
+        .contains("triggerNodeId"));
     let init = s
         .rpc(
             "initialize",
@@ -151,6 +181,7 @@ async fn props_reference_instructions_and_skills_declare_animations() {
         .await;
     let text = init["instructions"].as_str().unwrap();
     assert!(text.contains("props.animations"));
+    assert!(text.contains("triggerNodeId"));
     assert!(!text.contains("says nothing about interaction, animation"));
 }
 
