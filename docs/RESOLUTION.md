@@ -27,6 +27,33 @@ branch. Alias chains resolve each target using that same concrete theme.
 Unrecognized themes return structured `UNSUPPORTED_THEME` with field `theme`.
 The default theme is available even in an empty project. UI theme is separate.
 
+Task14 adds `theme` to authored frames and instances. The nearest frame/instance
+scope wins over the render/export theme fallback. Unknown scoped names return
+`UNKNOWN_THEME` at `props.theme`; invalid global requests keep `UNSUPPORTED_THEME`.
+Expansion resolves ancestry at the instance placement, without copying the master's
+ancestors. A theme authored directly on the master root is inherited; an explicit
+instance theme replaces it. Nested frame/instance scopes then take precedence.
+Paint, interaction states, gradients, shadows, text styles and exact font-face
+selection all use the node's effective theme. Authored data remains unchanged.
+
+Expanded resolved nodes carry internal `props.effectiveTheme` into the layout
+pipeline; scene nodes expose `effectiveTheme`. Context publishes it once at the
+node level (including component definitions and reference instances), outside
+`resolvedProps`; `inspect_layout` always includes it beside the requested fields.
+Context token/style resource `resolvedValue` remains at the requested global
+theme. Compact resources retain a declaration token for each effective named
+theme, including inherited scopes outside the selected frame, and close over
+that token's aliases. Preview motion uses scene-node `effectiveTheme`, and new
+states declared only in descendant overrides are fetched for interaction preview.
+
+Instance descendant paint patches use shared expansion/validation semantics:
+stroke object merge; shadow whole-array replace; states per-state property merge,
+including stroke object merge inside each state; scalar opacity/radius replacement.
+The instance itself accepts fill/stroke/shadow/radius/opacity for its expanded root.
+Full merged values and target kinds are validated atomically; layout/sizing,
+structure and component references remain non-overridable, and state shadow is
+still unsupported. See `docs/INSTANCE-SCHEMES-REPORT.md` for current evidence.
+
 Limits: 4,096 tokens/project, 32 named themes/project and per token, 32 alias
 edges/path, 256-byte token names. Theme names contain 1–64 ASCII letters, digits,
 underscores or hyphens; `default` is reserved and cannot be an override name.

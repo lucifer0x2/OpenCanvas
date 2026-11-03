@@ -56,13 +56,21 @@ export function declaredStates(
   frameId: string,
 ): StateName[] {
   const declared = new Set<StateName>();
-  for (const node of effectiveSubtree(nodes, frameId)) {
-    const states = node.props.states;
-    if (!states || typeof states !== "object") continue;
+  const collect = (states: unknown) => {
+    if (!states || typeof states !== "object") return;
     for (const name of STATES) {
       const value = (states as Record<string, unknown>)[name];
       if (value && typeof value === "object" && Object.keys(value).length)
         declared.add(name);
+    }
+  };
+  for (const node of effectiveSubtree(nodes, frameId)) {
+    collect(node.props.states);
+    const overrides = node.props.overrides;
+    if (overrides && typeof overrides === "object") {
+      for (const patch of Object.values(overrides)) {
+        if (patch && typeof patch === "object") collect(patch.states);
+      }
     }
   }
   return STATES.filter((name) => declared.has(name));

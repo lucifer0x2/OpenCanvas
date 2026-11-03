@@ -29,28 +29,43 @@ pretend that memory has been read, initialized or saved.
 
 ## Authoring checklist
 
-1. Read `get_outline` and the scoped context before editing an existing project.
+1. Discover `tools/list` and inspect the tool's `inputSchema`; use MCP tools with
+   structured JSON for OpenCanvas design mutations. Do not write/run a JS, shell
+   or HTTP mutation client to replace tools already available. This is client
+   guidance, not enforcement of a client's system prompt or external programs.
+   It does not restrict application code, test fixtures or the authorized design
+   memory filesystem workflow above. Valid repeated operations remain accepted.
+2. Read `get_outline` and the scoped context before editing an existing project.
    To locate a node you know by name, visible text, kind or ID, use `find_nodes`
    instead of scanning the outline; each match carries its ancestor `path`.
    `get_outline` `depth` counts from the scope root (`{nodeId:<page>, depth:1}` is the
    page and its root frames); `find_nodes {parentId}` lists one node's direct children.
    For a new project use `create_project`, then create a page and a root frame.
-2. Plan containers and sizing before placing nodes. Default to `row`/`column`
+   If no current read or successful commit supplies the revision, read it before
+   writing. Use `committedRevision` after success; do not add revision-only reads
+   after each successful commit. Read props/capabilities and refresh cached
+   guidance when its fingerprint/pipeline version changes.
+3. Plan containers and sizing before placing nodes. Default to `row`/`column`
    stacks with explicit padding/gap. Use `free` for intentional overlays or
    decoration, not as the default for page content.
-3. Submit ordered `apply_batch` operations with caller-chosen IDs,
+   Reuse tokens, styles, component master frames and instances before copying
+   trees. Named `theme` on a frame/instance selects a token scheme in that scope;
+   the nearest scope wins, with render/export theme as the global fallback.
+   Confirm the theme exists on at least one token. Keep scheme differences in
+   tokens and text/style overrides where possible; inspect expanded resolved values.
+4. Submit ordered `apply_batch` operations (1–500 per atomic batch) with caller-chosen IDs,
    `expectedRevision`, and one stable `idempotencyKey` per exact request body.
    After a lost response replay that body; never change a replay body under the
    same key.
-4. On `REVISION_CONFLICT` read `error.changedSince` (`fromRevision`,
-   `toRevision`, `changedIds` ≤200, `truncated`). If `truncated` is false and no
-   changed ID is a node you edit or one of its ancestors, resend the same
-   operations with `expectedRevision: toRevision` and a **new** `idempotencyKey`.
-   Otherwise re-read exactly those IDs with `find_nodes {ids}` (or page through
-   `get_changes {sinceRevision}`) and rebuild the batch. Every batch is validated
-   again, so a wrong rebase returns `VALIDATION_FAILED`, never corrupt data.
+5. On explicit `REVISION_CONFLICT`, inspect `error.changedSince` (`fromRevision`,
+   `toRevision`, `changedIds` ≤200, `truncated`). Re-read relevant nodes/ancestors
+   and token/style dependencies with scoped reads (`find_nodes {ids}`), or catch
+   up with `get_changes {sinceRevision}`. Rebuild from that evidence with the new
+   revision and a **new** key; never blindly retry. Changed IDs are a hint, not
+   proof that token/style or component dependencies are unaffected. Validation
+   runs again. A lost response is different: retry the **identical** body/key.
 
-5. Author only the `props` keys that `skill://opencanvas/props.md` lists for the
+6. Author only the `props` keys that `skill://opencanvas/props.md` lists for the
    node's kind (generated from the validator). Text color is `fill`, corner
    rounding is `radius`. A wrong key returns `VALIDATION_FAILED` with
    `field: "props.<key>"`, `nodeId`, `nodeKind`, `allowedKeys` and, when close,
@@ -59,6 +74,70 @@ pretend that memory has been read, initialized or saved.
    `{"color":[t,r,b,l],"width":[1,1,2,1]}`, CSS order); never fake a border with
    stacked or edge rectangles. An `inside` stroke (default) takes stack space like a
    CSS border; use `align:"outside"` to keep layout unchanged. Text cannot carry one.
+
+## Structured JSON examples
+
+These are ordered `tools/call` parameter objects for a fresh project whose
+`create_project` response supplied revision 0. Replace `PROJECT_ID` with its ID;
+sample IDs/colors/text are illustrative, not new confirmed design requirements.
+The first batch creates one reusable master, a shared text style, two instances
+and a named scheme. The second edits text with `update_node`, `id` and
+`props.text`/`fontSize`; there is no `update_text`, `nodeId` or `props.content`.
+
+<!-- structured-authoring-calls -->
+```json
+[
+  {"name":"apply_batch","arguments":{"projectId":"PROJECT_ID","expectedRevision":0,"idempotencyKey":"author-setup","operations":[
+    {"op":"create_node","id":"page","kind":"page","parentId":null,"props":{}},
+    {"op":"upsert_token","token":{"id":"ink","name":"Ink","type":"color","value":{"default":"#112233","themes":{"a2":"#553311"}}}},
+    {"op":"upsert_style","style":{"id":"body","name":"Body","kind":"text","value":{"fontId":"font_bundled","fontSize":16,"lineHeight":24}}},
+    {"op":"create_node","id":"card","kind":"frame","parentId":"page","props":{"component":{"name":"Card"},"width":240,"height":80,"layout":{"mode":"column","padding":12}}},
+    {"op":"create_node","id":"label","kind":"text","parentId":"card","props":{"text":"Hello","styleId":"body","width":"fill","height":"hug","fill":{"tokenId":"ink"}}},
+    {"op":"create_node","id":"screen","kind":"frame","parentId":"page","props":{"width":640,"height":480,"layout":{"mode":"column","gap":16}}},
+    {"op":"create_node","id":"first","kind":"instance","parentId":"screen","props":{"componentId":"card"}},
+    {"op":"create_node","id":"second","kind":"instance","parentId":"screen","props":{"componentId":"card","theme":"a2","overrides":{"label":{"text":"Welcome"}}}}
+  ]}},
+  {"name":"apply_batch","arguments":{"projectId":"PROJECT_ID","expectedRevision":1,"idempotencyKey":"author-edit","operations":[
+    {"op":"update_node","id":"label","props":{"text":"Hello again","fontSize":18}}
+  ]}},
+  {"name":"apply_batch","arguments":{"projectId":"PROJECT_ID","expectedRevision":2,"idempotencyKey":"author-token","dryRun":true,"operations":[
+    {"op":"upsert_token","token":{"id":"ink","name":"Ink","type":"color","value":{"default":"#223344","themes":{"a2":"#664422"}}}}
+  ]}}
+]
+```
+
+The dry run performs full candidate validation and returns `dryRun:true`,
+`baseRevision`, would-be `changedIds` and `diagnostics`, without writes/events,
+a revision increment or key consumption. To commit this same token update, call
+the last object again with `dryRun:false` (or omit the field), keeping revision 2
+and the same key. Its success supplies revision 3. Dry run is not a reservation:
+a concurrent write can still cause a conflict before commit.
+
+For a large existing payload, opt in to `apply_batch_file` only with authorized
+filesystem access to the selected project's confirmed inbox. Save this **pure
+JSON array** as `<configured-data-root>/<project-slug>/inbox/ops.json`:
+
+<!-- structured-authoring-file-operations -->
+```json
+[{"op":"update_node","id":"label","props":{"text":"Saved JSON","fontSize":18}}]
+```
+
+Then submit this MCP call (it never evaluates JS or other executable code):
+
+<!-- structured-authoring-file-call -->
+```json
+{"name":"apply_batch_file","arguments":{"projectId":"PROJECT_ID","expectedRevision":3,"idempotencyKey":"author-file","path":"ops.json","dryRun":true}}
+```
+
+Commit by setting `dryRun:false`. Keep file contents, revision and key stable
+after a lost response; replay uses canonical operation contents, not just path.
+File calls share validation/atomicity and the 500-op limit, plus a 2 MiB byte cap;
+they do not auto-chunk. Split larger input into explicit atomic batches, each
+using the last successful revision and its own key. Paths outside the inbox,
+traversal and symlink escapes fail. Without authorized filesystem access, use
+inline batches; never claim a file was written. Payload savings come from
+master/token/style reuse, not from changing JS transport to MCP. The U07
+~4 KB/instance estimate and golden-image rebuild remain to be measured separately.
 
 ## Stack template
 

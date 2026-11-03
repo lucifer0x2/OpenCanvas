@@ -115,7 +115,9 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
     match name {
         "list_projects" => projects(state, args).await,
         "create_project" => create(state, args).await,
-        "apply_batch" | "import_asset" => domain::mutate(state, name, args).await,
+        "apply_batch" | "apply_batch_file" | "import_asset" => {
+            domain::mutate(state, name, args).await
+        }
         "get_outline" | "get_subtree" | "get_design_context" | "find_nodes" | "list_tokens"
         | "list_styles" | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
         "get_changes" => reads::changes::read(state, args).await,

@@ -96,12 +96,12 @@ async fn instances_states_context_keeps_master_virtual_variants_and_theme_resour
             assert!(definition.get("resolvedStates").is_none());
         }
     }
-    // Inherited master variants do not broaden the minimal instance override contract.
+    // Instance root states remain unsupported; descendant state paint accepts no shadow.
     for (props, field) in [
         (json!({"states":{"hover":{"opacity":0.5}}}), "props.states"),
         (
-            json!({"overrides":{"box":{"states":{"hover":{"opacity":0.5}}}}}),
-            "props.overrides.box.states",
+            json!({"overrides":{"box":{"states":{"hover":{"shadow":[]}}}}}),
+            "props.overrides.box.states.hover.shadow",
         ),
     ] {
         let rejected = s

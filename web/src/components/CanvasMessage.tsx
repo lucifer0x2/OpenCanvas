@@ -8,6 +8,25 @@ export function CanvasMessage({
   view: SceneView;
   retry: () => void;
 }) {
+  if (view.scene && view.status !== "ready")
+    return (
+      <div className="canvas-refresh" role="status" aria-live="polite">
+        <h2>
+          {view.status === "failed"
+            ? "Render failed"
+            : `Rendering r${view.requestedRevision}`}
+        </h2>
+        <p>
+          Showing scene r{view.scene.provenance.revision} ·{" "}
+          {view.status === "failed"
+            ? `Requested r${view.requestedRevision}: ${view.error}`
+            : "You can keep panning and zooming."}
+        </p>
+        {view.status === "failed" && (
+          <button onClick={retry}>Retry render</button>
+        )}
+      </div>
+    );
   return (
     <>
       {view.status !== "ready" && (

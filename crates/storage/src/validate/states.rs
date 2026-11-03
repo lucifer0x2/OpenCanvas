@@ -1,5 +1,5 @@
 //! Flat, paint-only interaction variants. Geometry always uses resting properties.
-use super::{stroke::validate_stroke, values::*, Candidate};
+use super::{scope::Resolver, stroke::validate_stroke, values::*};
 use crate::{error::*, model::NodeKind, props_catalog::PropScope};
 use serde_json::Value;
 
@@ -36,7 +36,7 @@ fn at(mut e: StorageError, prefix: &str, key: &str) -> StorageError {
     e
 }
 
-impl Candidate {
+impl Resolver<'_> {
     /// Shape-check before traversing refs so unknown nested keys never hide behind ref errors.
     pub(super) fn check_states(&self, kind: &NodeKind, states: &Value) -> Result<()> {
         let states = states

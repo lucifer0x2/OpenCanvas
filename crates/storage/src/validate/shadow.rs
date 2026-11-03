@@ -1,9 +1,9 @@
 //! CSS box-shadow layers, in authored top-to-bottom order.
-use super::{values::*, Candidate};
+use super::{scope::Resolver, values::*};
 use crate::error::*;
 use serde_json::Value;
 
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn resolve_shadow(&self, value: &mut Value) -> Result<()> {
         for (i, layer) in value.as_array_mut().into_iter().flatten().enumerate() {
             for key in ["x", "y", "blur", "spread", "color"] {

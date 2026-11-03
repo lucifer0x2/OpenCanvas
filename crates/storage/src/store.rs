@@ -67,6 +67,7 @@ impl Store {
         })?;
         let path = guard(&path, &self.root.path)?;
         fs::create_dir(path.join("assets"))?;
+        fs::create_dir(path.join("inbox"))?;
         sync_dir(&path)?;
         sync_dir(&self.root.path)?;
         let mut conn = Connection::open(path.join("db.sql"))?;

@@ -97,11 +97,11 @@ pub async fn import(
         .map_err(|_| ApiError::invalid("Invalid font import body"))?
         .0;
     // Resolve slugs too, then forward the canonical ID to the domain transaction.
-    let snapshot = s.snapshot(project).await?;
+    let meta = s.project_meta(project).await?;
     let result = domain::mutate(
         &s,
         "import_asset",
-        json!({"projectId":snapshot.project_id,
+        json!({"projectId":meta.project_id,
         "expectedRevision":body.expected_revision,"idempotencyKey":body.idempotency_key,
         "mediaType":body.media_type,"base64":body.base64,"font":body.font}),
     )

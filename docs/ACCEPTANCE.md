@@ -1,5 +1,37 @@
 # OpenCanvas — bản đồ nghiệm thu
 
+Task19 đưa PostgresBackend của domain sản phẩm vào StorageBackend/AppState/router.
+CLI mặc định SQLite. `DATABASE_PROVIDER=postgresql` yêu cầu `DATABASE_URL` và bật
+Moka trong tiến trình, một snapshot/project, TTL 1 giờ. Mỗi hit xác nhận namespace,
+canonical ID, generation và revision qua PostgreSQL. Xem [cách chạy](../README.md),
+[cache hiện tại](MOKA-SNAPSHOT-CACHE.md) và [báo cáo Task19 ban đầu](TASK19-REPORT.md).
+Các mốc Task15–17 dưới đây ghi phạm vi lịch sử của spike và interface ban đầu.
+
+Task17 ngày 2026-11-02: spike PostgreSQL certified scalar delta commit trước ACK
+và Redis opt-in HOT reads đã qua core10, PGv133/v234, Node26 cùng review/raw audit
+và lifecycle Redis thật. Root kiểm độc lập; code/binary đóng băng trong ba stage
+writer1 và HOT-read counterfactual. Có cell/regression và giới hạn cache được
+công bố; xem [`TASK17-REPORT.md`](TASK17-REPORT.md), [`TASK17-REVIEW.md`](TASK17-REVIEW.md).
+Runtime sản phẩm vẫn SQLite; chưa port PostgreSQL/MCP đầy đủ hoặc chuyển dữ liệu.
+Task18 Redis-primary/write-behind chỉ là backlog research.
+
+Task16 ngày 2026-11-02: runtime/jobs/export đã dùng StorageBackend/Storage/
+ProjectHandle chung và SQLite adapter; backend RAM độc lập đã inject qua HTTP/MCP.
+Root kiểm storage/cache8, server15, lint/fmt và E2E16 nhóm + live workspace đạt.
+Chưa chuyển PostgreSQL production/dữ liệu thật. Xem [`TASK16-REPORT.md`](TASK16-REPORT.md)
+và [`STORAGE-BACKEND.md`](STORAGE-BACKEND.md).
+
+Task15 ngày 2026-11-02: người dùng chọn PostgreSQL; spike độc lập đã được root kiểm
+đủ matrix100/5000 nodes×1/4/8 writers, history1000, recovery và migration/backup
+fixture. Tối ưu fast path/retry và hai index đã kiểm tiếp bằng full9pha, EXPLAIN
+thật và matrix trên DB mới; xem [`TASK15-OPTIMIZATION-REPORT.md`](TASK15-OPTIMIZATION-REPORT.md).
+Tối ưu bulk SQL tiếp theo đã qua root full9pha/19contract/18Node và wire probe:
+batch1/3/500changedIDs dùng6lệnh cố định; latency matrix có kết quả hỗn hợp,
+không coi giảm truy vấn là SLA. Xem [`TASK15-BULK-SQL-REPORT.md`](TASK15-BULK-SQL-REPORT.md).
+Runtime sản phẩm vẫn SQLite; chưa nghiệm thu PostgreSQL storage/MCP đầy đủ,
+migration dữ liệu thật, Kubernetes rollout hoặc HA. Bằng chứng và giới hạn ở
+[`TASK15-REPORT.md`](TASK15-REPORT.md).
+
 Task04 đã được root review và nghiệm thu độc lập: xem
 `docs/TASK04-REPORT.md` và `artifacts/e2e/wrap.json`. Row wrap opt-in đã qua
 pipeline16 tests (giữ11 cũ), storage41 tests/14 suites, server19 tests (giữ18 cũ),
@@ -182,3 +214,15 @@ AC trong `.night/proposals/P08a-stack-align-padding.md`. Kiểm: `cargo test -p 
 (`stack_tests`, `stretch_tests`), `-p opencanvas-storage --test stack_layout`, `-p opencanvas-server
 --test stack_context`, `npm run test:pipeline` (`stack-align.test.mjs`). Không `alignSelf`,
 `space-around/evenly`, baseline, margin, %/breakpoint/column wrap (P08b và sau).
+
+### Task14 — instance schemes và Structured Operations, 2026-11-02
+
+P1–P5 đã triển khai và kiểm độc lập: scoped frame/instance themes, merged paint
+overrides/root paint, MCP pure JSON inbox batches và dry run, MCP-first authoring
+guide với fewshots đúng schema. Root kiểm storage48/layout29/server25/web26,
+real Chromium preview smoke, typecheck/fmt/diff và debug build đồng bộ đều đạt.
+Commands/phạm vi/giới hạn ở [TASK14-REPORT.md](TASK14-REPORT.md).
+
+Chưa đạt AC U07 golden/payload: design worker rebuild trên API mới rồi so ảnh
+fuzz≤3% và đo lại; ~4KB/scheme vẫn là dự đoán. P6 contrast check chưa triển khai.
+Chưa release/restart dịch vụ thật; SVG giữ stroke/shadow omission diagnostics.

@@ -53,6 +53,7 @@ export interface Bounds {
 }
 export interface SceneNode {
   id: string;
+  effectiveTheme?: string;
   parentId: string | null;
   kind: string;
   bounds: Bounds;

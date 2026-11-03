@@ -152,6 +152,34 @@ fn outline_subtree_and_context_bytes_match_golden() {
     assert_eq!(actual, golden);
 }
 
+#[test]
+fn context_rows_keep_computed_bounds_including_explicit_null() {
+    let s = fixture();
+    let read = |args| {
+        let req = serde_json::from_value(args).unwrap();
+        let tool = "get_design_context";
+        let (scope, offset) = pagination::scope(&s, tool, &req).unwrap();
+        let mut computed = computed(&s);
+        computed.bounds.remove("rect");
+        tree::read(&s, tool, req, scope, offset, Some(computed)).unwrap()
+    };
+    let mut args = json!({"projectId":s.project_id,"frameId":"frame-b"});
+    let expected = read(args.clone());
+    args["nodeFormat"] = json!("rows");
+    let rows = read(args);
+    assert_eq!(rows["computed"], expected["computed"]);
+    assert_eq!(rows["reflow"], expected["reflow"]);
+    assert_eq!(rows["diagnostics"], expected["diagnostics"]);
+    assert_eq!(
+        rows["nodes"][0][5]["computedBounds"],
+        expected["nodes"][0]["computedBounds"]
+    );
+    assert_eq!(
+        rows["nodes"][1][5].get("computedBounds"),
+        Some(&Value::Null)
+    );
+}
+
 /// The pre-index algorithm, kept as the reference for sibling order.
 fn legacy<'a>(all: &'a [Node], node: &'a Node, depth: usize, out: &mut Vec<(&'a Node, usize)>) {
     out.push((node, depth));

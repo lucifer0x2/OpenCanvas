@@ -1,6 +1,6 @@
 # OpenCanvas
 
-OpenCanvas lets an agent create and inspect local designs through MCP while a read-only browser viewer displays the result. A Rust backend owns SQLite, revisions, validation and rendering jobs. The viewer and PNG exporter share one Canvas2D renderer and precomputed text lines.
+OpenCanvas lets an agent create and inspect local designs through MCP while a read-only browser viewer displays the result. A Rust backend manages SQLite or PostgreSQL storage, revisions, validation and rendering jobs. The viewer and PNG exporter share one Canvas2D renderer and precomputed text lines.
 
 The browser offers project/page/frame selection, layers, inspection, pan, zoom, fit and viewport presets. Design changes come from MCP; **Fonts** in the header imports and downloads project font resources without installing them on the operating system. Starting the server creates no demo project.
 
@@ -35,7 +35,27 @@ By default, open [the local viewer](http://127.0.0.1:3847); with `--port 0`, use
 
 `CARGO_TARGET_DIR` selects the Cargo output directory for both building and launching; set it consistently for both commands. Relative values resolve from the repository root. Launchers select the server and layout worker from the same `debug` or `release` directory and pass the layout binary through `OPENCANVAS_LAYOUT_BIN`. They default `PLAYWRIGHT_BROWSERS_PATH` to the repository's `.runtime/browsers`; an explicit environment value wins. The viewer and renderer bundles are shared by both profiles, so rebuilding either profile refreshes these bundles.
 
-The default data root is `~/.opencanvas`; `OPENCANVAS_DATA_ROOT` or `--data-root DIR` overrides it. `--port NUMBER` changes the port, and `--port 0` chooses a free port printed at startup. Each project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for experiments and tests.
+`PORT` selects the local listener (default 3847), and `--port NUMBER` takes precedence. Both accept 0 to bind an available port and print it at startup.
+
+`DATABASE_PROVIDER` accepts `sqlite` (default) or `postgresql`. SQLite uses `~/.opencanvas` by default. Set `OPENCANVAS_DATA_ROOT` or pass `--data-root DIR` to override it. Each SQLite project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for SQLite experiments and tests.
+
+For PostgreSQL, set `DATABASE_URL` to your connection string in the environment, then launch the built app:
+
+```sh
+DATABASE_PROVIDER=postgresql PORT=3850 npm start
+```
+
+Optional PostgreSQL limits (positive integers; unset keeps the default; an invalid value stops startup and names the variable):
+
+| Variable | Default | Range |
+| --- | --- | --- |
+| `DATABASE_POOL_SIZE` | 4 connections | 1–32 |
+| `DATABASE_CONNECT_TIMEOUT_MS` | 3000 | 1–2147483647 ms |
+| `DATABASE_STATEMENT_TIMEOUT_MS` | 15000 | 1–2147483647 ms |
+| `DATABASE_LOCK_TIMEOUT_MS` | 3000 | 1–2147483647 ms |
+| `DATABASE_OPERATION_TIMEOUT_MS` | 30000 (pool wait per operation; also idle-in-transaction and TCP user timeouts) | 1–2147483647 ms |
+
+`npm run dev` accepts the same environment variables. PostgreSQL uses an in-process snapshot cache with a one-hour TTL and ignores the SQLite data root. Changing providers selects a different store. SQLite projects stay in the data root and require a separate migration to appear in PostgreSQL. See the [PostgreSQL adapter](docs/POSTGRES-BACKEND.md) for database permissions and transport details.
 
 For optional frontend hot reload, keep the backend running and run `npm --prefix web run dev` separately. Its `/api` proxy defaults to port 3847; set `OPENCANVAS_API_URL` for another backend URL. See [viewer behavior](docs/VIEWER.md) and the [HTTP contract](docs/CONTRACT.md).
 
@@ -94,6 +114,8 @@ node docker/smoke.mjs http://127.0.0.1:3847   # optional: creates a project smok
 The viewer is at `http://127.0.0.1:3847` and MCP at `http://127.0.0.1:3847/mcp`. Projects live in the named volume `opencanvas-data` mounted at `/data`; the container never sees `~/.opencanvas`. To keep them in a host directory instead, replace `opencanvas-data:/data` in `compose.yaml` with a bind mount such as `./opencanvas-data:/data`, writable by uid 1000 (the image's `node` user). `docker compose stop` sends SIGINT, which shuts the server down gracefully.
 
 Inside the container the server listens on `0.0.0.0` (`--host 0.0.0.0`), and `compose.yaml` publishes it on `127.0.0.1` only. Keep it that way: the API has no authentication, and the loopback Host check stops browsers, not other machines. `OPENCANVAS_PORT=3850 docker compose up -d` moves the host and container port together, so `imageUrl` and the Origin check match the address you use. With plain `docker run`, use `--init -p 127.0.0.1:3847:3847 -v opencanvas-data:/data --shm-size 512m`. Do not run the native server and the container on the same data root at the same time: the data-root lock is not guaranteed to work across a bind mount.
+
+The supplied Compose file runs SQLite and passes an explicit `--port` based on `OPENCANVAS_PORT`. A PostgreSQL container deployment must pass `DATABASE_PROVIDER` and `DATABASE_URL` to the server container explicitly.
 
 ## Verification
 

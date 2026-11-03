@@ -41,6 +41,8 @@ fn document() -> Value {
         "runtime":"Static support only. Read job provenance/readiness/diagnostics for loaded resources and glyph coverage. No implicit font fallback or pixel-parity guarantee.",
         "restrictions":{"stroke":"Solid per-side CSS shorthand; SVG omits stroke with SVG_STROKE_NOT_EXPORTED","shadow":"Box layers only, at most 8; no state shadow. SVG omits shadow with SVG_SHADOW_NOT_EXPORTED.","fill":"Solids on text; boxes also accept linear/radial gradients with 2..16 ordered stops. Gradient stops accept solid colors/color tokens. Fill animation requires a solid resting fill.","radius":"Scalar or CSS 1..4 corner shorthand; overlapping radii scale together.","text":"Plain semantic strings; no mixed-style runs, authored RTL, ellipsis or maxLines. Tracking is signed px; decoration is continuous without skip-ink. SVG keeps measured lines and embedded fonts, not outlines; SVG_TEXT_NOT_OUTLINED.","states":"Flat declared fill/opacity/radius/stroke variants only; render_frame previews one selected state across all declaring nodes, including SVG export; preview supports declared interaction.","animations":"Canvas/PNG/SVG show resting animation props; HTML preview plays declared animation.","layout":"row/column/free with documented finite sizing; no percent dimensions or breakpoints"}
     });
+    value["restrictions"]["theme"] = json!("Frame/instance scope; nearest scoped ancestor wins over render/export fallback. Scoped names must exist in tokens (UNKNOWN_THEME); default always exists. Instance placement scopes apply; explicit instance theme replaces master root theme. Scene/context/inspect report effectiveTheme.");
+    value["restrictions"]["overrides"] = json!("Paint-only descendant patches: stroke object merge; shadow array replace; states per-state visual property merge; opacity/radius supported. Instance root accepts fill/stroke/shadow/radius/opacity. Layout, sizing and structure remain non-overridable.");
     value["catalogFingerprint"] = json!(format!(
         "{:x}",
         Sha256::digest(serde_json::to_vec(&value).unwrap())
@@ -71,7 +73,7 @@ fn facts(key: &str) -> Value {
         | "minHeight" | "maxHeight" | "layout" | "fontId" | "fontSize" | "lineHeight" | "fill"
         | "opacity" | "clip" | "radius" | "assetId" | "fit" | "crop" | "componentId"
         | "overrides" | "letterSpacing" | "textAlign" | "textDecoration" | "textTransform"
-        | "fontFamily" | "textWrap" | "fontWeight" | "fontStyle" => {
+        | "fontFamily" | "textWrap" | "fontWeight" | "fontStyle" | "theme" => {
             ("supported", "supported", "supported")
         }
         _ => ("unclassified", "unclassified", "unclassified"),

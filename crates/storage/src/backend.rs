@@ -1,0 +1,77 @@
+//! Engine-neutral, blocking storage operations used by the application runtime.
+//!
+//! Call these operations on a blocking worker. Implementations must bound waits and
+//! release transactions before returning; callers may render or stream the result.
+use crate::{
+    Asset, BatchFileRequest, BatchRequest, BatchResult, Commit, DryRunResult, Font,
+    ImportAssetRequest, ImportAssetResult, ProjectMeta, Result, Snapshot,
+};
+use serde_json::Value;
+use std::sync::Arc;
+
+mod handle;
+mod pins;
+mod sqlite;
+pub use handle::{ProjectHandle, Storage};
+pub use sqlite::SqliteBackend;
+
+/// The identity of one immutable snapshot representation within a Storage.
+/// A backend that opts in must change this identity whenever any field in the
+/// snapshot changes, including changes outside a normal revisioned commit.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct SnapshotCacheIdentity {
+    pub project_id: String,
+    pub schema_version: u32,
+    pub revision: u64,
+    pub incarnation: String,
+    pub asset_readiness: Vec<bool>,
+}
+
+/// One domain contract for a complete storage implementation.
+///
+/// Project lookup accepts canonical IDs or slugs. Returned metadata identifies
+/// the canonical project; requests must remain scoped to that ID. Backends own
+/// validation, atomic rollback, revision conflicts, durable commits, idempotent
+/// replay/key collisions, and exact resource bytes. Dry runs perform the same
+/// validation without changing state. Errors use the shared client-safe codes.
+///
+/// Domain operations require explicit implementations. Snapshot cache identity
+/// is optional. Engine-specific maintenance such as WAL checkpoints and SQLite
+/// bundles remains on `Store` and `Project`, outside this contract.
+pub trait StorageBackend: Send + Sync {
+    fn list_projects(&self) -> Result<Vec<ProjectMeta>>;
+    fn create_project(&self, slug: &str, name: &str) -> Result<ProjectMeta>;
+    fn project_meta(&self, key: &str) -> Result<ProjectMeta>;
+    fn snapshot(&self, project: &str) -> Result<Snapshot>;
+    /// Authoritative lookup by ID or slug. A source error must propagate.
+    /// Backends that cannot provide a cheap, reliable probe return None.
+    fn snapshot_cache_identity(&self, _project: &str) -> Result<Option<SnapshotCacheIdentity>> {
+        Ok(None)
+    }
+    /// A cache fill must use the identity of the same read as the snapshot.
+    /// None makes the snapshot eligible to serve without populating the cache.
+    /// The snapshot is shared so read-only callers, such as response encoding,
+    /// avoid copying a backend-cached value.
+    fn snapshot_with_cache_identity(
+        &self,
+        project: &str,
+    ) -> Result<(Arc<Snapshot>, Option<SnapshotCacheIdentity>)> {
+        self.snapshot(project)
+            .map(|snapshot| (Arc::new(snapshot), None))
+    }
+    fn apply_batch(&self, project: &str, request: BatchRequest) -> Result<BatchResult>;
+    fn dry_run_batch(&self, project: &str, request: BatchRequest) -> Result<DryRunResult>;
+    fn commits_after(&self, project: &str, revision: u64, limit: usize) -> Result<Vec<Commit>>;
+    fn import_asset(&self, project: &str, request: ImportAssetRequest)
+        -> Result<ImportAssetResult>;
+    fn read_asset(&self, project: &str, id: &str) -> Result<(Asset, Vec<u8>)>;
+    fn read_font(&self, project: &str, id: &str) -> Result<(Font, String, Vec<u8>)>;
+    /// Reads data-only operations from backend-owned staging. The legacy path is
+    /// interpreted and contained by the backend, never by a shared local-FS layer.
+    /// A backend without staging must return an explicit unsupported error.
+    fn read_batch_file_operations(
+        &self,
+        project: &str,
+        request: &BatchFileRequest,
+    ) -> Result<Value>;
+}

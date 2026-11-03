@@ -1,9 +1,9 @@
 //! Solid-or-gradient fill validation; color-only contexts still use `resolve_value`.
-use super::{values::*, Candidate};
+use super::{scope::Resolver, values::*};
 use crate::{error::*, model::NodeKind};
 use serde_json::Value;
 
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn resolve_paint(&self, value: &Value) -> Result<Value> {
         if let Some(id) = value.get("styleId").and_then(Value::as_str) {
             if value.as_object().is_none_or(|o| o.len() != 1) {

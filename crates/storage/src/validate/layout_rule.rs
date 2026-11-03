@@ -1,5 +1,5 @@
 //! The authored `layout` object: keys, padding forms, stack alignment and token refs.
-use super::{values::number, Candidate};
+use super::{scope::Resolver, values::number};
 use crate::error::*;
 use serde_json::{Map, Value};
 
@@ -113,7 +113,7 @@ fn unknown_key(key: &str) -> StorageError {
     e
 }
 
-impl Candidate {
+impl Resolver<'_> {
     /// Resolves dimension tokens in `padding` (object or list items) and `gap`.
     pub(super) fn resolve_layout_refs(&self, layout: &mut Value) -> Result<()> {
         let Some(layout) = layout.as_object_mut() else {

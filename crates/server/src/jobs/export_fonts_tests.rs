@@ -33,7 +33,7 @@ async fn stale_scene_font_identity_cannot_export_replacement_bytes() {
     );
     let mut scene = json!({"nodes":[{"kind":"text","fontId":"face"}],"fonts":[{"id":"face","hash":first.asset.content_hash,"weight":400,"style":"normal"}]});
     let source = AssetSource {
-        store,
+        store: store.into(),
         project_id: project.id().into(),
     };
     let (_, css) = embed(&source, &scene).await.unwrap();

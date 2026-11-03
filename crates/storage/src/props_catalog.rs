@@ -13,6 +13,7 @@ pub enum PropScope {
     Layer,
     /// Frames only.
     Frame,
+    Themed,
     Container,
     Text,
     Image,
@@ -29,6 +30,7 @@ impl PropScope {
             Self::Rendered => *kind != NodeKind::Page,
             Self::Layer => *kind != NodeKind::Page,
             Self::Frame => *kind == NodeKind::Frame,
+            Self::Themed => matches!(kind, NodeKind::Frame | NodeKind::Instance),
             Self::Container => kind.container(),
             Self::Text => *kind == NodeKind::Text,
             Self::Image => *kind == NodeKind::Image,
@@ -42,6 +44,7 @@ impl PropScope {
             Self::Rendered => "frame, group, rectangle, text, image",
             Self::Layer => "frame, group, rectangle, text, image",
             Self::Frame => "frame",
+            Self::Themed => "frame, instance",
             Self::Container => "page, frame, group",
             Self::Text => "text",
             Self::Image => "image",
@@ -58,6 +61,7 @@ impl PropScope {
             }
             Self::Layer => "Pages cannot carry links or states; put them on a node inside a frame",
             Self::Frame => "Only frames support flowStart",
+            Self::Themed => "Only frames and instances support a scoped theme",
             Self::Container => "Only containers support layout",
             Self::Text => "Text properties require a text node",
             Self::Image => "Image properties require an image node",
@@ -99,7 +103,8 @@ use PropScope::{Any, Container, Frame, Image, Layer, Rendered, Text};
 pub const PROPS: &[PropSpec] = &[
     prop("component", Frame, false, "object {name: string}; reusable master, no links or animations in its subtree", &[]),
     prop("componentId", PropScope::Instance, true, "ID of a component frame", &[]),
-    prop("overrides", PropScope::Instance, false, "object keyed by master descendant IDs; partial text, fill, visible, styleId, assetId, name", &[]),
+    prop("overrides", PropScope::Instance, false, "object keyed by master descendant IDs; text, fill, visible, styleId, assetId, name, stroke (object merge), shadow (array replace), states (per-state visual property merge), opacity, radius", &[]),
+    prop("theme", PropScope::Themed, false, "string: default or a theme declared by at least one token; nearest scoped ancestor wins over render/export fallback", &[]),
     prop("visible", Any, false, "boolean; false hides the node and its descendants", &[]),
     prop("name", Any, false, "string, at most 256 bytes", &["title"]),
     prop("styleId", Any, false, "ID of a fill style (any kind) or a text style (text nodes only); its values apply under the node's own props", &["style", "textStyle", "fillStyle", "textStyleId", "fillStyleId"]),

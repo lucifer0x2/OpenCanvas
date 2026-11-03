@@ -90,36 +90,7 @@ impl Project {
         };
         candidate.assets.insert(asset_id.clone(), asset.clone());
         let mut changed = vec![asset_id.clone()];
-        if let Some(font) = &request.font {
-            if !request.media_type.starts_with("font/")
-                || !validate::valid_id(&font.id)
-                || font.id == "font_bundled"
-                || font.family.is_empty()
-                || font.family.len() > 128
-                || !(100..=900).contains(&font.weight)
-                || !["normal", "italic"].contains(&font.style.as_str())
-            {
-                return Err(StorageError::validation(
-                    "font",
-                    "Invalid font registration",
-                ));
-            }
-            candidate.fonts.insert(
-                font.id.clone(),
-                Font {
-                    id: font.id.clone(),
-                    family: font.family.clone(),
-                    weight: font.weight,
-                    style: font.style.clone(),
-                    asset_id: Some(asset_id.clone()),
-                    bundled_id: None,
-                    content_hash: Some(content_hash.clone()),
-                    license: font.license.clone(),
-                    status: "ready".into(),
-                },
-            );
-            changed.push(font.id.clone());
-        }
+        register_font(&mut candidate, &request, &asset, &mut changed)?;
         candidate.validate()?;
         // Immutable content is durable before the DB can refer to it. A crash here
         // leaves only an orphan, which is deliberately not garbage collected.
@@ -210,4 +181,43 @@ pub(crate) fn asset_dimensions(mime: &str, bytes: &[u8]) -> Result<(Option<u32>,
         "font/woff2" if bytes.len()>48 && bytes.starts_with(b"wOF2") => Ok((None,None)),
         _=>Err(StorageError::validation("mediaType","Supported asset types are PNG, JPEG, WebP, TTF, OTF and WOFF2 with matching signatures")),
     }
+}
+
+pub(crate) fn register_font(
+    candidate: &mut Candidate,
+    request: &ImportAssetRequest,
+    asset: &Asset,
+    changed: &mut Vec<String>,
+) -> Result<()> {
+    if let Some(font) = &request.font {
+        if !request.media_type.starts_with("font/")
+            || !validate::valid_id(&font.id)
+            || font.id == "font_bundled"
+            || font.family.is_empty()
+            || font.family.len() > 128
+            || !(100..=900).contains(&font.weight)
+            || !["normal", "italic"].contains(&font.style.as_str())
+        {
+            return Err(StorageError::validation(
+                "font",
+                "Invalid font registration",
+            ));
+        }
+        candidate.fonts.insert(
+            font.id.clone(),
+            Font {
+                id: font.id.clone(),
+                family: font.family.clone(),
+                weight: font.weight,
+                style: font.style.clone(),
+                asset_id: Some(asset.id.clone()),
+                bundled_id: None,
+                content_hash: Some(asset.content_hash.clone()),
+                license: font.license.clone(),
+                status: "ready".into(),
+            },
+        );
+        changed.push(font.id.clone());
+    }
+    Ok(())
 }

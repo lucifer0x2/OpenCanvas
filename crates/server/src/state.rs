@@ -1,13 +1,12 @@
 use crate::{
     error::{ApiError, Result},
     jobs::Jobs,
+    snapshot_http::SnapshotRepresentations,
 };
-use opencanvas_storage::{Project, Snapshot, Store};
-use pins::ProjectPins;
+use opencanvas_storage::{ProjectHandle, ProjectMeta, Snapshot, Storage};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{broadcast, watch};
-mod pins;
 
 #[derive(Clone)]
 pub struct Config {
@@ -31,15 +30,16 @@ impl Config {
 }
 #[derive(Clone)]
 pub struct AppState {
-    pub store: Store,
+    pub store: Storage,
     pub config: Arc<Config>,
     pub events: broadcast::Sender<Value>,
     pub jobs: Arc<Jobs>,
-    pins: Arc<ProjectPins>,
+    pub(crate) snapshot_representations: SnapshotRepresentations,
     shutdown: Arc<watch::Sender<bool>>,
 }
 impl AppState {
-    pub fn new(store: Store, config: Config) -> Self {
+    pub fn new(store: impl Into<Storage>, config: Config) -> Self {
+        let store = store.into();
         let (events, _) = broadcast::channel(128);
         let config = Arc::new(config);
         let jobs = Jobs::start(config.clone(), events.clone(), store.clone());
@@ -48,7 +48,7 @@ impl AppState {
             config,
             events,
             jobs,
-            pins: Arc::default(),
+            snapshot_representations: SnapshotRepresentations::new(),
             shutdown: Arc::new(watch::channel(false).0),
         }
     }
@@ -66,7 +66,7 @@ impl AppState {
     pub async fn db<T, F>(&self, f: F) -> Result<T>
     where
         T: Send + 'static,
-        F: FnOnce(Store) -> opencanvas_storage::Result<T> + Send + 'static,
+        F: FnOnce(Storage) -> opencanvas_storage::Result<T> + Send + 'static,
     {
         let store = self.store.clone();
         tokio::task::spawn_blocking(move || f(store))
@@ -75,18 +75,27 @@ impl AppState {
             .map_err(Into::into)
     }
     pub async fn snapshot(&self, id: String) -> Result<Snapshot> {
-        let pins = self.pins.clone();
-        self.db(move |s| pins.snapshot(&s, &id)).await
+        self.db(move |s| s.snapshot(&id)).await
     }
-    /// Runs `f` on the project named by id or slug, through the pinned handle.
+    /// Canonical ID, slug and current revision by ID or slug, without loading the design.
+    /// Fails with the same codes as `snapshot` (for example `PROJECT_NOT_FOUND`).
+    pub async fn project_meta(&self, id: String) -> Result<ProjectMeta> {
+        self.db(move |s| s.project_meta(&id)).await
+    }
+    /// The project's current revision, or `fallback` when it cannot be read.
+    pub async fn revision_or(&self, id: String, fallback: u64) -> u64 {
+        self.project_meta(id)
+            .await
+            .map_or(fallback, |meta| meta.revision)
+    }
+    /// Runs `f` on the backend's project named by id or slug, off the async reactor.
     pub async fn project<T, F>(&self, id: String, f: F) -> Result<T>
     where
         T: Send + 'static,
-        F: FnOnce(&Project) -> opencanvas_storage::Result<T> + Send + 'static,
+        F: FnOnce(&ProjectHandle) -> opencanvas_storage::Result<T> + Send + 'static,
     {
-        let pins = self.pins.clone();
         self.db(move |s| {
-            let project = pins.open(&s, &id)?;
+            let project = s.open_project(&id)?;
             f(&project)
         })
         .await

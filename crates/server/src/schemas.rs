@@ -1,6 +1,7 @@
 use rmcp::model::Tool;
 use serde_json::{json, Value};
 use std::{collections::HashMap, sync::OnceLock};
+mod batch;
 mod export;
 mod operations;
 mod render;
@@ -97,6 +98,7 @@ fn build() -> Vec<Tool> {
         if name == "get_design_context" {
             properties["viewports"] = json!({"type":"array","minItems":1,"maxItems":4,"items":viewport()});
             properties["compact"] = json!({"type":"boolean"});
+            properties["nodeFormat"] = json!({"type":"string","enum":["rows"],"description":"Encode the top-level nodes array as rows-v1. Read the ordered nodeColumns once per page: id, parentId, sortKey, kind, props and an optional trailing extra object. Merge extra fields into the node object, keeping null values. Omit nodeFormat for node objects. Repeat the format on every cursor page. Compatible with compact:true."});
             properties["notes"] = json!({"enum":["open","all","none"]});
             properties["instances"] = json!({"enum":["reference","expand"]});
             properties["statesMode"] = json!({"enum":["none","resolved"]});
@@ -137,7 +139,16 @@ fn build() -> Vec<Tool> {
             &["projectId", "sinceRevision"],
         ),
     );
-    add("apply_batch","Atomically apply ordered operations; *_note ops keep design intent on a node (delete_subtree drops its notes). Replay the identical key/body after lost responses; a changed body requires a new key. A REVISION_CONFLICT carries changedSince, the IDs changed after your expectedRevision: rebase on them or read back.".into(),object(json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"operations":{"type":"array","minItems":1,"maxItems":500,"items":operations::schema()}}),&["projectId","expectedRevision","idempotencyKey","operations"]));
+    add(
+        "apply_batch",
+        batch::INLINE_DESCRIPTION.into(),
+        batch::inline(),
+    );
+    add(
+        "apply_batch_file",
+        batch::FILE_DESCRIPTION.into(),
+        batch::file(),
+    );
     add(
         "import_asset",
         "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted. Returns asset plus, as apply_batch does, committedRevision, changedIds, renderStatus and replayed at the top level (result repeats them).".into(),

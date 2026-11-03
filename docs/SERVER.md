@@ -3,14 +3,14 @@
 Project font import, exact original-file downloads, MCP metadata and rendering
 portability limits are documented in [Project fonts](FONTS.md). The viewer font
 POST reuses the `import_asset` transaction; project font download URLs also serve
-the worker's validated font bytes. A project database alone does not contain its
-uploaded font files.
+the worker's validated font bytes. SQLite stores uploaded font files alongside
+the project database.
 
 For changes/history, notes, consistency, mutation responses, layout and animations,
 see [Server operations](SERVER-OPERATIONS.md). Interaction variants and state render
 semantics are specified in [Interaction states](INTERACTION-STATES.md).
 
-The Rust process owns one data-root lock and serves the official `rmcp` 3.4.0 Streamable HTTP endpoint at `/mcp`, viewer HTTP API at `/api/v1`, and built viewer files from `web/dist`. It listens on `127.0.0.1`; port defaults to 3847. Creating the server does not create a project. `create_project` is the operation that creates `<data-root>/<slug>/db.sql` and `assets/`.
+The Rust process serves the official `rmcp` 3.4.0 Streamable HTTP endpoint at `/mcp`, the viewer HTTP API at `/api/v1`, and built viewer files from `web/dist`. It listens on `127.0.0.1` by default. In SQLite mode it owns one data-root lock, and `create_project` creates `<data-root>/<slug>/db.sql` and `assets/`.
 
 ## Build and launch
 
@@ -34,7 +34,9 @@ npm run dev -- --data-root "$OPENCANVAS_TEST_ROOT" --port 0
 
 Use the printed URL. `npm run dev` launches the existing debug build; `npm start` launches the existing release build. Both serve compiled viewer files, forward server options, and never rebuild. `CARGO_TARGET_DIR` must match the build environment; relative paths resolve from the repository root. The launcher passes that profile's layout-step through `OPENCANVAS_LAYOUT_BIN`, also used by the startup pipeline fingerprint. Direct server and Docker invocation retain `target/debug/layout-step` as the default worker path.
 
-`--port 0` selects a random loopback port and prints the actual URL. `--data-root` also accepts `OPENCANVAS_DATA_ROOT`; the CLI flag wins. With neither option the production default is `~/.opencanvas`. Tests always use temporary roots and random ports. Stop the process with Ctrl-C; a second process using the same data root receives a lock error. Keep the selected root when restarting to retain project IDs, revisions, nodes and resources.
+The local port defaults to 3847. Set `PORT` or pass `--port`, which takes precedence. Port 0 binds an available port and prints the actual URL. Stop the process with Ctrl-C.
+
+SQLite is the default storage provider. Use `DATABASE_PROVIDER=postgresql` and supply `DATABASE_URL` in the environment to use [PostgreSQL with the in-process snapshot cache](POSTGRES-BACKEND.md). In SQLite mode, `--data-root` takes precedence over `OPENCANVAS_DATA_ROOT`, and the default is `~/.opencanvas`. A second SQLite process using the same data root receives a lock error. Keep the selected root when restarting to retain project IDs, revisions, nodes and resources. Tests use isolated storage and available ports.
 
 `--host` takes `127.0.0.1` (default) or `0.0.0.0`, which listens on every interface for a container whose port is published on host loopback only; Host/Origin checks are unchanged, and worker callbacks and `imageUrl` still use `http://127.0.0.1:<port>`, so no other address is accepted. See "Docker" in `README.md`.
 
@@ -54,7 +56,7 @@ The local listener keeps its existing MCP and write access.
 There is no authentication or per-project sharing filter. **Anyone with the
 public URL can read every project and its notes, assets and fonts, follow live
 updates, download original resources, and request/export files.** Use a separate
-data root if only selected projects should be shared. Rendering still has the
+SQLite data root or PostgreSQL database if only selected projects should be shared. Rendering still has the
 existing queue, pixel and file budgets; public viewers share that capacity with
 local agents.
 
@@ -354,6 +356,27 @@ The key set mirrors storage validation (`validate/refs.rs`, `properties.rs`,
 compact resources alone resolve the frame to identical values for every theme, and
 dropping any one of them fails validation. Measured savings are in
 `TASK07-REPORT.md` (07C).
+
+### Row encoding for design context
+
+Pass `nodeFormat: "rows"` to `get_design_context` to encode its top-level `nodes`
+as arrays. Every page declares `nodeFormat: "rows-v1"` and
+`nodeColumns: ["id", "parentId", "sortKey", "kind", "props", "extra"]`.
+The first five positions always exist. A sixth position appears when the node has
+other fields. Merge the keys of this object into the decoded node, preserving
+explicit `null` values. It can carry fields such as `resolvedProps`,
+`resolvedStates`, `effectiveTheme`, `computedBounds`, `omittedChildren` and instance
+metadata. Component definitions keep their own object-form `nodes` arrays.
+
+```json
+{"nodeFormat":"rows-v1","nodeColumns":["id","parentId","sortKey","kind","props","extra"],"nodes":[["hero","page",0,"frame",{"width":320,"height":200},{"effectiveTheme":"default","resolvedProps":{}}]]}
+```
+
+Rows retain node preorder, scope and context metadata. `compact: true` applies
+the same property and resource rules with either encoding. The byte budget
+counts the encoded rows and their declarations, so page boundaries may differ.
+Repeat the same `nodeFormat` to follow a cursor within its revision. Omit
+`nodeFormat` to receive node objects.
 
 ## Navigation links
 

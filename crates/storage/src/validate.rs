@@ -18,6 +18,7 @@ mod prop_keys;
 mod properties;
 mod quad;
 mod refs;
+mod scope;
 mod shadow;
 mod states;
 mod stroke;

@@ -1,7 +1,7 @@
-use super::{values::*, Candidate};
+use super::{scope::Resolver, values::*, Candidate};
 use crate::{error::*, model::*};
 use serde_json::{Map, Value};
-impl Candidate {
+impl Resolver<'_> {
     pub fn resolve_value(&self, v: &Value, expected: &str) -> Result<Value> {
         if let Some(o) = v.as_object() {
             if o.len() != 1 {
@@ -23,7 +23,7 @@ impl Candidate {
                         "Token type does not match this property",
                     ));
                 }
-                return self.token_value(&token.id, &self.theme);
+                return self.token_value(&token.id, self.theme);
             }
             if expected == "color" {
                 if let Some(s) = o.get("styleId").and_then(Value::as_str) {
@@ -62,7 +62,7 @@ impl Candidate {
         literal(v, expected)?;
         Ok(v.clone())
     }
-    pub fn resolve_props(&self, node: &Node) -> Result<Value> {
+    pub(super) fn resolve_props(&self, node: &Node) -> Result<Value> {
         let authored = node
             .props
             .as_object()
@@ -159,11 +159,17 @@ fn resolve_nodes(snapshot: &Snapshot, theme: &str, expanded: bool) -> Result<Vec
     } else {
         snapshot.nodes.clone()
     };
+    // Virtual parents must be looked up at their placed IDs, never in master ancestry.
+    c.nodes = nodes.iter().cloned().map(|n| (n.id.clone(), n)).collect();
     nodes
         .into_iter()
         .map(|mut n| {
             // `fit` keeps its authored name: resolved props and scenes share IMAGE_FITS.
+            let effective_theme = c.effective_theme(&n)?.to_string();
             n.props = c.resolve_props(&n)?;
+            if expanded {
+                n.props["effectiveTheme"] = Value::String(effective_theme);
+            }
             if expanded && n.props["visible"] == false {
                 n.props["opacity"] = serde_json::json!(0);
             }
@@ -193,6 +199,8 @@ pub fn referenced_font_ids(
     nodes: &[&Node],
 ) -> Result<std::collections::BTreeSet<String>> {
     let mut candidate = Candidate::from_snapshot(snapshot);
+    let expanded = crate::instances::expand(&snapshot.nodes)?;
+    candidate.nodes = expanded.into_iter().map(|n| (n.id.clone(), n)).collect();
     let mut ids = std::collections::BTreeSet::new();
     for theme in candidate.validate_tokens()? {
         candidate.theme = theme;

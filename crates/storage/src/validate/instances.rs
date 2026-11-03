@@ -16,6 +16,14 @@ impl Candidate {
         }
         let has_instances = self.nodes.values().any(|n| n.kind == NodeKind::Instance);
         self.instance_graph()?;
+        let expanded = expand(&self.nodes.values().cloned().collect::<Vec<_>>())?;
+        let themes = self.validate_tokens()?;
+        let mut placed = self.clone();
+        placed.nodes = expanded
+            .iter()
+            .cloned()
+            .map(|n| (n.id.clone(), n))
+            .collect();
         for node in self.nodes.values() {
             if let Some(component) = node.props.get("component") {
                 if component.as_object().is_none_or(|o| o.len() != 1)
@@ -74,17 +82,22 @@ impl Candidate {
                                 ));
                             }
                         }
-                        let mut child = self.nodes[target].clone();
-                        child.props.as_object_mut().unwrap().extend(patch.clone());
-                        self.properties(&child).map_err(|mut e| {
-                            e.field = Some(format!(
-                                "props.overrides.{target}.{}",
-                                e.field
-                                    .unwrap_or_else(|| "props".into())
-                                    .trim_start_matches("props.")
-                            ));
-                            e
-                        })?;
+                        let child = placed
+                            .nodes
+                            .get(&format!("{}/{target}", node.id))
+                            .expect("master descendant has an expanded placement");
+                        for theme in &themes {
+                            placed.theme = theme.clone();
+                            placed.properties(child).map_err(|mut e| {
+                                e.field = Some(format!(
+                                    "props.overrides.{target}.{}",
+                                    e.field
+                                        .unwrap_or_else(|| "props".into())
+                                        .trim_start_matches("props.")
+                                ));
+                                e
+                            })?;
+                        }
                     }
                 }
             }
@@ -102,17 +115,9 @@ impl Candidate {
             }
         }
         if has_instances {
-            let nodes: Vec<_> = self.nodes.values().cloned().collect();
             // The bounded expander rejects direct/indirect cycles and depth explosions.
-            let expanded = expand(&nodes)?;
-            for theme in self.validate_tokens()? {
-                let mut placed = self.clone();
+            for theme in themes {
                 placed.theme = theme;
-                placed.nodes = expanded
-                    .iter()
-                    .cloned()
-                    .map(|n| (n.id.clone(), n))
-                    .collect();
                 for node in expanded.iter().filter(|n| {
                     n.id.contains('/')
                         || self

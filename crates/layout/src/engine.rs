@@ -124,6 +124,10 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
         };
         nodes.push(SceneNode {
             id: n.id.clone(),
+            effective_theme: p
+                .effective_theme
+                .clone()
+                .unwrap_or_else(|| input.theme.clone()),
             parent_id: if idx == root_idx {
                 None
             } else {

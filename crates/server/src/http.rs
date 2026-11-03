@@ -52,7 +52,10 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/api/v1/viewer", get(viewer_access))
         .route("/api/v1/projects", get(projects))
-        .route("/api/v1/projects/{project}/snapshot", get(snapshot))
+        .route(
+            "/api/v1/projects/{project}/snapshot",
+            get(crate::snapshot_http::get),
+        )
         .route("/api/v1/projects/{project}/fonts", get(crate::fonts::list))
         .route(
             "/api/v1/projects/{project}/fonts/{font}/download",
@@ -104,11 +107,6 @@ async fn create(
         )
         .await?,
     ))
-}
-async fn snapshot(State(s): State<AppState>, Path(id): Path<String>) -> Result<Json<Value>> {
-    let mut value = serde_json::to_value(s.snapshot(id).await?)?;
-    value["truncated"] = json!(false);
-    Ok(Json(value))
 }
 async fn scene(
     State(s): State<AppState>,
