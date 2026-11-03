@@ -111,3 +111,20 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Giao và nhận khảo sát chỉ đọc về Compose, dữ liệu PostgreSQL và public viewer. Root xác nhận hai project trên 3857, PostgreSQL 16 và PVC đang hoạt động. Compose mặc định dùng SQLite.
 - Điểm dừng: phương án là dump/restore toàn bộ PostgreSQL vào volume Docker riêng, kiểm parity trước khi mở ghi, giữ PVC nguồn để quay lại và giữ cổng 3857/3858. Chưa tạo backup hay chuyển dịch vụ.
+
+### Chuyển runtime PostgreSQL từ Kubernetes sang Compose — 2026-11-03
+
+- Người dùng duyệt dừng ghi và chuyển stack để giảm tài nguyên nền Kubernetes. Giao worker riêng cho cấu hình Compose và backup thử. Chỉ đóng băng nguồn sau khi khôi phục thử đạt; giữ PVC nguồn và endpoint 3857/3858.
+- Nhận cấu hình Compose và backup thử cùng fingerprint theo snapshot PostgreSQL. Kiểm schema, archive và hai cổng loopback đạt; giao worker vận hành khôi phục thử trên volume riêng trước khi chuyển cổng.
+- Bản thử qua đối chiếu SQL, snapshot HTTP, MCP, PNG và public viewer sau restart hai container. Root duyệt bắt đầu cutover đã được người dùng cho phép. Worker OrbStack xác minh `orb stop k8s` chỉ dừng cụm, chờ Compose qua kiểm tra trước khi thực hiện.
+- Cutover hoàn tất. Dừng writer, giữ archive đã kiểm checksum, restore và đối chiếu toàn DB trước mở cổng. Hai project giữ ID/revision; snapshot, lịch sử, binary, MCP, PNG U07 và public guard đạt. PVC/Secret nguồn giữ nguyên và rehearsal đã dọn. [Runbook](../COMPOSE-POSTGRES.md).
+- `orb stop k8s` dừng toàn bộ container Kubernetes nhưng OrbStack cũng restart Docker ngắn. Compose tự lên lại; root kiểm lại snapshot/MCP/3858. Task15 PG cùng container đã được khởi động lại với port động mới; container test AXIS tạm bị Docker dọn. Điểm dừng ở hai container Compose healthy và cụm Kubernetes đã dừng.
+
+### Đo RAM Compose và dừng PostgreSQL thử nghiệm Task15 — 2026-11-03
+
+- Người dùng yêu cầu giải thích icon/RAM và dừng PostgreSQL phụ nếu không còn dùng. Giao worker kiểm tra consumer và dừng đúng container Task15 khi an toàn; root kiểm nhãn và RAM của Compose.
+- Điểm dừng: Task15 benchmark có 0 client, đã dừng sạch và giữ volume. Root kiểm cả hai container Compose healthy và hai revision giữ nguyên. App vẫn dùng tag image `kubernetes-local` dưới Compose; Kubernetes tắt. Node/Chromium và Rust chiếm phần lớn RAM tiến trình, cgroup có cache file và đỉnh cao hơn mức lúc đo.
+
+### Xuất bản nhánh Docker Compose PostgreSQL — 2026-11-03
+
+- Người dùng yêu cầu commit và push nhánh mới. Giao worker tách cấu hình/runbook Compose và nhật ký liên quan từ `codex/kubernetes-local`; giữ các ghi chú khảo sát khác ở working tree.
