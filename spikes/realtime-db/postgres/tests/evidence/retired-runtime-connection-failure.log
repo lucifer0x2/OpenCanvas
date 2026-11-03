@@ -1,0 +1,73 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/contract.rs (spikes/realtime-db/postgres/target/debug/deps/contract-5a8ff2466ec3a051)
+
+running 10 tests
+test atomic::held_project_lock_does_not_block_another_project ... postgres: error connecting to server
+
+thread 'atomic::held_project_lock_does_not_block_another_project' (9683208) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test atomic::late_validation_and_late_sql_failure_leave_no_partial_records ... postgres: error connecting to server
+
+thread 'atomic::late_validation_and_late_sql_failure_leave_no_partial_records' (9683209) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test atomic::same_project_race_and_stale_replay_are_atomic ... postgres: error connecting to server
+
+thread 'atomic::same_project_race_and_stale_replay_are_atomic' (9683210) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test notifications::invalid_future_stream_cursor_gets_reset_then_closes ... postgres: error connecting to server
+
+thread 'notifications::invalid_future_stream_cursor_gets_reset_then_closes' (9683211) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test notifications::notifications_are_post_commit_dry_run_silent_and_listener_recovers ... postgres: error connecting to server
+
+thread 'notifications::notifications_are_post_commit_dry_run_silent_and_listener_recovers' (9683212) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test notifications::polling_and_reconnected_stream_catch_up_without_any_notify_listener ... postgres: error connecting to server
+
+thread 'notifications::polling_and_reconnected_stream_catch_up_without_any_notify_listener' (9683213) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test reads::concurrent_snapshots_match_gapless_revision_and_both_entity_values ... postgres: error connecting to server
+
+thread 'reads::concurrent_snapshots_match_gapless_revision_and_both_entity_values' (9683214) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test reads::dry_run_and_validation_failure_reserve_no_key_or_durable_rows ... postgres: error connecting to server
+
+thread 'reads::dry_run_and_validation_failure_reserve_no_key_or_durable_rows' (9683215) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test reads::future_cursor_and_missing_commit_are_explicit_errors ... postgres: error connecting to server
+
+thread 'reads::future_cursor_and_missing_commit_are_explicit_errors' (9683216) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+test reads::snapshot_keeps_revision_and_paired_entities_from_one_database_snapshot ... postgres: error connecting to server
+
+thread 'reads::snapshot_keeps_revision_and_paired_entities_from_one_database_snapshot' (9683217) panicked at tests/contract/support.rs:16:42:
+called `Result::unwrap()` on an `Err` value: DomainError { code: "INTERNAL_ERROR", message: "Database operation failed", current_revision: None }
+FAILED
+
+failures:
+
+failures:
+    atomic::held_project_lock_does_not_block_another_project
+    atomic::late_validation_and_late_sql_failure_leave_no_partial_records
+    atomic::same_project_race_and_stale_replay_are_atomic
+    notifications::invalid_future_stream_cursor_gets_reset_then_closes
+    notifications::notifications_are_post_commit_dry_run_silent_and_listener_recovers
+    notifications::polling_and_reconnected_stream_catch_up_without_any_notify_listener
+    reads::concurrent_snapshots_match_gapless_revision_and_both_entity_values
+    reads::dry_run_and_validation_failure_reserve_no_key_or_durable_rows
+    reads::future_cursor_and_missing_commit_are_explicit_errors
+    reads::snapshot_keeps_revision_and_paired_entities_from_one_database_snapshot
+
+test result: FAILED. 0 passed; 10 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test contract`
