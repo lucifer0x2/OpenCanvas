@@ -1,8 +1,9 @@
 use super::{
     animated, compact, diagnostics, index::TreeIndex, instances, navigation, notes, pagination,
-    sanitize_asset, viewports::Computed, ReadRequest,
+    sanitize_asset, viewports::Computed, NodeFormat, ReadRequest,
 };
 use crate::error::{ApiError, Result};
+use crate::node_rows;
 use opencanvas_storage::{resolved_expanded_nodes, resolved_tokens_for_theme, NodeKind, Snapshot};
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -27,6 +28,7 @@ pub(super) fn read(
         return Err(ApiError::invalid("Choose one scope ID"));
     }
     let context = name == "get_design_context";
+    let rows = context && matches!(req.node_format, Some(NodeFormat::Rows));
     let expanded = if s.nodes.iter().any(|n| n.kind == NodeKind::Instance) {
         std::borrow::Cow::Owned(opencanvas_storage::instances::expand(&s.nodes)?)
     } else {
@@ -64,6 +66,12 @@ pub(super) fn read(
                     .iter()
                     .map(|(n, _)| *n)
                     .chain(instances::definition_nodes(s, &ordered)),
+                expanded_index
+                    .preorder(root.map(String::as_str))
+                    .iter()
+                    .filter_map(|(n, _)| by_id.get(n.id.as_str()))
+                    .filter_map(|n| n.props["effectiveTheme"].as_str())
+                    .chain(std::iter::once(theme)),
             )
         })
         .transpose()?;
@@ -87,6 +95,11 @@ pub(super) fn read(
             let mut value = json!(authored);
             if context {
                 let mut props = by_id[node.id.as_str()].props.clone();
+                value["effectiveTheme"] = props
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("effectiveTheme")
+                    .unwrap();
                 if super::states::requested(&req) {
                     if let Some(states) = super::states::differing(&props, &node.kind) {
                         value["resolvedStates"] = states;
@@ -113,12 +126,19 @@ pub(super) fn read(
         if req.depth == Some(*d) && omitted > 0 {
             value["omittedChildren"] = json!(omitted);
         }
+        if rows {
+            value = node_rows::pack(value);
+        }
         entries.push(("nodes".into(), value));
     }
     if let (true, Some(frame)) = (context, root) {
         entries.extend(notes::entries(s, &index, frame, &ordered, req.notes));
     }
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
+    if rows {
+        response["nodeFormat"] = json!(node_rows::FORMAT);
+        response["nodeColumns"] = json!(node_rows::COLUMNS);
+    }
     if context {
         if !expand && offset == 0 {
             let definitions = instances::definitions(

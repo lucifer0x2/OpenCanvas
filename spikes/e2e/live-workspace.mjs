@@ -35,7 +35,7 @@ export async function verifyLiveWorkspace(browser) {
     mcp = await connectMcp(server.base);
     view = await openTab(browser, server.base);
     const { page: tab, streams } = view;
-    const picker = tab.getByLabel("Project", { exact: true });
+    const picker = tab.getByRole("combobox", { name: "Project", exact: true });
     const selected = (id) =>
       waitFor(
         async () => (await picker.getAttribute("value")) === id,

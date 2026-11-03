@@ -57,7 +57,9 @@ impl IntoResponse for ApiError {
             }
             "PROJECT_NOT_FOUND" | "ASSET_NOT_FOUND" | "JOB_NOT_FOUND" | "NODE_NOT_FOUND"
             | "FILE_NOT_FOUND" | "FONT_NOT_FOUND" => StatusCode::NOT_FOUND,
-            "QUEUE_FULL" | "STORAGE_BUSY" => StatusCode::SERVICE_UNAVAILABLE,
+            "QUEUE_FULL" | "STORAGE_BUSY" | "STORAGE_UNAVAILABLE" => {
+                StatusCode::SERVICE_UNAVAILABLE
+            }
             "INTERNAL_ERROR" | "STORAGE_FAILED" | "STORAGE_IO" => StatusCode::INTERNAL_SERVER_ERROR,
             "IMAGE_NOT_READY" => StatusCode::CONFLICT,
             _ => StatusCode::BAD_REQUEST,
@@ -71,5 +73,25 @@ impl IntoResponse for ApiError {
             }
             None => (status, Json(body)).into_response(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn status(code: &str) -> StatusCode {
+        ApiError::from(StorageError::new(code, "fixture"))
+            .into_response()
+            .status()
+    }
+
+    #[test]
+    fn transient_storage_failures_are_service_unavailable() {
+        for code in ["QUEUE_FULL", "STORAGE_BUSY", "STORAGE_UNAVAILABLE"] {
+            assert_eq!(status(code), StatusCode::SERVICE_UNAVAILABLE, "{code}");
+        }
+        assert_eq!(status("PROJECT_NOT_FOUND"), StatusCode::NOT_FOUND);
+        assert_eq!(status("INVALID_REQUEST"), StatusCode::BAD_REQUEST);
     }
 }

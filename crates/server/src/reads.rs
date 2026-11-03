@@ -46,6 +46,8 @@ pub(super) struct ReadRequest {
     // get_design_context only; false is normalized to absent so the default scope hash holds.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     compact: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    node_format: Option<NodeFormat>,
     // get_design_context only; "open" (the default) is normalized to absent, like compact.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     notes: Option<notes::Filter>,
@@ -54,8 +56,20 @@ pub(super) struct ReadRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     states_mode: Option<String>,
 }
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum NodeFormat {
+    Rows,
+}
+
 pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
     let mut req: ReadRequest = serde_json::from_value(args)?;
+    if req.node_format.is_some() && name != "get_design_context" {
+        return Err(crate::ApiError::invalid(
+            "nodeFormat requires get_design_context",
+        ));
+    }
     req.compact = req.compact.filter(|on| *on);
     req.notes = req.notes.filter(|f| *f != notes::Filter::Open);
     req.instances = req.instances.filter(|mode| mode != "reference");

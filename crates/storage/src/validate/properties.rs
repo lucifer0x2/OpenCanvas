@@ -13,6 +13,23 @@ impl Candidate {
         if let Some(authored) = n.props.as_object() {
             check_keys(&n.kind, authored)?;
         }
+        if n.kind == NodeKind::Instance {
+            let master = n.props["componentId"]
+                .as_str()
+                .and_then(|id| self.nodes.get(id))
+                .filter(|n| n.kind == NodeKind::Frame && n.props.get("component").is_some())
+                .ok_or_else(|| {
+                    StorageError::validation("props.componentId", "Expected a component frame")
+                })?;
+            let mut placed = n.clone();
+            placed.kind = NodeKind::Frame;
+            placed.props = master.props.clone();
+            let mut patch = n.props.as_object().unwrap().clone();
+            patch.remove("componentId");
+            patch.remove("overrides");
+            crate::instance_paint::merge_props(&mut placed.props, &patch);
+            return self.properties(&placed);
+        }
         let props = self.resolve_props(n)?;
         let p = props.as_object().unwrap();
         check_keys(&n.kind, p)?;
@@ -41,7 +58,7 @@ impl Candidate {
                 "links" => check_links(v)?,
                 "flowStart" => self.check_flow_start(n, v)?,
                 "animations" => check_animations(v)?,
-                "states" => self.check_states(&n.kind, v)?,
+                "states" => self.resolver().check_states(&n.kind, v)?,
                 "clip" | "visible" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

@@ -113,7 +113,7 @@ fn fields(requested: Option<&[String]>) -> Result<Vec<&'static str>> {
 }
 
 fn project(node: &Value, fields: &[&str]) -> Value {
-    let mut out = json!({"id": node["id"]});
+    let mut out = json!({"id": node["id"], "effectiveTheme":node["effectiveTheme"]});
     for field in fields {
         out[*field] = node[*field].clone();
     }

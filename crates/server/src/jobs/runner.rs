@@ -12,7 +12,7 @@ use crate::{
     state::Config,
     worker::Worker,
 };
-use opencanvas_storage::Store;
+use opencanvas_storage::Storage;
 use serde_json::{json, Value};
 use std::{
     sync::{Arc, Weak},
@@ -27,7 +27,7 @@ pub(super) fn spawn(
     mut doorbell: mpsc::Receiver<()>,
     config: Arc<Config>,
     events: broadcast::Sender<Value>,
-    store: Store,
+    store: Storage,
 ) {
     tokio::spawn(async move {
         let mut worker: Option<Worker> = None;
@@ -58,7 +58,7 @@ pub(super) fn spawn(
 
 async fn run(
     config: &Config,
-    store: &Store,
+    store: &Storage,
     worker: &mut Option<Worker>,
     work: &Work,
 ) -> Result<(Value, Result<Rendered>)> {

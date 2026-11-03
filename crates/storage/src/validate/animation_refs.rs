@@ -1,13 +1,13 @@
 //! Token and style references inside `props.animations`: timing takes number tokens,
 //! keyframe values take number tokens and `fill` a color token or fill style.
-use super::Candidate;
+use super::scope::Resolver;
 use crate::error::*;
 use serde_json::Value;
 
 const TIMING: [&str; 2] = ["duration", "delay"];
 const NUMBERS: [&str; 5] = ["opacity", "translateX", "translateY", "scale", "rotate"];
 
-impl Candidate {
+impl Resolver<'_> {
     /// Resolves references in place at the current theme. Malformed shapes are left for
     /// `check_animations`, which reports them with their full path.
     pub(super) fn resolve_animations(&self, animations: &mut Value) -> Result<()> {

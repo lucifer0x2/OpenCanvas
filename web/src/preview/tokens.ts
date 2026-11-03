@@ -1,9 +1,10 @@
 import type { StyleDef, TokenDef } from "./types.ts";
 
-/** Token and fill-style lookup at the default design theme (docs/RESOLUTION.md). */
+/** Token and fill-style lookup at a scene node's effective design theme. */
 export interface TokenTable {
   tokens: Map<string, TokenDef>;
   styles: Map<string, StyleDef>;
+  theme: string;
 }
 
 export type Resolved<T> = { value: T } | { warning: string };
@@ -13,17 +14,19 @@ const MAX_ALIAS_DEPTH = 32;
 export function tokenTable(
   tokens: TokenDef[] = [],
   styles: StyleDef[] = [],
+  theme = "default",
 ): TokenTable {
   return {
     tokens: new Map(tokens.map((token) => [token.id, token])),
     styles: new Map(styles.map((style) => [style.id, style])),
+    theme,
   };
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** Follows `{aliasId}` chains and `{default, themes}` envelopes (default branch only). */
+/** Every alias target uses the same concrete theme, with its own default fallback. */
 function tokenValue(
   table: TokenTable,
   id: string,
@@ -35,7 +38,10 @@ function tokenValue(
     if (token.type !== type)
       return { warning: `token "${token.id}" is ${token.type}, not ${type}` };
     let value = token.value;
-    if (isObject(value) && "default" in value) value = value.default;
+    if (isObject(value) && "default" in value) {
+      const themes = isObject(value.themes) ? value.themes : {};
+      value = themes[table.theme] ?? value.default;
+    }
     if (isObject(value) && typeof value.aliasId === "string") {
       token = table.tokens.get(value.aliasId);
       continue;

@@ -6,13 +6,13 @@ use crate::{
     error::{ApiError, Result},
     svg::{scene_to_svg, Image},
 };
-use opencanvas_storage::Store;
+use opencanvas_storage::Storage;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
 /// Where the job reads image bytes: the project's asset store.
 pub struct AssetSource {
-    pub store: Store,
+    pub store: Storage,
     pub project_id: String,
 }
 

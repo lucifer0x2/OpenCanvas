@@ -26,24 +26,43 @@ use get_subtree {projectId, nodeId} for a smaller authored read. \
 verify the returned scope, and report a missing/deleted ID instead of guessing another element. \
 Read skill://opencanvas/implement-frame.md for the address contract.
 
-Reuse frame props.component masters with kind instance, componentId and flat overrides. Context defaults to references; instances:expand reads virtual children.
+Reuse named tokens/styles and frame props.component masters with kind instance, componentId and \
+flat overrides before duplicating trees. Frame/instance theme selects a token scheme for that \
+subtree; nearest scope wins. Context defaults to references; instances:expand reads virtual children.
 
 Finding: when you know a node's name, visible text, kind, ID or parent (parentId lists direct \
 children), call find_nodes; use get_outline when you need structure: depth counts from the scope \
 root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \
 the right') is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds.
 
-Authoring: get_outline first, then scoped reads. Create a page, then a frame, then its \
-descendants. Default to row/column stacks; reserve free for overlays and decoration. \
-Mutations need caller-chosen IDs, expectedRevision and a stable idempotencyKey; \
-replay the exact body after a lost response. A REVISION_CONFLICT carries changedSince \
-{fromRevision, toRevision, changedIds, truncated}: when truncated is false and no changed ID is a \
-node you edit or one of its ancestors, resend with expectedRevision toRevision and a new \
-idempotencyKey (the body changed); otherwise re-read those IDs with find_nodes ids, or catch up \
-with get_changes, before rebuilding the batch. The server validates every batch again, so a wrong \
-rebase fails rather than corrupting data. Node props accept only the keys listed per kind in \
-skill://opencanvas/props.md; read opencanvas://capabilities once per fingerprint/version before approximating unsupported behavior. A wrong key fails with field props.<key>, allowedKeys and a suggestion. Keep paragraph/label source strings and spaces semantic; measured characters/lines are comparison output. Intentional lettering/motion is valid: record intent in a note and never auto-merge layers. Text must declare a valid font, size and line height, or take them from a text style. Render jobs never change the \
-authored revision.
+Authoring and editing designs: inspect tools/list inputSchema and send structured JSON operations \
+through MCP apply_batch (1–500 operations, atomic). Do not substitute a JS, shell or HTTP mutation \
+client for available design tools. This client guidance does not restrict app implementation, \
+tests or authorized project-memory filesystem access, and cannot enforce a client's system prompt \
+or external programs. Repeated valid operations are permitted. Read scoped context/get_outline \
+before editing; if no current read or successful commit supplies the revision, read it first. \
+Create a page, a frame, then descendants. Default to row/column stacks; reserve free for overlays \
+and decoration. Update text with update_node {id,props:{text,fontSize}}, never update_text, nodeId \
+or props.content. Node props are listed per kind in skill://opencanvas/props.md; cache \
+opencanvas://capabilities by fingerprint/pipeline version and refresh on change before workarounds. \
+A wrong key fails with field props.<key>, allowedKeys and a suggestion.
+
+Mutations need caller-chosen IDs, expectedRevision and a stable idempotencyKey. After a lost \
+response retry the exact same body and key. After success use committedRevision without an \
+unnecessary revision-only read. A REVISION_CONFLICT carries changedSince {fromRevision, \
+toRevision, changedIds, truncated}: inspect changes and re-read relevant nodes, ancestors and \
+token/style dependencies (or get_changes), rebuild against the new revision and use a new key; \
+never blindly retry a conflict. Full validation runs again. Probe a candidate with dryRun:true: \
+baseRevision/changedIds/diagnostics are provisional, with no commit or key consumption. Commit \
+by omitting dryRun or setting false. apply_batch_file is an opt-in MCP fallback when authorized \
+filesystem access exists: write a pure JSON operation array in the selected project's inbox, \
+then call the tool with its relative path. It evaluates no code, applies the same 500-op limit \
+and does not auto-chunk. See tested examples in skill://opencanvas/author-frame.md.
+
+Keep paragraph/label source strings and spaces semantic; measured characters/lines are comparison \
+output. Intentional lettering/motion is valid: record intent in a note and never auto-merge layers. \
+Text must declare a valid font, size and line height, or take them from a text style. Render jobs \
+never change the authored revision.
 
 Implementing a design in code: find_nodes kinds [frame] or get_outline for the frame, then \
 get_design_context for that frameId. Each node returns authored props beside resolvedProps. Authored props hold the token and \

@@ -16,7 +16,7 @@ use crate::{
     state::Config,
 };
 pub use export::{ExportSetting, ExportSpec};
-use opencanvas_storage::{Snapshot, Store};
+use opencanvas_storage::{Snapshot, Storage};
 use queue::{Priority, Queue, Work};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -69,7 +69,11 @@ pub struct Jobs {
     done: watch::Sender<u64>,
 }
 impl Jobs {
-    pub fn start(config: Arc<Config>, events: broadcast::Sender<Value>, store: Store) -> Arc<Self> {
+    pub fn start(
+        config: Arc<Config>,
+        events: broadcast::Sender<Value>,
+        store: impl Into<Storage>,
+    ) -> Arc<Self> {
         let (doorbell, rings) = mpsc::channel(1);
         let jobs = Arc::new(Self {
             table: Mutex::new(Table::default()),
@@ -77,7 +81,7 @@ impl Jobs {
             config: config.clone(),
             done: watch::channel(0).0,
         });
-        runner::spawn(Arc::downgrade(&jobs), rings, config, events, store);
+        runner::spawn(Arc::downgrade(&jobs), rings, config, events, store.into());
         jobs
     }
     pub async fn enqueue(&self, snapshot: Snapshot, request: SceneRequest) -> Result<Value> {

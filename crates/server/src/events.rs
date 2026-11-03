@@ -29,10 +29,11 @@ pub async fn events(
     let query = query
         .map_err(|_| ApiError::invalid("Invalid events query"))?
         .0;
-    // Subscription exists before snapshot and durable log reads. No DB handle crosses a yield.
+    // Subscription exists before metadata and durable log reads. No DB handle crosses a yield.
+    // Only the canonical ID and revision are needed, so no read here loads the whole design.
     let mut receiver = state.events.subscribe();
-    let snapshot = state.snapshot(project.clone()).await?;
-    let project = snapshot.project_id;
+    let meta = state.project_meta(project.clone()).await?;
+    let (project, opened) = (meta.project_id, meta.revision);
     let raw = query.cursor.or_else(|| {
         headers
             .get("last-event-id")
@@ -43,12 +44,11 @@ pub async fn events(
         .as_ref()
         .and_then(|s| s.rsplit_once(':'))
         .and_then(|(id, r)| r.parse::<u64>().ok().map(|r| (id, r)));
-    let invalid =
-        raw.is_some() && parsed.is_none_or(|(id, r)| id != project || r > snapshot.revision);
-    let mut cursor = parsed.map(|(_, r)| r).unwrap_or(snapshot.revision);
+    let invalid = raw.is_some() && parsed.is_none_or(|(id, r)| id != project || r > opened);
+    let mut cursor = parsed.map(|(_, r)| r).unwrap_or(opened);
     let stream = async_stream::stream! {
         if invalid {
-            yield Ok::<Event,Infallible>(reset(&project,snapshot.revision,"invalid_cursor"));return;
+            yield Ok::<Event,Infallible>(reset(&project,opened,"invalid_cursor"));return;
         }
         loop {
             let id=project.clone();let from=cursor;
@@ -58,7 +58,7 @@ pub async fn events(
                     let full=commits.len()==1000;
                     for commit in commits {
                         if commit.revision != cursor+1 {
-                            let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
+                            let current=state.revision_or(project.clone(),cursor).await;
                             yield Ok(reset(&project,current,"replay_gap"));return;
                         }
                         cursor=commit.revision;
@@ -66,7 +66,7 @@ pub async fn events(
                         yield Ok(event("commit",&project,cursor,data));
                     }
                     if full {continue;}
-                    let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
+                    let current=state.revision_or(project.clone(),cursor).await;
                     if current>cursor {
                         // A commit can race the log read; read once more before concluding a gap.
                         let id=project.clone();let from=cursor;
@@ -77,7 +77,7 @@ pub async fn events(
                     }
                 }
                 Err(_)=>{
-                    let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
+                    let current=state.revision_or(project.clone(),cursor).await;
                     yield Ok(reset(&project,current,"replay_unavailable"));return;
                 }
             }
@@ -98,7 +98,7 @@ pub async fn events(
                         Signal::Ignore=>{}
                     },
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=> {
-                        let current=state.snapshot(project.clone()).await.map(|s|s.revision).unwrap_or(cursor);
+                        let current=state.revision_or(project.clone(),cursor).await;
                         yield Ok(reset(&project,current,"buffer_overflow"));return;
                     }
                     Err(_)=>return,

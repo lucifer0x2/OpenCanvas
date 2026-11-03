@@ -55,13 +55,16 @@ pub(super) fn definitions(
             .map(|(n, _)| {
                 let mut value = json!(n);
                 if let Some(resolved) = resolved.get(n.id.as_str()) {
+                    value["effectiveTheme"] = resolved.props["effectiveTheme"].clone();
                     if states {
                         if let Some(states) = super::states::differing(&resolved.props, &n.kind) {
                             value["resolvedStates"] = states;
                         }
                     }
+                    let mut props = resolved.props.clone();
+                    props.as_object_mut().unwrap().remove("effectiveTheme");
                     value["resolvedProps"] =
-                        super::compact::resolved_props(compact, &n.props, resolved.props.clone());
+                        super::compact::resolved_props(compact, &n.props, props);
                 }
                 value
             })

@@ -35,7 +35,7 @@ async fn rendered(s: &Server) -> (String, Value) {
     (p, job)
 }
 
-/// The pre-Task07B `inspect_layout` body, kept as the byte-identity oracle.
+/// The legacy projection plus Task14's always-present effective-theme metadata.
 fn legacy(job: &Value, ids: Option<&Vec<Value>>) -> Value {
     let selected: Vec<_> = job["scene"]["nodes"]
         .as_array()
@@ -47,7 +47,7 @@ fn legacy(job: &Value, ids: Option<&Vec<Value>>) -> Value {
     let nodes: Vec<_> = selected
         .into_iter()
         .take(200)
-        .map(|n| json!({"id":n["id"],"bounds":n["bounds"],"lines":n["lines"]}))
+        .map(|n| json!({"id":n["id"],"bounds":n["bounds"],"lines":n["lines"],"effectiveTheme":n["effectiveTheme"]}))
         .collect();
     json!({"schemaVersion":1,"projectId":job["projectId"],"revision":job["revision"],"sceneKey":job["sceneKey"],"status":job["status"],"nodes":nodes,"diagnostics":job["diagnostics"],"truncated":truncated})
 }
@@ -111,7 +111,7 @@ async fn default_bytes_match_legacy_and_cursor_reads_every_node_once() {
     let (p, job) = rendered(&s).await;
     let args = base(&p, &job);
 
-    // Default: byte-identical to v1 apart from nextCursor on a truncated page.
+    // Keep the original pagination/projection, with Task14 theme metadata.
     let first = s.call("inspect_layout", args.clone()).await;
     let mut expected = legacy(&job, None);
     assert_eq!(expected["truncated"], true);
@@ -151,7 +151,10 @@ async fn default_bytes_match_legacy_and_cursor_reads_every_node_once() {
     assert!(pages > 3, "budget splits pages: {pages}");
     assert_complete(&job, &bounds);
     for (node, full) in bounds.iter().zip(&nodes) {
-        assert_eq!(node, &json!({"id":full["id"],"bounds":full["bounds"]}));
+        assert_eq!(
+            node,
+            &json!({"id":full["id"],"bounds":full["bounds"],"effectiveTheme":full["effectiveTheme"]})
+        );
     }
 }
 
@@ -169,7 +172,8 @@ async fn fields_cursor_binding_and_limits_are_explicit() {
         )
         .await;
     let node = &lines["nodes"][0];
-    assert_eq!(node.as_object().unwrap().len(), 2, "{node}");
+    assert_eq!(node.as_object().unwrap().len(), 3, "{node}");
+    assert_eq!(node["effectiveTheme"], "default");
     assert!(node["lines"].as_array().unwrap().len() > 10, "{node}");
     let reordered = s
         .call(

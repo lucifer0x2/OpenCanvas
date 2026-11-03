@@ -60,6 +60,7 @@ pub struct Crop {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Props {
+    pub effective_theme: Option<String>,
     pub name: Option<String>,
     pub width: Option<Sizing>,
     pub height: Option<Sizing>,
@@ -131,6 +132,8 @@ pub struct Bounds {
 #[serde(rename_all = "camelCase")]
 pub struct SceneNode {
     pub id: String,
+    #[serde(default = "default_theme")]
+    pub effective_theme: String,
     pub parent_id: Option<String>,
     pub kind: String,
     pub bounds: Bounds,

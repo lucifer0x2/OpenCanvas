@@ -1,5 +1,5 @@
 //! CSS shorthand, preserving the authored scalar or 1–4 array in resolved props.
-use super::{values::number, Candidate};
+use super::{scope::Resolver, values::number};
 use crate::error::*;
 use serde_json::Value;
 
@@ -16,7 +16,7 @@ pub(super) fn radius(v: &Value) -> Result<()> {
         Err(StorageError::validation("radius", "Radius must be a number 0..100000 or 1–4 corner values [top-left, top-right, bottom-right, bottom-left] with CSS shorthand"))
     }
 }
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn resolve_quad(
         &self,
         value: &mut Value,

@@ -33,11 +33,33 @@ impl Referenced {
     pub fn collect<'a>(
         s: &Snapshot,
         scope: impl IntoIterator<Item = &'a Node>,
+        themes: impl IntoIterator<Item = &'a str>,
     ) -> opencanvas_storage::Result<Self> {
         let mut refs = Self::default();
         let nodes: Vec<_> = scope.into_iter().collect();
         for node in &nodes {
             refs.walk(&node.props);
+        }
+        // A scope may use a theme declared only by an otherwise unused token.
+        // Retain one declaration so the compact resource set remains resolvable.
+        for theme in themes
+            .into_iter()
+            .chain(nodes.iter().filter_map(|n| n.props["theme"].as_str()))
+        {
+            if theme == "default" {
+                continue;
+            }
+            let declares = |t: &&opencanvas_storage::Token| t.value["themes"].get(theme).is_some();
+            if !s
+                .tokens
+                .iter()
+                .filter(|t| refs.tokens.contains(&t.id))
+                .any(|t| declares(&t))
+            {
+                if let Some(token) = s.tokens.iter().find(declares) {
+                    refs.tokens.insert(token.id.clone());
+                }
+            }
         }
         refs.fonts
             .extend(opencanvas_storage::referenced_font_ids(s, &nodes)?);

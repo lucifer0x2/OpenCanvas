@@ -3,7 +3,10 @@ use crate::{Node, NodeKind, Result, StorageError, MAX_NODES};
 use serde_json::Value;
 use std::collections::HashMap;
 
-pub const OVERRIDE_KEYS: &[&str] = &["text", "fill", "visible", "styleId", "assetId", "name"];
+pub const OVERRIDE_KEYS: &[&str] = &[
+    "text", "fill", "visible", "styleId", "assetId", "name", "stroke", "shadow", "states",
+    "opacity", "radius",
+];
 pub const INSTANCE_KEYS: &[&str] = &[
     "componentId",
     "overrides",
@@ -17,6 +20,12 @@ pub const INSTANCE_KEYS: &[&str] = &[
     "minHeight",
     "maxHeight",
     "visible",
+    "theme",
+    "fill",
+    "stroke",
+    "shadow",
+    "radius",
+    "opacity",
 ];
 
 /// Expands references before resolving styles/tokens, preserving stable virtual IDs.
@@ -72,11 +81,10 @@ impl Expander<'_> {
         root.kind = NodeKind::Frame;
         root.props = master.props.clone();
         root.props.as_object_mut().unwrap().remove("component");
-        for (key, value) in node.props.as_object().unwrap() {
-            if key != "componentId" && key != "overrides" {
-                root.props[key] = value.clone();
-            }
-        }
+        let mut patch = node.props.as_object().unwrap().clone();
+        patch.remove("componentId");
+        patch.remove("overrides");
+        crate::instance_paint::merge_props(&mut root.props, &patch);
         out.push(root);
         self.descendants(
             &master.id,
@@ -102,11 +110,7 @@ impl Expander<'_> {
             virtual_node.id = format!("{prefix}/{}", child.id);
             virtual_node.parent_id = Some(parent.into());
             if let Some(patch) = overrides.get(&child.id).and_then(Value::as_object) {
-                virtual_node
-                    .props
-                    .as_object_mut()
-                    .unwrap()
-                    .extend(patch.clone());
+                crate::instance_paint::merge_props(&mut virtual_node.props, patch);
             }
             let id = virtual_node.id.clone();
             let nested = virtual_node.kind == NodeKind::Instance;

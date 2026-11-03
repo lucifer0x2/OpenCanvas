@@ -118,7 +118,15 @@ export function wireMotion(
     };
     for (const def of declared.animations) {
       const id = `${node.id}:${def.name}`;
-      const result = buildAnimation(def, rest, table, id);
+      const result = buildAnimation(
+        def,
+        rest,
+        {
+          ...table,
+          theme: node.effectiveTheme ?? scene.provenance.theme,
+        },
+        id,
+      );
       warnings.push(...result.warnings);
       if (!result.animation) continue;
       const track = new Track(

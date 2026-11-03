@@ -109,23 +109,26 @@ fn instance_gradient_overrides_resolve_per_theme_and_bundle_roundtrips_paint() {
         Some("props.overrides.chip.fill.type"),
         "{e:?}"
     );
-    let e = p
-        .apply_batch(request(
-            &p,
-            1,
-            "shadow-override",
-            vec![Operation::UpdateNode {
-                id: "one".into(),
-                props: json!({"overrides":{"chip":{"shadow":[]}}}),
-            }],
-        ))
-        .unwrap_err();
+    p.apply_batch(request(
+        &p,
+        1,
+        "shadow-override",
+        vec![Operation::UpdateNode {
+            id: "one".into(),
+            props: json!({"overrides":{"chip":{"fill":grad,"shadow":[]}}}),
+        }],
+    ))
+    .unwrap();
+    let snapshot = p.snapshot().unwrap();
+    assert_eq!(snapshot.revision, 2);
     assert_eq!(
-        e.field.as_deref(),
-        Some("props.overrides.chip.shadow"),
-        "{e:?}"
+        find(
+            &resolved_expanded_nodes(&snapshot, "night").unwrap(),
+            "one/chip"
+        )
+        .props["shadow"],
+        json!([])
     );
-    assert_eq!(p.snapshot().unwrap().revision, 1);
     let bundle = p.export_bundle().unwrap();
     let imported = store
         .import_bundle("copy", &bundle.bytes)

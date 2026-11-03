@@ -1,12 +1,12 @@
 //! The `stroke` property: `{color, width?, align?}` where color and width take one value
 //! or exactly 4 in CSS order [top, right, bottom, left].
-use super::{values::*, Candidate};
+use super::{scope::Resolver, values::*};
 use crate::error::*;
 use serde_json::Value;
 
 const SIDES: &str = "1–4 of them in CSS shorthand [top, right, bottom, left]";
 
-impl Candidate {
+impl Resolver<'_> {
     /// Replaces token and style references in `stroke.color` and `stroke.width` with
     /// literals. A malformed shape is left as authored for `validate_stroke` to report.
     pub(super) fn resolve_stroke(&self, stroke: &mut Value) -> Result<()> {

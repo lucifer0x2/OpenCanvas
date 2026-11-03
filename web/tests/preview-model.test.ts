@@ -19,12 +19,19 @@ test("declared states include instance masters; root frames keep page order", ()
     node("home", "frame", "page", {}, 0),
     node("button", "frame", "page", { component: { name: "Button" } }, 1),
     node("label", "text", "button", { states: { focus: { fill: "#000" } } }),
-    node("cta", "instance", "home", { componentId: "button" }),
+    node("cta", "instance", "home", {
+      componentId: "button",
+      overrides: { label: { states: { hover: { fill: "#fff" } } } },
+    }),
     node("card", "rectangle", "home", {
       states: { hover: {}, disabled: { opacity: 0.4 } },
     }),
   ];
-  assert.deepEqual(declaredStates(nodes, "home"), ["focus", "disabled"]);
+  assert.deepEqual(declaredStates(nodes, "home"), [
+    "hover",
+    "focus",
+    "disabled",
+  ]);
   assert.deepEqual(
     rootFrames(nodes).map((frame) => frame.id),
     ["home", "button"],
