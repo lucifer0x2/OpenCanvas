@@ -4,6 +4,8 @@ mod fragmentation;
 mod intent;
 mod overflow;
 #[cfg(test)]
+mod overflow_rounding_tests;
+#[cfg(test)]
 mod tests;
 pub(crate) use budget::{fit, fit_in_place, is_overflow, BUDGET_SHARE};
 pub(crate) use fragmentation::authored;

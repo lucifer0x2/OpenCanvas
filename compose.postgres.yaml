@@ -1,0 +1,76 @@
+name: opencanvas-postgres
+
+services:
+  opencanvas:
+    image: ${OPENCANVAS_IMAGE:-opencanvas:kubernetes-local}
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - opencanvas-server
+      - --workspace
+      - /app
+      - --data-root
+      - /data
+      - --host
+      - 0.0.0.0
+      - --port
+      - "${OPENCANVAS_PORT:-3857}"
+    environment:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_URL: "postgresql://opencanvas:${OPENCANVAS_DATABASE_PASSWORD:?Set a hexadecimal PostgreSQL password}@postgres:5432/opencanvas"
+      DATABASE_POOL_SIZE: "4"
+      DATABASE_CONNECT_TIMEOUT_MS: "3000"
+      DATABASE_STATEMENT_TIMEOUT_MS: "15000"
+      DATABASE_LOCK_TIMEOUT_MS: "3000"
+      DATABASE_OPERATION_TIMEOUT_MS: "30000"
+      TMPDIR: /tmp
+    ports:
+      - "127.0.0.1:${OPENCANVAS_PORT:-3857}:${OPENCANVAS_PORT:-3857}"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    # The database owns durable state. Both writable mounts are app scratch.
+    tmpfs:
+      - /data:uid=1000,gid=1000,mode=0700,size=256m
+      - /tmp:mode=1777,size=1g
+    shm_size: 512m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:${OPENCANVAS_PORT:-3857}/api/v1/projects',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    restart: unless-stopped
+    stop_grace_period: 30s
+    cap_drop: [NET_RAW]
+    security_opt: [no-new-privileges:true]
+    environment:
+      POSTGRES_DB: opencanvas
+      POSTGRES_USER: opencanvas
+      POSTGRES_PASSWORD: "${OPENCANVAS_DATABASE_PASSWORD:?Set a hexadecimal PostgreSQL password}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # The image's temporary initialization server only listens on a Unix socket.
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, opencanvas, -d, opencanvas]
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 18
+
+volumes:
+  postgres-data:

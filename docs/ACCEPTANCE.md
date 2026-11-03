@@ -1,5 +1,16 @@
 # OpenCanvas — bản đồ nghiệm thu
 
+Task20 ngày 2026-11-03: Kubernetes local trên OrbStack đã build/deploy runtime
+PostgreSQL thật, một replica app và PVC 2 GiB. HTTP/MCP/render PNG, persistence
+qua restart app/DB, apply giữ Secret/PVC, SIGINT và DB outage readiness đã kiểm.
+Root kiểm độc lập Host/Origin, MCP/readback và ETag304. Chỉ truy cập loopback3857;
+chưa HA, migration, backup tự động hoặc cluster bên ngoài. Xem [runbook và bằng chứng](KUBERNETES.md).
+
+Task20b thêm listener Kubernetes chỉ đọc3858 bằng overlay opt-in và origin trong
+ConfigMap. Đã kiểm public reads/font/scene/PNG/export SVG+PNG, snapshot không đổi,
+34 trường hợp MCP/mutation bị chặn; root kiểm độc lập Host/Origin và MCP local3857.
+Funnel/Serve chưa bật; xem [runbook public listener](KUBERNETES-PUBLIC-VIEWER.md).
+
 Task19 đưa PostgresBackend của domain sản phẩm vào StorageBackend/AppState/router.
 CLI mặc định SQLite. `DATABASE_PROVIDER=postgresql` yêu cầu `DATABASE_URL` và bật
 Moka trong tiến trình, một snapshot/project, TTL 1 giờ. Mỗi hit xác nhận namespace,

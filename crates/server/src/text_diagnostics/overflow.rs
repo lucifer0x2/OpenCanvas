@@ -3,6 +3,8 @@ use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 
 const MAX_NODES: usize = 12;
+const EDGE_TOLERANCE: f64 = 0.5;
+const LAYOUT_GRID: f64 = 1. / 64.;
 
 pub(crate) fn append(scene: &mut Value, intentional: &[String]) {
     let Some(nodes) = scene["nodes"].as_array() else {
@@ -51,11 +53,14 @@ pub(crate) fn append(scene: &mut Value, intentional: &[String]) {
             let ink = rect(&line["inkBounds"])
                 .map(|r| [advance[0] + r[0], advance[1] + r[1], r[2], r[3]]);
             has_ink |= ink.is_some();
-            let advance_outside = outside_x(advance, own);
-            let ink_outside = ink.is_some_and(|r| outside(r, own));
+            let advance_outside = outside_x(advance, own, EDGE_TOLERANCE);
+            let ink_outside = ink.is_some_and(|r| outside(r, own, own_ink_tolerance(advance, own)));
             let clip_ids: Vec<_> = clips
                 .iter()
-                .filter(|(_, b)| outside_x(advance, *b) || ink.is_some_and(|r| outside(r, *b)))
+                .filter(|(_, b)| {
+                    outside_x(advance, *b, EDGE_TOLERANCE)
+                        || ink.is_some_and(|r| outside(r, *b, EDGE_TOLERANCE))
+                })
                 .map(|(id, _)| id)
                 .collect();
             if !advance_outside && !ink_outside && clip_ids.is_empty() {
@@ -103,9 +108,25 @@ fn rect(v: &Value) -> Option<[f64; 4]> {
         finite(&v["height"])?,
     ])
 }
-fn outside_x(r: [f64; 4], b: [f64; 4]) -> bool {
-    r[0] < b[0] - 0.5 || r[0] + r[2] > b[0] + b[2] + 0.5
+fn own_ink_tolerance(advance: [f64; 4], own: [f64; 4]) -> f64 {
+    // Canvas ink is independent of layout advance. A snug measured-advance box
+    // (e.g. hug text) may have a small glyph bearing/raster metric overhang.
+    // Allow one measurement pixel horizontally only in that case; this is a
+    // bounded advisory policy, not a guarantee about Canvas metric precision.
+    // Actual clips, vertical ink and advance overflow keep their stricter check.
+    let snug = (advance[0] - own[0]).abs() <= LAYOUT_GRID
+        && (advance[0] + advance[2] - own[0] - own[2]).abs() <= LAYOUT_GRID;
+    if snug {
+        1.
+    } else {
+        EDGE_TOLERANCE
+    }
 }
-fn outside(r: [f64; 4], b: [f64; 4]) -> bool {
-    outside_x(r, b) || r[1] < b[1] - 0.5 || r[1] + r[3] > b[1] + b[3] + 0.5
+fn outside_x(r: [f64; 4], b: [f64; 4], tolerance: f64) -> bool {
+    r[0] < b[0] - tolerance || r[0] + r[2] > b[0] + b[2] + tolerance
+}
+fn outside(r: [f64; 4], b: [f64; 4], horizontal_tolerance: f64) -> bool {
+    outside_x(r, b, horizontal_tolerance)
+        || r[1] < b[1] - EDGE_TOLERANCE
+        || r[1] + r[3] > b[1] + b[3] + EDGE_TOLERANCE
 }

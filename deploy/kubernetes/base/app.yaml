@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opencanvas
+spec:
+  type: ClusterIP
+  selector:
+    app: opencanvas
+  ports:
+    - name: http
+      port: 3857
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opencanvas
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: opencanvas
+  template:
+    metadata:
+      labels:
+        app: opencanvas
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # The server connects to storage before opening HTTP; gate first start.
+      initContainers:
+        - name: wait-postgres
+          image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - 'for i in $(seq 1 90); do pg_isready -h postgres -U opencanvas -d opencanvas && exit 0; sleep 2; done; exit 1'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      containers:
+        - name: opencanvas
+          image: opencanvas:kubernetes-local
+          imagePullPolicy: Never
+          command: [opencanvas-server]
+          args:
+            - --workspace
+            - /app
+            - --data-root
+            - /data
+            - --host
+            - 0.0.0.0
+          envFrom:
+            - configMapRef:
+                name: opencanvas
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_URL
+          ports:
+            - name: http
+              containerPort: 3857
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 1536Mi
+          # OrbStack/Docker honors the image's STOPSIGNAL SIGINT. Do not
+          # replace the image stop signal with SIGTERM for this server.
+          startupProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - "fetch('http://127.0.0.1:'+process.env.PORT+'/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+            periodSeconds: 2
+            timeoutSeconds: 3
+            failureThreshold: 90
+          readinessProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - "fetch('http://127.0.0.1:'+process.env.PORT+'/api/v1/projects',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 2
+          # Viewer HTML does not touch storage: a DB outage must not restart app.
+          livenessProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - "fetch('http://127.0.0.1:'+process.env.PORT+'/',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: temporary
+              mountPath: /tmp
+            - name: shared-memory
+              mountPath: /dev/shm
+      volumes:
+        # PostgreSQL holds authored state and resource bytes; /data is scratch.
+        - name: data
+          emptyDir:
+            sizeLimit: 256Mi
+        - name: temporary
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: shared-memory
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
