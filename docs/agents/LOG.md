@@ -145,3 +145,8 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Fast-forward `main` và nhánh hover lên `62f258a`. Merge ba chiều tự gộp `PLAN.md` và chỉ xung đột ở hai đoạn nối cuối nhật ký. Giữ cả hai đoạn, đặt mục hover sau nhật ký từ main. Các thay đổi hover vẫn ở worktree chưa commit.
 - Điểm dừng: không còn mục unmerged. `git diff --check`, Rust fmt và 6 test MCP hover đạt sau khi cấp dependency Playwright tạm cho worktree.
 - Người dùng duyệt commit và push `codex/hover-animation-trigger`. Phạm vi gồm hợp đồng hover, preview, test và tài liệu liên quan trên nền `62f258a`.
+
+### Task09 — Spike WASM renderer Rust — 2026-11-04
+
+- Người dùng yêu cầu làm tiếp Task09 để chuyển renderer sang Rust. Máy là VM Linux aarch64 4 nhân không GPU (tiny-skia raster CPU nên không cần GPU); handoff gốc nhắm macOS, số đo ghi rõ nền tảng. Người dùng duyệt cài rustup stable 1.99.1 + `wasm32-unknown-unknown` (root cài thêm `build-essential`, `brotli` qua apt) và bỏ phần đo Chromium/Worker vì máy chưa có Node/Playwright.
+- Spike không build được trên `main` @`c2bf260` vì `opencanvas-layout` đã đổi `TextLine`/`Measurement`/`fill`/`radius`; root sửa 4 dòng để build lại native. Worktree `../OpenCanvas-task09`, nhánh `feat/task09-wasm-spike` từ `main`. Giao fresh worker: tách lib C-ABI, build WASM hai biến thể, đo size/native, so pixel native↔WASM qua runtime WASM nhúng trong spike.
