@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { children, nodeName } from "../state";
 import type { DesignNode } from "../types";
-import { Icon } from "./Icon";
+import { Icon, type IconName } from "./Icon";
 import { useNodeActions } from "./NodeActionsProvider";
 
 function LayerRow({
@@ -59,7 +59,7 @@ function LayerRow({
           aria-pressed={selectedId === node.id}
           title={nodeName(node)}
         >
-          <Icon name={node.kind} />
+          <Icon name={node.kind as IconName} />
           <span>{nodeName(node)}</span>
         </button>
       </div>

@@ -12,6 +12,7 @@ import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
 import { children, nodeName } from "./state";
 import type { SceneRequest } from "./types";
+import useLocalStorage from "./hooks/ultility/useLocalStorage";
 
 const PRESETS = [
   { key: "frame", name: "Frame size", width: 0, height: 0 },
@@ -29,6 +30,8 @@ export function App() {
   const [retryKey, setRetryKey] = useState(0);
   const nodes = snapshot?.nodes ?? [];
   const pages = children(nodes, null).filter((node) => node.kind === "page");
+  const [isShowNoticeBar, setShowNoticeBar] = useLocalStorage("is_show_notice_bar", false);
+  
   const frames = children(nodes, selection.pageId).filter(
     (node) => node.kind === "frame",
   );
@@ -85,6 +88,8 @@ export function App() {
           rightOpen={rightOpen}
           toggleLeft={() => setLeftOpen(!leftOpen)}
           toggleRight={() => setRightOpen(!rightOpen)}
+          isShowNoticeBar={isShowNoticeBar}
+          setShowNoticeBar={setShowNoticeBar}
         />
         <div className="viewbar">
           <div className="scope-controls">
@@ -175,7 +180,7 @@ export function App() {
         {(project.error ||
           project.notice ||
           view.missing.length > 0 ||
-          view.diagnostics.length > 0) && (
+          view.diagnostics.length > 0) && isShowNoticeBar ?  (
           <div
             className={`notice-bar ${project.error || view.missing.length ? "warning" : ""}`}
             role="status"
@@ -190,7 +195,7 @@ export function App() {
               <button onClick={project.retry}>Retry connection</button>
             )}
           </div>
-        )}
+        ) : null}
         <footer className="statusbar">
           <span className={`connection ${project.connection}`}>
             <span className="status-dot" />
