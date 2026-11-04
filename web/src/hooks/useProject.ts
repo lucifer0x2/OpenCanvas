@@ -26,8 +26,12 @@ export function useProject() {
   const [activity, setActivity] = useState<string[]>([]);
   const [follow, setFollow] = useFollowAgent();
   const retry = useCallback(() => setReload((value) => value + 1), []);
-  const projectId = selection.projectId;
   const list = useProjectList(reload);
+  const selectedIsVisible =
+    !list.loaded ||
+    list.projects.some((entry) => entry.projectId === selection.projectId);
+  const visibleSelection = selectedIsVisible ? selection : EMPTY_SELECTION;
+  const projectId = visibleSelection.projectId;
 
   const accepted = (next: Snapshot) => {
     setNotice((previous) =>
@@ -106,8 +110,15 @@ export function useProject() {
       list.refetch();
       snap.refresh();
     },
+    onVisibilityChanged: () => {
+      setNotice("");
+      list.refetch();
+      snap.refresh();
+    },
+    onReconnect: list.refetch,
     onCreated: (project) => {
       list.merge([project]);
+      list.refetch();
       hinted(project.projectId, project.name, true);
     },
     onActivity: (event) => {
@@ -127,7 +138,7 @@ export function useProject() {
   return {
     projects: list.projects,
     loadingProjects: list.loading,
-    selection,
+    selection: visibleSelection,
     snapshot: snap.snapshot,
     connection,
     error: list.error || snap.error,

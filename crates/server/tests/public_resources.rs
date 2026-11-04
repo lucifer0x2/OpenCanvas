@@ -3,7 +3,7 @@ mod public_support;
 mod support;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use futures_util::StreamExt;
-use public_support::PublicServer;
+use public_support::{set_privacy, PublicServer, ORIGIN};
 use reqwest::Method;
 use serde_json::{json, Value};
 use std::time::Duration;
@@ -18,6 +18,7 @@ async fn public_resources_exports_and_events_share_state_but_keep_worker_callbac
     let local = Server::start().await;
     let public = PublicServer::start(local.state.clone()).await;
     let project = local.project().await;
+    set_privacy(&local, &project, "public").await;
     let base = format!("/api/v1/projects/{project}");
     let imported = local.client.post(format!("{}{base}/fonts", local.url))
         .json(&json!({"expectedRevision":0,"idempotencyKey":"font-local","mediaType":"font/ttf","base64":STANDARD.encode(FONT),"font":{"id":"public_font","family":"Public font","weight":400,"style":"normal"}}))
@@ -182,6 +183,56 @@ async fn public_resources_exports_and_events_share_state_but_keep_worker_callbac
         .unwrap()
         .unwrap();
     assert!(String::from_utf8_lossy(&event).contains("project_activity"));
+
+    set_privacy(&local, &project, "private").await;
+    for (method, path, code) in [
+        (
+            Method::GET,
+            format!("{base}/scene?frameId=frame&revision=4&width=320&height=200"),
+            "PROJECT_NOT_FOUND",
+        ),
+        (
+            Method::GET,
+            format!("{base}/assets/{asset}"),
+            "PROJECT_NOT_FOUND",
+        ),
+        (Method::GET, format!("{base}/fonts"), "PROJECT_NOT_FOUND"),
+        (
+            Method::HEAD,
+            format!("{base}/fonts/public_font/download"),
+            "PROJECT_NOT_FOUND",
+        ),
+        (Method::POST, format!("{base}/exports"), "PROJECT_NOT_FOUND"),
+        (Method::GET, format!("/api/v1/jobs/{id}"), "JOB_NOT_FOUND"),
+        (
+            Method::GET,
+            format!("/api/v1/jobs/{id}/image"),
+            "JOB_NOT_FOUND",
+        ),
+        (
+            Method::GET,
+            files[0]["url"]
+                .as_str()
+                .unwrap()
+                .strip_prefix(ORIGIN)
+                .unwrap()
+                .into(),
+            "JOB_NOT_FOUND",
+        ),
+    ] {
+        let head = method == Method::HEAD;
+        let response = public.request(method, &path).send().await.unwrap();
+        assert_eq!(response.status(), 404, "{path}");
+        assert_eq!(response.headers()["cache-control"], "no-store");
+        if !head {
+            assert_eq!(
+                response.json::<Value>().await.unwrap()["error"]["code"],
+                code,
+                "{path}"
+            );
+        }
+    }
+    assert_eq!(local.get(&format!("/api/v1/jobs/{id}")).await["jobId"], id);
     local.state.begin_shutdown();
     tokio::time::timeout(Duration::from_secs(5), async {
         while stream.next().await.is_some() {}

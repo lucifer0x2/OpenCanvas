@@ -1,4 +1,4 @@
-import { ApiError, projectPath, read } from "./api";
+import { ApiError, projectPath, read, viewerFetch } from "./api";
 
 interface ExportFile {
   url: string;
@@ -18,7 +18,7 @@ export async function exportNode(
   revision: number,
   format: "png" | "svg",
 ) {
-  const response = await fetch(`${projectPath(projectId)}/exports`, {
+  const response = await viewerFetch(`${projectPath(projectId)}/exports`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
@@ -53,7 +53,7 @@ export async function exportNode(
   const filePath = new URL(file.url, location.href).pathname;
   if (!/^\/api\/v1\/jobs\/[^/]+\/files\/\d+$/.test(filePath))
     throw new Error("Invalid export file URL.");
-  const download = await fetch(filePath, {
+  const download = await viewerFetch(filePath, {
     signal: AbortSignal.timeout(15000),
   });
   if (!download.ok)

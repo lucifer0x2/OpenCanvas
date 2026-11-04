@@ -6,7 +6,7 @@ use axum::{
     response::Response,
 };
 use moka::sync::Cache;
-use opencanvas_storage::{Snapshot, SnapshotCacheIdentity, Storage};
+use opencanvas_storage::{PrivacyStatus, Snapshot, SnapshotCacheIdentity, Storage};
 use serde::Deserialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -37,7 +37,7 @@ struct Representation {
     etag: HeaderValue,
 }
 
-type Key = (SnapshotCacheIdentity, Format);
+type Key = (SnapshotCacheIdentity, Format, bool);
 
 #[derive(Clone)]
 pub(crate) struct SnapshotRepresentations(Cache<Key, Representation>);
@@ -58,9 +58,11 @@ impl SnapshotRepresentations {
         store: &Storage,
         project: &str,
         format: Format,
+        privacy: PrivacyStatus,
     ) -> opencanvas_storage::Result<Representation> {
+        let public = privacy == PrivacyStatus::Public;
         if let Some(identity) = store.snapshot_cache_identity(project)? {
-            if let Some(hit) = self.0.get(&(identity, format)) {
+            if let Some(hit) = self.0.get(&(identity, format, public)) {
                 return Ok(hit);
             }
         }
@@ -68,9 +70,9 @@ impl SnapshotRepresentations {
         // The source may change between the probe and the snapshot read. Admit
         // the response only under the identity observed by the snapshot read.
         let (snapshot, identity) = store.snapshot_with_cache_identity(project)?;
-        let representation = Representation::encode(&snapshot, format)?;
+        let representation = Representation::encode(&snapshot, format, privacy)?;
         if let Some(identity) = identity {
-            let key = (identity, format);
+            let key = (identity, format, public);
             if weight(&key, &representation) <= MAX_ENTRY_BYTES {
                 return Ok(self.0.get_with(key, || representation));
             }
@@ -79,7 +81,7 @@ impl SnapshotRepresentations {
     }
 }
 
-fn weight((identity, _): &Key, value: &Representation) -> u32 {
+fn weight((identity, _, _): &Key, value: &Representation) -> u32 {
     let bytes = value.bytes.len()
         + value.etag.len()
         + identity.incarnation.len()
@@ -90,9 +92,14 @@ fn weight((identity, _): &Key, value: &Representation) -> u32 {
 }
 
 impl Representation {
-    fn encode(snapshot: &Snapshot, format: Format) -> serde_json::Result<Self> {
+    fn encode(
+        snapshot: &Snapshot,
+        format: Format,
+        privacy: PrivacyStatus,
+    ) -> serde_json::Result<Self> {
         let mut value = serde_json::to_value(snapshot)?;
         value["truncated"] = json!(false);
+        value["privacy_status"] = json!(privacy);
         let tag_prefix = match format {
             Format::Objects => "objects",
             Format::Rows => {
@@ -154,7 +161,10 @@ pub(crate) async fn get(
     };
     let cache = state.snapshot_representations.clone();
     let representation = state
-        .db(move |store| cache.read(&store, &project, format))
+        .db(move |store| {
+            let meta = store.project_meta(&project)?;
+            cache.read(&store, &meta.project_id, format, meta.privacy_status)
+        })
         .await?;
     Ok(representation.response(&headers))
 }

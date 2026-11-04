@@ -3,7 +3,7 @@ mod public_support;
 #[allow(dead_code)]
 mod support;
 
-use public_support::PublicServer;
+use public_support::{set_privacy, PublicServer};
 use reqwest::{header, Method, Response, StatusCode};
 use serde_json::{json, Value};
 use support::{design, Server};
@@ -25,13 +25,10 @@ async fn conditional(server: &Server, url: &str, tag: &header::HeaderValue) -> R
         .unwrap()
 }
 
-async fn not_modified(response: Response, tag: &header::HeaderValue) {
+async fn not_modified(response: Response, tag: &header::HeaderValue, cache_control: &str) {
     assert_eq!(response.status(), StatusCode::NOT_MODIFIED);
     assert_eq!(&etag(&response), tag);
-    assert_eq!(
-        response.headers()[header::CACHE_CONTROL],
-        "private, no-cache"
-    );
+    assert_eq!(response.headers()[header::CACHE_CONTROL], cache_control);
     assert!(response.bytes().await.unwrap().is_empty());
 }
 
@@ -39,6 +36,7 @@ async fn not_modified(response: Response, tag: &header::HeaderValue) {
 async fn rows_round_trip_and_both_listeners_validate_each_representation() {
     let server = Server::start().await;
     let project = server.project().await;
+    set_privacy(&server, &project, "public").await;
     assert_eq!(
         server.batch(&project, 0, "seed", design()).await["committedRevision"],
         1
@@ -98,6 +96,7 @@ async fn rows_round_trip_and_both_listeners_validate_each_representation() {
                 .await
                 .unwrap(),
             tag,
+            "private, no-cache",
         )
         .await;
     }
@@ -111,14 +110,14 @@ async fn rows_round_trip_and_both_listeners_validate_each_representation() {
         .send()
         .await
         .unwrap();
-    not_modified(public_rows, &rows_tag).await;
+    not_modified(public_rows, &rows_tag, "no-store").await;
     let public_full = public
         .request(Method::HEAD, &path)
         .header(header::IF_NONE_MATCH, "*")
         .send()
         .await
         .unwrap();
-    not_modified(public_full, &full_tag).await;
+    not_modified(public_full, &full_tag, "no-store").await;
     let missing = server
         .client
         .get(format!("{}/api/v1/projects/absent/snapshot", server.url))
@@ -154,6 +153,7 @@ async fn commits_change_validators_while_retry_and_atomic_failure_preserve_them(
     not_modified(
         conditional(&server, &by_id, &initial_tag).await,
         &initial_tag,
+        "private, no-cache",
     )
     .await;
     let different = server
@@ -198,6 +198,7 @@ async fn commits_change_validators_while_retry_and_atomic_failure_preserve_them(
     not_modified(
         conditional(&server, &by_id, &current_tag).await,
         &current_tag,
+        "private, no-cache",
     )
     .await;
 }
@@ -228,7 +229,12 @@ async fn live_asset_loss_and_database_loss_are_visible_after_a_warm_read() {
     assert_eq!(missing["assets"][0]["status"], "missing");
     assert_eq!(missing["revision"], 1);
     std::fs::rename(saved, asset).unwrap();
-    not_modified(conditional(&server, &url, &ready_tag).await, &ready_tag).await;
+    not_modified(
+        conditional(&server, &url, &ready_tag).await,
+        &ready_tag,
+        "private, no-cache",
+    )
+    .await;
 
     std::fs::rename(directory.join("db.sql"), directory.join("db.saved")).unwrap();
     let gone = conditional(&server, &url, &ready_tag).await;

@@ -59,7 +59,8 @@ async fn project_stream_forwards_hints_without_replaying_the_log() {
     let s = Server::start().await;
     let a = create(&s, "alpha").await;
     s.batch(&a, 0, "a1", page()).await;
-    let mut stream = open(&s, &format!("/api/v1/projects/{a}/events?cursor={a}:1")).await;
+    let mut stream = open(&s, &format!("/api/v1/projects/{a}/events?cursor={a}:0")).await;
+    until(&mut stream, &mut String::new(), &format!("id: {a}:1")).await;
     // Trap: any durable replay of A from now on fails and ends the stream with a reset.
     let db = rusqlite::Connection::open(s.root.path().join("alpha/db.sql")).unwrap();
     db.execute("ALTER TABLE commits RENAME TO commits_hidden", [])

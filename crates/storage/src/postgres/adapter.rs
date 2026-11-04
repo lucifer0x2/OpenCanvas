@@ -1,8 +1,8 @@
 use super::*;
 use crate::{
     Asset, BatchFileRequest, BatchRequest, BatchResult, Commit, DryRunResult, Font,
-    ImportAssetRequest, ImportAssetResult, ProjectMeta, Snapshot, SnapshotCacheIdentity,
-    StorageBackend, StorageError,
+    ImportAssetRequest, ImportAssetResult, PrivacyStatus, ProjectMeta, Snapshot,
+    SnapshotCacheIdentity, StorageBackend, StorageError,
 };
 use serde_json::Value;
 use std::sync::Arc;
@@ -56,6 +56,10 @@ fn identity(
 }
 
 impl StorageBackend for PostgresBackend {
+    fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
+        Some(self)
+    }
+
     fn list_projects(&self) -> Result<Vec<ProjectMeta>> {
         self.pool.run(|session| {
             let mut projects: Vec<ProjectMeta> = session
@@ -79,6 +83,16 @@ impl StorageBackend for PostgresBackend {
         let key = key.to_owned();
         self.pool
             .run(move |session| Ok(projects::lookup(&mut session.db(), &key, false)?.meta))
+    }
+
+    fn update_project_privacy(
+        &self,
+        key: &str,
+        privacy: PrivacyStatus,
+    ) -> Result<(ProjectMeta, bool)> {
+        let key = key.to_owned();
+        self.pool
+            .run(move |session| projects::update_privacy(session, &key, privacy))
     }
 
     fn snapshot(&self, project: &str) -> Result<Snapshot> {

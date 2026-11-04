@@ -1,18 +1,26 @@
 //! Independent, opt-in public surface. Headers can never grant local mutation privileges.
-use crate::{http, viewer_origin::ViewerOrigin, AppState};
+use crate::{
+    http,
+    viewer_auth::{self, http as auth, http::Access},
+    viewer_origin::ViewerOrigin,
+    viewer_privacy, AppState,
+};
 use axum::{
-    extract::Request,
+    extract::{DefaultBodyLimit, Request, State},
     http::{header, HeaderValue, Method, StatusCode, Uri},
     middleware::{self, Next},
     response::{IntoResponse, Response},
+    routing::get,
     Extension, Json, Router,
 };
 use serde_json::json;
+use std::net::IpAddr;
 
 #[derive(Clone, Debug)]
 pub struct PublicViewer {
     origin: String,
     authority: String,
+    pub(crate) trusted_proxy: Option<IpAddr>,
 }
 
 impl PublicViewer {
@@ -30,6 +38,7 @@ impl PublicViewer {
         Ok(Self {
             origin: format!("https://{authority}"),
             authority: authority.to_string(),
+            trusted_proxy: None,
         })
     }
 
@@ -37,10 +46,26 @@ impl PublicViewer {
         &self.origin
     }
 
+    /// Accept one client address from X-Forwarded-For only from this transport peer.
+    pub fn with_trusted_proxy(mut self, proxy: IpAddr) -> Self {
+        self.trusted_proxy = Some(proxy.to_canonical());
+        self
+    }
+
     pub fn router(&self, state: AppState) -> Router {
         http::viewer_routes(&state)
+            .route(
+                viewer_auth::PATH,
+                get(auth::public_status)
+                    .post(auth::login)
+                    .layer(DefaultBodyLimit::max(16 * 1024)),
+            )
             .layer(Extension(ViewerOrigin(self.origin.clone())))
-            .layer(middleware::from_fn_with_state(self.clone(), guard))
+            .layer(Extension(self.clone()))
+            .layer(middleware::from_fn_with_state(
+                (self.clone(), state.clone()),
+                guard,
+            ))
             .with_state(state)
     }
 }
@@ -56,11 +81,13 @@ fn denied(code: &str, message: &str) -> Response {
 }
 
 async fn guard(
-    axum::extract::State(public): axum::extract::State<PublicViewer>,
+    State((public, state)): State<(PublicViewer, AppState)>,
     request: Request,
     next: Next,
 ) -> Response {
     let path = request.uri().path();
+    let auth_path = path == viewer_auth::PATH;
+    let login = auth_path && request.method() == Method::POST;
     // Reject ambiguous encodings instead of interpreting a different path from the router.
     // Public project/font/asset IDs and built asset filenames use unescaped ASCII paths.
     let parts: Vec<_> = path.split('/').collect();
@@ -73,24 +100,53 @@ async fn guard(
         && !parts[4].is_empty()
         && parts[5] == "exports";
     let allowed_method = matches!(*request.method(), Method::GET | Method::HEAD)
+        || login
         || (*request.method() == Method::POST && export);
     if !canonical || mcp || !allowed_method {
         return denied(
             "PUBLIC_READ_ONLY",
-            "Public viewer permits reads and export requests only",
+            "Public viewer permits reads, exports and viewer sign-in only",
         );
     }
     let headers = request.headers();
-    if headers.get(header::HOST).and_then(|v| v.to_str().ok()) != Some(&public.authority) {
+    let mut hosts = headers.get_all(header::HOST).iter();
+    if hosts.next().and_then(|v| v.to_str().ok()) != Some(&public.authority)
+        || hosts.next().is_some()
+    {
         return denied("HOST_REJECTED", "Configured public Host required");
     }
-    if headers
-        .get(header::ORIGIN)
-        .is_some_and(|v| v != public.origin.as_str())
+    let mut origins = headers.get_all(header::ORIGIN).iter();
+    let origin = origins.next();
+    if origin.is_some_and(|v| v != public.origin.as_str())
+        || origins.next().is_some()
+        || (login && origin.is_none())
     {
         return denied("ORIGIN_REJECTED", "Origin is not authorized");
     }
-    let mut response = next.run(request).await;
+    // Public data routes use /api/. The shell and the capability/status probes must load before login.
+    let api = path.starts_with("/api/");
+    let protected = api && !auth_path && path != "/api/v1/viewer";
+    let mut response = if protected {
+        match auth::access(&state, &public, auth::presented(&public, &request)).await {
+            Ok(Access::Open) => {
+                let response = viewer_privacy::run(&state, request, next).await;
+                viewer_auth::stream::monitor(state, None, response)
+            }
+            Ok(Access::Session(proof)) => {
+                let response = viewer_privacy::run(&state, request, next).await;
+                viewer_auth::stream::monitor(state, Some(proof), response)
+            }
+            Ok(Access::Locked) => auth::unauthorized(),
+            Err(error) => error.into_response(),
+        }
+    } else {
+        next.run(request).await
+    };
+    if api {
+        response
+            .headers_mut()
+            .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    }
     response.headers_mut().insert(
         header::X_CONTENT_TYPE_OPTIONS,
         HeaderValue::from_static("nosniff"),

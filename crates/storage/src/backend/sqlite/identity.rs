@@ -7,6 +7,8 @@ pub(super) fn snapshot_meta(snapshot: &Snapshot) -> ProjectMeta {
         name: snapshot.name.clone(),
         schema_version: snapshot.schema_version,
         revision: snapshot.revision,
+        // This projection only supplies the authored identity to the pin/cache paths.
+        privacy_status: crate::PrivacyStatus::Private,
     }
 }
 

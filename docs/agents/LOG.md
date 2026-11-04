@@ -128,3 +128,25 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 ### Xuất bản nhánh Docker Compose PostgreSQL — 2026-11-03
 
 - Người dùng yêu cầu commit và push nhánh mới. Giao worker tách cấu hình/runbook Compose và nhật ký liên quan từ `codex/kubernetes-local`; giữ các ghi chú khảo sát khác ở working tree.
+
+### Xác thực public viewer — 2026-11-03
+
+- Giao worker backend cho xác thực riêng public listener, lưu phiên trong SQLite/PostgreSQL, công cụ quản trị MCP và IP qua proxy tin cậy. Giao worker frontend cho dialog và khóa mount viewer theo trạng thái phiên. Kiểm trên dữ liệu tạm trước khi đánh giá rollout.
+- Nhận frontend, đã qua Chromium mock, typecheck và smoke viewer hiện có. Probe OrbStack xác nhận peer là gateway mạng Compose. Giao worker vận hành build image riêng, chạy thử với PostgreSQL tạm và chờ root kiểm độc lập trước khi cập nhật app.
+- Ngày 2026-11-04, người dùng yêu cầu tiếp tục sau khi worker vận hành dừng do giới hạn sử dụng. Root xác nhận Chromium qua HTTPS và MCP với SQLite, cùng phiên PostgreSQL qua restart, đổi IP, đổi mật khẩu và thu hồi. Giao lại bước vận hành cho worker mới.
+- Nhận rehearsal trên image build lại từ mã hiện tại. Compose/PostgreSQL tạm kiểm đủ vòng đời phiên và proxy, 12 kiểm thử Rust đạt, Clippy sạch. Root ghi fingerprint chỉ đọc cho toàn bộ project trước khi worker cập nhật riêng container app.
+- Điểm dừng: Compose đã chạy image auth mới, PostgreSQL giữ container và volume. Root xác nhận bốn snapshot khớp checksum, 3858 mặc định mở và chỉ đọc, 3857 có ba công cụ auth MCP. Rehearsal đã dọn, Funnel chưa cấu hình. [Báo cáo](../PUBLIC-VIEWER-REPORT.md#password-protection--2026-11-04).
+
+### Quyền xem theo project — 2026-11-04
+
+- Giao worker storage cho metadata và chuyển đổi dữ liệu cũ mặc định private. Giao worker server cho HTTP/MCP và ranh giới 3858, kể cả SSE và job/resource đã tạo. Giao worker web cho cập nhật danh sách và bỏ project đã chuyển private khỏi màn hình đang mở.
+- Hai worker storage/web dừng giữa chừng do giới hạn model, đã giao lại phần còn thiếu cho hai worker mới. Server đã build, root chạy kiểm PostgreSQL riêng. Đã lấy fingerprint bốn dự án hiện tại để đối chiếu khi rollout.
+- Nhận web: Chromium HTTPS với MCP thật xác nhận hai tab tự ẩn rồi hiện lại khi đổi quyền. Root kiểm PostgreSQL qua restart, PATCH/MCP, ETag và JWT. Giao worker vận hành build image riêng và kiểm nâng cấp từ schema hiện tại trên PostgreSQL tạm.
+- Nhận storage: migration và bundle đã kiểm cả hai backend. Trạng thái Funnel dạng JSON xác nhận proxy foreground đang trỏ 3858. Không dùng image cũ với public listener nếu phải rollback khi proxy còn hoạt động.
+- Nhận server: qua kiểm pagination/ETag, URL job đã cấp, SSE và export đang xử lý. Golden traversal hiện có cũng lỗi trên bản trích sạch từ HEAD. Rehearsal nâng cấp từ image cũ giữ snapshot và phiên đăng nhập, nhưng trả 404 cho project cũ mặc định private. Cho worker thay riêng container app.
+- Điểm dừng: Compose đã chạy image privacy mới, app và PostgreSQL healthy. Root đối chiếu bốn snapshot giữ nguyên phần thiết kế, cả bốn private trên 3857. URL HTTPS Funnel trả danh sách rỗng và link riêng tư 404. Rehearsal đã dọn. [Báo cáo](../PUBLIC-VIEWER-REPORT.md#project-visibility--2026-11-04).
+
+### Rà secret và commit public viewer — 2026-11-04
+
+- Người dùng yêu cầu rà nhanh secret và commit cục bộ trên `codex/compose-postgres`. Giao worker rà diff/staging đã che giá trị và commit đúng phạm vi auth/privacy, giữ hai ghi chú khảo sát ngoài phạm vi trong working tree.
+- Root xác nhận tag image dùng cấu hình runtime đã ignore. Kiểm so khớp chính xác mật khẩu PostgreSQL đang dùng trên toàn bộ file thuộc phạm vi Git không có kết quả. Khóa ký viewer sinh ngẫu nhiên khi đặt mật khẩu và lưu trong database.

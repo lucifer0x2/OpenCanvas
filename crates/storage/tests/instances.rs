@@ -57,7 +57,7 @@ fn instances_expand_resolve_and_roundtrip_authored_only() {
         NodeKind::Frame
     );
     let bundle = p.export_bundle().unwrap();
-    assert_eq!(bundle.manifest.database_schema_version, 4);
+    assert_eq!(bundle.manifest.database_schema_version, 5);
     let imported = store
         .import_bundle("copy", &bundle.bytes)
         .unwrap()
@@ -196,6 +196,8 @@ fn instances_schema_two_and_three_migrate_without_authored_changes() {
         drop(p);
         drop(store);
         let conn = rusqlite::Connection::open(temp.path().join("fixture/db.sql")).unwrap();
+        conn.execute_batch("ALTER TABLE project_meta DROP COLUMN privacy_status")
+            .unwrap();
         if version == 2 {
             conn.execute_batch("DROP TABLE notes").unwrap();
         }

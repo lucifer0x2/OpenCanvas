@@ -1,5 +1,11 @@
 use crate::*;
-pub(crate) fn initialize(conn: &mut Connection, id: &str, slug: &str, name: &str) -> Result<()> {
+pub(crate) fn initialize(
+    conn: &mut Connection,
+    id: &str,
+    slug: &str,
+    name: &str,
+    database_version: u32,
+) -> Result<()> {
     let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
     tx.execute_batch("CREATE TABLE project_meta(singleton INTEGER PRIMARY KEY CHECK(singleton=1),project_id TEXT NOT NULL UNIQUE,slug TEXT NOT NULL,name TEXT NOT NULL,schema_version INTEGER NOT NULL,current_revision INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE nodes(id TEXT PRIMARY KEY,parent_id TEXT REFERENCES nodes(id) DEFERRABLE INITIALLY DEFERRED,sort_key INTEGER NOT NULL,kind TEXT NOT NULL,props_json TEXT NOT NULL);
@@ -30,11 +36,51 @@ pub(crate) fn initialize(conn: &mut Connection, id: &str, slug: &str, name: &str
         params![font.id, serde_json::to_string(&font)?],
     )?;
     tx.commit()?;
-    migration::migrate(conn)?;
-    Ok(())
+    migration::migrate_to(conn, database_version)
 }
 pub(crate) fn read_meta(conn: &Connection) -> Result<ProjectMeta> {
-    Ok(conn.query_row("SELECT project_id,slug,name,schema_version,current_revision FROM project_meta WHERE singleton=1",[],|r| Ok(ProjectMeta { project_id:r.get(0)?,slug:r.get(1)?,name:r.get(2)?,schema_version:r.get(3)?,revision:r.get::<_,i64>(4)? as u64 }))?)
+    query_meta(
+        conn,
+        "SELECT project_id,slug,name,schema_version,current_revision,privacy_status
+         FROM project_meta WHERE singleton=1",
+    )
+}
+
+pub(crate) fn read_list_meta(conn: &Connection) -> Result<ProjectMeta> {
+    let version: u32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
+    if version == migration::DATABASE_SCHEMA_VERSION {
+        read_meta(conn)
+    } else {
+        // A legacy project can be listed without opening its writer or migrating it.
+        query_meta(
+            conn,
+            "SELECT project_id,slug,name,schema_version,current_revision,'private'
+             FROM project_meta WHERE singleton=1",
+        )
+    }
+}
+
+fn query_meta(conn: &Connection, sql: &str) -> Result<ProjectMeta> {
+    let (mut meta, privacy) = conn.query_row(sql, [], |row| {
+        let version = row.get(3)?;
+        Ok((
+            ProjectMeta {
+                project_id: row.get(0)?,
+                slug: row.get(1)?,
+                name: row.get(2)?,
+                schema_version: if version == migration::DATABASE_SCHEMA_VERSION {
+                    SCHEMA_VERSION
+                } else {
+                    version
+                },
+                revision: row.get::<_, i64>(4)? as u64,
+                privacy_status: PrivacyStatus::Private,
+            },
+            row.get::<_, String>(5)?,
+        ))
+    })?;
+    meta.privacy_status = PrivacyStatus::from_storage(&privacy)?;
+    Ok(meta)
 }
 fn json_rows<T: serde::de::DeserializeOwned>(conn: &Connection, table: &str) -> Result<Vec<T>> {
     let mut stmt = conn.prepare(&format!("SELECT data_json FROM {table} ORDER BY id"))?;

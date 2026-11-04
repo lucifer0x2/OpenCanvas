@@ -46,8 +46,11 @@ pub(super) fn initialize(client: &mut Client) -> Result<String> {
         CREATE TABLE IF NOT EXISTS idempotency (
             project_id TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
             key TEXT NOT NULL, request_hash TEXT NOT NULL, response TEXT NOT NULL,
-            import_asset TEXT, PRIMARY KEY(project_id,key));")
+            import_asset TEXT, PRIMARY KEY(project_id,key));
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS privacy_status TEXT NOT NULL DEFAULT 'private'
+            CHECK(privacy_status IN ('private','public'));")
         .map_err(sql)?;
+    tx.batch_execute(viewer_auth::SCHEMA).map_err(sql)?;
     tx.commit().map_err(sql)?;
     Ok(namespace)
 }

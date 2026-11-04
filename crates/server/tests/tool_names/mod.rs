@@ -3,9 +3,10 @@
 use serde_json::Value;
 use std::collections::HashSet;
 
-pub const EXPECTED: [&str; 17] = [
+pub const EXPECTED: [&str; 18] = [
     "list_projects",
     "create_project",
+    "update_project",
     "get_outline",
     "find_nodes",
     "get_subtree",

@@ -1,5 +1,5 @@
 use super::*;
-use crate::{Font, ProjectMeta, StorageError, SCHEMA_VERSION};
+use crate::{Font, PrivacyStatus, ProjectMeta, StorageError, SCHEMA_VERSION};
 use ::postgres::{GenericClient, Row};
 
 pub(super) struct ProjectRow {
@@ -19,6 +19,9 @@ pub(super) fn decode(row: Row) -> Result<ProjectRow> {
                 .map_err(|_| StorageError::new("PROJECT_INVALID", "Project manifest is invalid"))?,
             schema_version: row.get::<_, i32>("schema_version") as u32,
             revision: row.get::<_, i64>("revision") as u64,
+            privacy_status: PrivacyStatus::from_storage(
+                row.try_get("privacy_status").map_err(sql)?,
+            )?,
         },
         generation: row.get("generation"),
         namespace: row.get("namespace"),
@@ -80,6 +83,7 @@ pub(super) fn create(
         name: name.into(),
         schema_version: SCHEMA_VERSION,
         revision: 0,
+        privacy_status: PrivacyStatus::Private,
     };
     let mut tx = client.transaction().map_err(sql)?;
     tx.execute(
@@ -116,4 +120,24 @@ pub(super) fn create(
     .map_err(sql)?;
     tx.commit().map_err(sql)?;
     Ok(meta)
+}
+
+pub(super) fn update_privacy(
+    session: &mut Session,
+    key: &str,
+    privacy: PrivacyStatus,
+) -> Result<(ProjectMeta, bool)> {
+    let mut tx = session.client.transaction().map_err(sql)?;
+    let mut db = Db::new(&mut tx, &mut session.statements);
+    let mut meta = lookup(&mut db, key, true)?.meta;
+    let changed = meta.privacy_status != privacy;
+    if changed {
+        db.execute(
+            "UPDATE projects SET privacy_status=$1 WHERE project_id=$2",
+            &[&privacy.as_str(), &meta.project_id],
+        )?;
+        meta.privacy_status = privacy;
+    }
+    tx.commit().map_err(sql)?;
+    Ok((meta, changed))
 }

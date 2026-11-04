@@ -67,10 +67,18 @@ fn build() -> Vec<Tool> {
     );
     add(
         "create_project",
-        "Create an empty durable project. Does not create demo design data.".into(),
+        "Create an empty private project.".into(),
         object(
             json!({"slug":{"type":"string","pattern":"^[a-z0-9]+(-[a-z0-9]+)*$","minLength":1,"maxLength":64},"name":text(256)}),
             &["slug", "name"],
+        ),
+    );
+    add(
+        "update_project",
+        "Set a project's visibility on the public viewer. Accepts a project ID or slug.".into(),
+        object(
+            json!({"projectId":id(),"privacy_status":{"type":"string","enum":["private","public"]}}),
+            &["projectId", "privacy_status"],
         ),
     );
     let tree = json!({"projectId":id(),"nodeId":node_id(),"frameId":id(),"depth":{"type":"integer","minimum":0,"maximum":8},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"properties":{"type":"array","maxItems":50,"items":text(64)},"viewport":viewport(),"theme":text(64),"cursor":text(1024),"revision":{"type":"integer","minimum":0}});
@@ -170,6 +178,7 @@ fn build() -> Vec<Tool> {
     );
     add("export_nodes", export::DESCRIPTION.into(), export::schema());
     add("inspect_layout","Frame-local pixel bounds and the exact text lines of an existing job's scene key: the measured ground truth to check an implementation against, for the viewport that job used. Reading another viewport requires another render. No layout explanation or diff in v1. Nodes come in scene order, up to limit (default and max 200) per page; budget (bytes) is uncapped unless given. fields picks bounds and/or lines (default both); fields:[\"bounds\"] is much smaller. truncated:true always comes with nextCursor: repeat the same arguments with cursor to read the rest. The cursor binds the job, so later commits do not invalidate it.".into(),object(json!({"projectId":id(),"jobId":id(),"sceneKey":text(128),"nodeIds":{"type":"array","maxItems":200,"items":node_id()},"fields":{"type":"array","minItems":1,"maxItems":2,"items":{"enum":["bounds","lines"]}},"limit":count(200),"budget":{"type":"integer","minimum":1024,"maximum":65536},"cursor":text(1024)}),&["projectId","jobId","sceneKey"]));
+    crate::viewer_auth::admin::tools(&mut add);
     tools
 }
 fn viewport() -> Value {

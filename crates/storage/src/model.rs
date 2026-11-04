@@ -93,6 +93,34 @@ pub struct Font {
     pub status: String,
 }
 
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum PrivacyStatus {
+    #[default]
+    Private,
+    Public,
+}
+
+impl PrivacyStatus {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Private => "private",
+            Self::Public => "public",
+        }
+    }
+
+    pub(crate) fn from_storage(value: &str) -> crate::Result<Self> {
+        match value {
+            "private" => Ok(Self::Private),
+            "public" => Ok(Self::Public),
+            _ => Err(crate::StorageError::new(
+                "PROJECT_INVALID",
+                "Project privacy status is invalid",
+            )),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectMeta {
@@ -101,6 +129,8 @@ pub struct ProjectMeta {
     pub name: String,
     pub schema_version: u32,
     pub revision: u64,
+    #[serde(default, rename = "privacy_status")]
+    pub privacy_status: PrivacyStatus,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

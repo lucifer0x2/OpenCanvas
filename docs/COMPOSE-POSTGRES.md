@@ -51,16 +51,36 @@ OPENCANVAS_PUBLIC_PORT=3858
 OPENCANVAS_PUBLIC_ORIGIN=https://machine.tailnet-name.ts.net
 ```
 
+For password protection behind Funnel, set
+`OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP` to the peer IP that the app sees on
+connections from the proxy. On this OrbStack setup the loopback-published
+port reaches the container from the Compose bridge gateway. Find the gateway
+with the following command and verify it against the published-port peer if
+the network or proxy setup changes.
+
+```sh
+docker --context orbstack network inspect opencanvas-postgres_default \
+  --format '{{range .IPAM.Config}}{{println .Gateway}}{{end}}'
+```
+
 ```sh
 compose_pg -f compose.public-viewer.yaml config --quiet
 compose_pg -f compose.public-viewer.yaml up -d --wait --wait-timeout 180
 ```
 
-The public listener serves every project in read-only mode and allows exports.
+The public listener serves projects marked `public` in read-only mode and
+allows their exports. All projects are private by default. Use
+`update_project` on MCP port 3857 to publish selected projects.
 For loopback testing, send the configured public Host and Origin headers to
 `http://127.0.0.1:3858/api/v1/viewer` and expect `{"readOnly":true}`. If enabling
-Funnel separately, point it at loopback 3858. Port 3857 is the local write/MCP
-listener.
+Funnel separately, point it at loopback 3858. Set or clear the shared password
+and manage sessions through MCP on 3857. See the
+[MCP tool arguments](SERVER.md#public-viewer-password). Use the HTTPS Funnel
+URL for browser sign-in so it accepts the secure cookie.
+
+An image from before project visibility support serves the full project list
+on the public port. If rolling back to such an image, stop the public listener
+or disconnect its proxy before starting the older image.
 
 ## Restore a Kubernetes database dump
 
@@ -93,6 +113,11 @@ The app publishes loopback `3857` for MCP and `3858` for the read-only viewer.
 The database is on the Docker volume `opencanvas-postgres_postgres-data`.
 The local env file is private and Git-ignored. Backups and parity checks are
 also under `.runtime/compose-postgres/`.
+
+The 2026-11-04 app rollout uses the local `opencanvas:project-privacy-local`
+image. The existing PostgreSQL container and volume serve the same authored
+snapshots. Existing projects start private and the HTTPS Funnel viewer shows
+an empty list until a project is published.
 
 ```sh
 docker --context orbstack compose --env-file .runtime/compose-postgres/prod.env \

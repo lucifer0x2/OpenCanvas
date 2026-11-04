@@ -121,18 +121,24 @@ export async function verifyEmptySelects(browser, baseURL) {
       "No projects yet",
     );
     await empty.unroute("**/api/v1/projects");
-    await empty.route("**/api/v1/projects", (route) =>
-      route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify({
-          projects: Array.from({ length: 30 }, (_, index) => ({
-            projectId: index === 0 ? "fixture" : `project-${index}`,
-            slug: `project-${index}`,
-            name: `Project${String(index).padStart(2, "0")} with a long descriptive name`,
-            revision: 7,
-          })),
-        }),
-      }),
+    const projects = Array.from({ length: 30 }, (_, index) => ({
+      projectId: index === 0 ? "fixture" : `project-${index}`,
+      slug: `project-${String(index).padStart(2, "0")}`,
+      name: `Project${String(index).padStart(2, "0")} with a long descriptive name`,
+      revision: 7,
+    }));
+    await empty.route(
+      (url) => url.pathname === "/api/v1/projects",
+      (route) => {
+        const cursor = new URL(route.request().url()).searchParams.get(
+          "cursor",
+        );
+        return route.fulfill({
+          json: cursor
+            ? { projects: projects.slice(15), nextCursor: null }
+            : { projects: projects.slice(0, 15), nextCursor: "project-14" },
+        });
+      },
     );
     await empty.reload();
     await empty.getByText("Scene r7", { exact: true }).waitFor();

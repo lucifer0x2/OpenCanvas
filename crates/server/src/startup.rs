@@ -2,7 +2,12 @@ mod postgres_env;
 
 use opencanvas_server::PublicViewer;
 use opencanvas_storage::{PostgresBackend, PostgresConfig, SnapshotCache, Storage, Store};
-use std::{env, error::Error, net::Ipv4Addr, path::PathBuf};
+use std::{
+    env,
+    error::Error,
+    net::{IpAddr, Ipv4Addr},
+    path::PathBuf,
+};
 
 pub const HELP: &str =
     "opencanvas-server [--data-root DIR] [--port NUMBER] [--workspace DIR] [--host 127.0.0.1|0.0.0.0]
@@ -17,7 +22,9 @@ SQLite data root defaults to ~/.opencanvas. Neither backend creates a project un
 --host defaults to 127.0.0.1. 0.0.0.0 listens on every interface and is meant for a container
 whose ports are published on host loopback only: the API has no authentication.
 Public viewer is disabled by default; both public options are required. This separate listener
-shares ALL projects, live events, resources and exports publicly, without MCP or write access.
+shares public projects, their live events, resources and exports. Projects default to private.
+Local MCP can require a password for the public viewer. Behind a trusted reverse proxy set
+OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP to its socket peer IP to use a single X-Forwarded-For address.
 Point Funnel only at the public viewer port, NEVER at the local MCP port.";
 
 pub struct Startup {
@@ -85,7 +92,13 @@ impl Startup {
             (Some(p), Some(_)) if p != 0 && p == port => {
                 return Err("Local and public viewer ports must differ".into());
             }
-            (Some(p), Some(origin)) => Some((p, origin)),
+            (Some(p), Some(viewer)) => Some((
+                p,
+                match trusted_proxy()? {
+                    Some(proxy) => viewer.with_trusted_proxy(proxy),
+                    None => viewer,
+                },
+            )),
             (None, None) => None,
             _ => {
                 return Err(
@@ -102,6 +115,22 @@ impl Startup {
             public_viewer,
             workspace,
         }))
+    }
+}
+
+fn trusted_proxy() -> Result<Option<IpAddr>, &'static str> {
+    const INVALID: &str = "OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP must be a single IP address";
+    match env::var("OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP") {
+        Ok(value) if value.is_empty() => Ok(None),
+        Ok(value) => value
+            .parse::<IpAddr>()
+            .ok()
+            .map(|ip| ip.to_canonical())
+            .filter(|ip| !ip.is_unspecified())
+            .map(Some)
+            .ok_or(INVALID),
+        Err(env::VarError::NotPresent) => Ok(None),
+        Err(_) => Err(INVALID),
     }
 }
 
