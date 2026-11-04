@@ -69,6 +69,12 @@ Component/variant tối giản là giai đoạn sau MVP; chưa triển khai over
 Responsive v1 chỉ là agent chọn viewport hữu hạn và bố cục trong phạm vi row/column đã công bố.
 Không cam kết tự động mô phỏng CSS media query hoặc mọi hành vi responsive của website.
 
+### Responsive opt-in — kích thước tỷ lệ và breakpoint
+
+- Node con nhận `width` và `height` là phần trăm thập phân từ `0%` đến `100%`, theo trục cha xác định. Root frame giữ kích thước authored dạng số và dùng viewport khi render. Min/max tính theo pixel.
+- Container có thể khai báo tối đa tám `layout.breakpoints` theo `maxWidth` tăng dần. Chọn layout đầu tiên thỏa `viewport.width <= maxWidth`, dùng layout mặc định ngoài các ngưỡng. Mỗi layout thay thế hoàn chỉnh và không lồng breakpoint.
+- Backend, layout binary, render và inspect dùng cùng quy tắc. Giữ authored revision và cập nhật backend với layout binary trong cùng image. Xem [hợp đồng responsive](docs/CONTRACT.md#responsive-layout).
+
 ### Task04 — row wrap được duyệt trước triển khai
 
 Phạm vi theo `docs/TASK04-PROPOSAL.md`, người dùng duyệt rõ “Duyệt, triển khai row wrap”.

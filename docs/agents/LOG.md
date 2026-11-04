@@ -125,6 +125,14 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Người dùng yêu cầu giải thích icon/RAM và dừng PostgreSQL phụ nếu không còn dùng. Giao worker kiểm tra consumer và dừng đúng container Task15 khi an toàn; root kiểm nhãn và RAM của Compose.
 - Điểm dừng: Task15 benchmark có 0 client, đã dừng sạch và giữ volume. Root kiểm cả hai container Compose healthy và hai revision giữ nguyên. App vẫn dùng tag image `kubernetes-local` dưới Compose; Kubernetes tắt. Node/Chromium và Rust chiếm phần lớn RAM tiến trình, cgroup có cache file và đỉnh cao hơn mức lúc đo.
 
+### Phạm vi đọc khi agent cập nhật design — 2026-11-03
+
+- Điểm dừng: đối chiếu mã và hợp đồng MCP. Agent có thể đọc theo ID và dùng `committedRevision` cho lần ghi kế tiếp. PostgreSQL vẫn nạp và kiểm tra candidate toàn project ở phía server. Chưa đo token hoặc độ trễ ở 10.000 node.
+
+### Kiểm xung đột PR #1–#3 — 2026-11-03
+
+- Điểm dừng: xác minh HEAD từ GitHub và mô phỏng merge trong thư mục Git objects tạm. Cả ba sạch với main hiện tại; từng cặp xung đột ở tài liệu. PR #3 đã chứa các thay đổi code của #1 và #2. Không merge hay push.
+
 ### Xuất bản nhánh Docker Compose PostgreSQL — 2026-11-03
 
 - Người dùng yêu cầu commit và push nhánh mới. Giao worker tách cấu hình/runbook Compose và nhật ký liên quan từ `codex/kubernetes-local`; giữ các ghi chú khảo sát khác ở working tree.
@@ -150,3 +158,19 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Người dùng yêu cầu rà nhanh secret và commit cục bộ trên `codex/compose-postgres`. Giao worker rà diff/staging đã che giá trị và commit đúng phạm vi auth/privacy, giữ hai ghi chú khảo sát ngoài phạm vi trong working tree.
 - Root xác nhận tag image dùng cấu hình runtime đã ignore. Kiểm so khớp chính xác mật khẩu PostgreSQL đang dùng trên toàn bộ file thuộc phạm vi Git không có kết quả. Khóa ký viewer sinh ngẫu nhiên khi đặt mật khẩu và lưu trong database.
+
+### Khôi phục render dữ liệu responsive trên Compose — 2026-11-04
+
+- Tái hiện HTTP 400 ở revision 137. Snapshot giữ giá trị width phần trăm. Root xác nhận rollout Compose build từ nhánh thiếu phần hỗ trợ responsive đã có ở worktree riêng. Hai project hiện dùng kích thước phần trăm, một project dùng breakpoint. Giao worker tích hợp phần responsive vào nhánh Compose và kiểm bằng dữ liệu tạm.
+- Giao worker vận hành dựng bản sao PostgreSQL tạm và tái hiện lỗi bằng image hiện tại trước khi kiểm image tương thích, giữ nguyên dữ liệu thật và Funnel.
+- Phiên tiếp tục xác nhận nhánh `codex/compose-postgres` có phần tích hợp responsive chưa commit và bản thử `opencanvas-responsive-7f7b5d96` đang healthy. Giao worker mới chốt tích hợp/kiểm hồi quy, cùng worker vận hành tiếp quản bản thử rồi cập nhật riêng app sau khi root kiểm đạt; giữ PostgreSQL, dữ liệu authored và Funnel.
+- Kiểm tích hợp tìm thấy helper `Candidate::ancestors` còn thiếu trên nền Compose, khiến storage chưa compile; worker tích hợp bổ sung phần thiếu trước khi dựng image. Layout đã qua kiểm, chưa coi tích hợp hoặc rollout hoàn tất.
+- Nhận tích hợp hoàn tất: 70 test Rust đạt, production Clippy/fmt/diff sạch; root kiểm độc lập 10 test pipeline Chromium đạt. Canary image đồng bộ server/layout-step đã render Training và Responsive Lab, giữ bốn snapshot và 84 asset binary; ranh giới auth/privacy giữ nguyên. Root kiểm riêng ngưỡng 721/720/390, inspect/PNG, viewer desktop/mobile GET-only và duyệt thay riêng app theo phạm vi đã được người dùng cho tiếp tục.
+- Blocker: bộ duyệt tự động từ chối lệnh thay app thật vì yêu cầu tiếp tục chưa phải xác nhận rollout rõ ràng. Chưa thay container thật; root đã gửi form xin phép cụ thể cho image đã kiểm. Giữ canary và bằng chứng để có thể tiếp tục đúng thao tác khi người dùng trả lời; không thử lại hay vượt chặn.
+- Điểm dừng theo chỉ đạo người dùng: “App thật tôi sẽ tự cài, không tự deploy vào app thật”. Dừng bước rollout, bàn giao image đã kiểm và [báo cáo](../RESPONSIVE-COMPOSE-REPORT.md); app thật/PG/Funnel giữ nguyên. Giữ canary hiện có và bằng chứng, không commit/push.
+- Người dùng tự build `kubernetes-local` rồi chạy Compose nhưng browser còn lỗi. Kiểm chỉ đọc xác nhận `prod.env` vẫn chọn `project-privacy-local`, container thật còn image ID cũ và chưa được tạo lại. Bàn giao cách chọn đúng tag; không sửa env hay tự deploy.
+
+### Commit tích hợp responsive — 2026-11-04
+
+- Người dùng yêu cầu commit cục bộ và chốt cập nhật log trước commit, không ghi log sau commit. Giao worker mới rà/stage đúng phần responsive, test và tài liệu hiện có trên `codex/compose-postgres`, rồi tạo một commit; không push hoặc deploy.
+- Kiểm trước bàn giao: diff sạch whitespace, `AGENTS.md` trong ngân sách; bằng chứng 70 test Rust, 10 test pipeline Chromium, fmt/Clippy và canary ở [báo cáo](../RESPONSIVE-COMPOSE-REPORT.md). Source không đổi sau lượt kiểm đã ghi. Sau commit chỉ kiểm đọc Git và báo kết quả trong chat; commit hash tra bằng Git history.

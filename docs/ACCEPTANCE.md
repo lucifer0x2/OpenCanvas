@@ -1,5 +1,13 @@
 # OpenCanvas — bản đồ nghiệm thu
 
+Responsive trên nền Compose ngày 2026-11-04: tích hợp `%`/breakpoint đã qua
+70 test Rust, production Clippy/fmt và 10 test pipeline Chromium độc lập.
+Image đồng bộ server/layout-step đã kiểm trên bản sao PostgreSQL: Training,
+Responsive Lab, ngưỡng 721/720/390px, MCP/inspect/PNG và viewer desktop/mobile.
+Bốn snapshot cùng 84 asset binary giữ nguyên. Chưa rollout thật; người dùng
+chốt tự cài app thật, agent không tự deploy vào dịch vụ 3857/3858.
+Xem [báo cáo tích hợp và canary](RESPONSIVE-COMPOSE-REPORT.md).
+
 Task20 ngày 2026-11-03: Kubernetes local trên OrbStack đã build/deploy runtime
 PostgreSQL thật, một replica app và PVC 2 GiB. HTTP/MCP/render PNG, persistence
 qua restart app/DB, apply giữ Secret/PVC, SIGINT và DB outage readiness đã kiểm.
@@ -59,7 +67,7 @@ viewer GET-only0 browser errors, scene/PNG0 differences ở1040×844 và390×844
 Ảnh tại `artifacts/e2e/wrap-{1040,640,390}.png` và `wrap-viewer-{1040,390}.png`.
 Root và worker đã xem PNG desktop/mobile thật. Giới hạn cũ của welcome dashboards vẫn giữ:
 không author lại sidebar/body minima, fixed chart/progress hoặc fixed text heights.
-Không %/breakpoint/column wrap (align/justify thêm sau ở P08a); backend/layout cần nâng đồng bộ. Real3847
+Phạm vi nghiệm thu Task04 là row wrap (align/justify thêm sau ở P08a). Real3847
 không bị chạm; temp process/data được cleanup. Báo cáo chi tiết có lệnh và lint caveat.
 
 Nguồn yêu cầu: `PLAN.md`. Tài liệu này do phiên điều phối quản lý. Nghiệm thu
@@ -224,7 +232,8 @@ tương thích. Chi phí và contract tại `docs/TASK03-REPORT.md`, `docs/SERVE
 AC trong `.night/proposals/P08a-stack-align-padding.md`. Kiểm: `cargo test -p opencanvas-layout`
 (`stack_tests`, `stretch_tests`), `-p opencanvas-storage --test stack_layout`, `-p opencanvas-server
 --test stack_context`, `npm run test:pipeline` (`stack-align.test.mjs`). Không `alignSelf`,
-`space-around/evenly`, baseline, margin, %/breakpoint/column wrap (P08b và sau).
+`space-around/evenly`, baseline, margin và column wrap. Kích thước phần trăm
+và breakpoint được bổ sung riêng theo [contract responsive](CONTRACT.md#responsive-layout).
 
 ### Task14 — instance schemes và Structured Operations, 2026-11-02
 

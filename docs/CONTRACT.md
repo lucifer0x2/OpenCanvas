@@ -78,6 +78,21 @@ Viewer imports shared renderer source from `renderer/`, calls resource loading +
 
 Layers ordered by `sortKey` within parent. Page/frame selection derives from authored nodes; frame scene includes only descendants. Local selection/pan/zoom/viewport do not mutate design or revision.
 
+### Responsive layout
+
+Child `width` and `height` accept literal decimal strings from `"0%"` to
+`"100%"`. The corresponding parent axis must be numeric or follow a fill or
+percentage chain to a numeric size. The selected frame uses the render viewport
+as its root size. Percentages use the parent's content box in a stack and its
+padding box under free positioning. Pixel min/max bounds still apply.
+
+Containers may set `layout.breakpoints` to up to eight `{maxWidth, layout}`
+objects with unique, strictly increasing integer thresholds from 1 to 100000.
+The first rule with `viewport.width <= maxWidth` supplies the complete layout.
+Above all thresholds, the base layout applies. Every rule is validated in all
+themes and follows the same wrap guards. Render, preview and `inspect_layout`
+share the computed scene for the same revision, viewport, theme and state.
+
 Element addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`.
 All query values are percent-encoded stable IDs, including virtual IDs with `/`.
 Opening a complete address overrides localStorage selection and loads the latest

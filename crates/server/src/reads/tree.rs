@@ -36,11 +36,8 @@ pub(super) fn read(
     };
     let expanded_index = TreeIndex::new(&expanded);
     let expand = context && req.instances.as_deref() == Some("expand");
-    let index = TreeIndex::new(if expand || root.is_some_and(|id| id.contains('/')) {
-        &expanded
-    } else {
-        &s.nodes
-    });
+    let use_expanded = expand || root.is_some_and(|id| id.contains('/'));
+    let index = TreeIndex::new(if use_expanded { &expanded } else { &s.nodes });
     if let Some(id) = root {
         let node = index
             .get(id)
@@ -57,17 +54,19 @@ pub(super) fn read(
     };
     let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
     let ordered = index.preorder(root.map(String::as_str));
+    let expanded_ordered =
+        (context && !use_expanded && matches!(&expanded, std::borrow::Cow::Owned(_)))
+            .then(|| expanded_index.preorder(root.map(String::as_str)));
+    let full_scope = expanded_ordered.as_deref().unwrap_or(&ordered);
     let compact = (context && req.compact == Some(true))
         .then(|| {
             compact::Referenced::collect(
                 s,
-                expanded_index
-                    .preorder(root.map(String::as_str))
+                full_scope
                     .iter()
                     .map(|(n, _)| *n)
                     .chain(instances::definition_nodes(s, &ordered)),
-                expanded_index
-                    .preorder(root.map(String::as_str))
+                full_scope
                     .iter()
                     .filter_map(|(n, _)| by_id.get(n.id.as_str()))
                     .filter_map(|n| n.props["effectiveTheme"].as_str())
@@ -155,7 +154,7 @@ pub(super) fn read(
         response["theme"] = json!(theme);
         compact::mark(&mut response, compact.as_ref());
         response["viewport"] = json!(req.viewport);
-        response["diagnostics"] = diagnostics::for_scope(&ordered);
+        response["diagnostics"] = diagnostics::for_scope(full_scope);
         let text_diagnostics = crate::text_diagnostics::authored(s, &resolved, root.unwrap());
         // Navigation is frame metadata: on the first page only, absent when the frame has none.
         if let Some(nav) = root
@@ -174,7 +173,7 @@ pub(super) fn read(
             if computed.reflow == Some(true) {
                 response["diagnostics"] = json!([]);
             } else if computed.reflow == Some(false) && response["diagnostics"] == json!([]) {
-                response["diagnostics"] = diagnostics::unchanged(ordered[0].0);
+                response["diagnostics"] = diagnostics::unchanged(full_scope);
             }
             response["diagnostics"]
                 .as_array_mut()

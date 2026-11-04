@@ -3,6 +3,9 @@ mod engine;
 mod model;
 #[cfg(test)]
 mod paint_tests;
+mod responsive;
+#[cfg(test)]
+mod responsive_tests;
 mod stack;
 #[cfg(test)]
 mod stack_tests;
@@ -20,6 +23,7 @@ mod validation;
 mod wrap_tests;
 pub use engine::compute;
 pub use model::*;
+pub use responsive::{MAX_BREAKPOINTS, percentage, valid_breakpoint_width};
 pub const SCENE_VERSION: &str = "scene-3";
 pub const RENDERER_VERSION: &str = "web-4";
 pub const MAX_PASSES: usize = 6;

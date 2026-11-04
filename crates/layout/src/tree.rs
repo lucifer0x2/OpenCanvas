@@ -16,7 +16,9 @@ pub(crate) fn build(
     let n = &input.nodes[idx];
     let p = &n.props;
     let parent_mode = parent.mode;
-    let mode = p.layout.as_ref().map(|l| l.mode.as_str()).unwrap_or("free");
+    let has_breakpoints = p.layout.as_ref().is_some_and(|l| !l.breakpoints.is_empty());
+    let layout = p.layout.as_ref().map(|l| l.at_width(input.viewport.width));
+    let mode = layout.map(|l| l.mode.as_str()).unwrap_or("free");
     let mut style = Style {
         display: Display::Flex,
         flex_direction: if mode == "row" {
@@ -48,7 +50,7 @@ pub(crate) fn build(
         style.flex_shrink = 1.0;
         style.flex_basis = length(0.0);
     }
-    if let Some(layout) = &p.layout {
+    if let Some(layout) = layout {
         // An inside stroke takes space in a stack like a CSS border; free children keep x/y.
         let insets = match (&p.stroke, mode) {
             (Some(stroke), "row" | "column") => stroke.inside_insets(),
@@ -58,8 +60,8 @@ pub(crate) fn build(
     }
     if root {
         style.size = Size {
-            width: length(input.viewport.width),
-            height: length(input.viewport.height),
+            width: length(input.viewport.width as f32),
+            height: length(input.viewport.height as f32),
         };
     } else if parent_mode == "free" {
         style.position = Position::Absolute;
@@ -74,10 +76,27 @@ pub(crate) fn build(
         .filter(|(_, c)| c.parent_id.as_deref() == Some(n.id.as_str()))
         .map(|(i, _)| i)
         .collect();
+    // Taffy's static boxes pass absolute descendants up to a containing block.
+    // Anchor responsive free children to their immediate parent, also when a
+    // breakpoint changes this container's placement from absolute to in-flow.
+    if style.position == Position::Static
+        && mode == "free"
+        && (has_breakpoints
+            || parent.has_breakpoints
+            || children.iter().any(|&i| {
+                let child = &input.nodes[i].props;
+                [&child.width, &child.height]
+                    .into_iter()
+                    .any(|size| size.as_ref().and_then(Sizing::percentage).is_some())
+            }))
+    {
+        style.position = Position::Relative;
+    }
     let mut child_ids = Vec::new();
     let this = Parent {
         mode,
-        align: stack::align(p.layout.as_ref()),
+        align: stack::align(layout),
+        has_breakpoints,
     };
     for child in children {
         child_ids.push(build(child, input, tree, ids, order, this, false)?);
