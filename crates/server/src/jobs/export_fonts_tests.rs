@@ -35,6 +35,8 @@ async fn stale_scene_font_identity_cannot_export_replacement_bytes() {
     let source = AssetSource {
         store: store.into(),
         project_id: project.id().into(),
+        cached: None,
+        deadline: None,
     };
     let (_, css) = embed(&source, &scene).await.unwrap();
     assert!(css.contains("data:font/ttf;base64,"));

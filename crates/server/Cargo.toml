@@ -6,6 +6,9 @@ license.workspace = true
 
 [dependencies]
 opencanvas-storage = { path = "../storage" }
+opencanvas-layout = { path = "../layout" }
+opencanvas-text = { path = "../text" }
+opencanvas-render = { path = "../render" }
 axum = "0.8.8"
 moka = { version = "=0.12.15", default-features = false, features = ["sync"] }
 tokio = { version = "1.48", features = ["full"] }

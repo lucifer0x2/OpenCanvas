@@ -2,6 +2,7 @@ use crate::{
     error::{ApiError, Result},
     jobs::Jobs,
     snapshot_http::SnapshotRepresentations,
+    RenderBackend,
 };
 use opencanvas_storage::{ProjectHandle, ProjectMeta, Snapshot, Storage};
 use serde_json::Value;
@@ -13,16 +14,29 @@ pub struct Config {
     pub workspace: PathBuf,
     pub base_url: String,
     pub node: String,
+    pub render_backend: RenderBackend,
     pub job_timeout: std::time::Duration,
     pub pipeline_identity: String,
 }
 impl Config {
     pub fn new(workspace: PathBuf, port: u16) -> Self {
-        let pipeline_identity = crate::fingerprint::pipeline(&workspace);
+        Self::for_backend(workspace, port, RenderBackend::Chromium)
+    }
+
+    /// Select the backend before fingerprinting; Rust never probes the browser runtime.
+    ///
+    /// # Panics
+    /// The Rust backend requires the current executable to be readable for cache identity.
+    pub fn for_backend(workspace: PathBuf, port: u16, render_backend: RenderBackend) -> Self {
+        let pipeline_identity = match render_backend {
+            RenderBackend::Chromium => crate::fingerprint::pipeline(&workspace),
+            RenderBackend::Rust => crate::fingerprint::native_pipeline(),
+        };
         Self {
             workspace,
             base_url: format!("http://127.0.0.1:{port}"),
             node: "node".into(),
+            render_backend,
             job_timeout: std::time::Duration::from_secs(45),
             pipeline_identity,
         }

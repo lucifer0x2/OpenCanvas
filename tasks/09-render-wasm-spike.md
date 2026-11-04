@@ -1,6 +1,8 @@
 # Task 09 — Spike WASM: painter Rust chạy trong trình duyệt có đủ nhỏ, đủ nhanh và ra cùng pixel không
 
-**Trạng thái:** CHƯA GIAO. Đóng gói 2026-10-29. Là gate cho Task 11 (yêu cầu build được WASM) và Task 12 (viewer WASM).
+**Trạng thái:** ĐÃ ĐO 2026-11-04 trên `feat/task09-wasm-spike`, đã merge nền Compose. Size và native↔WASM parity đạt;
+latency không đạt gate trong hai lượt host tải cao, chưa mở Task11–12. Xem [Phần E](../spikes/rust-export/README.md#phần-e--task09-wasm-trong-chromium-web-worker-2026-11-04).
+Đóng gói 2026-10-29. Là gate cho Task 11 (yêu cầu build được WASM) và Task 12 (viewer WASM).
 **Phụ thuộc:** `spikes/rust-export/` và `docs/PURE-RUST-EXPORT.md` phải có trên nhánh nền (lúc đóng gói chúng chưa commit,
 nằm trên `codex/p24-components-instances`). Cần target `wasm32-unknown-unknown`: máy lúc đóng gói **chưa cài**;
 `rustup target add wasm32-unknown-unknown` sửa toolchain chung, phải hỏi người dùng trước.

@@ -1,12 +1,11 @@
-// UNTESTED (Task 09): written on a Linux VM without Node/Chromium; never run. Browser gate runner:
-// serves the spike over HTTP on port 0, runs js/wasm/worker.js in the repo's pinned Chromium
-// (.runtime/browsers, Playwright from node_modules) for each .wasm variant, writes
-// out/wasm/chromium-<variant>.json and closes browser and server. Inputs come from the Phần E commands
-// (README): out/wasm/scenes/*.json (`frames`), out/wasm/native/*.rgba (`frame-bench --dump`) and
-// out/wasm/rust_spike-*.wasm (wasm/build.sh). Usage: node spikes/rust-export/js/wasm-bench.mjs [variant...]
+// Task09 Chromium Web Worker gate. Run from any cwd; generated inputs/results stay in out/wasm.
 import { createServer } from "node:http";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { loadavg, cpus, totalmem, freemem } from "node:os";
+import { runWorker } from "./wasm/worker-client.mjs";
+import { validate } from "./wasm/metrics.mjs";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= REPO + ".runtime/browsers";
@@ -14,41 +13,84 @@ const { chromium } = await import(REPO + "node_modules/playwright/index.mjs");
 const here = (p) => fileURLToPath(new URL(`../${p}`, import.meta.url));
 const CASES = [["spike", 1], ["spike", 2], ["frame", 1], ["frame", 2], ["tile", 1], ["tile", 2]];
 const variants = process.argv.slice(2).length ? process.argv.slice(2) : ["nosimd-release", "simd128-release"];
-
-const types = { ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json", ".png": "image/png" };
-const route = (p) => {
-  if (p === "/font.ttf") return REPO + "renderer/fonts/NotoSans.ttf";
-  if (p === "/asset.png") return here("data/asset.png");
-  if (p === "/worker.js") return here("js/wasm/worker.js");
-  const m = p.match(/^\/(scenes|native)\/([\w.-]+)$/) || p.match(/^\/()(rust_spike-[\w-]+\.wasm)$/);
-  return m ? here(`out/wasm/${m[1] ? m[1] + "/" : ""}${m[2]}`) : null;
-};
+const inputs = new Map([
+  ["/font.ttf", REPO + "renderer/fonts/NotoSans.ttf"],
+  ["/asset.png", here("data/asset.png")],
+  ["/worker.js", here("js/wasm/worker.js")],
+  ...["case.mjs", "metrics.mjs"].map((f) => [`/${f}`, here(`js/wasm/${f}`)]),
+]);
+for (const v of variants) {
+  if (!/^(nosimd|simd128)-release(?:-[sz])?$/.test(v)) throw new Error(`Invalid variant: ${v}`);
+  inputs.set(`/rust_spike-${v}.wasm`, here(`out/wasm/rust_spike-${v}.wasm`));
+}
+for (const [name, scale] of CASES) {
+  inputs.set(`/scenes/${name}.json`, here(`out/wasm/scenes/${name}.json`));
+  inputs.set(`/native/${name}-s${scale}.rgba`, here(`out/wasm/native/${name}-s${scale}.rgba`));
+}
+// Fail before launch when any artifact cannot be read; no stale/missing case is silently skipped.
+const inputHashes = {};
+for (const [url, file] of inputs) {
+  const bytes = readFileSync(file);
+  if (!bytes.length) throw new Error(`Empty input: ${url}`);
+  inputHashes[url] = createHash("sha256").update(bytes).digest("hex");
+}
+const nativeReport = JSON.parse(readFileSync(here("out/wasm/native.json")));
+validate(nativeReport, CASES);
+if (nativeReport.threads !== 1 || nativeReport.iters !== 20) throw new Error("Native must use --threads 1 --iters 20");
+const types = { js: "text/javascript", mjs: "text/javascript", wasm: "application/wasm", json: "application/json", png: "image/png" };
 const server = createServer((req, res) => {
-  const p = new URL(req.url, "http://x").pathname;
-  if (p === "/") { res.writeHead(200, { "content-type": "text/html" }); return res.end("<!doctype html><title>wasm</title>"); }
-  const f = route(p);
-  if (!f || !existsSync(f)) { res.writeHead(404); return res.end(); }
-  res.writeHead(200, { "content-type": types[f.slice(f.lastIndexOf("."))] ?? "application/octet-stream" });
-  res.end(readFileSync(f));
+  // Local-only isolation enables finer Worker performance.now() resolution, not WASM threads.
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  try {
+    const p = new URL(req.url, "http://x").pathname;
+    if (p === "/") {
+      res.writeHead(200, { "content-type": "text/html" });
+      return res.end("<!doctype html><title>Task09 Worker benchmark</title>");
+    }
+    const f = inputs.get(p);
+    if (!f) { res.writeHead(404); return res.end("Not found"); }
+    const bytes = readFileSync(f);
+    res.writeHead(200, { "content-type": types[f.split(".").at(-1)] ?? "application/octet-stream" });
+    res.end(bytes);
+  } catch (error) {
+    res.writeHead(500);
+    res.end(String(error));
+  }
 });
-await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const baseURL = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({ headless: true });
+let browser;
 try {
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  browser = await chromium.launch({ headless: true });
   for (const v of variants) {
+    const start = { at: new Date().toISOString(), loadavg: loadavg(), freeMemory: freemem() };
     const page = await browser.newPage();
-    await page.goto(baseURL);
-    const result = await page.evaluate(({ wasm, cases, iters }) => new Promise((resolve) => {
-      const w = new Worker("/worker.js");
-      w.onmessage = (e) => { w.terminate(); resolve(e.data); };
-      w.postMessage({ wasm, cases, iters });
-    }), { wasm: `/rust_spike-${v}.wasm`, cases: CASES, iters: 20 });
-    result.browser = browser.version();
-    writeFileSync(here(`out/wasm/chromium-${v}.json`), JSON.stringify(result, null, 1));
-    console.log(v, JSON.stringify(result));
-    await page.close();
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      const result = await page.evaluate(runWorker, {
+        wasm: `/rust_spike-${v}.wasm`, cases: CASES, iters: 20, timeoutMs: 180_000,
+      });
+      validate(result, CASES, true);
+      result.browser = browser.version();
+      result.variant = v;
+      result.host = { platform: process.platform, arch: process.arch, node: process.version,
+        cpu: cpus()[0]?.model, logicalCpus: cpus().length, totalMemory: totalmem(), start,
+        end: { at: new Date().toISOString(), loadavg: loadavg(), freeMemory: freemem() } };
+      result.inputHashes = inputHashes;
+      writeFileSync(here(`out/wasm/chromium-${v}.json`), JSON.stringify(result, null, 2));
+      console.log(v, JSON.stringify(result));
+    } finally { await page.close(); }
   }
 } finally {
-  await browser.close();
-  server.close();
+  try { await browser?.close(); }
+  finally {
+    server.closeAllConnections();
+    await new Promise((resolve, reject) => server.close((error) => {
+      if (error && error.code !== "ERR_SERVER_NOT_RUNNING") reject(error);
+      else resolve();
+    }));
+  }
 }

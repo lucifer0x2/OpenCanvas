@@ -29,10 +29,12 @@ fn ms(t: Instant) -> f64 {
 
 /// Cold, then p50/p95 (nearest rank), mean and min of the warm samples, ms.
 pub fn summary(cold: f64, mut warm: Vec<f64>) -> Value {
+    assert!(!warm.is_empty(), "--iters must be positive");
+    let samples = warm.clone();
     warm.sort_by(f64::total_cmp);
     let rank = |q: f64| warm[((q * warm.len() as f64).ceil() as usize).max(1) - 1];
     let mean = warm.iter().sum::<f64>() / warm.len() as f64;
-    json!({"coldMs": cold, "p50Ms": rank(0.5), "p95Ms": rank(0.95), "meanMs": mean, "minMs": warm[0], "warm": warm.len()})
+    json!({"coldMs": cold, "p50Ms": rank(0.5), "p95Ms": rank(0.95), "meanMs": mean, "minMs": warm[0], "warm": warm.len(), "samplesMs": samples})
 }
 
 /// Pixels of `tile` that differ from the bottom-right quarter of `frame`, and the max channel Δ.
@@ -42,7 +44,7 @@ fn vs_crop(frame: &Pixmap, tile: &Pixmap) -> Value {
     let (mut n, mut max) = (0u64, 0u8);
     for (y, row) in tile.data().chunks_exact(tw * 4).enumerate() {
         let at = ((oy + y) * fw + ox) * 4;
-        for (a, b) in row.chunks_exact(4).zip(frame.data()[at..at + tw * 4].chunks_exact(4)) {
+        for (a, b) in row.as_chunks::<4>().0.iter().zip(frame.data()[at..at + tw * 4].as_chunks::<4>().0) {
             let d = a.iter().zip(b).map(|(x, y)| x.abs_diff(*y)).max().unwrap();
             n += (d > 0) as u64;
             max = max.max(d);

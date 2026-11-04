@@ -8,10 +8,10 @@ cd "$(dirname "$0")"
 out=../out/wasm
 mkdir -p "$out"
 for simd in nosimd simd128; do
-  flags=""
+  flags="-C target-feature=-simd128"
   [ "$simd" = simd128 ] && flags="-C target-feature=+simd128"
   for profile in release release-s release-z; do
-    RUSTFLAGS="$flags" cargo build --quiet --profile "$profile" --target wasm32-unknown-unknown \
+    RUSTFLAGS="$flags" cargo build --locked --quiet --profile "$profile" --target wasm32-unknown-unknown \
       --target-dir "target/$simd"
     cp "target/$simd/wasm32-unknown-unknown/$profile/rust_spike_wasm.wasm" "$out/rust_spike-$simd-$profile.wasm"
   done
@@ -19,5 +19,5 @@ done
 printf '%-36s %10s %10s %10s\n' file raw gzip-9 brotli-11
 for f in "$out"/rust_spike-*.wasm; do
   printf '%-36s %10d %10d %10d\n' "$(basename "$f")" "$(wc -c <"$f")" \
-    "$(gzip -9 -c "$f" | wc -c)" "$(brotli -q 11 -c "$f" | wc -c)"
+    "$(gzip -9 -n -c "$f" | wc -c)" "$(brotli -q 11 -c "$f" | wc -c)"
 done

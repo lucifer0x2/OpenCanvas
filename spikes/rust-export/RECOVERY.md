@@ -1,5 +1,10 @@
 # Task09 recovery — 2026-11-04
 
+**Historical recovery snapshot.** Task09 was subsequently completed as a measured spike on 2026-11-04;
+see [README Part E](README.md#phần-e--task09-wasm-trong-chromium-web-worker-2026-11-04) for the Chromium Worker
+measurements and the performance **no-go on the heavily loaded host**. The blockers/untested status below describe
+the recovery point, not the final spike result. Production still uses Chromium; Task10–13 were not implemented.
+
 ## Branch and merge
 
 - Worktree: `task09-wasm-recovery` under the session-approved temporary directory.

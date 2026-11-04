@@ -1,6 +1,11 @@
 use crate::error::{ApiError, Result};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::Value;
+/// Validated bytes travel with metadata; record publication never decodes again.
+pub(super) struct Painted {
+    pub value: Value,
+    pub bytes: Vec<u8>,
+}
 pub(super) fn decode(value: &Value) -> Result<Vec<u8>> {
     let invalid = || {
         ApiError::new(

@@ -24,6 +24,7 @@ struct State {
 
 thread_local! {
     static STATE: RefCell<Option<State>> = const { RefCell::new(None) };
+    static IMAGE: RefCell<Option<Pixmap>> = const { RefCell::new(None) };
 }
 
 unsafe fn bytes<'a>(ptr: *const u8, len: usize) -> &'a [u8] {
@@ -53,8 +54,28 @@ pub unsafe extern "C" fn dealloc(ptr: *mut u8, len: usize) {
 /// Both ranges must be readable linear memory.
 #[no_mangle]
 pub unsafe extern "C" fn init(font: *const u8, font_len: usize, png: *const u8, png_len: usize) -> i32 {
+    let code = decode_image(png, png_len);
+    if code != 0 { return code; }
+    init_font(font, font_len)
+}
+
+/// Decode separately so the Worker reports PNG decode apart from font/painter initialization.
+/// # Safety
+/// The range must be readable linear memory.
+#[no_mangle]
+pub unsafe extern "C" fn decode_image(png: *const u8, png_len: usize) -> i32 {
     let Ok(image) = Pixmap::decode_png(bytes(png, png_len)) else { return -1 };
-    // The painter borrows the shaper for the life of the instance; a second `init` leaks the first.
+    IMAGE.set(Some(image));
+    0
+}
+
+/// Initialize once per instance after `decode_image`. Shaper lives until instance destruction.
+/// # Safety
+/// The range must be readable linear memory.
+#[no_mangle]
+pub unsafe extern "C" fn init_font(font: *const u8, font_len: usize) -> i32 {
+    if STATE.with_borrow(|s| s.is_some()) { return -3; }
+    let Some(image) = IMAGE.take() else { return -1; };
     let shaper: &'static Shaper = Box::leak(Box::new(Shaper::from_bytes(bytes(font, font_len).to_vec())));
     let painter = Painter { shaper, text: TextPainter::new(shaper), image, opts: EXPORT_OPTS, mode: PaintMode::Bbox, prof: Default::default() };
     STATE.set(Some(State { painter, scene: None, out: None }));

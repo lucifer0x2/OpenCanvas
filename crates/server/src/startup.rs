@@ -1,17 +1,16 @@
+mod options;
 mod postgres_env;
 
-use opencanvas_server::PublicViewer;
+use opencanvas_server::{PublicViewer, RenderBackend};
 use opencanvas_storage::{PostgresBackend, PostgresConfig, SnapshotCache, Storage, Store};
-use std::{
-    env,
-    error::Error,
-    net::{IpAddr, Ipv4Addr},
-    path::PathBuf,
-};
+use options::{bind_host, env_port, render_backend, trusted_proxy};
+use std::{env, error::Error, net::Ipv4Addr, path::PathBuf};
 
 pub const HELP: &str =
     "opencanvas-server [--data-root DIR] [--port NUMBER] [--workspace DIR] [--host 127.0.0.1|0.0.0.0]
 [--public-viewer-port 3848 --public-viewer-origin https://machine.tailnet.ts.net]
+[--render-backend chromium|rust]
+RENDER_BACKEND defaults to chromium. --render-backend overrides RENDER_BACKEND.
 DATABASE_PROVIDER defaults to sqlite. Use postgresql with DATABASE_URL to enable PostgreSQL
 with an in-process snapshot cache (1 hour TTL). PostgreSQL ignores the data root.
 Optional PostgreSQL limits: DATABASE_POOL_SIZE (1-32, default 4) and, in milliseconds,
@@ -33,16 +32,21 @@ pub struct Startup {
     pub host: Ipv4Addr,
     pub public_viewer: Option<(u16, PublicViewer)>,
     pub workspace: PathBuf,
+    pub render_backend: RenderBackend,
 }
 
 impl Startup {
     /// Returns no startup configuration when help was requested.
     pub fn from_env() -> Result<Option<Self>, Box<dyn Error>> {
+        if env::args().skip(1).any(|arg| arg == "--help") {
+            return Ok(None);
+        }
         let mut data_root = env::var_os("OPENCANVAS_DATA_ROOT").map(PathBuf::from);
         let mut port = None;
         let mut host = Ipv4Addr::LOCALHOST;
         let mut public_port = None;
         let mut public_origin = None;
+        let mut backend = None;
         let mut workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
         let mut args = env::args().skip(1);
         while let Some(arg) = args.next() {
@@ -79,11 +83,19 @@ impl Startup {
                 "--workspace" => {
                     workspace = PathBuf::from(args.next().ok_or("--workspace needs a directory")?)
                 }
-                "--help" => return Ok(None),
+                "--render-backend" => {
+                    backend = Some(
+                        args.next()
+                            .ok_or("--render-backend needs chromium or rust")?
+                            .parse()
+                            .map_err(|_| "--render-backend must be chromium or rust")?,
+                    )
+                }
                 _ => return Err("Unknown server option".into()),
             }
         }
 
+        let render_backend = render_backend(backend)?;
         let port = match port {
             Some(port) => port,
             None => env_port()?,
@@ -114,42 +126,8 @@ impl Startup {
             host,
             public_viewer,
             workspace,
+            render_backend,
         }))
-    }
-}
-
-fn trusted_proxy() -> Result<Option<IpAddr>, &'static str> {
-    const INVALID: &str = "OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP must be a single IP address";
-    match env::var("OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP") {
-        Ok(value) if value.is_empty() => Ok(None),
-        Ok(value) => value
-            .parse::<IpAddr>()
-            .ok()
-            .map(|ip| ip.to_canonical())
-            .filter(|ip| !ip.is_unspecified())
-            .map(Some)
-            .ok_or(INVALID),
-        Err(env::VarError::NotPresent) => Ok(None),
-        Err(_) => Err(INVALID),
-    }
-}
-
-fn env_port() -> Result<u16, &'static str> {
-    const INVALID: &str = "PORT must be a number from 0 to 65535";
-    match env::var("PORT") {
-        Ok(value) => value.parse().map_err(|_| INVALID),
-        Err(env::VarError::NotPresent) => Ok(3847),
-        Err(_) => Err(INVALID),
-    }
-}
-
-/// Render jobs, worker resources and image URLs call back on `http://127.0.0.1:<port>`
-/// (`Config::base_url`), so only bind addresses that include IPv4 loopback are accepted.
-fn bind_host(value: &str) -> Result<Ipv4Addr, &'static str> {
-    match value {
-        "127.0.0.1" => Ok(Ipv4Addr::LOCALHOST),
-        "0.0.0.0" => Ok(Ipv4Addr::UNSPECIFIED),
-        _ => Err("--host must be 127.0.0.1 or 0.0.0.0"),
     }
 }
 

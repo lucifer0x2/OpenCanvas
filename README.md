@@ -1,6 +1,6 @@
 # OpenCanvas
 
-OpenCanvas lets an agent create and inspect local designs through MCP while a read-only browser viewer displays the result. A Rust backend manages SQLite or PostgreSQL storage, revisions, validation and rendering jobs. The viewer and PNG exporter share one Canvas2D renderer and precomputed text lines.
+OpenCanvas lets an agent create and inspect local designs through MCP while a read-only browser viewer displays the result. A Rust backend manages SQLite or PostgreSQL storage, revisions, validation and rendering jobs. By default, the viewer and PNG exporter share one Canvas2D renderer and precomputed text lines.
 
 The browser offers project/page/frame selection, layers, inspection, pan, zoom, fit and viewport presets. Design changes come from MCP; **Fonts** in the header imports and downloads project font resources without installing them on the operating system. Starting the server creates no demo project.
 
@@ -36,6 +36,13 @@ By default, open [the local viewer](http://127.0.0.1:3847); with `--port 0`, use
 `CARGO_TARGET_DIR` selects the Cargo output directory for both building and launching; set it consistently for both commands. Relative values resolve from the repository root. Launchers select the server and layout worker from the same `debug` or `release` directory and pass the layout binary through `OPENCANVAS_LAYOUT_BIN`. They default `PLAYWRIGHT_BROWSERS_PATH` to the repository's `.runtime/browsers`; an explicit environment value wins. The viewer and renderer bundles are shared by both profiles, so rebuilding either profile refreshes these bundles.
 
 `PORT` selects the local listener (default 3847), and `--port NUMBER` takes precedence. Both accept 0 to bind an available port and print it at startup.
+
+An **experimental, not yet pixel-accepted** native PNG/export backend is available
+with `RENDER_BACKEND=rust` or `--render-backend rust`; `chromium` remains the default.
+The native server computes and paints without Node, Chromium or layout-step.
+Run the built Rust binary directly to avoid the npm launcher; this does not move
+the browser viewer to WASM. See [native backend limits](docs/SERVER.md#experimental-native-render-backend)
+and the [Task11 acceptance plan](docs/TASK11-NATIVE-PLAN.md).
 
 `DATABASE_PROVIDER` accepts `sqlite` (default) or `postgresql`. SQLite uses `~/.opencanvas` by default. Set `OPENCANVAS_DATA_ROOT` or pass `--data-root DIR` to override it. Each SQLite project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for SQLite experiments and tests.
 

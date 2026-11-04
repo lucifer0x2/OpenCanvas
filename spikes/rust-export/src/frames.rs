@@ -66,3 +66,37 @@ pub fn main(args: &[String]) {
         println!("{path}: {} nodes", scene["nodes"].as_array().unwrap().len());
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn twelve_complete_cards_and_exact_quarter_viewport() {
+        let base: Value = serde_json::from_str(include_str!("../data/scene.json")).unwrap();
+        let frame = grid(&base);
+        let tile = tile(&frame);
+        let original = base["nodes"].as_array().unwrap();
+        let nodes = frame["nodes"].as_array().unwrap();
+        assert_eq!(nodes.len(), 12 * original.len());
+        for k in 0..12 {
+            let card = &nodes[k * original.len()..(k + 1) * original.len()];
+            assert!(card.iter().any(|n| n["kind"] == "text" && !n["lines"].as_array().unwrap().is_empty()));
+            assert!(card.iter().any(|n| n["kind"] == "image"));
+            assert!(card.iter().any(|n| n.get("stroke").is_some()));
+            assert!(card.iter().any(|n| n["clip"] == true));
+            assert!(card.iter().any(|n| n["opacity"].as_f64().unwrap() < 1.0 && n["id"] == format!("c{k}-group")));
+            for n in card {
+                if let Some(p) = n["parentId"].as_str() {
+                    assert!(card.iter().any(|parent| parent["id"] == p));
+                }
+            }
+        }
+        assert_eq!(frame["provenance"]["viewport"], json!({"width":1440.0,"height":900.0}));
+        assert_eq!(tile["provenance"]["viewport"], json!({"width":720.0,"height":450.0}));
+        for (a, b) in nodes.iter().zip(tile["nodes"].as_array().unwrap()) {
+            assert_eq!(a["bounds"]["x"].as_f64().unwrap() - 720.0, b["bounds"]["x"].as_f64().unwrap());
+            assert_eq!(a["bounds"]["y"].as_f64().unwrap() - 450.0, b["bounds"]["y"].as_f64().unwrap());
+        }
+    }
+}

@@ -13,6 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         host,
         public_viewer,
         workspace,
+        render_backend,
     }) = startup::Startup::from_env()?
     else {
         println!("{}", startup::HELP);
@@ -27,7 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => None,
     };
     let actual = listener.local_addr()?.port();
-    let state = AppState::new(storage.open()?, Config::new(workspace, actual));
+    let state = AppState::new(
+        storage.open()?,
+        Config::for_backend(workspace, actual, render_backend),
+    );
     if host.is_unspecified() {
         println!("OpenCanvas http://127.0.0.1:{actual} | MCP /mcp | bound to 0.0.0.0:{actual}");
     } else {
