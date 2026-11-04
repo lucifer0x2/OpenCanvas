@@ -3,10 +3,15 @@ import { read } from "../api";
 import { bumpRevision, mergeProjects } from "../state";
 import type { ActivityEvent, ProjectRef } from "../types";
 
+interface ProjectPage {
+  projects: ProjectRef[];
+  nextCursor?: string | null;
+}
+
 /**
  * The project list. `GET /api/v1/projects` is the source of truth: it loads on mount and retry
- * and is refetched on every stream (re)open, because the live hints merged in between are not
- * durable. Projects are never removed, so a late response cannot drop a hinted project.
+ * and is refetched on stream (re)open and visibility changes. The response defines which
+ * projects are visible. Live activity can preserve a newer revision of a listed project.
  */
 export function useProjectList(reload: number) {
   const [projects, setProjects] = useState<ProjectRef[]>([]);
@@ -14,19 +19,38 @@ export function useProjectList(reload: number) {
   const [error, setError] = useState("");
   const pending = useRef<AbortController | null>(null);
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback(async () => {
     pending.current?.abort();
     const controller = new AbortController();
     pending.current = controller;
-    read<{ projects: ProjectRef[] }>("/api/v1/projects", controller.signal)
-      .then((result) => {
-        setProjects((previous) => mergeProjects(previous, result.projects));
-        setLoaded(true);
-        setError("");
-      })
-      .catch((cause: Error) => {
-        if (!controller.signal.aborted) setError(cause.message);
-      });
+    try {
+      const incoming: ProjectRef[] = [];
+      let cursor: string | null | undefined;
+      do {
+        const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+        const page = await read<ProjectPage>(
+          `/api/v1/projects${query}`,
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        incoming.push(...page.projects);
+        cursor = page.nextCursor;
+      } while (cursor);
+      const visible = new Set(incoming.map(({ projectId }) => projectId));
+      setProjects((previous) =>
+        mergeProjects(
+          previous.filter(({ projectId }) => visible.has(projectId)),
+          incoming,
+        ),
+      );
+      setLoaded(true);
+      setError("");
+    } catch (cause) {
+      if (!controller.signal.aborted)
+        setError(
+          cause instanceof Error ? cause.message : "Projects unavailable.",
+        );
+    }
   }, []);
 
   useEffect(() => {

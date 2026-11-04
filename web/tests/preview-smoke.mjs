@@ -38,8 +38,13 @@ try {
     viewport: { width: 1100, height: 760 },
   });
   const methods = new Set();
+  const eventRequests = [];
   const errors = [];
-  page.on("request", (request) => methods.add(request.method()));
+  page.on("request", (request) => {
+    methods.add(request.method());
+    if (new URL(request.url()).pathname.endsWith("/events"))
+      eventRequests.push(request.url());
+  });
   page.on("pageerror", (error) => errors.push(error.message));
   const anim = (id) =>
     `document.getAnimations().find((a) => a.id === ${JSON.stringify(id)})`;
@@ -173,6 +178,11 @@ try {
   step("missing parent hover source warns and skips without self-hover fallback");
 
   assert.deepEqual([...methods], ["GET"]);
+  assert.deepEqual(
+    eventRequests,
+    [],
+    "local preview does not open an event stream",
+  );
   assert.deepEqual(errors, []);
   step("preview sends only GET requests and raised no page errors");
 

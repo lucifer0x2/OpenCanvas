@@ -10,6 +10,8 @@ interface Props {
   activity: string[];
   loading: boolean;
   failed: boolean;
+  isShowNoticeBar: boolean;
+  setShowNoticeBar: (value: boolean) => void;
   selectProject: (id: string) => void;
   revision?: number;
   refresh: () => void;
@@ -41,6 +43,34 @@ export function Topbar(props: Props) {
       />
       <span className="read-only-badge">Read only canvas</span>
       <div className="topbar-actions">
+        <button
+          aria-label={
+            props.isShowNoticeBar ? "Hide notice bar" : "Show notice bar"
+          }
+          aria-pressed={props.isShowNoticeBar}
+          onClick={() => props.setShowNoticeBar(!props.isShowNoticeBar)}
+        >
+          {props.isShowNoticeBar ? 
+            <Icon 
+              name="info" 
+              width="1.5em" 
+              height="1.5em" 
+              strokeWidth={0} 
+              fill="currentColor" 
+              style={{ aspectRatio: "1/1" }} 
+              viewBox="0 0 24 24" 
+            /> :
+            <Icon 
+              name="riinfo" 
+              width="1.5em" 
+              height="1.5em"
+              strokeWidth={0} 
+              fill="#7d7d7d" 
+              style={{ aspectRatio: "1/1" }} 
+              viewBox="0 0 24 24" 
+            />
+          }
+        </button>
         <FontManager
           key={props.projectId}
           projectId={props.projectId}

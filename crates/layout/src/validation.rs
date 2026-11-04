@@ -1,16 +1,14 @@
 use crate::model::*;
 use crate::util::{err, finite, is_fill};
-use crate::{MAX_NODES, MAX_PIXELS};
+use crate::{MAX_NODES, MAX_PIXELS, percentage};
 use std::collections::{HashMap, HashSet};
 mod layout;
 
 pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
     if input.schema_version != 1
-        || !finite(input.viewport.width)
-        || !finite(input.viewport.height)
-        || input.viewport.width < 1.0
-        || input.viewport.height < 1.0
-        || input.viewport.width * input.viewport.height > MAX_PIXELS
+        || !(1.0..=100_000.0).contains(&input.viewport.width)
+        || !(1.0..=100_000.0).contains(&input.viewport.height)
+        || input.viewport.width * input.viewport.height > f64::from(MAX_PIXELS)
         || input.nodes.len() > MAX_NODES
     {
         return Err(err("Schema, node or viewport budget exceeded"));
@@ -48,7 +46,9 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
         for d in [&p.width, &p.height] {
             match d {
                 Some(Sizing::Fixed(v)) if !finite(*v) => return Err(err("Invalid dimension")),
-                Some(Sizing::Rule(r)) if !["fill", "hug"].contains(&r.as_str()) => {
+                Some(Sizing::Rule(r))
+                    if !["fill", "hug"].contains(&r.as_str()) && percentage(r).is_none() =>
+                {
                     return Err(err("Unsupported sizing rule"));
                 }
                 _ => {}
@@ -95,13 +95,6 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
                 || c.y + c.height > 1.0)
         {
             return Err(err("Crop must be a normalized source rectangle"));
-        }
-        if let Some(l) = &p.layout
-            && (!["row", "column", "free"].contains(&l.mode.as_str())
-                || !l.padding.edges().is_some_and(|e| e.into_iter().all(finite))
-                || !finite(l.gap))
-        {
-            return Err(err("Unsupported layout"));
         }
     }
     if ids

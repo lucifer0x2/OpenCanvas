@@ -46,10 +46,10 @@ This address does not grant access to any remote system or filesystem path.
    is never resolved), and with `resources:"referenced"` the token/style/font/asset
    lists hold only what this frame uses, alias and theme targets included. Use
    `list_tokens` when you need the rest of the design system.
-3. Read `diagnostics` before choosing a layout. `NO_REFLOW_INFORMATION` means the
-   whole authored scope uses `free` or its default. Its `authoredSize` is the frame's
-   authored width/height, not the requested viewport. Unchanged bounds at another
-   viewport can mean cropping, not responsive behavior. State proposed responsive
+3. Read `diagnostics` before choosing a layout. `NO_REFLOW_INFORMATION` reports
+   a free-layout scope without fill or percentage sizing, or equal descendant
+   bounds at the requested viewports (`reason:"UNCHANGED_BOUNDS"`). Its
+   `authoredSize` is the frame's width and height in the design. State proposed responsive
    assumptions explicitly or ask the user. Do not silently deliver absolute
    positioning as a complete responsive translation.
 
@@ -65,6 +65,7 @@ This address does not grant access to any remote system or filesystem path.
 | `layout.justify` | `justify-content` (`space-between` keeps `gap` as the minimum spacing) |
 | Child of an `align:"stretch"` stack | Unset cross size → `auto` (stretches); `hug` → `fit-content` / `align-self:flex-start`; number → fixed |
 | Numeric width/height | Fixed dimension in the design's logical pixels |
+| Child percentage width/height | Percentage of its definite parent axis, subject to pixel min/max |
 | `fill` on a stack's main axis | Flexible share of remaining space (`flex:1 1 0`) |
 | `fill` on the cross axis | Stretch to the available cross size |
 | `hug` | Content-driven size; do not freeze the measured bound |
@@ -93,6 +94,12 @@ Gap applies both across and between lines; fill cards share each line separately
 so the final card may take the full line. Hug row height sums each line's maximum
 height plus gaps/padding. Fixed row heights and oversized minima may overflow.
 
+Apply `layout.breakpoints` by ascending `maxWidth`. The first threshold at
+or above the frame viewport width supplies the entire layout rule. Each
+alternative can switch free positioning to a stack or change a stack's direction
+and spacing. Above all thresholds use the base rule. Preserve the same children,
+order and authored dimensions in each layout. Check both sides of each threshold.
+
 ## Text and verification
 
 - Load the declared font and use the authored font size and line height. Read
@@ -117,9 +124,8 @@ height plus gaps/padding. Fixed row heights and oversized minima may overflow.
   polling in a tight loop; it returns as soon as the job is ready or failed. Use a
   second viewport to check declared stacks. Their presence alone does not promise that
   the entire design fits every width.
-- Check horizontal overflow and content wrapping. Row wrap is available; column
-  wrap, percent dimensions and media-query breakpoints remain unsupported. Ask about required behavior when the
-  authored rules cannot express it; do not invent design intent.
+- Check horizontal overflow and content wrapping. Ask about required behavior
+  when the authored rules cannot express it.
 - Declared motion is `props.animations`. `get_design_context` summarizes tracks
   in `animated` as `{ref: "<nodeId>:<name>", on}` with `triggerNodeId` when
   authored. When `animatedTruncated:true`, page `find_nodes` with the same

@@ -1,7 +1,7 @@
 use super::{SnapshotCacheIdentity, StorageBackend};
 use crate::{
     Asset, BatchFileRequest, BatchRequest, BatchResult, Commit, DryRunResult, Font,
-    ImportAssetRequest, ImportAssetResult, ProjectMeta, Result, Snapshot, Store,
+    ImportAssetRequest, ImportAssetResult, PrivacyStatus, ProjectMeta, Result, Snapshot, Store,
 };
 use serde_json::Value;
 use std::sync::Arc;
@@ -25,8 +25,20 @@ impl Storage {
         self.backend.list_projects()
     }
 
+    pub fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
+        self.backend.viewer_auth()
+    }
+
     pub fn project_meta(&self, key: &str) -> Result<ProjectMeta> {
         self.backend.project_meta(key)
+    }
+
+    pub fn update_project_privacy(
+        &self,
+        key: &str,
+        privacy: PrivacyStatus,
+    ) -> Result<(ProjectMeta, bool)> {
+        self.backend.update_project_privacy(key, privacy)
     }
 
     pub fn create_project(&self, slug: &str, name: &str) -> Result<Arc<ProjectHandle>> {

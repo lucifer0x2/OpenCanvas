@@ -18,6 +18,8 @@ export async function startContinuityFixture() {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify(value));
     };
+    if (url.pathname === "/api/v1/viewer/auth")
+      return json({ authenticated: true, required: false });
     if (url.pathname.endsWith("/events")) {
       res.writeHead(200, { "content-type": "text/event-stream" });
       res.write(": connected\n\n");

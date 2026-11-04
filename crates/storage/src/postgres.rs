@@ -19,6 +19,7 @@ mod statements;
 #[cfg(test)]
 mod tests;
 mod transaction;
+mod viewer_auth;
 mod write_through;
 pub use config::PostgresConfig;
 use failure::{sql, unavailable};

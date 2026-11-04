@@ -63,9 +63,15 @@ For optional frontend hot reload, keep the backend running and run `npm --prefix
 
 To share the viewer through Tailscale Funnel, use the separate, opt-in
 [public read-only listener](docs/SERVER.md#public-viewer-through-tailscale-funnel).
-It exposes **all projects, live updates, assets, fonts, downloads and exports**
-without authentication. MCP, project creation and font import stay on the local
-listener. Funnel must target the public port (3848), never the local MCP port (3847).
+It exposes live updates, assets, fonts, downloads and exports only for projects
+marked `public`. Projects start `private`. Ask your agent to call
+`update_project` with `{"projectId":"<id>","privacy_status":"public"}` to share
+a project, or pass `"private"` to withdraw it. Set a shared viewer password through the local MCP tool
+`set_public_viewer_password` to require sign-in, and use
+`list_public_viewer_sessions` and `revoke_public_viewer_session` to manage
+devices. MCP, project creation and font import stay on the local listener.
+Funnel must target the public port (3848 by default, 3858 with PostgreSQL
+Compose). See [password and proxy setup](docs/SERVER.md#public-viewer-password).
 
 Configure an MCP client with **Streamable HTTP** and URL `http://127.0.0.1:3847/mcp` (adjust the port if needed). This is an HTTP endpoint, not a stdio command. A minimal connection entry is:
 

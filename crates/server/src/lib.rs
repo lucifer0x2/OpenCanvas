@@ -1,6 +1,7 @@
 mod cache_hints;
 mod domain;
 mod error;
+mod event_visibility;
 mod events;
 mod export;
 mod fingerprint;
@@ -11,6 +12,7 @@ mod instructions;
 mod jobs;
 mod mcp;
 mod node_rows;
+mod projects;
 mod props_doc;
 mod public_viewer;
 mod reads;
@@ -21,7 +23,9 @@ mod snapshot_http;
 mod state;
 mod svg;
 mod text_diagnostics;
+mod viewer_auth;
 mod viewer_origin;
+mod viewer_privacy;
 mod worker;
 mod workspace_events;
 

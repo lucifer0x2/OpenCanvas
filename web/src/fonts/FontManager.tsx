@@ -3,7 +3,7 @@ import { Icon } from "../components/Icon";
 import { FontImportForm } from "./FontImportForm";
 import { FontList } from "./FontList";
 import { useFonts } from "./useFonts";
-import { useViewerAccess } from "./useViewerAccess";
+import { useViewerAccess } from "../hooks/useViewerAccess";
 import "./fonts.css";
 
 interface Props {
@@ -24,7 +24,7 @@ export function FontManager({
   const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const fonts = useFonts(projectId, revision, open, changed);
-  const readOnly = useViewerAccess();
+  const readOnly = useViewerAccess() !== false;
   useEffect(() => {
     if (open && !dialog.current?.open) dialog.current?.showModal();
   }, [open]);

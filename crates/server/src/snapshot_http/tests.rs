@@ -106,8 +106,17 @@ fn fill_uses_the_snapshot_identity_and_hot_hits_still_probe() {
     let store = Storage::from_shared(backend.clone());
     let cache = SnapshotRepresentations::new();
     backend.advance_after_probe.store(true, Relaxed);
-    let latest = cache.read(&store, "slug", Format::Objects).unwrap();
-    let hit = cache.read(&store, "project-id", Format::Objects).unwrap();
+    let latest = cache
+        .read(&store, "slug", Format::Objects, PrivacyStatus::Private)
+        .unwrap();
+    let hit = cache
+        .read(
+            &store,
+            "project-id",
+            Format::Objects,
+            PrivacyStatus::Private,
+        )
+        .unwrap();
     assert_eq!(latest.bytes, hit.bytes);
     assert_eq!(latest.etag, hit.etag);
     assert_eq!(
@@ -118,7 +127,10 @@ fn fill_uses_the_snapshot_identity_and_hot_hits_still_probe() {
     assert_eq!(backend.probes.load(Relaxed), 2);
 
     backend.unavailable.store(true, Relaxed);
-    let error = cache.read(&store, "slug", Format::Objects).err().unwrap();
+    let error = cache
+        .read(&store, "slug", Format::Objects, PrivacyStatus::Private)
+        .err()
+        .unwrap();
     assert_eq!(error.code, "STORAGE_UNAVAILABLE");
     assert_eq!(backend.reads.load(Relaxed), 1);
 }
@@ -132,15 +144,23 @@ fn a_delayed_old_fill_cannot_replace_a_newer_hit() {
     let (resume_old_read, resume) = channel();
     *backend.pause.lock().unwrap() = Some((started, resume));
     std::thread::scope(|scope| {
-        let old = scope.spawn(|| cache.read(&store, "slug", Format::Rows).unwrap());
+        let old = scope.spawn(|| {
+            cache
+                .read(&store, "slug", Format::Rows, PrivacyStatus::Private)
+                .unwrap()
+        });
         wait_for_old_read
             .recv_timeout(Duration::from_secs(5))
             .unwrap();
         backend.revision.store(1, Relaxed);
-        let current = cache.read(&store, "slug", Format::Rows).unwrap();
+        let current = cache
+            .read(&store, "slug", Format::Rows, PrivacyStatus::Private)
+            .unwrap();
         resume_old_read.send(()).unwrap();
         assert_ne!(old.join().unwrap().etag, current.etag);
-        let hit = cache.read(&store, "slug", Format::Rows).unwrap();
+        let hit = cache
+            .read(&store, "slug", Format::Rows, PrivacyStatus::Private)
+            .unwrap();
         assert_eq!(hit.etag, current.etag);
         assert_eq!(backend.reads.load(Relaxed), 2);
     });

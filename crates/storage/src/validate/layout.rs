@@ -1,5 +1,6 @@
-use super::{layout_rule::validate_layout_rule, values::number, Candidate};
+use super::{breakpoints, layout_rule::validate_layout_rule, values::number, Candidate};
 use crate::{error::*, model::*};
+use opencanvas_layout::percentage;
 use serde_json::{Map, Value};
 
 /// Fill in a hug axis has no size to fill; on the cross axis, stretch says what was meant.
@@ -21,7 +22,21 @@ impl Candidate {
         for key in ["width", "height"] {
             if let Some(v) = p.get(key) {
                 if !matches!(v.as_str(), Some("fill" | "hug")) {
-                    number(v, 0., 100_000., key)?;
+                    if v.as_str().and_then(percentage).is_some() {
+                        if !self.definite_axis(self.ancestors(&n.id), key, false)? {
+                            return Err(StorageError::validation(
+                                key,
+                                "Percentage requires a definite parent axis",
+                            ));
+                        }
+                    } else if v.is_string() {
+                        return Err(StorageError::validation(
+                            key,
+                            "Use fill, hug or a literal decimal percentage from 0% to 100%",
+                        ));
+                    } else {
+                        number(v, 0., 100_000., key)?;
+                    }
                 }
                 if v == "fill" && n.props.get("component").is_none() {
                     if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
@@ -61,20 +76,25 @@ impl Candidate {
             let l = v
                 .as_object()
                 .ok_or_else(|| StorageError::validation("layout", "Layout must be an object"))?;
-            validate_layout_rule(l)?;
-            if l.get("wrap") == Some(&Value::Bool(true)) {
-                if l.get("mode").and_then(Value::as_str) != Some("row") {
-                    return Err(StorageError::validation(
-                        "layout.wrap",
-                        "Wrap requires row mode",
-                    ));
-                }
-                self.definite_wrap_width(n)?;
+            for (index, rule) in breakpoints::rules(l)?.into_iter().enumerate() {
+                validate_layout_rule(rule, index == 0)?;
+            }
+            if breakpoints::wraps(v)
+                && !self.definite_axis(
+                    std::iter::once(n).chain(self.ancestors(&n.id)),
+                    "width",
+                    true,
+                )?
+            {
+                return Err(StorageError::validation(
+                    "width",
+                    "Wrap requires definite positive width",
+                ));
             }
         }
         if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
             let parent = self.resolve_props(parent)?;
-            if parent.pointer("/layout/wrap") == Some(&Value::Bool(true))
+            if breakpoints::wraps(&parent["layout"])
                 && p.get("width").is_some_and(|v| v == "fill")
                 && p.get("minWidth")
                     .and_then(Value::as_f64)
@@ -89,32 +109,28 @@ impl Candidate {
         Ok(())
     }
 
-    fn definite_wrap_width(&self, n: &Node) -> Result<()> {
-        let mut current = n;
+    fn definite_axis<'a>(
+        &self,
+        nodes: impl Iterator<Item = &'a Node>,
+        key: &str,
+        positive: bool,
+    ) -> Result<bool> {
         // Node validation checks cycles before calling property validation.
-        loop {
-            let props = self.resolve_props(current)?;
-            match props.get("width") {
-                Some(v) if v.as_f64().is_some_and(|v| v > 0.) => return Ok(()),
-                Some(v) if v == "fill" => {
-                    current = current
-                        .parent_id
-                        .as_ref()
-                        .and_then(|id| self.nodes.get(id))
-                        .ok_or_else(|| {
-                            StorageError::validation(
-                                "width",
-                                "Wrap requires definite positive width",
-                            )
-                        })?;
-                }
-                _ => {
-                    return Err(StorageError::validation(
-                        "width",
-                        "Wrap requires definite positive width",
-                    ))
-                }
+        for node in nodes {
+            let props = self.resolve_props(node)?;
+            let size = &props[key];
+            if let Some(size) = size.as_f64() {
+                return Ok(!positive || size > 0.);
+            }
+            if size != "fill"
+                && !size
+                    .as_str()
+                    .and_then(percentage)
+                    .is_some_and(|v| !positive || v > 0.)
+            {
+                return Ok(false);
             }
         }
+        Ok(false)
     }
 }

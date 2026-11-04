@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
-import { projectPath, read } from "../api";
 import { fetchSceneJob } from "../sceneJob";
 import { declaredStates, frameSize, rootFrames } from "./model";
 import type { PreviewSnapshot, StateName } from "./types";
@@ -27,34 +26,6 @@ const LOADING: PreviewScenes = {
   states: {},
   diagnostics: [],
 };
-
-/** The authored snapshot of one project (GET only), refetched when `reload` changes. */
-export function usePreviewSnapshot(projectId: string, reload: number) {
-  const [snapshot, setSnapshot] = useState<PreviewSnapshot | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    setSnapshot(null);
-    setError("");
-    if (!projectId) {
-      setError("Add ?project=<projectId> to the URL.");
-      return;
-    }
-    const controller = new AbortController();
-    read<PreviewSnapshot>(
-      `${projectPath(projectId)}/snapshot`,
-      controller.signal,
-    )
-      .then((next) => {
-        if (next.truncated) throw new Error("This snapshot is incomplete.");
-        setSnapshot(next);
-      })
-      .catch((cause: Error) => {
-        if (!controller.signal.aborted) setError(cause.message);
-      });
-    return () => controller.abort();
-  }, [projectId, reload]);
-  return { snapshot, error };
-}
 
 /**
  * The default scene of the frame plus one scene per interaction state declared in it, and the
@@ -127,5 +98,5 @@ export function usePreviewScenes(
     // `key` captures snapshot revision, frame and size.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  return view;
+  return snapshot ? view : LOADING;
 }

@@ -2,6 +2,7 @@ mod animated_fill;
 mod animation_refs;
 mod animation_triggers;
 mod animations;
+mod breakpoints;
 mod candidate;
 mod easing;
 mod font_face;

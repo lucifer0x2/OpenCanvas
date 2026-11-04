@@ -1,5 +1,6 @@
 //! Version 1, bounded uncompressed TAR interchange.
 use crate::*;
+use migration::DATABASE_SCHEMA_VERSION;
 use serde::{Deserialize, Serialize};
 
 pub const MAX_BUNDLE_BYTES: usize = 128 * 1024 * 1024;
@@ -61,7 +62,7 @@ impl Project {
         bundle_validation::resources(&snapshot, &files)?;
         let manifest = BundleManifest {
             bundle_version: 1,
-            database_schema_version: SCHEMA_VERSION,
+            database_schema_version: DATABASE_SCHEMA_VERSION,
             source_project_id: snapshot.project_id,
             source_revision: snapshot.revision,
             files: files
@@ -182,7 +183,7 @@ fn decode_archive(bytes: &[u8]) -> Result<(BundleManifest, BTreeMap<String, Vec<
     )?;
     check_budget(&files)?;
     if manifest.bundle_version != 1
-        || !(1..=SCHEMA_VERSION).contains(&manifest.database_schema_version)
+        || !(1..=DATABASE_SCHEMA_VERSION).contains(&manifest.database_schema_version)
         || !validate::valid_id(&manifest.source_project_id)
         || manifest.source_revision > i64::MAX as u64
     {

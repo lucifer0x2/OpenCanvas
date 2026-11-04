@@ -26,7 +26,8 @@ pub(crate) fn dim(n: &Option<Sizing>, fill_percent: bool) -> Dimension {
     match n {
         Some(Sizing::Fixed(v)) => length(*v),
         Some(Sizing::Rule(r)) if r == "fill" && fill_percent => percent(1.0),
-        _ => auto(),
+        Some(size) => size.percentage().map_or(auto(), percent),
+        None => auto(),
     }
 }
 

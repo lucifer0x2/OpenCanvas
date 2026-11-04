@@ -27,6 +27,7 @@ impl Document {
             name: s.name.clone(),
             schema_version: s.schema_version,
             revision: s.revision,
+            privacy_status: PrivacyStatus::Private,
         }
     }
 }

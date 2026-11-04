@@ -5,9 +5,10 @@ port 3858 to the [local PostgreSQL deployment](KUBERNETES.md). Local port 3857
 retains MCP and writes. Both routes share projects, resources, jobs and events.
 One app replica and the existing PostgreSQL Secret/PVC remain in place.
 
-The public router exposes every project, notes, fonts and assets without
-authentication or a project sharing filter. It allows GET/HEAD and the export
-POST endpoint; exports create files without changing authored revisions. MCP,
+With a current image, the public router serves projects marked `public` and
+their notes, fonts and assets, with optional password protection. It allows
+GET/HEAD and the sign-in and export POST endpoints. Exports leave authored
+revisions intact. MCP,
 project creation, font imports and other mutations are blocked independently
 of peer address or forwarded headers. Rendering shares the local worker budget.
 

@@ -4,7 +4,8 @@
 //! release transactions before returning; callers may render or stream the result.
 use crate::{
     Asset, BatchFileRequest, BatchRequest, BatchResult, Commit, DryRunResult, Font,
-    ImportAssetRequest, ImportAssetResult, ProjectMeta, Result, Snapshot,
+    ImportAssetRequest, ImportAssetResult, PrivacyStatus, ProjectMeta, Result, Snapshot,
+    StorageError,
 };
 use serde_json::Value;
 use std::sync::Arc;
@@ -39,9 +40,25 @@ pub struct SnapshotCacheIdentity {
 /// is optional. Engine-specific maintenance such as WAL checkpoints and SQLite
 /// bundles remains on `Store` and `Project`, outside this contract.
 pub trait StorageBackend: Send + Sync {
+    /// Optional workspace-wide viewer authentication for embedders with custom backends.
+    fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
+        None
+    }
+
     fn list_projects(&self) -> Result<Vec<ProjectMeta>>;
     fn create_project(&self, slug: &str, name: &str) -> Result<ProjectMeta>;
     fn project_meta(&self, key: &str) -> Result<ProjectMeta>;
+    /// Persist access policy outside the authored snapshot and report whether it changed.
+    fn update_project_privacy(
+        &self,
+        _key: &str,
+        _privacy: PrivacyStatus,
+    ) -> Result<(ProjectMeta, bool)> {
+        Err(StorageError::new(
+            "STORAGE_UNSUPPORTED",
+            "This storage backend does not support updating project privacy",
+        ))
+    }
     fn snapshot(&self, project: &str) -> Result<Snapshot>;
     /// Authoritative lookup by ID or slug. A source error must propagate.
     /// Backends that cannot provide a cheap, reliable probe return None.

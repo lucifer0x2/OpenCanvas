@@ -213,6 +213,17 @@ impl Jobs {
             .map(|e| e.value.clone())
             .ok_or_else(|| ApiError::new("JOB_NOT_FOUND", "Render job is unavailable"))
     }
+    pub(crate) async fn project_id(&self, id: &str) -> Result<String> {
+        self.table
+            .lock()
+            .await
+            .entries
+            .iter()
+            .find(|entry| entry.value["jobId"] == id)
+            .and_then(|entry| entry.value["projectId"].as_str())
+            .map(str::to_owned)
+            .ok_or_else(|| ApiError::new("JOB_NOT_FOUND", "Render job is unavailable"))
+    }
     pub async fn image(&self, id: &str) -> Result<Vec<u8>> {
         let table = self.table.lock().await;
         let e = table

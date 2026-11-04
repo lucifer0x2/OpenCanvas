@@ -7,14 +7,25 @@
 The default listener remains loopback-only. An optional separate public viewer
 listener exposes the read/export surface with the same shared state and SSE,
 while excluding MCP, POST project creation and POST font import for every Host.
-It accepts only GET/HEAD and the exact POST exports path; encoded/ambiguous paths
+It accepts only GET/HEAD and POST to the exact login and exports paths. Encoded/ambiguous paths
 and other mutation methods are denied. `GET /api/v1/viewer` returns
 `{readOnly:false}` locally and `{readOnly:true}` publicly so font UI can hide
 imports while retaining downloads. The server enforces this independently of UI.
 Public scene/job/export/font responses project generated resource URLs onto the
 configured HTTPS origin; cached jobs, worker callbacks, local responses and
 authored strings keep their original values. See [public sharing](SERVER.md#public-viewer-through-tailscale-funnel)
-for configuration and the disclosure that all projects become readable.
+for configuration and the scope of shared access.
+
+`GET /api/v1/viewer/auth` returns `{authenticated,required}`. Local access
+and public access with the password disabled report `{authenticated:true,required:false}`.
+Public `POST /api/v1/viewer/auth` takes `{password}` with the configured
+Origin. Success issues the session cookie and reports
+`{authenticated:true,required:true}`. An incorrect password returns 401 and
+throttling returns 429. With password protection enabled, public data routes,
+downloads, export, and event streams require a valid session cookie.
+Public project reads are further restricted to projects with
+`privacy_status: "public"`. Private projects are omitted before pagination.
+Direct URLs, resources and jobs owned by private projects return 404.
 
 Font inventory/import and exact-byte download routes are specified in
 [Project fonts](FONTS.md). MCP `list_fonts` preserves pagination and adds
@@ -23,14 +34,19 @@ metadata; shared rendering uses an internal hash/weight/style CSS family.
 
 Base `/api/v1`, localhost. Success returns the described JSON value; failures return `{ "error": { "code", "message", "retryable", "currentRevision"? } }` with an appropriate HTTP status. No filesystem paths.
 
-- `GET /projects` → `{ projects: ProjectRef[], nextCursor?: string|null }`. ProjectRef: `{ projectId, slug, name, revision, schemaVersion? }`.
-- `POST /projects` with `{slug,name}` → ProjectRef. The browser viewer does not call mutation routes.
-- `GET /projects/:projectId/snapshot` → storage Snapshot with `schemaVersion`, `projectId`, `slug`, `name`, `revision`, `nodes`, `tokens`, `styles`, `assets`, `fonts`, `notes`, `retention`, `truncated:false`. Notes: `{id,nodeId,text,author?,resolved?,replies?}` (see `docs/SERVER.md` "Notes"). Nodes: `{id,parentId,sortKey,kind,props}`; `sortKey` is a number (integer sibling index), not a string. Authored data is not replaced by computed data.
+- `GET /projects` → `{ projects: ProjectRef[], nextCursor?: string|null }`. ProjectRef: `{ projectId, slug, name, revision, schemaVersion?, privacy_status: "public"|"private" }`.
+- `GET /projects/:projectId` → ProjectRef. The URL accepts a project ID or slug.
+- `POST /projects` with `{slug,name}` → ProjectRef with `privacy_status: "private"`. Local only.
+- `PATCH /projects/:projectId` with `{privacy_status}` → updated ProjectRef. Local only. The authored revision stays the same. The equivalent MCP tool is `update_project` with `{projectId,privacy_status}`.
+- `GET /projects/:projectId/snapshot` → HTTP snapshot with `schemaVersion`, `projectId`, `slug`, `name`, `revision`, `privacy_status`, `nodes`, `tokens`, `styles`, `assets`, `fonts`, `notes`, `retention`, `truncated:false`. Notes: `{id,nodeId,text,author?,resolved?,replies?}` (see `docs/SERVER.md` "Notes"). Nodes: `{id,parentId,sortKey,kind,props}`; `sortKey` is a number (integer sibling index), not a string. Authored data is not replaced by computed data.
   - `?nodeFormat=rows` opts into `nodeFormat:"rows-v1"` with `nodeColumns:["id","parentId","sortKey","kind","props","extra"]`. Each node becomes an array in that order. `parentId` remains nullable. The trailing `extra` object, when present, contains additional top-level node fields. All other snapshot fields use the default representation.
-  - Both formats return a strong, format-specific `ETag` and `Cache-Control: private, no-cache` on GET and HEAD. A matching `If-None-Match` returns a bodyless `304 Not Modified` after authoritative project lookup. IDs and slugs for the same project select the same representation. An unavailable source returns its usual error. See [HTTP snapshot cache](MOKA-SNAPSHOT-CACHE.md#http-snapshot-response-cache).
+  - Both formats return a strong, format-specific `ETag` on GET and HEAD. Visibility changes the ETag even if the authored revision stays the same. Cache control is `private, no-cache` locally and `no-store` on the public listener. A matching `If-None-Match` returns a bodyless `304 Not Modified` after authoritative project lookup and access checks. IDs and slugs for the same project select the same representation. See [HTTP snapshot cache](MOKA-SNAPSHOT-CACHE.md#http-snapshot-response-cache).
 - `GET /projects/:projectId/events?cursor=<projectId>:<revision>` → SSE. Durable `commit` event data `{projectId,revision,changedIds}`, SSE id `<projectId>:<revision>`. `reset_required` data `{projectId,currentRevision,reason}`. `scene_ready` includes `{projectId,revision,sceneKey,jobId}`. Heartbeats are comments. Last-Event-ID also accepted. Register before snapshot/read durable log to avoid a gap; replay after cursor.
-  The same stream also carries two **non-durable workspace hints** without an SSE `id`, so they never move the commit cursor: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Neither reads the durable log; only a commit of the streamed project replays it. Hints are not replayed after a reconnect or `reset_required`: clients refetch `GET /projects`, which is the source of truth, on every (re)open.
-- `GET /events` → SSE workspace stream for a client that has no project to follow yet (an empty workspace). It carries only `project_created` and `project_activity` with the data above, heartbeat comments every 10 s, and ends on server shutdown. No cursor, no replay, no query parameters (`INVALID_REQUEST` otherwise); a broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream. Same loopback Host/Origin guard as every route.
+  The same stream carries **non-durable workspace hints** without an SSE `id`: `project_created` `{projectId,slug,name,revision}` after a successful `create_project` (MCP or `POST /projects`), and `project_activity` `{projectId,revision}` when **another** project commits. Clients refetch `GET /projects` on reconnect or `reset_required`.
+- `GET /events` → SSE workspace hints and heartbeat comments every 10 s. No cursor, replay or query parameters (`INVALID_REQUEST` otherwise). A broadcast overflow sends `reset_required` `{reason:"buffer_overflow"}` and ends the stream.
+- Project and workspace SSE send `project_visibility_changed` with `{}` and
+  no cursor ID when the visible list may change. The public listener suppresses
+  private project hints and ends streams whose project becomes private.
 - `GET /projects/:projectId/scene?frameId=...&revision=...&width=...&height=...&theme=default&state=default` → RenderJob below. This is a read request for a computed representation and may enqueue bounded work. Scene revision must exactly match requested revision. Old unavailable snapshot returns `REVISION_UNAVAILABLE`.
 - `POST /projects/:projectId/exports` → `{projectId,revision,exports:[{nodeId,jobId,status,files?,error?}]}`. Body is the `export_nodes` MCP arguments without `projectId`: `nodeIds` (1–8), optional `settings` (1–8), `theme`, `revision`, `waitMs` (0–10000). The exact MCP runtime schema, cross-field validation, pixel/queue budgets and pipeline apply. `projectId` in the body and unknown fields are rejected. Same Host/Origin guard as other routes. This requests computed files and never changes the authored revision. Poll pending jobs with `GET /jobs/:jobId`, then download the returned file URL.
 - `GET /jobs/:jobId` → RenderJob.
@@ -61,6 +77,21 @@ Frontend package in `web/`, built to `web/dist`. Its dev server proxies `/api` t
 Viewer imports shared renderer source from `renderer/`, calls resource loading + `drawScene` on an offscreen canvas, and mounts it in Konva for pan/zoom/selection overlays. No frontend layout engine or text rewrap. Source manifest URLs are controlled HTTP URLs. Scene rendering uses strict=false for labeled resource placeholders; status exposes diagnostics.
 
 Layers ordered by `sortKey` within parent. Page/frame selection derives from authored nodes; frame scene includes only descendants. Local selection/pan/zoom/viewport do not mutate design or revision.
+
+### Responsive layout
+
+Child `width` and `height` accept literal decimal strings from `"0%"` to
+`"100%"`. The corresponding parent axis must be numeric or follow a fill or
+percentage chain to a numeric size. The selected frame uses the render viewport
+as its root size. Percentages use the parent's content box in a stack and its
+padding box under free positioning. Pixel min/max bounds still apply.
+
+Containers may set `layout.breakpoints` to up to eight `{maxWidth, layout}`
+objects with unique, strictly increasing integer thresholds from 1 to 100000.
+The first rule with `viewport.width <= maxWidth` supplies the complete layout.
+Above all thresholds, the base layout applies. Every rule is validated in all
+themes and follows the same wrap guards. Render, preview and `inspect_layout`
+share the computed scene for the same revision, viewport, theme and state.
 
 Element addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`.
 All query values are percent-encoded stable IDs, including virtual IDs with `/`.

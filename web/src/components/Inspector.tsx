@@ -1,7 +1,7 @@
 import type { Scene } from "../../../renderer/types";
 import { nodeName } from "../state";
 import type { DesignNode } from "../types";
-import { Icon } from "./Icon";
+import { Icon, type IconName } from "./Icon";
 import { useNodeActions } from "./NodeActionsProvider";
 
 function Property({ name, value }: { name: string; value: unknown }) {
@@ -33,7 +33,7 @@ export function Inspector({
         <>
           <div className="inspector-identity">
             <span className="node-icon">
-              <Icon name={node.kind} size={20} />
+              <Icon name={node.kind as IconName} size={20} />
             </span>
             <div>
               <h2>{nodeName(node)}</h2>

@@ -1,12 +1,13 @@
 use super::{pins::ProjectPins, SnapshotCacheIdentity, StorageBackend};
 use crate::{
     Asset, BatchFileRequest, BatchRequest, BatchResult, Commit, DryRunResult, Font,
-    ImportAssetRequest, ImportAssetResult, ProjectMeta, Result, Snapshot, Store,
+    ImportAssetRequest, ImportAssetResult, PrivacyStatus, ProjectMeta, Result, Snapshot, Store,
 };
 use serde_json::Value;
 use std::sync::Arc;
 
 mod identity;
+mod viewer_auth;
 
 /// Default adapter. All domain writes and validation use the existing SQLite
 /// implementation; bounded project pins preserve its hot writer/registry path.
@@ -25,6 +26,10 @@ impl SqliteBackend {
 }
 
 impl StorageBackend for SqliteBackend {
+    fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
+        Some(self)
+    }
+
     fn list_projects(&self) -> Result<Vec<ProjectMeta>> {
         self.store.list_projects()
     }
@@ -38,6 +43,14 @@ impl StorageBackend for SqliteBackend {
 
     fn project_meta(&self, key: &str) -> Result<ProjectMeta> {
         self.pins.metadata(&self.store, key)
+    }
+
+    fn update_project_privacy(
+        &self,
+        key: &str,
+        privacy: PrivacyStatus,
+    ) -> Result<(ProjectMeta, bool)> {
+        self.pins.open(&self.store, key)?.update_privacy(privacy)
     }
 
     fn snapshot(&self, project: &str) -> Result<Snapshot> {

@@ -3,6 +3,7 @@ use crate::{
     events,
     jobs::SceneRequest,
     mcp::{self, Mcp},
+    projects,
     state::AppState,
     viewer_origin::{self, Origin},
     workspace_events,
@@ -13,7 +14,7 @@ use axum::{
     http::{header, HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::{get, patch, post},
     Json, Router,
 };
 use rmcp::transport::streamable_http_server::{
@@ -35,7 +36,12 @@ pub fn router(state: AppState) -> Router {
         config,
     );
     viewer_routes(&state)
-        .route("/api/v1/projects", post(create))
+        .route(
+            crate::viewer_auth::PATH,
+            get(crate::viewer_auth::http::local_status),
+        )
+        .route("/api/v1/projects", post(projects::create_http))
+        .route("/api/v1/projects/{project}", patch(projects::update_http))
         .route(
             "/api/v1/projects/{project}/fonts",
             post(crate::fonts::import),
@@ -51,7 +57,8 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
     let dist = state.config.workspace.join("web/dist");
     Router::new()
         .route("/api/v1/viewer", get(viewer_access))
-        .route("/api/v1/projects", get(projects))
+        .route("/api/v1/projects", get(projects::list_http))
+        .route("/api/v1/projects/{project}", get(projects::get_http))
         .route(
             "/api/v1/projects/{project}/snapshot",
             get(crate::snapshot_http::get),
@@ -80,33 +87,6 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
 }
 async fn viewer_access(origin: Origin) -> Json<Value> {
     Json(json!({"readOnly":origin.is_some()}))
-}
-async fn projects(
-    State(s): State<AppState>,
-    query: std::result::Result<Query<mcp::List>, axum::extract::rejection::QueryRejection>,
-) -> Result<Json<Value>> {
-    let q = query
-        .map_err(|_| ApiError::invalid("Invalid project query"))?
-        .0;
-    Ok(Json(
-        mcp::projects(
-            &s,
-            serde_json::to_value(json!({"cursor":q.cursor,"limit":q.limit}))?,
-        )
-        .await?,
-    ))
-}
-async fn create(
-    State(s): State<AppState>,
-    body: std::result::Result<Json<Value>, axum::extract::rejection::JsonRejection>,
-) -> Result<Json<Value>> {
-    Ok(Json(
-        mcp::create(
-            &s,
-            body.map_err(|_| ApiError::invalid("Invalid JSON body"))?.0,
-        )
-        .await?,
-    ))
 }
 async fn scene(
     State(s): State<AppState>,

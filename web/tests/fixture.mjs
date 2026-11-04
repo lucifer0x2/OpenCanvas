@@ -27,6 +27,9 @@ export async function startFixture({ scene: kind = "light" } = {}) {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify(data));
     };
+    if (url.pathname === "/api/v1/viewer/auth")
+      return json({ authenticated: true, required: false });
+    if (url.pathname === "/api/v1/viewer") return json({ readOnly: false });
     if (url.pathname === "/api/v1/font") {
       res.writeHead(200, { "content-type": "font/ttf" });
       res.end(font);

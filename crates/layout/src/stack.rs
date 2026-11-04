@@ -10,12 +10,14 @@ pub(crate) const JUSTIFIES: [&str; 4] = ["start", "center", "end", "space-betwee
 pub(crate) struct Parent<'a> {
     pub mode: &'a str,
     pub align: &'a str,
+    pub has_breakpoints: bool,
 }
 
 impl Parent<'_> {
     pub(crate) const ROOT: Parent<'static> = Parent {
         mode: "free",
         align: "start",
+        has_breakpoints: false,
     };
 }
 

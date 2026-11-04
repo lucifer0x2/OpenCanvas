@@ -49,14 +49,20 @@ impl Store {
             configure(&conn, false)?;
             conn.pragma_update(None, "journal_mode", "DELETE")?;
             let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
-            tx.execute("UPDATE project_meta SET project_id=?1,slug=?2,current_revision=?3 WHERE singleton=1", params![project_id, slug, if restore { snapshot.revision as i64 } else { 0 }])?;
+            // Activating a bundle never grants viewer access in the destination.
+            tx.execute(
+                "UPDATE project_meta SET project_id=?1,slug=?2,current_revision=?3,privacy_status='private'
+                 WHERE singleton=1",
+                params![project_id, slug, if restore { snapshot.revision as i64 } else { 0 }],
+            )?;
             if !restore {
                 tx.execute_batch("DELETE FROM commits; DELETE FROM idempotency; UPDATE retention_metadata SET oldest_commit_revision=1 WHERE singleton=1;")?;
             }
             tx.commit()?;
-            let actual = read_snapshot(&mut conn)?;
+            let actual = read_meta(&conn)?;
             if actual.project_id != project_id
                 || actual.revision != if restore { snapshot.revision } else { 0 }
+                || actual.privacy_status != PrivacyStatus::Private
             {
                 return Err(invalid("Staged identity verification failed"));
             }
