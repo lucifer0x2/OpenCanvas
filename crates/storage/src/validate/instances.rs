@@ -62,7 +62,11 @@ impl Candidate {
                         StorageError::validation("props.overrides", "Overrides must be an object")
                     })?;
                     for (target, patch) in overrides {
-                        if target == &master.id || !self.ancestor_is(target, &master.id) {
+                        if target == &master.id
+                            || !self
+                                .ancestors(target)
+                                .any(|ancestor| ancestor.id == master.id)
+                        {
                             return Err(StorageError::validation(
                                 &format!("props.overrides.{target}"),
                                 "Override target must be a master descendant",
@@ -132,19 +136,6 @@ impl Candidate {
         Ok(())
     }
 
-    fn ancestor_is(&self, id: &str, ancestor: &str) -> bool {
-        let mut current = self.nodes.get(id).and_then(|n| n.parent_id.as_deref());
-        for _ in 0..128 {
-            let Some(id) = current else {
-                return false;
-            };
-            if id == ancestor {
-                return true;
-            }
-            current = self.nodes.get(id).and_then(|n| n.parent_id.as_deref());
-        }
-        false
-    }
     fn in_component(&self, id: &str) -> bool {
         let mut current = self.nodes.get(id);
         for _ in 0..128 {

@@ -270,12 +270,16 @@ of each breakpoint.
   to combine a load fade with a hover change of the same property, animate a
   wrapping group. When an animation sets both translate axes, set them at the
   same keyframes. `on:"hover"` takes exactly one keyframe and no iterations.
+  Set `triggerNodeId` on a hover track to use an authored group or frame ancestor
+  in the same root frame. Omit it for self-hover. For example, give the icon
+  inside `card` the `lift` track below and reuse `card` on any other child track
+  that should respond to the same hover region.
   A `fill` keyframe requires a solid resting fill; on a gradient box animate
   opacity or transform instead.
 
 ```json
 {"name":"enter","duration":400,"easing":"ease-out","keyframes":[{"offset":0,"opacity":0,"translateY":12}]}
-{"name":"lift","on":"hover","duration":200,"keyframes":[{"scale":1.02}]}
+{"name":"lift","on":"hover","triggerNodeId":"card","duration":200,"keyframes":[{"scale":1.02}]}
 {"name":"pulse","duration":800,"iterations":"infinite","direction":"alternate","keyframes":[{"fill":{"tokenId":"color-brand-soft"}}]}
 ```
 

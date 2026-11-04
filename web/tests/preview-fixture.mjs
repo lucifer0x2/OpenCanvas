@@ -18,6 +18,12 @@ export const FIXTURE = {
     fill: "rgb(255, 0, 0)",
     rest: "rgb(238, 238, 238)",
   },
+  parentHover: {
+    source: "menu",
+    first: "menu-icon",
+    second: "menu-label",
+    animation: "reveal",
+  },
   click: { id: "pulse", name: "pulse", duration: 300 },
   link: { id: "go", to: "second" },
   back: { id: "back" },
@@ -28,6 +34,14 @@ export async function createFixture(mcp) {
     slug: "motion-preview-smoke",
     name: "Motion preview smoke fixture",
   });
+  const { source, first, second, animation } = FIXTURE.parentHover;
+  const reveal = {
+    name: animation,
+    on: "hover",
+    triggerNodeId: source,
+    duration: 500,
+    easing: "linear",
+  };
   const operations = [
     {
       op: "upsert_token",
@@ -117,6 +131,32 @@ export async function createFixture(mcp) {
           keyframes: [{ offset: 0, fill: { tokenId: "brand" } }],
         },
       ],
+    }),
+    node(source, "group", "home", {
+      name: "Menu",
+      width: 260,
+      height: 58,
+      layout: { mode: "row", align: "center", padding: 10, gap: 24 },
+    }),
+    node(first, "rectangle", source, {
+      name: "Menu icon",
+      width: 80,
+      height: 32,
+      fill: "#2266cc",
+      animations: [
+        {
+          ...reveal,
+          delay: 100,
+          keyframes: [{ opacity: 0.25, fill: "#ef4444" }],
+        },
+      ],
+    }),
+    node(second, "rectangle", source, {
+      name: "Menu label",
+      width: 80,
+      height: 32,
+      fill: "#15263b",
+      animations: [{ ...reveal, keyframes: [{ opacity: 0.5 }] }],
     }),
     node("second", "frame", "page", {
       name: "Second",

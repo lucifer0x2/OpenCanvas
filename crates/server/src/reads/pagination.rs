@@ -55,6 +55,25 @@ fn invalid() -> ApiError {
 fn cursor(scope: &str, offset: usize) -> String {
     URL_SAFE_NO_PAD.encode(json!({"scope":scope,"offset":offset}).to_string())
 }
+
+/// Extra metadata can use the space left by the pagination envelope and the first
+/// entry on this page. This keeps an optional summary from preventing cursor progress.
+pub(super) fn metadata_headroom(
+    response: &Value,
+    first_entry: Option<&(String, Value)>,
+    offset: usize,
+    budget: usize,
+    scope: &str,
+) -> Result<usize> {
+    let mut used = json_len(response)? + ",\"nextCursor\":null,\"truncated\":false".len();
+    if let Some((field, value)) = first_entry {
+        used += json_len(value)? + cursor(scope, offset + 1).len() - 3;
+        if response.get(field).is_none() {
+            used += json_len(field)? + 4;
+        }
+    }
+    Ok(budget.saturating_sub(used))
+}
 /// Every entry is consumed once, including resources; a budget never silently drops content.
 /// The response is serialized once; each step then adds the exact compact-JSON growth (the
 /// entry, its comma, a newly created array key and the cursor length change), so a page costs
@@ -119,7 +138,7 @@ pub fn page(
     Ok(response)
 }
 /// Compact JSON length of `value`, counted without building the string.
-fn json_len<T: Serialize + ?Sized>(value: &T) -> Result<usize> {
+pub(super) fn json_len<T: Serialize + ?Sized>(value: &T) -> Result<usize> {
     struct Count(usize);
     impl std::io::Write for Count {
         fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {

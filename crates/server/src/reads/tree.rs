@@ -163,9 +163,6 @@ pub(super) fn read(
         {
             response["navigation"] = nav;
         }
-        if let Some(animated) = animated::summary(&ordered) {
-            response["animated"] = animated;
-        }
         if let Some(computed) = computed {
             let measured_diagnostics = computed.diagnostics;
             response["computed"] = computed.metadata;
@@ -198,6 +195,17 @@ pub(super) fn read(
                 }
                 entries.push((field.into(), item));
             }
+        }
+        if animated::has_tracks(&ordered) {
+            let budget = req.budget.unwrap_or(65536);
+            let headroom = pagination::metadata_headroom(
+                &response,
+                entries.get(offset),
+                offset,
+                budget,
+                &scope,
+            )?;
+            animated::include(&mut response, &ordered, headroom.min(budget / 4))?;
         }
     }
     pagination::page(

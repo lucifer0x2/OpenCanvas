@@ -8,6 +8,11 @@ import { fileURLToPath } from "node:url";
 import { connectMcp } from "../../spikes/e2e/protocol.mjs";
 import { startServer } from "../../spikes/e2e/server.mjs";
 import { createFixture, FIXTURE } from "./preview-fixture.mjs";
+import {
+  checkMissingParentHover,
+  checkParentHover,
+  checkReducedParentHover,
+} from "./preview-parent-hover.mjs";
 import { frameParity } from "./preview-parity.mjs";
 import { settle as settleIn } from "./preview-settle.mjs";
 
@@ -122,6 +127,10 @@ try {
   step(
     "hover holds the end value and state fill, then animates back to rest on leave",
   );
+  await checkParentHover(page);
+  step(
+    "parent hover plays two children across gaps, reverses in place, and ignores touch",
+  );
 
   // Pressed state (:active) wins over the resting inline opacity; the click restarts every time.
   const clickId = `${FIXTURE.click.id}:${FIXTURE.click.name}`;
@@ -161,6 +170,12 @@ try {
   await page.waitForFunction(`${anim(loadId)}?.playState === "finished"`);
   assert.equal(await style(sel(FIXTURE.load.id), "opacity"), "1");
   step("reduced motion settles load animations without playing them");
+  await checkReducedParentHover(page);
+  step(
+    "reduced motion applies parent-hover endpoints and clears them on leave",
+  );
+  await checkMissingParentHover(page, projectId);
+  step("missing parent hover source warns and skips without self-hover fallback");
 
   assert.deepEqual([...methods], ["GET"]);
   assert.deepEqual(

@@ -21,6 +21,7 @@ export type Trigger = "load" | "hover" | "click";
 export interface AnimationDef {
   name: string;
   on?: Trigger;
+  triggerNodeId?: string;
   duration: Ref;
   delay?: Ref;
   easing?: string;

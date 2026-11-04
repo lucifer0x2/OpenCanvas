@@ -126,15 +126,26 @@ order and authored dimensions in each layout. Check both sides of each threshold
   the entire design fits every width.
 - Check horizontal overflow and content wrapping. Ask about required behavior
   when the authored rules cannot express it.
-- Declared motion is `props.animations`; `get_design_context` lists every one in
-  `animated` (`{ref: "<nodeId>:<name>", on}`, absent when the frame has none). Map
-  each to CSS `@keyframes`/`animation` or `el.animate()`: keyframes are WAAPI-shaped
-  (`offset`, per-keyframe `easing`), times are milliseconds, `translateX/Y` is CSS
-  `translate` from the laid-out position, `scale`/`rotate` turn around the center,
-  and a missing 0/1 keyframe is the authored props. `fillMode` defaults to `both`
-  (CSS default is `none`), so write it out. `on:"hover"` is a transition to its one
-  keyframe while hovered; `on:"click"` restarts on each click. Use the token
-  reference in authored `animations`, not the resolved literal.
+- Declared motion is `props.animations`. `get_design_context` summarizes tracks
+  in `animated` as `{ref: "<nodeId>:<name>", on}` with `triggerNodeId` when
+  authored. When `animatedTruncated:true`, page `find_nodes` with the same
+  `frameId` and `revision`, `properties:["animations"]`, and either known node
+  `ids` or `kinds:["frame","group","rectangle","text","image"]`. Use your
+  framework's animation primitives. Keyframes carry `offset` and per-keyframe
+  `easing`, times are milliseconds, `translateX/Y` offsets the laid-out position,
+  `scale`/`rotate` turn around the center, and missing 0/1 keyframes use the
+  authored props. `fillMode` defaults to `both`. `on:"click"` restarts on each
+  click. Keep token references from authored `animations`. On the web, for
+  example, use CSS `@keyframes`/`animation` or `el.animate()`.
+- Group `on:"hover"` tracks by source (`triggerNodeId`, or the animated node's
+  ID when omitted). Use framework-native hover state or pointer handlers for
+  one region per source. Start each target's own track with its declared
+  keyframe, timing and delay. Moving between descendants keeps progress, and
+  leaving the region reverses each track from its current progress. For
+  explicit sources, ignore touch contact. Keep `states` variants and `links`
+  independent of the motion trigger. If a nested frame's source
+  lies outside the requested scope, read it by ID with `find_nodes` at the
+  same revision or read the enclosing root frame.
 - A node whose authored props carry `exportSettings` is an image asset: call
   `export_nodes {projectId, nodeIds}` and download each file `url` over HTTP
   right away instead of rebuilding it in code or cropping a frame PNG. Pass
@@ -155,8 +166,8 @@ order and authored dimensions in each layout. Check both sides of each threshold
   `props.states` variants; map hover/pressed/focus/disabled to CSS :hover/:active/
   :focus-visible/[disabled]. Never invent undeclared variants. `render_frame state`
   previews all declaring nodes at once; layout and children retain resting geometry.
-  Named token themes may be requested. P07a hover animations require one explicit
-  keyframe; there is no `to` property or implicit target from `states.hover`.
+  Named token themes may be requested. Hover motion uses one explicit keyframe
+  authored on the animated node.
 
 ## Finding nodes
 
