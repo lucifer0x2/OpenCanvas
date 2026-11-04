@@ -15,11 +15,11 @@ pub fn to_paint(s: &LayoutScene) -> Scene {
             bounds: Bounds { x: n.bounds.x, y: n.bounds.y, width: n.bounds.width, height: n.bounds.height },
             lines: n.lines.iter().map(|l| TextLine { text: l.text.clone(), x: l.x, y: l.y }).collect(),
             font_size: n.font_size,
-            fill: n.fill.clone(),
+            fill: n.fill.as_solid().to_string(),
             fit: n.fit.clone(),
             opacity: n.opacity,
             clip: n.clip,
-            radius: n.radius,
+            radius: n.radius.each()[0],
             crop: n.crop.as_ref().map(|c| Crop { x: c.x, y: c.y, width: c.width, height: c.height }),
             stroke: n.stroke.as_ref().map(|k| Stroke { color: k.color.clone(), width: k.width, align: k.align.clone() }),
         })

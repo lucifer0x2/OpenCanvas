@@ -1,8 +1,6 @@
-//! Font loading and HarfRust shaping: advances in px and positioned glyph runs.
+//! Font parsing (from bytes) and HarfRust shaping: advances in px and positioned glyph runs.
 use harfrust::{Buffer, Direction, Font, Language, Script, ShapeOptions, ShaperFont, ShapePlan};
 use std::str::FromStr;
-
-pub const FONT_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../renderer/fonts/NotoSans.ttf");
 
 pub struct Shaper {
     pub font: Font,
@@ -18,10 +16,6 @@ pub struct PlacedGlyph {
 }
 
 impl Shaper {
-    pub fn load() -> Shaper {
-        Shaper::from_bytes(std::fs::read(FONT_PATH).expect("font"))
-    }
-
     pub fn from_bytes(bytes: Vec<u8>) -> Shaper {
         let font = Font::new(bytes, 0).expect("parse font");
         let upem = font.units_per_em() as f32;

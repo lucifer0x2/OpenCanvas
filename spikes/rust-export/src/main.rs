@@ -1,25 +1,20 @@
-//! Spike CLI: measure | wrap | make-image | render | compare | bench | ndjson | paint-gate.
-//! See README.md.
+//! Spike CLI: measure | wrap | make-image | render | compare | bench | ndjson | paint-gate |
+//! frames | frame-bench. See README.md.
+mod assets;
 mod bench;
-mod clip;
 mod compare;
 mod convert;
 mod encode;
-mod font;
+mod frame_bench;
+mod frames;
 mod gate;
 mod measure;
-mod mode;
 mod ndjson;
-mod paint;
-mod par;
 mod pipeline;
-mod profile;
-mod scene;
-mod shape;
-mod text;
-mod text_full;
-mod text_mask;
 mod wrap;
+
+// The painter lives in the library (src/lib.rs, Task 09); `crate::paint` etc. keep resolving here.
+pub use rust_spike::{clip, font, mode, paint, par, profile, scene, shape, text, text_full, text_mask};
 
 use serde_json::{json, Value};
 use std::time::Instant;
@@ -36,9 +31,11 @@ fn main() {
         "bench" => return bench::main(&args),
         "ndjson" => return ndjson::main(&args),
         "paint-gate" => return gate::main(&args),
+        "frames" => return frames::main(&args),
+        "frame-bench" => return frame_bench::main(&args),
         _ => {}
     }
-    let shaper = font::Shaper::load();
+    let shaper = assets::shaper();
     match args[1].as_str() {
         "measure" => {
             let c = read_json(&args[2]);

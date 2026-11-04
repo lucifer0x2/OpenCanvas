@@ -1,0 +1,16 @@
+[package]
+name = "rust-spike-wasm-host"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Task 09 host: runs the spike .wasm under wasmtime (Cranelift) for native↔WASM pixel compare and an
+# indicative timing. Not the browser gate (V8 in a Web Worker); see ../README.md, Phần E.
+[dependencies]
+wasmtime = { version = "=50.0.1", default-features = false, features = ["cranelift", "runtime", "std", "parallel-compilation"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+
+[workspace]

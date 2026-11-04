@@ -9,7 +9,7 @@ use crate::par;
 use crate::scene::{Node, Scene, Tree};
 use crate::text::{gamma_lut, TextOpts, TextPainter};
 use std::sync::OnceLock;
-use std::time::Instant;
+use crate::clock::Instant;
 use tiny_skia::{FillRule, Mask, Paint, Path, PathBuilder, PathSegment, Pixmap, Rect, Transform};
 
 /// Margin around the glyph bounds; tiny-skia's AA rasterizer writes only inside floor/ceil of them.

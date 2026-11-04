@@ -1,0 +1,33 @@
+[package]
+name = "rust-spike-wasm"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Task 09: the spike painter (../src/lib.rs) as a wasm32-unknown-unknown cdylib with hand-written C-ABI
+# exports (src/lib.rs), no wasm-bindgen. Build both SIMD variants with ./build.sh (see ../README.md, Phần E).
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rust-spike = { path = "..", default-features = false }
+serde_json = "1"
+tiny-skia = "=0.12.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+# Size variants of the same build; ./build.sh reports all three.
+[profile.release-s]
+inherits = "release"
+opt-level = "s"
+
+[profile.release-z]
+inherits = "release"
+opt-level = "z"
+
+[workspace]

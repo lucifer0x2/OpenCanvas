@@ -6,7 +6,7 @@ use crate::profile::PaintProfile;
 use crate::scene::Node;
 use crate::shape::solid;
 use crate::text::{TextOpts, TextPainter};
-use std::time::Instant;
+use crate::clock::Instant;
 use tiny_skia::{Mask, PathBuilder, Pixmap, Rect, Transform};
 
 fn ms(t: Instant) -> f64 { t.elapsed().as_secs_f64() * 1e3 }
