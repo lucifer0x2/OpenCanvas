@@ -30,7 +30,9 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.addInitScript(() =>
+  await page.addInitScript(() => {
+    // Stale-link notices are an opt-in viewer preference.
+    localStorage.setItem("is_show_notice_bar", "true");
     localStorage.setItem(
       "opencanvas.selection",
       JSON.stringify({
@@ -39,8 +41,8 @@ try {
         frameId: "wrong",
         nodeId: "wrong",
       }),
-    ),
-  );
+    );
+  });
   const address = (id) =>
     `${server.base}/?project=${projectId}&page=page&frame=frame&node=${encodeURIComponent(id)}`;
   await page.goto(address("instance/label"));

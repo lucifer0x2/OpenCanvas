@@ -96,6 +96,9 @@ try {
   fixture.disconnect();
   fixture.update(12);
   await ready(12); // Reconnect cursor + snapshot recovers the commit while disconnected.
+  // Resource notices are an opt-in viewer preference.
+  await page.getByRole("button", { name: "Show notice bar", exact: true }).click();
+  await page.getByRole("button", { name: "Hide notice bar", exact: true }).waitFor();
   fixture.update(13, "missing");
   await ready(13);
   await page.getByText(/Missing font: font_bundled/).waitFor();
