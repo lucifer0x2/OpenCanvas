@@ -1,5 +1,11 @@
 # Nhật ký điều phối OpenCanvas
 
+### Compose Rust native mặc định và dọn worktree — 2026-11-05
+
+- Người dùng yêu cầu bật backend Rust native trong Compose, push rồi xóa worktree viewer riêng. Giao fresh worker sửa hai cấu hình SQLite/PostgreSQL, giữ override Chromium và kiểm merge public-viewer bằng env tạm. Không restart/deploy app thật, không sửa checkout chính; chỉ dọn worktree sau khi commit đã xác nhận trên remote.
+- Nhận cấu hình, worker kiểm16 tổ hợp và đối chiếu toàn bộ config còn lại với HEAD; root kiểm thêm bốn trường hợp public-overlay mặc định/override, đều đạt. Hai Compose mặc định Rust, giữ env override Chromium; docs đã cập nhật, diff sạch, email đúng yêu cầu, AGENTS trong ngân sách.
+- Điểm dừng trước commit: duyệt commit năm file cấu hình/tài liệu và push lên đúng nhánh; sau khi remote khớp HEAD và worktree sạch sẽ xóa worktree cùng artifact generated. Không có build/process đang dùng worktree; `.runtime` là symlink nên chỉ bỏ liên kết, giữ thư mục đích ở checkout chính. App thật và volume Docker không được restart/xóa.
+
 ### WASM scene mặc định — 2026-11-05
 
 - Người dùng chốt WASM làm mặc định, server chỉ fallback; giao fresh worker sửa cờ chọn engine và regression unit/browser, giữ override server tường minh. Chỉ worktree viewer riêng; không sửa checkout chính hoặc runtime thật. Nhánh đã push theo yêu cầu trước đó, cập nhật sau khi kiểm đủ thay đổi này.

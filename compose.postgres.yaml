@@ -22,6 +22,7 @@ services:
       - --port
       - "${OPENCANVAS_PORT:-3857}"
     environment:
+      RENDER_BACKEND: ${RENDER_BACKEND:-rust}
       DATABASE_PROVIDER: postgresql
       DATABASE_URL: "postgresql://opencanvas:${OPENCANVAS_DATABASE_PASSWORD:?Set a hexadecimal PostgreSQL password}@postgres:5432/opencanvas"
       DATABASE_POOL_SIZE: "4"

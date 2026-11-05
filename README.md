@@ -38,7 +38,8 @@ By default, open [the local viewer](http://127.0.0.1:3847); with `--port 0`, use
 `PORT` selects the local listener (default 3847), and `--port NUMBER` takes precedence. Both accept 0 to bind an available port and print it at startup.
 
 An **experimental, not yet pixel-accepted** native PNG/export backend is available
-with `RENDER_BACKEND=rust` or `--render-backend rust`; `chromium` remains the default.
+with `RENDER_BACKEND=rust` or `--render-backend rust`; directly started servers
+default to `chromium`, while Compose selects `rust` by default.
 The native server computes and paints without Node, Chromium or layout-step.
 Run the built Rust binary directly to avoid the npm launcher; this backend
 selection leaves the browser's Canvas2D painter unchanged. See [native backend limits](docs/SERVER.md#experimental-native-render-backend)
@@ -134,6 +135,11 @@ The viewer is at `http://127.0.0.1:3847` and MCP at `http://127.0.0.1:3847/mcp`.
 Inside the container the server listens on `0.0.0.0` (`--host 0.0.0.0`), and `compose.yaml` publishes it on `127.0.0.1` only. Keep it that way: the API has no authentication, and the loopback Host check stops browsers, not other machines. `OPENCANVAS_PORT=3850 docker compose up -d` moves the host and container port together, so `imageUrl` and the Origin check match the address you use. With plain `docker run`, use `--init -p 127.0.0.1:3847:3847 -v opencanvas-data:/data --shm-size 512m`. Do not run the native server and the container on the same data root at the same time: the data-root lock is not guaranteed to work across a bind mount.
 
 The default Compose file runs SQLite. [Local PostgreSQL in Docker Compose](docs/COMPOSE-POSTGRES.md) runs the app and PostgreSQL in two containers, with a separate data volume and the optional read-only viewer.
+
+Both Compose configurations default to the Rust native render backend. Set
+`RENDER_BACKEND=chromium` in the Compose env file or shell to select Chromium.
+The public-viewer overlay preserves this choice. Recreate the app container
+after changing it; the browser viewer continues to use WASM by default.
 
 For the isolated local PostgreSQL deployment on OrbStack, see [Local Kubernetes](docs/KUBERNETES.md). It builds a separate image, keeps database data in a PVC and exposes the viewer/MCP only through loopback port-forward on port 3857.
 The opt-in [Kubernetes public viewer](docs/KUBERNETES-PUBLIC-VIEWER.md) adds a separate read-only listener on loopback 3858 for later user-managed Funnel.
