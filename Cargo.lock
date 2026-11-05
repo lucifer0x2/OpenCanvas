@@ -1437,6 +1437,8 @@ dependencies = [
  "async-stream",
  "axum",
  "base64 0.22.1",
+ "brotli",
+ "flate2",
  "futures-util",
  "moka",
  "opencanvas-layout",

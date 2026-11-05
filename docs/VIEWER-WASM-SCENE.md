@@ -49,6 +49,9 @@ copied into the production viewer by Vite. Ordinary server-mode builds work
 without these artifacts. A pre-existing tracked machine-specific `node_modules`
 symlink was removed; dependencies are installed locally and ignored.
 
+Docker builds compile WASM in an isolated Rust stage and serve Brotli/gzip
+sidecars. Build measurements and container checks: [Docker report](VIEWER-WASM-DOCKER.md).
+
 Open a frame with **`?scene=wasm`**. A saved preference is also supported:
 `localStorage["opencanvas.scene"] = "wasm"`; explicit `?scene=server` wins.
 Server computation remains the default. The module initializes lazily in a

@@ -7,6 +7,8 @@ type Pending = {
   reject?: (error: Error) => void;
   clean: () => void;
   timer?: ReturnType<typeof setTimeout>;
+  backstop?: ReturnType<typeof setTimeout>;
+  deadline?: number;
   phase?: "initializing" | "computing";
   epoch: number;
   message: Request & { kind: ComputeMessage["kind"] };
@@ -61,6 +63,7 @@ export class SceneWorkerClient {
     if (!pending) return;
     this.pending.delete(reply.id);
     clearTimeout(pending.timer);
+    clearTimeout(pending.backstop);
     pending.clean();
     if (reply.error !== undefined) {
       // A failed request may already have replaced some or all loaded fonts.
@@ -111,6 +114,12 @@ export class SceneWorkerClient {
   }
 
   private post(id: number, pending: Pending) {
+    // Bound live callers behind obsolete work, preserving the original replay budget.
+    pending.deadline ??= Date.now() + 2 * this.timeoutMs;
+    pending.backstop ??= setTimeout(
+      () => this.reset(new Error("Browser scene computation timed out.")),
+      Math.max(0, pending.deadline - Date.now()),
+    );
     const { snapshot, fonts, ...reference } = pending.message;
     const { projectId, revision } = pending.message.request;
     if (this.projectId !== projectId) {
@@ -145,6 +154,8 @@ export class SceneWorkerClient {
           const pending = this.pending.get(id);
           if (!pending?.reject) return;
           pending.clean();
+          clearTimeout(pending.backstop);
+          pending.backstop = undefined;
           pending.reject(new Error("Browser scene request cancelled."));
           pending.resolve = pending.reject = undefined;
           if (pending.phase === "computing") {
@@ -184,7 +195,9 @@ export class SceneWorkerClient {
     this.epoch++;
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer);
+      clearTimeout(pending.backstop);
       pending.timer = undefined;
+      pending.backstop = undefined;
       if (replay && pending.reject) {
         pending.phase = undefined;
         continue;

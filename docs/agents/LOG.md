@@ -1,5 +1,14 @@
 # Nhật ký điều phối OpenCanvas
 
+### Docker browser scene WASM — 2026-11-05
+
+- Người dùng yêu cầu build WASM trong image, loại artifact host khỏi context và phục vụ precompressed static; giao fresh workers cho Docker/build scripts, static HTTP và backstop Worker. Chỉ worktree viewer riêng, không push hoặc sửa main checkout; kiểm Compose dùng project/env/data tạm.
+- Image baseline `opencanvas:kubernetes-local` hiện có 354.279.699 byte; sẽ đo thêm một build baseline cùng nguồn trước khi so kích thước. Email Git đã xác nhận đúng yêu cầu.
+- Nhận ba lát triển khai: shared script giữ flags release, Docker build tạo sidecars, static service negotiate br/gzip riêng với MIME gốc, và Worker có post-time backstop giữ deadline qua replay. Root kiểm web66/66, renderer11/11, binding2/2 và WASM browser smoke đạt; image mới build được, chuyển sang Compose tạm để kiểm end-to-end.
+- Compose/browser probe đạt: WASM Brotli đúng MIME, Worker vẽ71 node, không gọi scene API; static regression4/4 và parity20/20 không mismatch đạt. Lượt Rust cuối gặp đầy disk; chỉ dọn cache incremental generated của worktree rồi chạy lại không incremental. OrbStack đã dừng/socket mất sau đó; hỏi người dùng trước khi restart dịch vụ dùng chung để dọn canary, không tự restart.
+- Người dùng báo OrbStack đã chạy lại; root xác nhận và dọn đúng canary/container/network tạm. Rust cuối460 pass/0 fail/36 ignored, gồm server249; đủ gate yêu cầu. [Báo cáo Docker](../VIEWER-WASM-DOCKER.md) ghi size/time, artifact transfer và lệnh kiểm lại; chờ cache check/format cuối trước commit.
+- Điểm dừng trước commit: cache build10,49s và final image/browser probe đạt; canary đã dọn, format/syntax/diff sạch. Source/test tối đa224 dòng, AGENTS69 dòng/9476 byte; LOG append-only hiện275 dòng theo ngân sách riêng. Duyệt một commit cục bộ từ đúng source đã kiểm, email đúng yêu cầu, không artifact/attribution, không push hoặc sửa main checkout.
+
 ### Viewer WASM scene — 2026-11-05
 
 - Người dùng giao compute scene bằng Rust WASM, giữ Canvas2D paint và server default/fallback; yêu cầu mới thay phạm vi painter của Task12 cũ. Worktree riêng `/private/tmp/opencanvas-viewer-wasm-scene`, nhánh `feat/viewer-wasm-scene` từ `feat/task11-native-png`; không commit/push/deploy hoặc dữ liệu thật.

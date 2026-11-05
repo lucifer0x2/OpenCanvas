@@ -91,22 +91,67 @@ test("structured Rust errors retain code without discarding the warm worker", as
   assert.equal(loads, 1, "runtime safely deduplicates successful partial registration");
 });
 
-test("queued current work waits beyond timeout behind obsolete compute then succeeds", async () => {
+test("queued current work waits beyond timeout behind obsolete compute then succeeds", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
   const worker = new WorkerStub();
-  const client = new SceneWorkerClient(() => worker, 20);
+  const client = new SceneWorkerClient(() => worker, 100);
   const abort = new AbortController();
   const obsolete = client.compute(message(), abort.signal);
   worker.reply({ id: 1, started: "computing" });
   abort.abort();
   await assert.rejects(obsolete, /cancelled/);
   const current = client.compute(message(2), signal());
-  await new Promise((resolve) => setTimeout(resolve, 70));
+  t.mock.timers.tick(150);
   assert.equal(worker.terminated, false);
   worker.reply({ id: 1, result: {} });
   worker.reply({ id: 2, started: "initializing" });
   worker.reply({ id: 2, started: "computing" });
   worker.reply({ id: 2, result: { current: true } });
   assert.deepEqual(await current, { current: true });
+  t.mock.timers.tick(100);
+  assert.equal(worker.terminated, false, "completed callers clear their backstop");
+});
+
+test("live work queued behind hung obsolete computation reaches its post-time backstop", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  const worker = new WorkerStub();
+  const client = new SceneWorkerClient(() => worker, 100);
+  const abort = new AbortController();
+  const obsolete = client.compute(message(), abort.signal);
+  worker.reply({ id: 1, started: "computing" });
+  abort.abort();
+  await assert.rejects(obsolete, /cancelled/);
+  // The obsolete request itself has no remaining timer and keeps the worker warm.
+  t.mock.timers.tick(250);
+  assert.equal(worker.terminated, false);
+  const current = client.compute(message(2), signal());
+  const rejected = assert.rejects(current, /timed out/);
+  t.mock.timers.tick(199);
+  assert.equal(worker.terminated, false);
+  t.mock.timers.tick(1);
+  await rejected;
+  assert.equal(worker.terminated, true);
+});
+
+test("infrastructure replays retain the original post-time backstop", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  const workers = [];
+  const client = new SceneWorkerClient(() => {
+    const worker = new WorkerStub();
+    workers.push(worker);
+    return worker;
+  }, 100);
+  const current = client.compute(message(), signal());
+  const rejected = assert.rejects(current, /timed out/);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    t.mock.timers.tick(60);
+    workers.at(-1).reply({ id: 999, error: "broken module" });
+  }
+  t.mock.timers.tick(19);
+  assert.equal(workers.at(-1).terminated, false);
+  t.mock.timers.tick(1);
+  await rejected;
+  assert.equal(workers.at(-1).terminated, true);
 });
 
 test("active computation and initialization remain bounded, including aborted initialization", async () => {
@@ -159,16 +204,16 @@ test("real serial Worker lets cheap current work survive obsolete compute longer
   }, 2000);
   t.after(() => client.clearSnapshotCache());
   await client.compute(message(), signal());
-  client.timeoutMs = 30;
+  client.timeoutMs = 200;
   const abort = new AbortController();
   const slow = message(2);
-  slow.snapshot.delay = 150;
+  slow.snapshot.delay = 300;
   const obsolete = client.compute(slow, abort.signal);
   await started.promise;
   abort.abort();
   await assert.rejects(obsolete, /cancelled/);
   const before = performance.now();
   await client.compute(message(3), signal());
-  assert.ok(performance.now() - before > 60, "queue wait exceeded processing timeout");
+  assert.ok(performance.now() - before > 200, "queue wait exceeded processing timeout");
   assert.equal(terminated, false);
 });
