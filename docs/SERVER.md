@@ -244,7 +244,7 @@ document, available without project creation or filesystem access through `resou
 - `skill://opencanvas/props.md`: every authored `props` key by node kind, with
   value ranges, required keys and common wrong names. It is rendered at startup
   (`src/props_doc.rs`) from the storage validator's property table
-  (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+  (`crates/scene-input/src/props_catalog.rs`), so it cannot drift from validation.
 - `opencanvas://capabilities` (`application/json`): accepted keys/kinds generated from
   that same catalog, with explicit Canvas/PNG, HTML preview and SVG consumer facts.
   Cache by `catalogFingerprint`, `sceneVersion` and `rendererVersion`; this resource

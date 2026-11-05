@@ -20,7 +20,7 @@ class WorkerStub {
 const message = {
   request: { projectId: "p", revision: 1 },
   snapshot: { projectId: "p", revision: 1 },
-  fonts: [{ bytes: new Uint8Array([1, 2]).buffer }],
+  fonts: [{ id: "font", hash: "hash", bytes: new Uint8Array([1, 2]).buffer }],
   urls: {},
 };
 
@@ -60,7 +60,7 @@ test("abort drops one caller and late replies while concurrent and later work re
   await assert.rejects(first, /cancelled/);
   assert.equal(workers[0].terminated, false);
   workers[0].reply(1, { old: true });
-  workers[0].onmessage({ data: { id: 1, error: "obsolete error" } });
+  workers[0].onmessage({ data: { id: 1, error: "obsolete error", errorCode: "INVALID_REQUEST" } });
   workers[0].reply(2, { concurrent: true });
   assert.deepEqual(await concurrent, { concurrent: true });
   const next = client.compute(message, new AbortController().signal);

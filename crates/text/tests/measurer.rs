@@ -18,10 +18,7 @@ fn adapter_preserves_exact_measurements_counts_and_safe_error_mapping() {
     let mut adapter = FontSetMeasurer::new(&empty);
     let error = adapter.measure(&request).unwrap_err();
     assert_eq!(error.code, "FONT_MISSING");
-    assert_eq!(
-        error.message,
-        "Native text resources or measurement are invalid"
-    );
+    assert_eq!(error.message, "Text resources or measurement are invalid");
     assert_eq!(adapter.measured(), 0);
 }
 

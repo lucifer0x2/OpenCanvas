@@ -37,7 +37,7 @@ impl<C: FnMut() -> Result<(), LayoutError>> TextMeasurer for FontSetMeasurer<'_,
         (self.check)()?;
         let measurement = self.fonts.measure(request).map_err(|error| LayoutError {
             code: error.code().into(),
-            message: "Native text resources or measurement are invalid".into(),
+            message: "Text resources or measurement are invalid".into(),
         })?;
         self.measured += 1;
         (self.check)()?;

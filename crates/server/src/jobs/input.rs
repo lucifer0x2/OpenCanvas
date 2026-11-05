@@ -2,7 +2,7 @@ use crate::{
     error::{ApiError, Result},
     jobs::SceneRequest,
 };
-use opencanvas_scene_input::SceneOptions;
+use opencanvas_scene_input::{check_viewport, SceneOptions};
 use opencanvas_storage::Snapshot;
 use serde_json::Value;
 
@@ -14,7 +14,8 @@ pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Re
         theme: request.theme.clone(),
         state: request.state.clone(),
     };
-    let mut input = opencanvas_scene_input::make_input(snapshot, &options)?;
+    let mut input =
+        opencanvas_scene_input::make_input_with_scale(snapshot, &options, request.scale)?;
     for font in input["fonts"].as_array_mut().unwrap() {
         font["url"] = format!(
             "{base}/api/v1/projects/{}/fonts/{}/download",
@@ -41,21 +42,7 @@ pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> 
             "Requested authored revision is unavailable",
         ));
     }
-    if !request.width.is_finite()
-        || !request.height.is_finite()
-        || request.width <= 0.0
-        || request.height <= 0.0
-        || request.width > 100000.0
-        || request.height > 100000.0
-        || !request.scale.is_finite()
-        || request.scale <= 0.0
-        || request.scale > 4.0
-        || request.width * request.height * request.scale * request.scale > 16_000_000.0
-    {
-        return Err(ApiError::invalid(
-            "Viewport or scale exceeds the render budget",
-        ));
-    }
+    check_viewport(request.width, request.height, request.scale)?;
     if !matches!(
         request.state.as_str(),
         "default" | "hover" | "pressed" | "focus" | "disabled"
@@ -64,3 +51,7 @@ pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> 
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "input_tests.rs"]
+mod tests;

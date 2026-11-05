@@ -1,12 +1,16 @@
 import { checkedResourceBytes } from "../../../renderer/resource-bytes.ts";
 import type { FontManifest } from "../../../renderer/types.ts";
 
+type Entry = { promise: Promise<ArrayBuffer>; byteLength: number };
+
 /** Bounded cache of validated bytes; rejected loads are evicted so Retry really retries. */
 export class FontByteCache {
-  private entries = new Map<string, Promise<ArrayBuffer>>();
+  private entries = new Map<string, Entry>();
+  private retainedBytes = 0;
   constructor(
     private fetchBytes = checkedResourceBytes,
     private capacity = 32,
+    private byteCapacity = 64 * 1024 * 1024,
   ) {}
 
   get = (font: FontManifest, timeoutMs = 10_000): Promise<ArrayBuffer> => {
@@ -15,17 +19,47 @@ export class FontByteCache {
     if (cached) {
       this.entries.delete(key);
       this.entries.set(key, cached);
-      return cached;
+      return cached.promise;
     }
-    const pending = this.fetchBytes(font, timeoutMs).catch((error) => {
-      if (this.entries.get(key) === pending) this.entries.delete(key);
-      throw error;
-    });
-    this.entries.set(key, pending);
-    if (this.entries.size > this.capacity)
-      this.entries.delete(this.entries.keys().next().value!);
-    return pending;
+    const entry: Entry = {
+      byteLength: 0,
+      promise: this.fetchBytes(font, timeoutMs).then(
+        (bytes) => {
+          // An evicted load may finish after a replacement for this key started.
+          if (this.entries.get(key) === entry) {
+            if (bytes.byteLength > this.byteCapacity) this.remove(key);
+            else {
+              entry.byteLength = bytes.byteLength;
+              this.retainedBytes += entry.byteLength;
+              this.trim();
+            }
+          }
+          return bytes;
+        },
+        (error) => {
+          if (this.entries.get(key) === entry) this.remove(key);
+          throw error;
+        },
+      ),
+    };
+    this.entries.set(key, entry);
+    this.trim();
+    return entry.promise;
   };
+
+  private remove(key: string) {
+    this.retainedBytes -= this.entries.get(key)?.byteLength ?? 0;
+    this.entries.delete(key);
+  }
+
+  private trim() {
+    while (
+      this.entries.size &&
+      (this.entries.size > this.capacity ||
+        this.retainedBytes > this.byteCapacity)
+    )
+      this.remove(this.entries.keys().next().value!);
+  }
 }
 
 export const sceneFontBytes = new FontByteCache();

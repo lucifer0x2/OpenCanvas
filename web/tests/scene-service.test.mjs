@@ -145,3 +145,44 @@ test("snapshot adapter rejects stale and truncated input, confines all resource 
     /manifest/,
   );
 });
+
+test("browser prepare budget rejection falls back and propagates the server INVALID_REQUEST without a scene", async () => {
+  const previousFetch = globalThis.fetch;
+  const budget = {
+    code: "INVALID_REQUEST",
+    message: "Viewport or scale exceeds the render budget",
+    retryable: false,
+  };
+  let prepares = 0;
+  let serverCalls = 0;
+  const rejectedPreparation = async () => {
+    prepares++;
+    throw budget;
+  };
+  globalThis.fetch = async (url) => {
+    assert.match(
+      url,
+      /\/scene\?/,
+      "no font or asset fetch after prepare rejection",
+    );
+    serverCalls++;
+    return new Response(JSON.stringify({ error: budget }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+  try {
+    const overBudget = { ...request, width: 4000, height: 4000.001 };
+    await assert.rejects(
+      loadScene(overBudget, snapshot, signal(), true, rejectedPreparation),
+      (error) =>
+        error.code === "INVALID_REQUEST" &&
+        error.message === budget.message &&
+        error.status === 400,
+    );
+    assert.equal(prepares, 1);
+    assert.equal(serverCalls, 1);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});

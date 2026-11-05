@@ -83,6 +83,7 @@ test("prepare and viewport/frame recomputations transfer one structured snapshot
   assert.equal(new Set(calls).size, 1);
   assert.equal(computers.length, 1);
   assert.equal(computers[0].loads, 1);
+  assert.deepEqual(workers[0].messages.map((item) => item.fonts.length), [1, 1, 0]);
 });
 
 test("new revisions are supplied once; project switch clears snapshots and font state", async () => {
@@ -156,7 +157,7 @@ test("Worker encodes structured snapshots once and rejects missing or mismatched
         return "{}";
       },
     }),
-    (reply) => replies.push(reply),
+    (reply) => { if (!("started" in reply)) replies.push(reply); },
   );
   const first = { ...message(), id: 1, kind: "prepare" };
   first.snapshot.toJSON = () => {

@@ -23,5 +23,11 @@ export interface ComputeMessage {
 }
 
 export type ComputeReply =
-  | { id: number; result: Scene | FontManifest[]; error?: never }
-  | { id: number; error: string; result?: never };
+  | { id: number; started: "initializing" | "computing" }
+  | {
+      id: number;
+      result: Scene | FontManifest[];
+      registeredFonts?: { id: string; hash: string }[];
+      error?: never;
+    }
+  | { id: number; error: string; errorCode?: string; result?: never };

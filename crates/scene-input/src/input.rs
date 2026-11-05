@@ -1,5 +1,7 @@
 //! Assemble the compute boundary without transport URLs or resource I/O.
-use crate::{resolved_expanded_nodes, Node, NodeKind, Result, Snapshot, StorageError};
+use crate::{
+    check_viewport, resolved_expanded_nodes, Node, NodeKind, Result, Snapshot, StorageError,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashSet;
@@ -19,6 +21,16 @@ pub struct SceneOptions {
 /// URLs after preparation. Keeping JSON also preserves all resolved properties
 /// (including interaction states) at the existing layout boundary.
 pub fn make_input(snapshot: &Snapshot, options: &SceneOptions) -> Result<Value> {
+    make_input_with_scale(snapshot, options, 1.0)
+}
+
+/// Prepare a native render request using its output scale for the pixel budget.
+pub fn make_input_with_scale(
+    snapshot: &Snapshot,
+    options: &SceneOptions,
+    scale: f64,
+) -> Result<Value> {
+    check_viewport(options.width, options.height, scale)?;
     let all = resolved_expanded_nodes(snapshot, &options.theme)?;
     if !all
         .iter()

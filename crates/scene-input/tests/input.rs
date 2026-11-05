@@ -1,4 +1,6 @@
-use opencanvas_scene_input::{make_input, Node, NodeKind, SceneOptions, Snapshot};
+use opencanvas_scene_input::{
+    make_input, make_input_with_scale, Node, NodeKind, SceneOptions, Snapshot,
+};
 use serde_json::{json, Value};
 
 fn fixture() -> Snapshot {
@@ -125,4 +127,17 @@ fn render_node_budget_applies_after_subtree_filter_and_instance_expansion() {
     let error = make_input(&snapshot, &options()).unwrap_err();
     assert_eq!(error.code, "INVALID_REQUEST");
     assert_eq!(error.message, "Frame exceeds 2048 render nodes");
+}
+
+#[test]
+fn viewport_guard_precedes_resolution_and_scene_only_defaults_to_scale_one() {
+    let snapshot = fixture();
+    let mut request = options();
+    request.width = 8000.0;
+    request.height = 8000.0;
+    assert!(make_input_with_scale(&snapshot, &request, 0.5).is_ok());
+    request.theme = "absent".into();
+    let error = make_input(&snapshot, &request).unwrap_err();
+    assert_eq!(error.code, "INVALID_REQUEST");
+    assert_eq!(error.message, "Viewport or scale exceeds the render budget");
 }

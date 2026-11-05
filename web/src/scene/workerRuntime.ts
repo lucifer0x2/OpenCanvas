@@ -55,7 +55,18 @@ export function sceneWorkerRuntime(
       snapshotJSON = JSON.stringify(message.snapshot);
       snapshots.set(projectId, revision, snapshotJSON);
     }
-    const instance = await (initializing ??= createComputer());
+    let instance: SceneComputer;
+    try {
+      instance = await (initializing ??= createComputer());
+    } catch (cause) {
+      initializing = undefined;
+      // Module/bootstrap failures are infrastructure errors, even if they have a code.
+      throw new Error(
+        (cause as { message?: string })?.message ??
+          "Browser scene initialization failed.",
+      );
+    }
+    reply({ id: message.id, started: "computing" });
     instance.set_resource_urls(JSON.stringify(message.urls));
     if (message.kind === "prepare")
       return JSON.parse(
@@ -81,12 +92,22 @@ export function sceneWorkerRuntime(
     // Overlap is permitted by the client; mutable WASM state stays sequential here.
     queue = queue.then(async () => {
       try {
-        reply({ id: message.id, result: await compute(message) });
+        reply({ id: message.id, started: "initializing" });
+        const result = await compute(message);
+        reply({
+          id: message.id,
+          result,
+          registeredFonts:
+            message.kind === "compute"
+              ? message.fonts.map(({ id, hash }) => ({ id, hash }))
+              : [],
+        });
       } catch (cause) {
-        const error = cause as { message?: string };
+        const error = cause as { message?: string; code?: string };
         reply({
           id: message.id,
           error: error?.message ?? "Browser scene computation failed.",
+          ...(typeof error?.code === "string" ? { errorCode: error.code } : {}),
         });
       }
     });

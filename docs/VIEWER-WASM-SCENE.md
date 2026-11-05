@@ -53,22 +53,40 @@ Open a frame with **`?scene=wasm`**. A saved preference is also supported:
 `localStorage["opencanvas.scene"] = "wasm"`; explicit `?scene=server` wins.
 Server computation remains the default. The module initializes lazily in a
 dedicated Worker. Failure falls back to the existing scene job route and shows
-a notice even when ordinary notices are hidden. Aborting a request rejects only
-its pending entry; late replies are dropped by identity while the Worker and
-loaded fonts remain warm. Worker/message errors, timeouts and active error
-replies terminate the Worker so a retry can initialize cleanly.
+a notice even when ordinary notices are hidden. Aborting a request settles only
+that caller while the Worker and loaded fonts remain warm. Late success replies
+can acknowledge registered fonts without publishing an obsolete scene. Coded
+Rust errors reject only their caller; infrastructure errors and execution
+timeouts restart the Worker. A failed initialization promise is cleared. If
+bootstrap fails for an aborted caller, current queued requests replay against
+a fresh Worker with complete snapshots and fonts.
+
+Execution timers start when the Worker acknowledges beginning a message, so
+queued requests do not spend their timeout behind obsolete computation. Module
+startup and initialization remain bounded even after their caller aborts.
 
 Snapshots are structured-cloned once per cached `(projectId, revision)` and
 encoded in the Worker, outside the main thread. Preparation and computation
 reference that revision. Both sides retain the same four-revision FIFO and clear
-it on a project switch; a worker restart resends the snapshot. Rust still parses
-the cached JSON separately for discovery and computation.
+it on a project switch; a worker restart resends the snapshot. Changing Retry's
+key also invalidates the Worker cache even at the same revision. Rust still
+parses the cached JSON separately for discovery and computation.
 
 Only required font bytes are fetched and SHA-verified, then shared with both
 WASM and the existing FontFace loader. They are not transferred/detached. The
-bounded immutable byte cache coalesces loads and evicts failures for retry;
-WASM font state is cleared when switching projects. Painting, hit testing and
-page overview behavior remain on their existing paths.
+immutable byte cache coalesces loads and evicts failures for retry, bounded by
+32 entries and 64 MiB of retained completed buffers. Oversized loads serve active
+callers without being retained. Only fonts not yet acknowledged by `(id, hash)`
+are sent to the Worker; project switches and restarts clear that registry.
+Coded request errors invalidate the client mirror because a failed request may
+already have replaced a font in WASM; the actual Worker/font cache remains warm.
+Painting, hit testing and page overview behavior remain on their existing paths.
+
+Both native and browser preparation use `scene-input::check_viewport`: finite,
+positive sides at most 100,000, finite scale in `(0, 4]`, and at most 16 million
+scaled pixels. Browser scenes use scale 1; native assembly preserves valid
+downscaled requests. Rejection is `INVALID_REQUEST` before font/layout work,
+and the browser's existing server fallback preserves the server error outcome.
 
 ## Size and performance
 
@@ -76,10 +94,11 @@ Release: `opt-level=z`, LTO, one codegen unit, panic abort. Sizes are bytes:
 
 | Artifact | Raw | gzip, level 9 | Brotli, quality 11 |
 | --- | ---: | ---: | ---: |
-| WASM | 3,627,161 | 948,871 | 687,689 |
+| WASM | 3,628,098 | 949,322 | 687,528 |
 | ESM glue | 14,563 | 3,593 | 3,159 |
 
-Chromium 156.0.8078.4 on Apple M5/macOS arm64, real dedicated Workers:
+Original timing baseline, Chromium 156.0.8078.4 on Apple M5/macOS arm64,
+real dedicated Workers before the review corrections:
 first compute **12.1–52.6 ms/frame**; warm medians **1.3–26.5 ms/frame**
 (20 warm calls per case). These include snapshot/scene JSON conversion,
 resolution, layout, text and advisory generation. They exclude module loading,
@@ -144,6 +163,35 @@ concurrent callers, late replies, revision eviction, project switches and restar
   Comparator regressions **2/2** and strict library Clippy for all five crates passed.
 - Changed handwritten source/tests remain at most **236 lines**. Generated
   WASM, evidence, dependency directories and native targets stay ignored.
+
+### Review corrections — 2026-11-05
+
+Initialization now clears rejected promises, and an infrastructure error from an
+aborted request restarts the Worker and replays current queued requests without
+settling those callers as failed. Execution acknowledgements give each message
+one initialization-plus-compute budget, excluding obsolete queue wait. Coded
+Rust errors preserve their code and leave the Worker warm. Retry invalidates
+snapshot state; acknowledged font identities avoid repeated transfers, and the
+font-byte cache now enforces both count and retained-byte limits.
+
+The shared viewport guard and scaled native assembly preserve downscale behavior
+while rejecting invalid browser inputs before discovery/layout. The measurer
+error is runtime-neutral, and the two requested server-reference paths now point
+to `scene-input`.
+
+Final Rust suite: **456 passed, 0 failed, 36 ignored** across scene-input **11**,
+scene-wasm **9**, text **38**, storage **153**, and server **245**, using the
+five-crate test command above. Ignored tests retain their explicit prerequisites;
+native capture was separately executed with `--ignored` before parity.
+
+Final web tests **64/64**, renderer **11/11**, generated binding **2/2**, both
+typechecks, production build, WASM browser smoke and strict five-crate library
+Clippy passed. Fresh native captures and the rebuilt WASM still compare exactly:
+**20/20 scenes, 1,164 nodes, 420 texts, 476 lines, 0 mismatches**.
+Release WASM raw/gzip/Brotli: **3,628,098/949,322/687,528 bytes**; SHA-256
+`e7f5b74384bca6628b32c06db50b2a247b5c7b41f67e9018551210d4be2ca6c2`.
+Generated captures and binaries remain ignored. Changed source/tests are at most
+206 lines; the existing 538-line server reference received a path-only edit.
 
 ## Remaining gaps
 

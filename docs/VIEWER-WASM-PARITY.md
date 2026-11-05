@@ -183,6 +183,16 @@ engine directly. The viewer's separate `test:scene-wasm` also passed and asserts
 one structured snapshot transfer per revision; client/runtime unit regressions
 verify abort reuse, bounded snapshot retention and project/restart invalidation.
 
+Review-correction rerun on 2026-11-05 rebuilt the shared viewport guard and neutral
+measurer wording, captured native jobs again, and passed **20/20 comparisons with
+0 mismatches** (1,164 nodes, 420 texts, 476 lines). The new release WASM SHA-256 is
+`e7f5b74384bca6628b32c06db50b2a247b5c7b41f67e9018551210d4be2ca6c2`;
+native capture executable SHA-256 is
+`37063c28fa4d15bf1b585181f2b4bb360662264557da40ad8792f908b9d2cb66`.
+WASM raw/gzip/Brotli sizes are **3,628,098/949,322/687,528 B**. The viewer smoke
+passed after the final Worker changes; web regressions are now **64/64**, including
+real off-thread obsolete work longer than the current request's execution budget.
+
 The release build succeeded; JS raw/gzip/Brotli sizes are **14,563/3,593/3,159 B**,
 WASM **3,627,161/948,871/687,689 B**. This is a bounded fixture acceptance on a
 concurrently developed worktree, not a global commit/source-stability or universal

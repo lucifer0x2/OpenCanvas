@@ -49,3 +49,27 @@ test("generated ESM exposes exact-font scene API with structured errors", () => 
   assert.deepEqual(JSON.parse(computer.compute_scene(json, "frame", 200, 120, "default")), wide);
   computer.free();
 });
+
+test("generated discovery and compute reject viewport budgets before resolving or loading fonts", () => {
+  const computer = new SceneComputer();
+  const json = JSON.stringify(snapshot());
+  for (const [width, height] of [
+    [NaN, 1], [Infinity, 1], [1, -Infinity], [0, 1], [-1, 1],
+    [1, 0], [1, -1], [100001, 1], [1, 100001], [4000, 4000.001], [8000, 8000],
+  ]) {
+    for (const method of ["required_fonts", "compute_scene"]) {
+      assert.throws(() => computer[method](json, "frame", width, height, "absent"),
+        (error) => error.code === "INVALID_REQUEST" && error.retryable === false &&
+          error.message === "Viewport or scale exceeds the render budget");
+    }
+  }
+  const empty = snapshot();
+  empty.nodes.pop();
+  const nontext = JSON.stringify(empty);
+  for (const [width, height] of [[4000, 4000], [100000, 160]]) {
+    assert.deepEqual(JSON.parse(computer.required_fonts(nontext, "frame", width, height, "default")), []);
+    const scene = JSON.parse(computer.compute_scene(nontext, "frame", width, height, "default"));
+    assert.deepEqual(scene.provenance.viewport, { width, height });
+  }
+  computer.free();
+});

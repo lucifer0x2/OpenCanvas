@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { drawScene, loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
 import { loadScene } from "../scene/service";
 import { wasmSceneEnabled } from "../scene/flag";
+import { sceneWorker } from "../scene/workerClient";
 import type { SceneRequest, Snapshot } from "../types";
 import { diagnosticLabel } from "../diagnostics";
 
@@ -49,7 +50,13 @@ export function useScene(
     retryKey,
     view: emptyView(),
   });
+  const lastRetry = useRef(retryKey);
   useEffect(() => {
+    if (lastRetry.current !== retryKey) {
+      lastRetry.current = retryKey;
+      // Retry resends the accepted snapshot, even when its revision is unchanged.
+      if (wasm) sceneWorker.clearSnapshotCache();
+    }
     if (!request) {
       setLoaded({ key, scope, retryKey, view: emptyView() });
       return;
