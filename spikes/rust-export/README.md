@@ -1,6 +1,6 @@
 # Spike: xuất ảnh thuần Rust so với Chromium Canvas2D
 
-Đo ngày 2026-10-29 trên macOS arm64. Phân tích và khuyến nghị ở
+Phần A–D đo ngày 2026-10-29; **Phần E / Task09 tiếp tục và đo ngày 2026-11-04**, trên macOS arm64. Phân tích và khuyến nghị ở
 [docs/PURE-RUST-EXPORT.md](../../docs/PURE-RUST-EXPORT.md); file này giữ cách chạy và bảng số.
 
 - **Rust:** harfrust 0.15.0 (khớp HarfBuzz 15.0.0), skrifa 0.49.0 / read-fonts 0.46.0, tiny-skia 0.12.0, png 0.18.1.
@@ -473,3 +473,197 @@ Module painter trong `src/`:
 - Mô hình width kiểu Chrome là suy ngược cho build Chromium này; cần test parity trong CI nếu dùng.
 - Port wrap tách grapheme bằng `unicode-segmentation` thay `Intl.Segmenter("vi")`; whitespace xấp xỉ `\s` của JS. Trùng trên corpus này.
 - Painter chỉ có viền một màu (chưa port wedge màu từng cạnh), cubic thay conic của Skia, layer opacity full-canvas.
+
+## Phần E — Task09: WASM trong Chromium Web Worker (2026-11-04)
+
+**Kết luận: no-go cho gate hiệu năng của prototype trong lượt đo này.** Kích thước và parity đạt; chưa đủ điều kiện
+mở Task11–12 theo ngưỡng đã đề xuất. Đây không phải thay engine: runtime vẫn Node + Chromium, Task10–13 chưa triển khai.
+Task09 được tiếp tục sau recovery/merge, không còn là runner Chromium chưa chạy như ghi ở lịch sử `RECOVERY.md`.
+
+### E1. Môi trường, scene và phương pháp
+
+- Nền merge `9e19d38`, cộng source spike chưa commit. Mac17,3, Apple M5, 10 logical CPU, 24 GiB RAM, macOS 26.4;
+  rustc 1.99.1, Node 24.21.0, Playwright 1.64.1, Chromium **156.0.8078.4** từ browser pin của repo.
+- Lượt bảng dưới chạy tuần tự: native, noSIMD, SIMD; Worker 07:19:38–07:21:14 UTC ngày 2026-11-04.
+  Không chạy build/test nặng của phiên này trong lúc đo. **Host tải nền rất cao**: load 1 phút noSIMD
+  133.78→123.13, SIMD 123.13→121.78 trên 10 CPU. Không kiểm soát các tiến trình khác. Vì vậy không coi latency này
+  là baseline máy rảnh hoặc kết luận giới hạn tuyệt đối của engine; phải đo lại trên máy rảnh trước quyết định dài hạn.
+  Lượt thăm dò trước cũng không đạt, được giữ riêng trong `out/wasm/initial-run/`.
+- `spike`: scene gốc 400×300, 12 node. `frame`: 4×3 bản sao, 144 node, 1440×900; mỗi card vẫn có text Việt/Anh,
+  viền, ảnh PNG cover, parent clip và nhóm opacity 0.5. Pitch 360×300, card gốc rộng 400: nền root bên phải che 40 px
+  của card bên trái; đây là workload lưới có overdraw, không phải 12 card không chồng nhau.
+- `tile`: **720×450 = đúng 1/4 diện tích**, cùng 144 node dịch (−720, −450), lấy góc dưới phải.
+  Ở DPR2 là 1440×900 pixel, bằng 1/4 của frame DPR2 2880×1800. Không cull node; chỉ giới hạn viewport/raster output.
+- Cả hai đích dùng cùng JSON, bytes `NotoSans.ttf` và `data/asset.png`, `PaintMode::Bbox`, gamma **1.45**, snap glyph
+  x 1/4 device px / baseline nguyên. So **RGBA premultiplied** của tiny-skia, không demultiply/PNG encode trong timer.
+  Font 2,049,096 byte không nhúng vào WASM. SHA-256 từng input có trong JSON Chromium.
+- Native release `--threads 1` (rayon pool một worker); WASM tắt feature parallel/CLI, không WASI/import/thread,
+  C-ABI thủ công, không wasm-bindgen. Native có clock profile bên trong; WASM clock profile là zero, host đo exported call.
+- Native giữ cold pixmap và output các ca trước trong lúc đo warm; WASM giải phóng output trước mỗi render.
+  Allocation/instrumentation vì vậy chưa hoàn toàn đối xứng: không suy ra hệ số tốc độ chính xác giữa hai đích.
+  Gate latency tuyệt đối trong Worker không phụ thuộc phép so tốc độ đó.
+- Mỗi ca có painter/instance mới, một render cold và **20 warm**, percentile nearest-rank (p50 mẫu thứ 10, p95 thứ 19).
+  Worker compile một module/variant rồi instantiate mới cho mỗi ca: cold là lần render đầu của instance,
+  **không** gồm browser launch/fetch/compile/init; các ca sau có thể hưởng JIT code đã nóng của module.
+  Warm không giữ bitmap/glyph cache: vẫn chạy painter đầy đủ. Native font/image/scene parse cũng ngoài timer paint.
+- Server HTTP tạm port 0 chỉ loopback, COOP/COEP bật timer độ phân giải cao (`crossOriginIsolated=true`),
+  Worker trả buffer RGBA thật qua transferable. Không có canvas presentation/ImageBitmap decode trong phép đo này.
+
+### E2. Kích thước (byte, chưa gồm font)
+
+`release`: opt-level 3, LTO, một codegen unit, strip, panic abort. `release-s`/`release-z` chỉ đo size, **không** dùng
+để suy ra timing/parity. noSIMD dùng `-C target-feature=-simd128`, SIMD dùng `+simd128`, không relaxed SIMD.
+gzip dùng `-9 -n` (bỏ filename/mtime), brotli `-q 11`; raw bảng từ `out/wasm/build-sizes.txt`.
+
+| Variant | Profile | Raw | gzip-9 | brotli-11 |
+| --- | --- | ---: | ---: | ---: |
+| noSIMD | release | 1,856,633 | 656,777 | 495,746 |
+| SIMD128 | release | 1,740,919 | 627,283 | 480,523 |
+| noSIMD | release-s | 1,562,331 | 556,332 | 430,245 |
+| SIMD128 | release-s | 1,481,129 | 529,738 | 414,938 |
+| noSIMD | release-z | 1,401,454 | 510,883 | 404,285 |
+| SIMD128 | release-z | 1,312,814 | 495,125 | 395,218 |
+
+Không cài twiggy/wasm-opt; chưa phân rã đóng góp byte theo crate.
+
+### E3. Paint: cold / p50 warm / p95 warm (ms)
+
+| Scene, DPR | Native release, 1 thread | Worker noSIMD release | Worker SIMD128 release |
+| --- | ---: | ---: | ---: |
+| spike, 1 | 6.38 / 2.63 / 3.14 | 21.66 / 5.88 / 6.94 | 19.46 / 3.52 / 4.88 |
+| spike, 2 | 7.80 / 6.93 / 7.65 | 20.99 / 19.52 / 19.81 | 9.32 / 8.49 / 11.76 |
+| frame, 1 | 154.47 / 167.71 / 205.99 | 499.35 / 566.09 / 707.08 | 179.95 / 167.59 / 174.28 |
+| frame, 2 | 672.75 / 684.42 / 733.29 | 1910.52 / 2117.60 / 2797.73 | 649.84 / 624.22 / 641.25 |
+| tile, 1 | 47.04 / 49.56 / 54.17 | 181.63 / 160.13 / 182.56 | 46.37 / 43.32 / 46.77 |
+| tile, 2 | 166.29 / 152.30 / 172.21 | 545.50 / 550.88 / 575.85 | 162.06 / 155.59 / 160.34 |
+
+### E4. Startup và vận chuyển (ms, tách khỏi paint)
+
+| Variant | Fetch/read WASM + font + PNG, loopback | Compile module |
+| --- | ---: | ---: |
+| noSIMD release | 12.135 | 3.885 |
+| SIMD128 release | 11.495 | 2.105 |
+
+PNG decode dùng `decode_image`; font parse/painter init dùng `init_font`. Copy input là alloc/copy vào linear memory;
+parse scene riêng. Copy output là snapshot RGBA từ linear memory sau warm; transfer là một chiều Worker→main
+(epoch `performance.timeOrigin + performance.now()`), gồm dispatch/scheduling. Mỗi transfer đo một lần/ca, không phải p50.
+Các số dưới không cộng vào cold/warm E3; `caseFetchMs` (scene + native reference read) cũng riêng trong raw JSON.
+
+| Variant | Ca | Instantiate | Copy input | PNG decode | Font init | Scene parse | Copy RGBA | Transfer RGBA |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| noSIMD | spike-s1 | 0.620 | 1.160 | 2.635 | 4.725 | 1.835 | 0.305 | 1.965 |
+| noSIMD | spike-s2 | 0.160 | 0.325 | 0.100 | 0.490 | 0.090 | 0.305 | 0.125 |
+| noSIMD | frame-s1 | 0.110 | 0.320 | 0.070 | 0.280 | 0.465 | 0.685 | 0.100 |
+| noSIMD | frame-s2 | 0.125 | 0.380 | 0.110 | 0.440 | 0.515 | 4.065 | 1.525 |
+| noSIMD | tile-s1 | 0.305 | 0.970 | 0.170 | 0.530 | 0.485 | 0.305 | 0.165 |
+| noSIMD | tile-s2 | 0.090 | 0.250 | 0.080 | 0.255 | 0.355 | 0.895 | 0.195 |
+| SIMD128 | spike-s1 | 0.180 | 0.810 | 3.390 | 4.470 | 1.620 | 0.130 | 0.265 |
+| SIMD128 | spike-s2 | 0.115 | 0.280 | 0.060 | 0.330 | 0.070 | 0.370 | 0.100 |
+| SIMD128 | frame-s1 | 0.120 | 0.320 | 0.085 | 0.360 | 0.855 | 0.990 | 0.270 |
+| SIMD128 | frame-s2 | 0.145 | 0.385 | 0.075 | 0.335 | 0.420 | 3.460 | 0.140 |
+| SIMD128 | tile-s1 | 0.105 | 0.305 | 0.080 | 0.350 | 0.405 | 0.345 | 0.195 |
+| SIMD128 | tile-s2 | 0.095 | 0.245 | 0.070 | 0.290 | 0.355 | 1.195 | 0.125 |
+
+First-case decode/font/parse còn có cold JIT; các ca sau không phải cold module. Chưa đo tải qua mạng thực,
+display upload, zoom scheduling, WASM memory peak, mobile hoặc browser khác. Wasmtime không được dùng thay gate Chromium.
+
+### E5. Parity và quarter-tile
+
+| Ca | Pixel output | noSIMD: pixel Δ>0 / max Δ | SIMD128: pixel Δ>0 / max Δ |
+| --- | ---: | ---: | ---: |
+| spike-s1 | 120,000 | 0 / 0 | 0 / 0 |
+| spike-s2 | 480,000 | 0 / 0 | 0 / 0 |
+| frame-s1 | 1,296,000 | 0 / 0 | 0 / 0 |
+| frame-s2 | 5,184,000 | 0 / 0 | 0 / 0 |
+| tile-s1 | 324,000 | 0 / 0 | 0 / 0 |
+| tile-s2 | 1,296,000 | 0 / 0 | 0 / 0 |
+
+Native arm64/NEON và Chromium WASM scalar/SIMD **trùng từng byte trên corpus này**, không có sai lệch để gán cho FMA
+hay SIMD. Không suy rộng sang font, ISA/OS khác hoặc tính năng painter chưa hỗ trợ.
+
+**Kiểm riêng tile so crop toàn frame:** native DPR1 có 247 pixel lệch, max Δ12; DPR2 bằng 0. Đây **không** phải
+native↔WASM mismatch (cả hai cùng output tile), cũng không phải tile sai kích thước. Đối chứng giữ nguyên geometry,
+chỉ bỏ paint text/ảnh; lệnh `node spikes/rust-export/js/wasm/tile-check.mjs` ghi `out/wasm/tile-check/report.json`:
+
+| Đối chứng native | DPR1: pixel Δ>0 / max Δ | DPR2 |
+| --- | ---: | ---: |
+| Không text | 245 / 1 | 0 / 0 |
+| Không ảnh | 2 / 12 | 0 / 0 |
+| Không text và ảnh | 0 / 0 | 0 / 0 |
+| Ép text mask toàn canvas (`RUST_SPIKE_FORCE_FALLBACK=1`) | 247 / 12 | 0 / 0 |
+
+Như vậy nguồn sai khác crop được khoanh ở raster text và image sampling khi dịch gốc tọa độ; mask bbox không phải
+nguyên nhân duy nhất. Chưa xác định phép tính float cụ thể gây 2 pixel text, không kết luận đoán là FMA/SIMD.
+Đây là giới hạn tile fidelity phải xử lý trước viewer production, không sửa tiny-skia trong spike này.
+
+### E6. Gate và kết luận
+
+| Gate đề xuất | noSIMD release | SIMD128 release | Kết quả |
+| --- | ---: | ---: | --- |
+| gzip ≤ 2,000,000 byte, chưa font | 656,777 | 627,283 | Đạt |
+| frame 1440×900 DPR2 p50 ≤ 200 ms | 2117.60 | 624.22 | Không đạt |
+| tile 1/4 DPR2 p50 ≤ 60 ms | 550.88 | 155.59 | Không đạt |
+| Native↔WASM max Δ ≤ 1/255 | 0/255 | 0/255 | Đạt, chính xác 0 |
+
+**No-go theo ngưỡng gốc, không nới gate để lấy go.** Có thể build WASM nhỏ và ra cùng pixel; không thể từ đó tuyên bố
+viewer đủ nhanh. SIMD cải thiện đáng kể nhưng vẫn vượt budget ở lượt đo tải cao này. Cần rerun khi host rảnh;
+nếu vẫn chậm, mới cân nhắc cull/bounds-size clip/layer hoặc cache glyph trong task được duyệt riêng.
+Không triển khai Task10/11/12/13, không deploy và không đổi renderer sản phẩm.
+
+### E7. Kiểm độc lập bởi root
+
+Root chạy lại Chromium Worker và native release tuần tự, không build/test nặng cùng lúc. Lượt Worker
+07:29:23–07:30:48 UTC vẫn tải cao (load 1 phút 105.52→115.24 trên 10 CPU):
+
+| Ca | Native p50 (ms) | noSIMD Worker p50 (ms) | SIMD128 Worker p50 (ms) |
+| --- | ---: | ---: | ---: |
+| spike DPR1 | 2.75 | 5.91 | 2.67 |
+| spike DPR2 | 7.79 | 19.40 | 7.11 |
+| frame DPR1 | 188.37 | 516.94 | 136.01 |
+| frame DPR2 | 591.85 | 1906.39 | 528.08 |
+| tile DPR1 | 38.01 | 157.28 | 51.16 |
+| tile DPR2 | 150.18 | 480.06 | 127.85 |
+
+Vẫn không đạt hai gate thời gian; cả 12 phép so native↔WASM giữ 0 pixel lệch/max Δ0.
+Root đối chiếu toàn bộ hash input Chromium với file hiện tại và cả sáu RGBA native chạy lại đều trùng byte
+với reference. JSON/sample đầy đủ của root ở `out/wasm/root-rerun/`; JSON E1–E6 giữ nguyên lượt worker
+(khôi phục từ `chromium-stdout.log` sau khi runner ghi đè đường output mặc định).
+
+Root chạy 10 Node tests và 1 Rust scene test: đạt; `git diff --check` sạch. Reviewer fresh chỉ đọc
+không tìm thấy Required. Hai lưu ý không chặn: bất đối xứng native/WASM ở E1 và failure probes
+tạm đổi tên/ghi rồi restore artifact dùng chung, nên **chỉ chạy tests và benchmark tuần tự**, không chạy song song.
+
+### Chạy lại Phần E (từ gốc repo)
+
+Cần target WASM **đã cài**, `brotli`, dependency/browser pin của repo; không tự cài global tool hay đổi Rust target.
+Worktree có thể link `node_modules` của checkout gốc; `.runtime` phải là thư mục thật và chỉ link `.runtime/browsers`.
+
+```bash
+cargo build --release --locked --manifest-path spikes/rust-export/Cargo.toml
+spikes/rust-export/target/release/rust-spike frames spikes/rust-export/data/scene.json spikes/rust-export/out/wasm/scenes
+spikes/rust-export/target/release/rust-spike frame-bench spikes/rust-export/out/wasm/scenes \
+  --image spikes/rust-export/data/asset.png --threads 1 --iters 20 \
+  --dump spikes/rust-export/out/wasm/native --json spikes/rust-export/out/wasm/native.json
+bash spikes/rust-export/wasm/build.sh
+node spikes/rust-export/js/wasm-bench.mjs nosimd-release simd128-release
+node --test spikes/rust-export/js/wasm/metrics.test.mjs spikes/rust-export/js/wasm/runner-errors.test.mjs
+node spikes/rust-export/js/wasm/tile-check.mjs
+```
+
+Runner cũng đã chạy thành công từ `spikes/rust-export`. Output **ignored**, không version:
+`out/wasm/build-sizes.txt`, `native.json`, `native/*.rgba`, `scenes/*.json`, `chromium-{nosimd,simd128}-release.json`,
+`rust_spike-*.wasm`, `tile-check/`; JSON giữ đủ 20 mẫu warm và hash input, thời điểm/load host ở mỗi variant Chromium.
+`build.sh` chỉ in size ra stdout; muốn giữ bảng dùng `> spikes/rust-export/out/wasm/build-sizes.txt`.
+Runner ghi đè JSON tên cố định: sao lưu thư mục kết quả trước lượt mới nếu cần giữ lịch sử.
+
+Kiểm đã chạy: native release + cả 6 WASM build hoàn tất; 1 Rust scene/quarter test và 10 Node unit/integration test đạt;
+JS syntax và `bash -n` đạt; strict Clippy shared painter `--lib` và manifest WASM đạt.
+Strict Clippy toàn CLI còn cảnh báo cũ ở `src/compare.rs` (`possible_missing_else`) và `src/encode.rs`
+(`chunks_exact_to_as_chunks`); không tự nhận toàn CLI xanh. `cargo fmt --check` hai manifest báo style compact cũ
+(gồm painter/CLI và wrapper), không format lại toàn bộ spike để tránh refactor ngoài phép đo. Lần build WASM đầu bị
+timeout harness 120 s; lần chạy lại không giới hạn timeout hoàn tất. Không cài global tool, không đổi target/toolchain.
+
+Module Task09: `src/lib.rs` là painter dùng chung; `frames.rs` tạo fixture; `frame_bench.rs` đo native;
+`wasm/src/lib.rs` giữ C-ABI; `wasm/build.sh` build/size. Runner HTTP ở `js/wasm-bench.mjs`, Worker điều phối ở
+`js/wasm/worker.js`, một ca đo ở `case.mjs`, metrics/validation ở `metrics.mjs`, timeout/error/transfer phía trang ở
+`worker-client.mjs`; hai file `*.test.mjs` kiểm đường lỗi, `tile-check.mjs` làm đối chứng crop.

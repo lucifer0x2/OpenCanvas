@@ -42,6 +42,31 @@ SQLite is the default storage provider. Use `DATABASE_PROVIDER=postgresql` and s
 
 The backend serves the built viewer. For frontend development, `npm --prefix web run dev` proxies `/api` to port 3847. No frontend call mutates design data.
 
+## Experimental native render backend
+
+`RENDER_BACKEND=chromium|rust` selects the job backend; `--render-backend` wins over
+the environment, and Chromium remains the default. Values are exact. Native
+startup fingerprints compiled engine/lock/executable inputs without probing Node.
+Native compute, frame PNG and node PNG/SVG exports do not start the browser worker.
+Use a separate data root and the built binary, for example:
+
+```sh
+cargo build --locked --offline -p opencanvas-server
+target/debug/opencanvas-server --render-backend rust --port 0 --data-root /path/to/separate-data
+```
+
+This backend is **experimental and not yet pixel-accepted**. The viewer still uses
+Canvas2D, not Task12 WASM. Exact project font bytes are required; missing glyphs
+use `.notdef` plus `MISSING_GLYPH`, never implicit OS fallback. Unsupported color
+fonts/ICC spaces fail explicitly. A computed scene can be ready while strict PNG
+fails; no image/file is supplied on that failure. Resource readiness retains
+storage/decode observations. Original resource bytes are shared within an export
+job; paint preparation still runs per scale. Native CPU work uses a single lane
+retained until work ends, even after timeout; cancellation is cooperative, not a
+hard wall-clock kill guarantee. See [render API/limits](../crates/render/README.md),
+[text parity](../spikes/native-render-parity/PARITY.md) and
+[pixel parity](../spikes/native-paint-parity/README.md) before enabling it.
+
 ## Public viewer through Tailscale Funnel
 
 Public sharing is disabled by default. Opt in with **both** `--public-viewer-port`
@@ -219,7 +244,7 @@ document, available without project creation or filesystem access through `resou
 - `skill://opencanvas/props.md`: every authored `props` key by node kind, with
   value ranges, required keys and common wrong names. It is rendered at startup
   (`src/props_doc.rs`) from the storage validator's property table
-  (`crates/storage/src/props_catalog.rs`), so it cannot drift from validation.
+  (`crates/scene-input/src/props_catalog.rs`), so it cannot drift from validation.
 - `opencanvas://capabilities` (`application/json`): accepted keys/kinds generated from
   that same catalog, with explicit Canvas/PNG, HTML preview and SVG consumer facts.
   Cache by `catalogFingerprint`, `sceneVersion` and `rendererVersion`; this resource

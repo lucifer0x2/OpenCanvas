@@ -1,6 +1,11 @@
 # Task 10 — Đo text native trong Rust: Taffy tính layout một lượt, không cần Chromium
 
-**Trạng thái:** CHƯA GIAO. Đóng gói 2026-10-29.
+**Trạng thái:** ĐANG TRIỂN KHAI nền cho Task11, người dùng chọn 2026-11-04. Đóng gói gốc 2026-10-29.
+**Chốt mới 2026-11-04:** dùng semantics hiện tại `scene-3`/`web-4`, không thuật toán spike cũ:
+ceil64 width/fit, font bounding ascent/descent baseline, whitespace/nonbreaking/grapheme,
+tracking, transform, alignment/decoration và static face. Giữ API compute/cache Chromium hiện tại.
+Người dùng đồng ý `MISSING_GLYPH` + advance `.notdef`, không mượn font hệ thống;
+chuỗi thiếu glyph liệt kê riêng ngoài parity. Giữ mọi tính năng đang có, không deploy/push hoặc đổi mặc định.
 **Phụ thuộc:** không phụ thuộc Task 09. `spikes/rust-export/` và `docs/PURE-RUST-EXPORT.md` phải có trên nhánh nền.
 **Quyết định cần người dùng xác nhận khi giao:** glyph thiếu trong font (mục 5 của Việc phải làm).
 **Phạm vi sở hữu:** crate mới `crates/text/` (font từ bytes, shaping, wrap), `crates/layout/src/engine.rs` và module mới

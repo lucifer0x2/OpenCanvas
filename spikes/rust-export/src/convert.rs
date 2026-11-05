@@ -15,17 +15,19 @@ pub fn to_paint(s: &LayoutScene) -> Scene {
             bounds: Bounds { x: n.bounds.x, y: n.bounds.y, width: n.bounds.width, height: n.bounds.height },
             lines: n.lines.iter().map(|l| TextLine { text: l.text.clone(), x: l.x, y: l.y }).collect(),
             font_size: n.font_size,
-            fill: n.fill.clone(),
+            fill: n.fill.as_solid().to_string(),
             fit: n.fit.clone(),
             opacity: n.opacity,
             clip: n.clip,
-            radius: n.radius,
+            radius: n.radius.each()[0],
             crop: n.crop.as_ref().map(|c| Crop { x: c.x, y: c.y, width: c.width, height: c.height }),
             stroke: n.stroke.as_ref().map(|k| Stroke { color: k.color.clone(), width: k.width, align: k.align.clone() }),
         })
         .collect();
     let v = &s.provenance.viewport;
-    Scene { provenance: Provenance { viewport: Viewport { width: v.width, height: v.height } }, nodes }
+    // The layout API uses f64 viewports; this prototype's painter (like its bounds) uses f32.
+    // Narrow only at this adapter, not in the production layout contract.
+    Scene { provenance: Provenance { viewport: Viewport { width: v.width as f32, height: v.height as f32 } }, nodes }
 }
 
 /// `[[id, x, y, width, height, [[text, x, y, width], ...]], ...]`, the fields the gate compares.

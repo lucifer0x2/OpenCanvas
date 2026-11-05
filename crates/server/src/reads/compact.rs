@@ -7,8 +7,8 @@
 //! - `resources:"referenced"`: tokens, styles, fonts and assets are only those the scope
 //!   references, closed over style→token/font and token alias→token across every theme branch.
 //!
-//! Reference keys mirror storage validation, whose helpers are crate-private
-//! (`crates/storage/src/validate/{refs,properties,node,tokens}.rs`): node and style props
+//! Reference keys mirror scene-input validation, whose helpers are crate-private
+//! (`crates/scene-input/src/validate/{refs,properties,node,tokens}.rs`): node and style props
 //! reference tokens through `{tokenId}`, styles through `styleId` (top level or a fill
 //! `{styleId}`), fonts through `fontId` and assets through `assetId`; token values reference
 //! tokens through `{aliasId}` in the default branch or any `themes` branch. Storage rejects

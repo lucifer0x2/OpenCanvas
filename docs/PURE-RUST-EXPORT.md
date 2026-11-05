@@ -6,9 +6,34 @@ Bổ sung cho nghiên cứu rộng ở [EXPORT-ENGINE-RESEARCH.md](EXPORT-ENGINE
 **bỏ hẳn Node + Chromium khỏi đường xuất ảnh, thay bằng Rust thuần, có giữ được chất lượng không?**
 Chưa thay engine, chưa sửa mã sản phẩm. Số đo và cách chạy lại ở [spikes/rust-export](../spikes/rust-export/README.md).
 
-**Trạng thái 2026-10-29: gác lại.** Người dùng chốt giữ nguyên đường Node + Chromium (phương án A). Lộ trình Task 09–13
-và các tối ưu đường Chromium đề xuất sau benchmark (xem `docs/agents/LOG.md`) đều chưa làm; tài liệu và spike giữ để
-tham khảo khi xem lại.
+**Cập nhật 2026-11-04:** Task09 được tiếp tục, đã build và đo WASM trong Chromium Web Worker; kết quả
+**no-go theo gate hiệu năng của lượt đo**, không đổi runtime. Người dùng vẫn giữ đường Node + Chromium (phương án A).
+Task10 nền → Task11 **đang triển khai** theo xác nhận riêng của người dùng ngày 2026-11-04;
+Task09 không tự cấp phép các bước sau. Task12–13 chưa triển khai. Chromium vẫn mặc định,
+không deploy/push; kế hoạch và điều kiện chốt ở [Task11 native plan](TASK11-NATIVE-PLAN.md).
+
+### Kết quả Task09 — gate viewer WASM
+
+Hai bản release (opt-level 3, LTO/strip) cùng font/scene/options với native macOS arm64, đo cold và 20 warm trong
+Chromium 156.0.8078.4 Worker; bảng đủ các ca, startup và lệnh tái chạy ở
+[Phần E của spike](../spikes/rust-export/README.md#phần-e--task09-wasm-trong-chromium-web-worker-2026-11-04).
+
+| Gate | noSIMD release | SIMD128 release | Kết luận |
+| --- | ---: | ---: | --- |
+| gzip ≤ 2 MB, chưa font | 656,777 byte | 627,283 byte | Đạt |
+| Frame 1440×900 DPR2 warm p50 ≤ 200 ms | 2117.60 ms | 624.22 ms | Không đạt |
+| Tile 720×450 DPR2 warm p50 ≤ 60 ms | 550.88 ms | 155.59 ms | Không đạt |
+| Native↔WASM max Δ ≤ 1/255 | 0 | 0 | Trùng byte ở cả 6 ca |
+
+Máy đo Apple M5 / 24 GiB đang tải nền rất cao (load 1 phút khoảng 134→122 trên 10 CPU), nên đây **không phải baseline
+máy rảnh**. Không nới ngưỡng để lấy go; cần rerun lúc rảnh trước khi quyết định dài hạn. Kết quả chứng minh build nhỏ và
+parity trên corpus, chưa chứng minh viewer đủ nhanh. Tile đúng 1/4 diện tích, nhưng crop fidelity còn giới hạn riêng:
+DPR1 native tile so crop frame lệch 247 pixel (max Δ12); đối chứng khoanh ở text và ảnh khi dịch tọa độ, không phải
+mismatch native↔WASM hay lỗi kích thước tile. DPR2 crop trùng byte. Chưa xác định phép float cụ thể; không quy cho SIMD/FMA.
+
+Không sửa tiny-skia hoặc tối ưu production. Shared painter/C-ABI và runner chỉ nằm trong spike; đường export/viewer
+thật, Docker và các dịch vụ đang chạy không thay đổi. Bằng chứng native/Chrome trong các phần còn lại dưới đây là
+nghiên cứu ngày 2026-10-29, không thay thế gate Task09 mới.
 
 ## Kết luận
 
@@ -22,8 +47,8 @@ tham khảo khi xem lại.
    FreeType trên Linux). Bằng mắt không phân biệt được ([ảnh 2×](../spikes/rust-export/out/side-snap-g1.45-s2.png)).
 
 Không engine nào ngoài chính Chrome cho được pixel giống Chrome; ngay Chrome mac và Chrome Linux trong Docker cũng khác nhau
-(hinting làm width thành số nguyên, note #13 ở P10a). Output Rust thì như nhau trên mọi máy: đó là điểm cộng về chất lượng,
-không phải điểm trừ.
+(hinting làm width thành số nguyên, note #13 ở P10a). Dùng chung painter Rust có triển vọng tất định: Task09 đo native
+arm64 và WASM scalar/SIMD trùng byte trên corpus; chưa chứng minh cho mọi máy, font hay ISA khác.
 
 **Phạm vi đã chốt 2026-10-29: chỉ macOS (chạy native).** Linux/Docker để sau; spike đã đo đúng môi trường này.
 Còn mở: mới một font LTR. Benchmark end-to-end (mục tốc độ bên dưới), sau khi tối ưu painter spike: Rust nhanh hơn ở cold
@@ -36,7 +61,7 @@ hình; layer opacity, ảnh và viền chưa có trong frame đo.
 | --- | --- | --- | --- | --- |
 | A | Giữ Node + Chromium, chỉ tối ưu (cache resource, layout process sống lâu) | Không | Pixel trùng viewer | Giữ làm đối chứng và rollback |
 | B | Rust điều khiển Chromium qua CDP | Node | Pixel trùng viewer | Loại: không thuần Rust, vẫn ôm Chromium |
-| **C** | **Rust thuần: HarfRust + skrifa + tiny-skia** | **Node + Chromium** | Hình học trùng (đã đo); hình gần trùng; text gần (CoreText) | **Chọn** |
+| **C** | **Rust thuần: HarfRust + skrifa + tiny-skia** | **Node + Chromium** | Hình học trùng (đã đo); hình gần trùng; text gần (CoreText) | Hướng nghiên cứu; Task09 chưa qua gate hiệu năng |
 | C+ | C + raster glyph diện tích chính xác (kiểu PhotoCraft) | Như C | Có thể giảm lệch text, chưa đo | Thử trong bước 2, chỉ giữ nếu số đo tốt hơn |
 | D | Skia C++ (skia-safe), Cairo/Pango, Python | — | — | Loại: không thuần Rust |
 | E | vello_cpu thay tiny-skia | Như C | Chưa đo | Dự phòng nếu tiny-skia thiếu tính năng (P09) |
@@ -206,7 +231,7 @@ Chromium giữ nguyên làm đối chứng tới Task 13.
 
 | Task | Việc | Phụ thuộc | Gate |
 | --- | --- | --- | --- |
-| [09](../tasks/09-render-wasm-spike.md) | Spike WASM: kích thước, thời gian khung lớn, native↔WASM | — | Go/no-go cho 11–12 |
+| [09](../tasks/09-render-wasm-spike.md) | Spike WASM đã đo 2026-11-04: size/parity đạt, latency không đạt trong môi trường tải cao | — | **No-go lượt đo này**; đo lại khi host rảnh trước 11–12 |
 | [10](../tasks/10-native-text-measure.md) | Đo text native, Taffy một lượt, Chromium vẫn vẽ | — | Scene trùng 100% Chromium |
 | [11](../tasks/11-render-crate-native-png.md) | Crate `crates/render` thuần + xuất PNG không Chromium | 10, 09 go | Ngưỡng pixel, native↔WASM ≤ 1/255 |
 | [12](../tasks/12-viewer-wasm-render.md) | Viewer vẽ bằng WASM trong Worker, vẽ lại khi zoom dừng | 11 | Bitmap = PNG export, không long task |

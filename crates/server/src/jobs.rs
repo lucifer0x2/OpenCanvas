@@ -1,11 +1,16 @@
 mod export;
 mod export_fonts;
+mod export_resources;
+mod export_scope;
 mod export_svg;
 mod input;
+mod native;
 mod pace;
+mod painter;
 mod png;
 mod queue;
 mod record;
+mod resource_bytes;
 mod retain;
 mod runner;
 mod states;

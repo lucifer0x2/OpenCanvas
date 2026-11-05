@@ -1,13 +1,13 @@
 //! Export jobs: compute the node's root frame like a render, then rasterize only the node's
 //! subtree once per PNG setting, or write it as SVG (`export_svg`). The record keeps the files' bytes for `/api/v1/jobs/{job}/files/{i}`
 //! and their metadata, never the scene.
-use super::{export_svg, export_svg::AssetSource, png, subtree, Entry, Jobs};
-use crate::{
-    error::{ApiError, Result},
-    worker::Worker,
+use super::{
+    export_svg, export_svg::AssetSource, painter::Painter, png::Painted, subtree, Entry, Jobs,
 };
+use crate::error::{ApiError, Result};
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::sync::Arc;
 
 /// Bytes one export job may hold, the worker's response bound.
 const MAX_JOB_BYTES: usize = 48 * 1024 * 1024;
@@ -34,7 +34,7 @@ pub struct ExportSetting {
 
 /// What a job produced after its compute: a frame PNG or a node's export files.
 pub enum Rendered {
-    Frame(Value),
+    Frame(Painted),
     Export(Vec<StoredFile>),
 }
 
@@ -80,14 +80,19 @@ pub fn keeps_worker(error: &ApiError) -> bool {
     )
 }
 
-/// Files of one node from its computed root frame: PNGs from the worker, SVGs in Rust.
+/// Shared export orchestration: dispatched PNG painting and Rust SVG embedding.
 pub async fn render(
-    worker: &mut Worker,
+    painter: &mut Painter<'_>,
     assets: &AssetSource,
     computed: &Value,
     spec: &ExportSpec,
 ) -> Result<Rendered> {
-    let scene = subtree::scene(&computed["scene"], &spec.node_id)?;
+    let mut scene = subtree::scene(&computed["scene"], &spec.node_id)?;
+    let readiness = if painter.readiness().is_some() {
+        super::export_scope::resources(&mut scene, &computed["readiness"])
+    } else {
+        computed["readiness"].clone()
+    };
     let mut images = None;
     let mut svg_fonts = None;
     let mut files = Vec::with_capacity(spec.settings.len());
@@ -95,28 +100,55 @@ pub async fn render(
     for setting in &spec.settings {
         let file = if setting.format == "svg" {
             if images.is_none() {
-                images = Some(export_svg::images(assets, &scene, &computed["readiness"]).await?);
-                svg_fonts = Some(super::export_fonts::embed(assets, &scene).await?);
+                painter.inspect_resources(&scene).await?;
+                images = Some(Arc::new(
+                    export_svg::images(assets, &scene, &readiness).await?,
+                ));
+                svg_fonts = Some(Arc::new(super::export_fonts::embed(assets, &scene).await?));
             }
-            let (svg_scene, css) = svg_fonts.as_ref().unwrap();
-            export_svg::file(svg_scene, images.as_ref().unwrap(), css, setting)?
+            let fonts = svg_fonts.as_ref().unwrap().clone();
+            let images = images.as_ref().unwrap().clone();
+            let setting = setting.clone();
+            assets
+                .blocking(move || export_svg::file(&fonts.0, &images, &fonts.1, &setting))
+                .await?
         } else {
-            png_file(worker, &scene, setting).await?
+            png_file(painter, &scene, setting).await?
         };
         total += file.bytes.len();
-        if total > MAX_JOB_BYTES {
-            return Err(ApiError::new(
-                "PIXEL_BUDGET",
-                "Export files exceed 48 MiB for one node; use fewer or smaller settings",
-            ));
-        }
+        check_budget(total)?;
         files.push(file);
     }
     Ok(Rendered::Export(files))
 }
 
+fn check_budget(total: usize) -> Result<()> {
+    if total > MAX_JOB_BYTES {
+        return Err(ApiError::new(
+            "PIXEL_BUDGET",
+            "Export files exceed 48 MiB for one node; use fewer or smaller settings",
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod budget_tests {
+    #[test]
+    fn export_accumulation_allows_exactly_48_mib() {
+        assert!(super::check_budget(48 * 1024 * 1024).is_ok());
+        assert_eq!(
+            super::check_budget(48 * 1024 * 1024 + 1)
+                .unwrap_err()
+                .0
+                .code,
+            "PIXEL_BUDGET"
+        );
+    }
+}
+
 async fn png_file(
-    worker: &mut Worker,
+    painter: &mut Painter<'_>,
     scene: &Value,
     setting: &ExportSetting,
 ) -> Result<StoredFile> {
@@ -126,12 +158,12 @@ async fn png_file(
         viewport["height"].as_f64().unwrap_or_default(),
     );
     let (scale, render) = setting.scales(width, height)?;
-    let result = worker
-        .call(json!({"op":"render","scene":scene,"scale":render,"strict":true}))
-        .await?;
-    let bytes = png::decode(&result)?;
-    let meta = json!({"fileName":setting.file_name,"format":setting.format,"mimeType":"image/png","scale":scale,"width":result["width"],"height":result["height"],"bytes":bytes.len()});
-    Ok(StoredFile { meta, bytes })
+    let result = painter.paint(scene, render).await?;
+    let meta = json!({"fileName":setting.file_name,"format":setting.format,"mimeType":"image/png","scale":scale,"width":result.value["width"],"height":result.value["height"],"bytes":result.bytes.len()});
+    Ok(StoredFile {
+        meta,
+        bytes: result.bytes,
+    })
 }
 
 /// Fills a finished export record: file metadata with download URLs, no scene.

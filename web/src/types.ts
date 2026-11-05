@@ -1,4 +1,10 @@
 import type { Scene } from "../../renderer/types";
+import type {
+  SnapshotAsset,
+  SnapshotFont,
+  SnapshotStyle,
+  SnapshotToken,
+} from "./snapshotTypes";
 
 export interface ProjectRef {
   projectId: string;
@@ -18,6 +24,12 @@ export interface DesignNode {
 export interface Snapshot extends ProjectRef {
   schemaVersion: number;
   nodes: DesignNode[];
+  tokens: SnapshotToken[];
+  styles: SnapshotStyle[];
+  fonts: SnapshotFont[];
+  assets: SnapshotAsset[];
+  notes?: unknown[];
+  retention: { oldestCommitRevision: number; idempotencyPolicy: string };
   truncated: boolean;
 }
 

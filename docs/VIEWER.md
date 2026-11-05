@@ -1,6 +1,6 @@
 # Read-only browser viewer
 
-The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage only the editor shell, local pan/zoom, and selection overlays. The browser never computes layout or wraps text; a Konva `Shape` paints the scene with the shared `paintScene` and the resources from `loadResources`, using precomputed text lines. A blue outline highlights selection without resize handles.
+The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage the editor shell, local pan/zoom, and selection overlays. By default, WASM computes default-state frame scenes and text lines with the shared Rust core in a browser Worker, using accepted snapshots and exact font bytes; failures fall back to the server. Use `?scene=server` to select server computation explicitly. See [build instructions, measurements and limits](VIEWER-WASM-SCENE.md). Both paths use the existing `paintScene` and `loadResources`; WASM does not paint. A blue outline highlights selection without resize handles.
 
 ## Run
 

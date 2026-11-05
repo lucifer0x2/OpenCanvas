@@ -8,6 +8,7 @@ license.workspace = true
 fault-injection = []
 
 [dependencies]
+opencanvas-scene-input = { path = "../scene-input", features = ["sqlite-errors"] }
 opencanvas-layout = { path = "../layout" }
 rusqlite = { version = "=0.41.0", features = ["bundled", "backup"] }
 serde = { version = "1", features = ["derive"] }

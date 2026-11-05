@@ -5,6 +5,7 @@
   "scripts": {
     "build": "node scripts/app.mjs build debug",
     "build:release": "node scripts/app.mjs build release",
+    "build:scene-wasm": "node scripts/build-scene-wasm.mjs",
     "dev": "node scripts/app.mjs run debug",
     "start": "node scripts/app.mjs run release",
     "build:renderer": "esbuild renderer/index.ts --bundle --format=esm --outfile=renderer/dist/index.js",

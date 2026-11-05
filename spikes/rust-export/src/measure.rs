@@ -32,9 +32,9 @@ pub fn measure_batch(face: &Face, requests: &[MeasureRequest], cache: &mut Measu
         let height = wrap::round64(lines.len() as f64 * lh);
         let lines = lines
             .into_iter()
-            .map(|l| TextLine { text: l.text, x: 0.0, y: l.y as f32, width: l.width as f32 })
+            .map(|l| TextLine { text: l.text, x: 0.0, y: l.y as f32, width: l.width as f32, ink_bounds: None })
             .collect();
-        cache.insert(r.key.clone(), Measurement { width: width as f32, height: height as f32, lines });
+        cache.insert(r.key.clone(), Measurement { width: width as f32, height: height as f32, lines, ascent: 0.0, missing: vec![], coverage_unavailable: false });
     }
     Ok(requests.len())
 }

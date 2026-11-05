@@ -13,6 +13,7 @@ import { useScene } from "./hooks/useScene";
 import { children, nodeName } from "./state";
 import type { SceneRequest } from "./types";
 import useLocalStorage from "./hooks/ultility/useLocalStorage";
+import { WASM_FALLBACK } from "./scene/service";
 
 const PRESETS = [
   { key: "frame", name: "Frame size", width: 0, height: 0 },
@@ -50,7 +51,10 @@ export function App() {
           height: viewport.height || dimension(frame.props.height, 600),
         }
       : null;
-  const view = useScene(request, retryKey, preset);
+  const view = useScene(request, retryKey, preset, snapshot);
+  const fallbackNotice = view.diagnostics.find((message) =>
+    message.startsWith(WASM_FALLBACK),
+  );
   const selectNode = (nodeId: string) => project.selectScope({ nodeId });
   const sceneStatus =
     view.status === "pending"
@@ -180,13 +184,14 @@ export function App() {
         {(project.error ||
           project.notice ||
           view.missing.length > 0 ||
-          view.diagnostics.length > 0) && isShowNoticeBar ?  (
+          view.diagnostics.length > 0) && (isShowNoticeBar || fallbackNotice) ?  (
           <div
             className={`notice-bar ${project.error || view.missing.length ? "warning" : ""}`}
             role="status"
           >
             <span>
               {project.error ||
+                fallbackNotice ||
                 view.missing.join(" · ") ||
                 view.diagnostics.join(" · ") ||
                 project.notice}

@@ -1,13 +1,42 @@
+use crate::measurement::{
+    CachedMeasurements, MeasurementSource, SynchronousMeasurements, TextMeasurer,
+};
 use crate::model::*;
 use crate::tree::build;
 use crate::util::*;
 use crate::validation::validate;
-use crate::{RENDERER_VERSION, SCENE_VERSION};
 use std::collections::{BTreeMap, HashMap};
 use taffy::prelude::*;
 
 /// Never performs RPC and never returns a computed scene while measurement misses remain.
 pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, LayoutError> {
+    compute_with_source(input, &mut CachedMeasurements(cache), false)
+}
+
+/// Computes a complete scene with one engine invocation and prepared text resources.
+///
+/// Measurements are memoized by request key for this call only. Taffy may ask for
+/// several widths per text; the final-width line lookup uses the same provider.
+/// Provider errors retain their code/message and never produce a ready scene.
+pub fn compute_with_measurer<M: TextMeasurer + ?Sized>(
+    input: &LayoutInput,
+    measurer: &mut M,
+) -> Result<Scene, LayoutError> {
+    let mut source = SynchronousMeasurements {
+        measurer,
+        cache: MeasureCache::new(),
+    };
+    match compute_with_source(input, &mut source, true)? {
+        LayoutStep::Ready { scene } => Ok(scene),
+        LayoutStep::Pending { .. } => Err(err("Synchronous measurement left unresolved requests")),
+    }
+}
+
+fn compute_with_source(
+    input: &LayoutInput,
+    source: &mut impl MeasurementSource,
+    stop_after_callback_error: bool,
+) -> Result<LayoutStep, LayoutError> {
     validate(input)?;
     let mut tree: TaffyTree<usize> = TaffyTree::new();
     tree.disable_rounding();
@@ -45,6 +74,11 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                 style,
                 |_, _| 0.0,
                 |known, available| {
+                    // Preserve cache-path error selection; synchronous providers must
+                    // never be queried again after the first callback failure.
+                    if stop_after_callback_error && callback_error.is_some() {
+                        return Size::ZERO;
+                    }
                     let Some(idx) = context else {
                         return Size::ZERO;
                     };
@@ -60,16 +94,21 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
                             return Size::ZERO;
                         }
                     };
-                    if let Some(measure) = cache.get(&req.key) {
-                        Size {
+                    match source.get(&req) {
+                        Ok(Some(measure)) => Size {
                             width: known.width.unwrap_or(measure.width),
                             height: known.height.unwrap_or(measure.height),
+                        },
+                        Ok(None) => {
+                            misses.insert(req.key.clone(), req);
+                            Size {
+                                width: known.width.unwrap_or(0.0),
+                                height: known.height.unwrap_or(0.0),
+                            }
                         }
-                    } else {
-                        misses.insert(req.key.clone(), req);
-                        Size {
-                            width: known.width.unwrap_or(0.0),
-                            height: known.height.unwrap_or(0.0),
+                        Err(error) => {
+                            callback_error = Some(error);
+                            Size::ZERO
                         }
                     }
                 },
@@ -85,126 +124,5 @@ pub fn compute(input: &LayoutInput, cache: &MeasureCache) -> Result<LayoutStep, 
             requests: misses.into_values().collect(),
         });
     }
-    let mut nodes = Vec::new();
-    let mut diagnostics = Vec::new();
-    let mut positions: HashMap<usize, (f32, f32)> = HashMap::new();
-    for idx in order {
-        let n = &input.nodes[idx];
-        let p = &n.props;
-        let l = tree.layout(ids[&idx]).map_err(|e| err(e.to_string()))?;
-        let parent_xy = if idx == root_idx {
-            (0.0, 0.0)
-        } else {
-            n.parent_id
-                .as_deref()
-                .and_then(|s| by_id.get(s))
-                .and_then(|i| positions.get(i))
-                .copied()
-                .unwrap_or_default()
-        };
-        let (x, y) = if idx == root_idx {
-            (0.0, 0.0)
-        } else {
-            (parent_xy.0 + l.location.x, parent_xy.1 + l.location.y)
-        };
-        positions.insert(idx, (x, y));
-        let mut ascent = 0.0;
-        let lines = if n.kind == "text" {
-            let req = request(n, &input.fonts, Some(l.size.width))?;
-            if let Some(m) = cache.get(&req.key) {
-                ascent = m.ascent;
-                crate::text_lines::diagnostics(&mut diagnostics, n, m);
-                crate::text_lines::align(m, p, quantize(l.size.width))
-            } else {
-                misses.insert(req.key.clone(), req);
-                Vec::new()
-            }
-        } else {
-            Vec::new()
-        };
-        nodes.push(SceneNode {
-            id: n.id.clone(),
-            effective_theme: p
-                .effective_theme
-                .clone()
-                .unwrap_or_else(|| input.theme.clone()),
-            parent_id: if idx == root_idx {
-                None
-            } else {
-                n.parent_id.clone()
-            },
-            kind: n.kind.clone(),
-            bounds: Bounds {
-                x: quantize(x),
-                y: quantize(y),
-                width: quantize(l.size.width),
-                height: quantize(l.size.height),
-            },
-            lines,
-            font_id: p.font_id.clone().or_else(|| {
-                if n.kind == "text" {
-                    Some("font_bundled".into())
-                } else {
-                    None
-                }
-            }),
-            font_size: p.font_size.unwrap_or(16.0),
-            line_height: p.line_height.unwrap_or(24.0),
-            letter_spacing: p.letter_spacing.unwrap_or(0.0),
-            decoration: crate::text_lines::decoration(p, ascent),
-            fill: p.fill.clone().unwrap_or_else(|| {
-                if n.kind == "text" {
-                    "#182230".into()
-                } else {
-                    "transparent".into()
-                }
-            }),
-            asset_id: p.asset_id.clone(),
-            fit: crate::scene_fit(p.fit.as_deref())
-                .unwrap_or("contain")
-                .into(),
-            opacity: p.opacity.unwrap_or(1.0),
-            clip: p.clip.unwrap_or(n.kind == "frame"),
-            radius: p.radius.as_ref().map_or(Sides::All(0.0), |r| match r {
-                Sides::All(v) => Sides::All(*v),
-                _ => Sides::Each(r.each()),
-            }),
-            shadow: p.shadow.clone().unwrap_or_default(),
-            crop: p.crop.clone(),
-            stroke: p
-                .stroke
-                .as_ref()
-                .filter(|_| n.kind != "text")
-                .and_then(StrokeInput::scene),
-        });
-    }
-    if !misses.is_empty() {
-        return Ok(LayoutStep::Pending {
-            requests: misses.into_values().collect(),
-        });
-    }
-    let source_scene_key = hash(&(input, SCENE_VERSION, RENDERER_VERSION));
-    Ok(LayoutStep::Ready {
-        scene: Scene {
-            schema_version: 1,
-            coordinate_space: "frame-local".into(),
-            provenance: Provenance {
-                project_id: input.project_id.clone(),
-                revision: input.revision,
-                frame_id: input.frame_id.clone(),
-                viewport: input.viewport.clone(),
-                theme: input.theme.clone(),
-                state: input.state.clone(),
-                scene_version: SCENE_VERSION.into(),
-                renderer_version: RENDERER_VERSION.into(),
-                source_scene_key,
-                font_manifest_hash: hash(&input.fonts),
-                asset_manifest_hash: hash(&input.assets),
-            },
-            nodes,
-            fonts: input.fonts.clone(),
-            assets: input.assets.clone(),
-            diagnostics: crate::text_lines::cap(diagnostics),
-        },
-    })
+    crate::scene_builder::build(input, &tree, &ids, order, root_idx, &by_id, source)
 }

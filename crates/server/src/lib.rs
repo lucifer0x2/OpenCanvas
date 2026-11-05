@@ -1,3 +1,4 @@
+mod backend;
 mod cache_hints;
 mod domain;
 mod error;
@@ -29,6 +30,7 @@ mod viewer_privacy;
 mod worker;
 mod workspace_events;
 
+pub use backend::RenderBackend;
 pub use error::ApiError;
 pub use http::router;
 pub use public_viewer::PublicViewer;
