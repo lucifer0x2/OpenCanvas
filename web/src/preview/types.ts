@@ -51,7 +51,7 @@ export interface StyleDef {
 }
 
 /** The snapshot fields the preview reads beyond the viewer's `Snapshot`. */
-export interface PreviewSnapshot extends Snapshot {
+export interface PreviewSnapshot extends Omit<Snapshot, "tokens" | "styles"> {
   tokens: TokenDef[];
   styles: StyleDef[];
 }
