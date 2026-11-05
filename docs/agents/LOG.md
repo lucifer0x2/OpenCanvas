@@ -1,5 +1,26 @@
 # Nhật ký điều phối OpenCanvas
 
+### Viewer WASM scene — 2026-11-05
+
+- Người dùng giao compute scene bằng Rust WASM, giữ Canvas2D paint và server default/fallback; yêu cầu mới thay phạm vi painter của Task12 cũ. Worktree riêng `/private/tmp/opencanvas-viewer-wasm-scene`, nhánh `feat/viewer-wasm-scene` từ `feat/task11-native-png`; không commit/push/deploy hoặc dữ liệu thật.
+- Giao fresh worker tách resolver/model/input thuần WASM và adapter text; root điều phối và kiểm chứng. Các bước WASM binding, viewer worker và parity sẽ nối theo API đã đóng băng.
+- Giao fresh worker binding/build WASM và fresh worker viewer/FontFace dùng chung bytes. API ghim `SceneComputer`, URL maps do adapter cung cấp trước compute; font discovery dùng cùng resolver để không tải font ngoài frame. Native check core đạt; chưa nghiệm thu parity/browser.
+- Nhận core extraction và WASM binding: workers báo native/WASM check, resolver regression, binding smoke và strict Clippy đạt. WASM đã sinh, raw khoảng 3,55 MB; root sẽ kiểm độc lập và giao fresh worker làm matrix parity/timing trên fixture tạm.
+- Giao worker parity 5 frame × 4 viewport. Root review phát hiện native bổ sung text overflow advisories sau layout; giao fresh worker tách cùng logic thuần cho WASM để giữ JSON diagnostics, không bỏ qua khác biệt đó trong comparator. Workspace suite đang chạy; sẽ kiểm lại khi nguồn cuối ổn định.
+- Nhận advisory parity và gate fixes: logic overflow/note intent dùng chung, golden thêm đúng effectiveTheme có từ nền, test deadline dùng semaphore riêng, smoke chọn preference notices rõ ràng. Root đã kiểm WASM smoke/35 web tests/typechecks/build/continuity; matrix worker báo 20/20 scene exact sau khi giữ HTTP JSON nguyên bản, đang kiểm báo cáo và chạy workspace suite cuối.
+- Root kiểm lại độc lập 20 scene đã capture: 0 mismatch và mọi source/artifact hash còn khớp. Actions smoke cuối đạt. Giao fresh fix nhỏ cho worker error reply để Retry khởi tạo worker mới, tránh giữ module import lỗi trong worker cũ; không đổi Rust/parity.
+- Nhận worker recovery đạt; root kiểm 37 web tests, build và WASM smoke cuối, thêm production viewer/backend tạm với instance: 0 request scene và MIME WASM đúng. Full workspace kết thúc 528 pass/1 fail/36 ignored, chỉ test catalog stroke cũ loại Instance trong khi nền đã cho phép; giao fresh worker sửa đúng test, không đổi hành vi sản phẩm.
+- Điểm dừng: full workspace cuối **529 pass/0 fail/36 ignored**, 37 web tests, native/WASM check, strict library Clippy, scoped fmt và browser/continuity/actions/WASM/production smokes đạt; parity 20/20 exact. [Báo cáo triển khai](../VIEWER-WASM-SCENE.md), [parity/timing](../VIEWER-WASM-PARITY.md). Mọi source/test ≤236 dòng; viewer reference cũ 254 dòng. Không commit/push/deploy, main giữ nguyên source; dữ liệu kiểm đều tạm.
+- Follow-up: giao fresh worker sửa đường dẫn source đã di chuyển và fresh worker cải thiện hủy request/cache snapshot. Chỉ làm tại worktree này; người dùng cho phép commit sau khi kiểm đủ gate, không push hoặc chạm main checkout. Email Git đã xác nhận đúng yêu cầu.
+- Nhận sửa đường dẫn: renderer 11/11, không còn `storage/src` trong source/script được yêu cầu. Lượt Rust trong sandbox bị chặn socket loopback; chạy lại với quyền phù hợp. Giao fresh worker chuẩn bị nhóm commit có kiểm build từng bước, chờ root xác nhận đủ gate trước khi commit.
+- Nhận worker reuse/cache: root kiểm web 43/43, renderer 11/11, hai typecheck, production build, WASM browser smoke, Clippy năm crate và parity 20/20 không mismatch; source/test tối đa 236 dòng. Rust suite còn chạy; cho worker chuẩn bị index/build bước đầu, chưa commit.
+- Rust cuối đạt 448 pass/0 fail/36 ignored (server 243 pass); tất cả gate người dùng yêu cầu đã đạt. Cho worker build từng index export rồi commit bảy nhóm phụ thuộc, không push. Cập nhật [báo cáo follow-up](../VIEWER-WASM-SCENE.md#follow-up-verification--2026-11-05) và parity; chỉ working tree riêng được sửa.
+- Nhận commit extraction `7694b8f`: build từ index export đạt cùng renderer typecheck/build/image-fit. Worker tiếp tục các nhóm còn lại; source sản phẩm không đổi sau gate cuối.
+- Nhận commit shared measurer `a9c6679`, native build từ index export đạt; bước WASM dùng binary wasm-bindgen đã ghim tại thư mục công cụ tạm, không cài thêm toolchain.
+- Nhận WASM `30669b1` và viewer `d5835d2`: native/WASM build từ index export đạt, WASM hash giữ nguyên; renderer/web build, web 43/43 và renderer 11/11 đạt trên tree viewer đã stage đủ regression cache.
+- Nhận regression `5707967` và housekeeping `83fa8b0`: native/web build, traversal 3/3 và stroke 6/6 đạt; chỉ bỏ symlink dependency đã track, không thay thư mục dependency cục bộ.
+- Điểm dừng trước commit cuối: mọi gate yêu cầu đạt, sáu nhóm source/housekeeping đã commit cục bộ; duyệt nhóm parity harness/tài liệu sau kiểm compile capture trên index export. Source/test tối đa 236 dòng, AGENTS 69 dòng/9476 byte; không push, không deploy, không sửa main checkout. Rust parse-once là tùy chọn chưa làm; snapshot đã encode/cache trong Worker.
+
 Các mục đã đóng về push main/ruleset và khảo sát app: [archive](history/2026-11-02-publish-notes.md).
 
 Các mục đã đóng về build, design memory và P24: [archive](history/2026-11-03-closed-build-p24.md).

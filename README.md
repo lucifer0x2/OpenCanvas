@@ -44,6 +44,10 @@ Run the built Rust binary directly to avoid the npm launcher; this does not move
 the browser viewer to WASM. See [native backend limits](docs/SERVER.md#experimental-native-render-backend)
 and the [Task11 acceptance plan](docs/TASK11-NATIVE-PLAN.md).
 
+Frame scene computation can separately run in a browser Worker with `?scene=wasm`
+after building the optional scene module. Painting stays on Canvas2D; the server
+path is the default and fallback. See [browser scene build, parity and timings](docs/VIEWER-WASM-SCENE.md).
+
 `DATABASE_PROVIDER` accepts `sqlite` (default) or `postgresql`. SQLite uses `~/.opencanvas` by default. Set `OPENCANVAS_DATA_ROOT` or pass `--data-root DIR` to override it. Each SQLite project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for SQLite experiments and tests.
 
 For PostgreSQL, set `DATABASE_URL` to your connection string in the environment, then launch the built app:
