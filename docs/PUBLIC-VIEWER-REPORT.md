@@ -1,5 +1,10 @@
 # Public read-only viewer — 2026-10-31
 
+This report records the original listener rollout. See the
+[public viewer password contract](SERVER.md#public-viewer-password) for the
+current authentication behavior and [project visibility](SERVER.md#project-visibility)
+for sharing controls.
+
 Implementation and isolated verification are complete. Public sharing remains
 opt-in: the existing local listener keeps MCP/project creation/font import,
 while a separate listener shares the viewer, live updates, resources, downloads
@@ -121,3 +126,56 @@ User subsequently requested stopping the server to run it personally. Root sent
 SIGINT to the verified native server and confirmed both 3847 and 3848 have no
 listener. Funnel was never enabled by this session. Do not restart or publish
 automatically; the user now owns startup and sharing.
+
+## Password protection — 2026-11-04
+
+- Independent Chromium test with a local HTTPS proxy, real Rust server and
+  SQLite verified default open access, password submission, HttpOnly/Secure
+  JWT persistence across reloads, and denial after MCP revocation.
+- An isolated PostgreSQL 16 runtime retained the session across app restart,
+  revoked it on a different forwarded client IP, and enforced password changes,
+  manual revocation and clearing the password.
+- `cargo test --locked --offline -p opencanvas-server --test public_viewer_auth
+  --test public_viewer --test public_resources --test public_cli --test tools_budget
+  -- --test-threads=1` passed 10 tests across 5 suites. The compact MCP catalog
+  grew from 26,825 to 27,414 bytes and stays under 32 KiB.
+- `cargo test --locked --offline -p opencanvas-storage --test viewer_auth
+  -- --include-ignored --test-threads=1` passed both backends with
+  `OPENCANVAS_TEST_POSTGRES_URL` pointing to a fresh disposable database.
+- `node web/tests/viewer-auth-smoke.mjs`, the existing browser and continuity
+  smokes, viewer build and strict server/storage Clippy passed. The largest
+  touched handwritten source or test file is 221 lines.
+- The OrbStack rollout replaced only the Compose app with
+  `opencanvas:public-auth-local`. The same PostgreSQL container and volume
+  served all four byte-identical project snapshots. Root independently checked
+  the new MCP catalog at 3857 and default open/read-only behavior at 3858.
+  HTTPS login was tested in isolation.
+
+## Project visibility — 2026-11-04
+
+- The local project API and MCP update share one durable visibility operation.
+  Legacy and new projects default private. Changes preserve authored revision,
+  design data, history and idempotency. SQLite bundles imported or restored
+  from public projects start private.
+- The server passed 24 integration checks and four snapshot unit checks.
+  Coverage includes filtered pagination, ID and slug lookups, snapshot ETags,
+  private and absent responses, JWT separation, in-flight export demotion,
+  cached job and resource denial, and public SSE filtering.
+- Independent PostgreSQL HTTP/MCP verification passed across an app restart.
+  The Compose rehearsal upgraded a database populated by the old image,
+  preserved the design snapshot and the viewer session, and denied that
+  previously valid session access to the newly private project.
+- Chromium with a real HTTPS proxy and MCP passed viewer and preview
+  hide/republish tests in two tabs. The local preview smoke, auth smoke,
+  pagination smoke, frontend build and 26 web unit tests passed.
+- Storage ran 22 focused migration, privacy, instance, bundle and auth checks,
+  plus two PostgreSQL integration checks against disposable databases.
+- Strict server/storage Clippy, Cargo format and diff checks passed. The
+  largest changed handwritten code file is 247 lines.
+- The existing server traversal golden fails on clean HEAD as well. The
+  fixture lacks the `effectiveTheme` fields emitted by the existing Task14
+  implementation.
+- The OrbStack rollout replaced only the app. Independent comparison confirmed
+  the same four design snapshots after excluding the new metadata field, all
+  private on 3857 and omitted from 3858. The active Funnel HTTPS endpoint
+  returned an empty project list and 404 for a private snapshot.

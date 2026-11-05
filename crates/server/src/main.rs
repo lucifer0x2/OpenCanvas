@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if let Some((listener, public)) = &public_listener {
         println!(
-            "Public viewer {} | bound to {host}:{} | ALL projects shared; no MCP or writes",
+            "Public viewer {} | bound to {host}:{} | public projects only",
             public.origin(),
             listener.local_addr()?.port()
         );
@@ -59,9 +59,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let public = async move {
         if let Some((listener, public)) = public_listener {
             let stopping = state.clone();
-            axum::serve(listener, public.router(state))
-                .with_graceful_shutdown(async move { stopping.shutting_down().await })
-                .await?;
+            axum::serve(
+                listener,
+                public
+                    .router(state)
+                    .into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .with_graceful_shutdown(async move { stopping.shutting_down().await })
+            .await?;
         }
         Ok::<(), std::io::Error>(())
     };

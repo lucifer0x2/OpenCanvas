@@ -1,5 +1,6 @@
 //! Validation of an untrusted database and its exact resource set before writes.
 use crate::{bundle::*, *};
+use migration::DATABASE_SCHEMA_VERSION;
 
 pub(crate) fn database(path: &Path, manifest: &BundleManifest) -> Result<Snapshot> {
     let mut conn = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
@@ -7,28 +8,31 @@ pub(crate) fn database(path: &Path, manifest: &BundleManifest) -> Result<Snapsho
     conn.pragma_update(None, "query_only", "ON")?;
     // Reject triggers, views, virtual tables and altered schemas before querying
     // authored tables or ever opening this file for writes.
-    let mut reference = Connection::open_in_memory()?;
-    initialize(&mut reference, "reference", "reference", "Reference")?;
     let version: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
-    if !(1..=SCHEMA_VERSION).contains(&version) || version != manifest.database_schema_version {
+    if !(1..=DATABASE_SCHEMA_VERSION).contains(&version)
+        || version != manifest.database_schema_version
+    {
         return Err(invalid("Unsupported database version"));
     }
-    if version < 3 {
-        reference.execute_batch("DROP TABLE notes")?;
-    }
-    if version < 2 {
-        reference.execute_batch("DROP TABLE retention_metadata")?;
-    }
+    let mut reference = Connection::open_in_memory()?;
+    initialize(
+        &mut reference,
+        "reference",
+        "reference",
+        "Reference",
+        version,
+    )?;
     if schema(&conn)? != schema(&reference)? {
         return Err(invalid("Unexpected database schema objects"));
     }
+    migration::database_version(&conn)?;
     let integrity: String = conn.query_row("PRAGMA integrity_check(1)", [], |r| r.get(0))?;
     let foreign_keys: bool = conn.prepare("PRAGMA foreign_key_check")?.exists([])?;
     if integrity != "ok" || foreign_keys {
         return Err(invalid("Database integrity or version check failed"));
     }
     // Only the private staging DB is upgraded, after its exact legacy schema passed.
-    if version < SCHEMA_VERSION {
+    if version < DATABASE_SCHEMA_VERSION {
         drop(conn);
         conn = Connection::open(path)?;
         conn.pragma_update(None, "trusted_schema", "OFF")?;

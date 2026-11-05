@@ -3,7 +3,7 @@ mod public_support;
 #[allow(dead_code)]
 mod support;
 use opencanvas_server::PublicViewer;
-use public_support::{PublicServer, HOST, ORIGIN};
+use public_support::{set_privacy, PublicServer, HOST, ORIGIN};
 use reqwest::Method;
 use serde_json::json;
 use support::Server;
@@ -109,7 +109,11 @@ async fn origin_host_and_capability_are_listener_specific_and_local_writes_survi
         .await
         .unwrap();
     assert_eq!(created.status(), 200);
+    let created: serde_json::Value = created.json().await.unwrap();
+    assert_eq!(created["privacy_status"], "private");
     let project = local.project().await; // local MCP creation still works too.
+    set_privacy(&local, "http-local", "public").await;
+    set_privacy(&local, &project, "public").await;
     assert_eq!(
         public.get("/api/v1/projects").await["projects"]
             .as_array()

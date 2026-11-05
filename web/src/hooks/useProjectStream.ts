@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { projectPath } from "../api";
+import { projectPath, requestViewerSessionCheck } from "../api";
 import type {
   ActivityEvent,
   CommitEvent,
@@ -14,6 +14,8 @@ export interface StreamHandlers {
   /** Null when the event data could not be parsed. */
   onCommit: (event: CommitEvent | null) => void;
   onReset: () => void;
+  onVisibilityChanged: () => void;
+  onReconnect: () => void;
   onCreated: (project: ProjectRef) => void;
   onActivity: (event: ActivityEvent) => void;
 }
@@ -37,6 +39,7 @@ export function useProjectStream(
   projectId: string,
   reload: number,
   handlers: StreamHandlers,
+  enabled = true,
 ): Connection {
   const [connection, setConnection] = useState<Connection>("connecting");
   const latest = useRef(handlers);
@@ -45,6 +48,7 @@ export function useProjectStream(
   });
 
   useEffect(() => {
+    if (!enabled) return;
     let stopped = false;
     let stream: EventSource | undefined;
     let timer: ReturnType<typeof setTimeout>;
@@ -69,6 +73,9 @@ export function useProjectStream(
         latest.current.onCommit(parse<CommitEvent>(message)),
       );
       stream.addEventListener("reset_required", () => latest.current.onReset());
+      stream.addEventListener("project_visibility_changed", () =>
+        latest.current.onVisibilityChanged(),
+      );
       stream.addEventListener("project_created", (message) => {
         const project = parse<ProjectRef>(message);
         if (project?.projectId) latest.current.onCreated(project);
@@ -78,8 +85,12 @@ export function useProjectStream(
         if (event?.projectId) latest.current.onActivity(event);
       });
       stream.onerror = () => {
-        stream?.close();
         if (stopped) return;
+        // An HTTP denial is terminal for EventSource. It doesn't expose the status.
+        if (stream?.readyState === EventSource.CLOSED)
+          requestViewerSessionCheck();
+        stream?.close();
+        latest.current.onReconnect();
         setConnection("reconnecting");
         timer = setTimeout(
           connect,
@@ -93,6 +104,6 @@ export function useProjectStream(
       stream?.close();
       clearTimeout(timer);
     };
-  }, [projectId, reload]);
+  }, [enabled, projectId, reload]);
   return connection;
 }

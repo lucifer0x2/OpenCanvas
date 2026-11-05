@@ -183,11 +183,38 @@ Stacks align like CSS flexbox, so centering and right edges need no x/y math:
 `[top, horizontal, bottom]`, `[top, right, bottom, left]`). `align` (cross axis:
 start, center, end, stretch) and `justify` (main axis: start, center, end,
 space-between) default to start and need row or column. `stretch` sizes only
-children whose cross size is unset; numbers and `hug` keep their size. With
+children whose cross size is unset; numbers, percentages and `hug` keep their size. With
 `space-between`, `gap` is the minimum spacing. Centered content wider than its
 stack overflows both sides (clipped by frames); use start when it may not fit.
 `update_node` replaces the whole layout object: resend `mode` and every other
 layout key with the one you change.
+
+For an authored mobile stack, set a numeric size on the root frame and declare
+the base and narrow layout together.
+
+```json
+{
+  "mode": "free",
+  "breakpoints": [
+    { "maxWidth": 600, "layout": { "mode": "column", "padding": 16, "gap": 12 } }
+  ]
+}
+```
+
+At 600 px and below, the stack places the same children in their authored order.
+Above 600 px, free layout uses their authored x/y. Up to eight thresholds are
+allowed, as increasing unique integers from 1 to 100000. The first inclusive
+match wins across the requested frame viewport, including for nested containers.
+Each alternate rule supplies its own mode, padding, gap, alignment and wrap as
+needed. Defaults apply to omitted properties, and variants cannot nest. Padding
+and gap accept dimension refs in every rule.
+
+Size a child with e.g. `width:"50%"` or `height:"37.5%"` when that parent
+axis is numeric or follows a fill/percentage chain to a numeric axis. Use literal
+decimal values from 0% to 100% and keep min/max in pixels. The percentage basis
+is the parent's content box in a stack and padding box under free positioning.
+Use separate viewport reads to verify positions and dimensions on both sides
+of each breakpoint.
 
 ## Constraints and limitations
 
@@ -204,15 +231,16 @@ layout key with the one you change.
   layers inside do not show through. Do not pre-mix colors layer by layer.
 - Prefer named typed tokens and styles for repeated values. Validate referenced
   records before use. Read back authored props and resolved values separately.
-- Opt in to wrapping with `layout:{mode:"row",wrap:true,gap:16}`. The row needs
-  positive numeric width or a fill chain to a finite ancestor/root frame. Each
+- Opt in to wrapping with `layout:{mode:"row",wrap:true,gap:16}`. A wrapping
+  base or alternate rule needs positive numeric width or a positive
+  fill/percentage chain to a definite positive width. Each
   direct width-fill child needs explicit positive `minWidth` (dimension refs are
   supported); text fill inside a card column does not need this extra minimum.
   Use row/card height hug for content-driven rows. Gap applies between rows too;
   the last fill card may expand across the entire row. Oversized minima overflow.
 - Missing/false wrap preserves no-wrap. True is only for row containers; wrap
   must be a literal boolean. In a wrapping row `justify` and `align` apply per
-  line. No column wrap, percentage dimensions, breakpoint variants, `alignSelf`,
+  line. No column wrap, `alignSelf`,
   `space-around`/`space-evenly` or general CSS/Grid. A fixed sidebar/body minimum still
   needs deliberate authoring; row wrap alone does not make a dashboard mobile.
 - Mark icons and illustrations that code should use as files with

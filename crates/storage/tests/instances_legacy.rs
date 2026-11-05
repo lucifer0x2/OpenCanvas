@@ -12,10 +12,11 @@ fn instances_legacy_bundles_migrate_in_private_staging_and_keep_data_and_history
         .unwrap();
     let before = project.snapshot().unwrap();
     let original = unpack(&project.export_bundle().unwrap().bytes);
-    for version in [1, 2, 3] {
+    for version in [1, 2, 3, 4] {
         let mut files = original.clone();
         let mut sql = format!(
-            "PRAGMA user_version={version}; UPDATE project_meta SET schema_version={version};"
+            "ALTER TABLE project_meta DROP COLUMN privacy_status;
+             PRAGMA user_version={version}; UPDATE project_meta SET schema_version={version};"
         );
         if version < 3 {
             sql.push_str("DROP TABLE notes;");
@@ -36,11 +37,25 @@ fn instances_legacy_bundles_migrate_in_private_staging_and_keep_data_and_history
             .unwrap();
         assert_eq!(imported.snapshot().unwrap().nodes, before.nodes);
         assert_eq!(imported.snapshot().unwrap().schema_version, SCHEMA_VERSION);
+        assert_eq!(
+            Storage::from(store.clone())
+                .project_meta(imported.id())
+                .unwrap()
+                .privacy_status,
+            PrivacyStatus::Private
+        );
         let restored_root = tempfile::tempdir().unwrap();
         let restored_store = Store::open(restored_root.path()).unwrap();
         let restored = restored_store.restore_bundle("restored", &bytes).unwrap();
         assert_eq!(restored.snapshot().unwrap().nodes, before.nodes);
         assert_eq!(restored.snapshot().unwrap().revision, 1);
+        assert_eq!(
+            Storage::from(restored_store.clone())
+                .project_meta(restored.id())
+                .unwrap()
+                .privacy_status,
+            PrivacyStatus::Private
+        );
         assert!(
             restored
                 .apply_batch(request(&restored, 0, "original", initial()))
@@ -67,7 +82,10 @@ fn instances_legacy_bundle_rejects_schema_objects_and_mismatched_versions_before
         let mut files = original.clone();
         edit_database(
             &mut files,
-            &format!("PRAGMA user_version=3; UPDATE project_meta SET schema_version=3; {sql}"),
+            &format!(
+                "ALTER TABLE project_meta DROP COLUMN privacy_status;
+                 PRAGMA user_version=3; UPDATE project_meta SET schema_version=3; {sql}"
+            ),
         );
         let mut manifest: BundleManifest = serde_json::from_slice(&files["manifest.json"]).unwrap();
         manifest.database_schema_version = 3;

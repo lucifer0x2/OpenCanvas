@@ -6,7 +6,8 @@ import { PreviewStage } from "./PreviewStage";
 import { historyDepth, readRoute, routeUrl, type PreviewRoute } from "./route";
 import { tokenTable } from "./tokens";
 import type { LinkDef } from "./types";
-import { usePreviewScenes, usePreviewSnapshot } from "./usePreviewData";
+import { usePreviewScenes } from "./usePreviewData";
+import { usePreviewProject } from "./usePreviewProject";
 import { useReducedMotion, useToast } from "./usePreviewUi";
 import "./preview.css";
 
@@ -21,7 +22,7 @@ export function PreviewApp() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [reducedMotion, setReducedMotion] = useReducedMotion();
   const { toast, show } = useToast();
-  const { snapshot, error } = usePreviewSnapshot(route.projectId, reload);
+  const { snapshot, error } = usePreviewProject(route.projectId, reload);
   const frames = useMemo(
     () => (snapshot ? rootFrames(snapshot.nodes) : []),
     [snapshot],
@@ -76,7 +77,7 @@ export function PreviewApp() {
     ...(error ? [error] : []),
     ...(view.error ? [view.error] : []),
     ...view.diagnostics,
-    ...warnings,
+    ...(snapshot ? warnings : []),
   ];
 
   return (
@@ -153,7 +154,7 @@ export function PreviewApp() {
           ))}
         </ul>
       )}
-      {toast && (
+      {snapshot && toast && (
         <div className="pv-toast" role="alert">
           {toast}
         </div>

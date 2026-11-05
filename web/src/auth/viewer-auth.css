@@ -1,0 +1,97 @@
+.viewer-access-status {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  font-size: 14px;
+}
+
+.viewer-access-status button {
+  min-height: 44px;
+}
+
+.viewer-password-dialog {
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(18px, 5vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 18px 70px #17283d33;
+  color: inherit;
+  background: white;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: auto;
+}
+
+.viewer-password-dialog::backdrop {
+  background: #16233166;
+}
+
+.viewer-password-brand {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--subtle);
+}
+
+.viewer-password-dialog h1 {
+  margin: 10px 0 4px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+#viewer-password-help {
+  color: var(--subtle);
+}
+
+.viewer-password-dialog form {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.viewer-password-dialog label {
+  font-weight: 600;
+}
+
+.viewer-password-dialog input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #808994;
+  border-radius: 5px;
+  color: inherit;
+  background: white;
+  font: inherit;
+  font-size: 16px;
+}
+
+.viewer-password-dialog input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+#viewer-password-error {
+  color: #a3263e;
+}
+
+.viewer-password-dialog button {
+  min-height: 44px;
+  margin-top: 4px;
+  border-color: var(--blue);
+  background: var(--blue);
+  color: white;
+  font-weight: 600;
+}
+
+.viewer-password-dialog button:hover {
+  background: #0d57b9;
+}
+
+.viewer-password-dialog button[aria-disabled="true"] {
+  opacity: 0.7;
+  cursor: wait;
+}

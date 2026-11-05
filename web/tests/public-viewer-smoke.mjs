@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { connectMcp } from "../../spikes/e2e/protocol.mjs";
 import { publicViewerServer } from "./public-viewer-server.mjs";
+import { verifyPublicPreview } from "./public-viewer-preview.mjs";
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= fileURLToPath(
   new URL("../../.runtime/browsers", import.meta.url),
@@ -111,22 +112,27 @@ try {
     ],
   });
   assert.equal(committed.committedRevision, 3);
+  await mcp.call("update_project", { projectId, privacy_status: "public" });
   browser = await chromium.launch();
-  const page = await browser.newPage({
+  const context = await browser.newContext({
     ignoreHTTPSErrors: true,
     viewport: { width: 1400, height: 1000 },
   });
+  const page = await context.newPage();
   const errors = [],
     failed = [],
     requests = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("requestfailed", (request) => {
-    if (request.failure()?.errorText !== "net::ERR_ABORTED")
-      failed.push(request.url());
-  });
-  page.on("request", (request) =>
-    requests.push({ url: request.url(), method: request.method() }),
-  );
+  const preview = await context.newPage();
+  for (const tab of [page, preview]) {
+    tab.on("pageerror", (error) => errors.push(error.message));
+    tab.on("requestfailed", (request) => {
+      if (request.failure()?.errorText !== "net::ERR_ABORTED")
+        failed.push(request.url());
+    });
+    tab.on("request", (request) =>
+      requests.push({ url: request.url(), method: request.method() }),
+    );
+  }
   await page.goto(`${server.origin}/?project=${projectId}&frame=frame`);
   await page.getByText("Scene r3", { exact: true }).waitFor();
   assert.ok(await page.locator("canvas").count());
@@ -170,21 +176,13 @@ try {
   assert.equal(changed.committedRevision, 4);
   await page.getByText("Scene r4", { exact: true }).waitFor();
   await page.screenshot({ path: join(artifacts, "viewer.png") });
-  await page.goto(`${server.origin}/preview?project=${projectId}&frame=frame`);
-  await page
-    .locator('.oc-node[data-oc-id="text"]')
-    .getByText("Public live Việt", { exact: true })
-    .waitFor();
-  const image = page.locator("img.oc-image");
-  await image.waitFor();
-  assert.equal(
-    await image.evaluate(
-      (element) => element.complete && element.naturalWidth > 0,
-    ),
-    true,
-  );
-  assert.ok((await image.getAttribute("src")).startsWith(server.origin));
-  await page.screenshot({ path: join(artifacts, "preview.png") });
+  await verifyPublicPreview({
+    viewer: page,
+    preview,
+    mcp,
+    projectId,
+    artifacts,
+  });
   assert.ok(
     requests.some((request) =>
       request.url.includes("/fonts/font_public/download"),
@@ -233,6 +231,7 @@ try {
         "SVG download",
         "live SSE",
         "preview image/font",
+        "open viewer and preview hide and reopen after privacy changes",
         "all browser URLs same public origin",
         "local font import UI",
       ],

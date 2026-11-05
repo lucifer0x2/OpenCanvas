@@ -3,11 +3,10 @@ use crate::{
     domain,
     error::{ApiError, Result},
     jobs::SceneRequest,
-    reads, schemas,
+    projects, reads, schemas,
     state::AppState,
 };
 use rmcp::{model::*, service::RequestContext, ErrorData, RoleServer, ServerHandler};
-use serde::Deserialize;
 use serde_json::{json, Value};
 
 #[derive(Clone)]
@@ -68,53 +67,16 @@ impl ServerHandler for Mcp {
         .into())
     }
 }
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct Create {
-    pub slug: String,
-    pub name: String,
-}
-#[derive(Deserialize, Default)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct List {
-    pub cursor: Option<String>,
-    pub limit: Option<usize>,
-}
-pub(crate) async fn projects(state: &AppState, args: Value) -> Result<Value> {
-    let req: List = serde_json::from_value(args)?;
-    let limit = req.limit.unwrap_or(100);
-    if limit == 0 || limit > 100 {
-        return Err(ApiError::invalid("Project limit must be 1–100"));
-    }
-    let all = state.db(|s| s.list_projects()).await?;
-    let after: Vec<_> = all
-        .into_iter()
-        .filter(|p| req.cursor.as_ref().is_none_or(|c| p.slug > *c))
-        .collect();
-    let next = if after.len() > limit {
-        Some(after[limit - 1].slug.clone())
-    } else {
-        None
-    };
-    Ok(json!({"projects":after.into_iter().take(limit).collect::<Vec<_>>(),"nextCursor":next}))
-}
-pub(crate) async fn create(state: &AppState, args: Value) -> Result<Value> {
-    let req: Create = serde_json::from_value(args)?;
-    let s = state
-        .db(move |s| s.create_project(&req.slug, &req.name)?.snapshot())
-        .await?;
-    let created = json!({"projectId":s.project_id,"slug":s.slug,"name":s.name,"revision":s.revision,"schemaVersion":s.schema_version});
-    // A non-durable hint for open viewers; the project list stays the source of truth.
-    let _ = state
-        .events
-        .send(crate::workspace_events::project_created(&created));
-    Ok(created)
-}
 async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
     schemas::validate(name, &args)?;
     match name {
-        "list_projects" => projects(state, args).await,
-        "create_project" => create(state, args).await,
+        "list_projects" => projects::list(state, serde_json::from_value(args)?, false).await,
+        "create_project" => Ok(json!(
+            projects::create(state, serde_json::from_value(args)?).await?
+        )),
+        "update_project" => Ok(json!(
+            projects::update(state, serde_json::from_value(args)?).await?
+        )),
         "apply_batch" | "apply_batch_file" | "import_asset" => {
             domain::mutate(state, name, args).await
         }
@@ -124,6 +86,9 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
         "render_frame" => crate::render_response::render(state, args).await,
         "inspect_layout" => crate::inspect::inspect(state, args).await,
         "export_nodes" => crate::export::export_nodes(state, args).await,
+        name if crate::viewer_auth::admin::is_tool(name) => {
+            crate::viewer_auth::admin::call(state, name, args).await
+        }
         _ => Err(ApiError::new("UNKNOWN_TOOL", "Tool is not available")),
     }
 }

@@ -77,7 +77,9 @@ tokens/styles/fonts/assets only those the frame references (resources referenced
 Build the structure the design declares, not the pixels it measures. A container's layout mode \
 says it: 'row' and 'column' are stacks with padding, gap, align and justify, so implement them as stacks; 'free' \
 positions children at authored x/y. Sizing is authored width/height with min/max, which may be a \
-fixed number, fill or hug. Computed bounds and text lines are measurements of one viewport, already \
+fixed number, fill, hug or a literal decimal percentage from 0% to 100% on a definite parent axis. \
+layout.breakpoints selects the first full rule whose maxWidth is at least the requested frame viewport width. \
+Stack rules use authored child order and free rules use authored x/y. Computed bounds and text lines are measurements of one viewport, already \
 wrapped, so use them to check an implementation rather than to derive it. Request viewports \
 (up to four) in get_design_context to compare bounds across sizes; while computed.status is \
 pending, wait on its job IDs with render_frame {jobId, waitMs} (up to 10000), then repeat the read. reflow compares every descendant, excluding the resized root, and \

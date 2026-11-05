@@ -13,11 +13,13 @@ fn downgrade(path: &std::path::Path, failure: bool) {
     }
 }
 
-/// Rewrites a current database as the schema `version` it would have had (notes arrive in 3,
-/// retention metadata in 2).
+/// Rewrites a current database as the schema `version` it would have had.
 fn to_version(path: &std::path::Path, version: u32) {
     let c = Connection::open(path).unwrap();
-    let mut sql = String::from("DROP TABLE notes;");
+    let mut sql = String::from("ALTER TABLE project_meta DROP COLUMN privacy_status;");
+    if version < 3 {
+        sql.push_str("DROP TABLE notes;");
+    }
     if version < 2 {
         sql.push_str("DROP TABLE retention_metadata;");
     }
@@ -81,6 +83,35 @@ fn v1_upgrade_preserves_authored_revision_and_replay() {
 }
 
 #[test]
+fn v4_project_lists_as_private_before_open_and_keeps_authored_data_on_upgrade() {
+    let (temp, store, project) = setup();
+    let request = request(&project, 0, "initial", initial());
+    project.apply_batch(request.clone()).unwrap();
+    let before = project.snapshot().unwrap();
+    drop(project);
+    drop(store);
+
+    let path = temp.path().join("fixture/db.sql");
+    to_version(&path, 4);
+    let store = Store::open(temp.path()).unwrap();
+    let [listed]: [ProjectMeta; 1] = store.list_projects().unwrap().try_into().unwrap();
+    assert_eq!(listed.project_id, before.project_id);
+    assert_eq!(listed.privacy_status, PrivacyStatus::Private);
+    let conn = Connection::open(&path).unwrap();
+    let version = || {
+        conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
+            .unwrap()
+    };
+    assert_eq!(version(), 4);
+
+    let project = store.open_project(&before.project_id).unwrap();
+    assert_eq!(version(), 5);
+    assert_eq!(project.snapshot().unwrap(), before);
+    assert_eq!(store.list_projects().unwrap(), vec![listed]);
+    assert!(project.apply_batch(request).unwrap().replayed);
+}
+
+#[test]
 fn failed_upgrade_rolls_back_ddl_metadata_and_authored_data() {
     let (temp, store, p) = setup();
     p.apply_batch(request(&p, 0, "initial", initial())).unwrap();
@@ -113,6 +144,11 @@ fn failed_upgrade_rolls_back_ddl_metadata_and_authored_data() {
             .exists([])
             .unwrap());
     }
+    assert!(!c
+        .prepare("SELECT 1 FROM pragma_table_info('project_meta') WHERE name='privacy_status'")
+        .unwrap()
+        .exists([])
+        .unwrap());
     assert_eq!(
         c.query_row("SELECT current_revision FROM project_meta", [], |r| r
             .get::<_, i64>(0))

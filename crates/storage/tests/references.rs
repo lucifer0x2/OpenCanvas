@@ -85,7 +85,7 @@ fn reject_bad_schema_forward_refs_and_unsupported_layout() {
     let (_temp, _store, p) = setup();
     p.apply_batch(request(&p, 0, "initial", initial())).unwrap();
     for (i, props) in [
-        json!({"width":"50%"}),
+        json!({"width":"100.001%"}),
         json!({"fill":{"tokenId":"missing"}}),
         json!({"layout":{"mode":"grid"}}),
         json!({"opacity":2}),

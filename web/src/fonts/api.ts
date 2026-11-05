@@ -1,4 +1,4 @@
-import { ApiError, projectPath, read } from "../api";
+import { ApiError, projectPath, read, viewerFetch } from "../api";
 import type { FontImport, FontList, ProjectFont } from "./types";
 
 export const listFonts = (projectId: string, signal: AbortSignal) =>
@@ -19,7 +19,7 @@ export async function importFont(
   request: FontImport,
   signal: AbortSignal,
 ) {
-  const response = await fetch(`${projectPath(projectId)}/fonts`, {
+  const response = await viewerFetch(`${projectPath(projectId)}/fonts`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(request),
@@ -41,7 +41,7 @@ export async function downloadFont(
   font: ProjectFont,
   signal: AbortSignal,
 ) {
-  const response = await fetch(
+  const response = await viewerFetch(
     `${projectPath(projectId)}/fonts/${encodeURIComponent(font.id)}/download`,
     { signal },
   );

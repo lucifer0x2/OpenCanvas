@@ -5,7 +5,7 @@ mod shadow;
 mod stroke;
 mod text;
 pub use fill::{Gradient, Paint, Radius};
-pub use layout::{LayoutRule, Padding, Sizing};
+pub use layout::{Layout, LayoutBreakpoint, LayoutRule, Padding, Sizing};
 pub use shadow::Shadow;
 pub use stroke::{SceneStroke, Sides, StrokeInput};
 pub use text::{MeasureCache, MeasureRequest, Measurement, SceneDecoration, TextLine};
@@ -13,8 +13,8 @@ pub use text::{MeasureCache, MeasureRequest, Measurement, SceneDecoration, TextL
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Viewport {
-    pub width: f32,
-    pub height: f32,
+    pub width: f64,
+    pub height: f64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -70,7 +70,7 @@ pub struct Props {
     pub max_width: Option<f32>,
     pub min_height: Option<f32>,
     pub max_height: Option<f32>,
-    pub layout: Option<LayoutRule>,
+    pub layout: Option<Layout>,
     pub text: Option<String>,
     pub font_id: Option<String>,
     pub font_size: Option<f32>,

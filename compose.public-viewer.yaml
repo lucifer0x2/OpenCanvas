@@ -2,6 +2,8 @@
 # Funnel must target OPENCANVAS_PUBLIC_PORT (3848), never OPENCANVAS_PORT (3847).
 services:
   opencanvas:
+    environment:
+      OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP: "${OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP:-}"
     command:
       - opencanvas-server
       - --workspace

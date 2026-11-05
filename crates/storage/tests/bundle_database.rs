@@ -16,6 +16,10 @@ fn rejects_unexpected_schema_and_invalid_identity_retention_replay_or_nodes() {
         "UPDATE project_meta SET project_id='another'",
         "UPDATE project_meta SET current_revision=-1",
         "UPDATE project_meta SET schema_version=1",
+        "ALTER TABLE project_meta DROP COLUMN privacy_status",
+        "ALTER TABLE project_meta DROP COLUMN privacy_status;
+         ALTER TABLE project_meta ADD COLUMN privacy_status TEXT NOT NULL DEFAULT 'private'",
+        "PRAGMA ignore_check_constraints=ON; UPDATE project_meta SET privacy_status='unknown'",
         "DELETE FROM retention_metadata",
         "UPDATE retention_metadata SET oldest_commit_revision=2",
         "UPDATE retention_metadata SET idempotency_policy='expires'",

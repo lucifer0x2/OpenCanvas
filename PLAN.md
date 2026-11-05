@@ -24,6 +24,8 @@ Mục tiêu: agent tạo và đọc thiết kế qua MCP; người dùng nhìn k
 - Người dùng duyệt chọn storage khi khởi động qua `DATABASE_PROVIDER=sqlite|postgresql`, mặc định SQLite. PostgreSQL yêu cầu `DATABASE_URL` và bật Moka snapshot TTL 1 giờ. `PORT` mặc định 3847 và có thể được ghi đè qua `--port`. Chọn engine không tự chuyển project giữa hai storage.
 - Ngày 2026-11-03 người dùng yêu cầu setup Kubernetes local trên nhánh mới từ `feat/postgres-runtime-storage`. Task20 dùng cluster OrbStack sẵn có, PostgreSQL có volume và một replica OpenCanvas; truy cập loopback qua port-forward, chưa HA hoặc migration dữ liệu thật. AC và kiểm chứng tại `tasks/20-local-kubernetes.md`.
 - Tiếp Task20, người dùng yêu cầu listener Kubernetes chỉ đọc `3858` để tự forward qua Tailscale Funnel. Dùng public viewer router hiện có và HTTPS origin của máy; không tự bật Funnel. AC tại `tasks/20b-kubernetes-public-viewer.md`.
+- Người dùng yêu cầu thêm mật khẩu tùy chọn cho public viewer `3858`, mặc định mở. MCP cục bộ quản lý mật khẩu và phiên. Trình duyệt đăng nhập bằng cookie JWT HttpOnly trong 90 ngày. Phiên được lưu trong database, gắn với một địa chỉ IP và bị thu hồi khi cùng token xuất hiện từ IP khác. Hợp đồng và cấu hình proxy tại [docs/SERVER.md](docs/SERVER.md#public-viewer-password).
+- Người dùng yêu cầu mỗi project có `privacy_status: public | private`, mặc định `private` cho cả project cũ và mới. Cổng local `3857` xem và cập nhật trạng thái qua HTTP/MCP. Cổng public `3858` chỉ liệt kê và phục vụ dữ liệu project `public`, kể cả khi visitor đã đăng nhập.
 - Ngày 2026-11-03 người dùng yêu cầu rà và sửa10cảnh báo ink của U07 trên Kubernetes3857: phân biệt sai lệch đo nét chữ giữa runtime với overflow/clip thật, giữ nguyên authored design và kiểm lại runtime đích; AC tại `tasks/21-text-ink-rounding.md`.
 - File `db.sql` là SQLite binary; giữ nguyên đuôi `.sql` người dùng đã chọn.
 - Browser local ưu tiên hiển thị thiết kế chỉ đọc; không có editing, chat hoặc terminal trong sản phẩm.
@@ -66,6 +68,12 @@ Asset/font metadata đọc/list được qua MCP; không đòi UI quản lý res
 Component/variant tối giản là giai đoạn sau MVP; chưa triển khai override hoặc inheritance phức tạp.
 Responsive v1 chỉ là agent chọn viewport hữu hạn và bố cục trong phạm vi row/column đã công bố.
 Không cam kết tự động mô phỏng CSS media query hoặc mọi hành vi responsive của website.
+
+### Responsive opt-in — kích thước tỷ lệ và breakpoint
+
+- Node con nhận `width` và `height` là phần trăm thập phân từ `0%` đến `100%`, theo trục cha xác định. Root frame giữ kích thước authored dạng số và dùng viewport khi render. Min/max tính theo pixel.
+- Container có thể khai báo tối đa tám `layout.breakpoints` theo `maxWidth` tăng dần. Chọn layout đầu tiên thỏa `viewport.width <= maxWidth`, dùng layout mặc định ngoài các ngưỡng. Mỗi layout thay thế hoàn chỉnh và không lồng breakpoint.
+- Backend, layout binary, render và inspect dùng cùng quy tắc. Giữ authored revision và cập nhật backend với layout binary trong cùng image. Xem [hợp đồng responsive](docs/CONTRACT.md#responsive-layout).
 
 ### Task04 — row wrap được duyệt trước triển khai
 

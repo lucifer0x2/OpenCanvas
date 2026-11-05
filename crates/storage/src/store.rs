@@ -3,6 +3,7 @@ pub(crate) struct Root {
     pub(crate) path: PathBuf,
     _lock: File,
     pub(crate) projects: Mutex<BTreeMap<String, Weak<Project>>>,
+    pub(crate) viewer_db: Mutex<Option<Connection>>,
 }
 impl Root {
     pub(crate) fn check_path(&self) -> Result<()> {
@@ -42,6 +43,7 @@ impl Store {
                 path,
                 _lock: lock,
                 projects: Mutex::new(BTreeMap::new()),
+                viewer_db: Mutex::new(None),
             }),
         })
     }
@@ -73,7 +75,13 @@ impl Store {
         let mut conn = Connection::open(path.join("db.sql"))?;
         configure(&conn, true)?;
         let project_id = format!("p_{}", uuid::Uuid::new_v4().simple());
-        initialize(&mut conn, &project_id, slug, name)?;
+        initialize(
+            &mut conn,
+            &project_id,
+            slug,
+            name,
+            migration::DATABASE_SCHEMA_VERSION,
+        )?;
         sync_dir(&path)?;
         let project = Arc::new(Project {
             root: self.root.clone(),
@@ -104,7 +112,7 @@ impl Store {
             no_symlink(&path.join("db.sql-shm"))?;
             let conn = Connection::open_with_flags(db, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
             configure(&conn, false)?;
-            let meta = read_meta(&conn)?;
+            let meta = read_list_meta(&conn)?;
             if meta.slug != slug {
                 return Err(StorageError::new(
                     "PROJECT_INVALID",
@@ -150,12 +158,6 @@ impl Store {
         migration::migrate(&mut conn)?;
         configure(&conn, true)?;
         let meta = read_meta(&conn)?;
-        if meta.schema_version != SCHEMA_VERSION {
-            return Err(StorageError::new(
-                "SCHEMA_UNSUPPORTED",
-                "Project schema requires a supported migration before writing",
-            ));
-        }
         if meta.slug != slug {
             return Err(StorageError::new(
                 "PROJECT_INVALID",

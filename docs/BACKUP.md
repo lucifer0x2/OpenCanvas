@@ -74,13 +74,16 @@ the validated destination visible. The root registry lock serializes activation
 with create/open. Failed validation leaves no destination/staging directory.
 Malformed/unsupported bundles return `BUNDLE_INVALID`; path/conflict failures
 retain specific codes. Errors contain no private paths.
+Imported and restored projects start private, including bundles exported from
+public projects.
 
 ## Migration policy
 
-Internal database schema 4 is separate from layout input schema 1. Opening an
-on-disk schema-1, schema-2 or schema-3 project upgrades before writer setup. Every step
+Internal database schema 5 is separate from authored project schema 4 and layout
+input schema 1. Opening an older supported project upgrades before writer setup. Every step
 (schema 2 adds `retention_metadata`, schema 3 adds the `notes` table, and schema 4
-marks support for component/instance nodes without changing SQL columns) and the
+marks support for component/instance nodes without changing SQL columns, and
+schema 5 adds default-private project visibility) and the
 project metadata/PRAGMA version change run in one transaction. Authored IDs,
 revision, binary references and idempotency history stay intact. Supported
 retention is commits from 1 and lifetime idempotency, without expiration.
@@ -88,13 +91,13 @@ retention is commits from 1 and lifetime idempotency, without expiration.
 SQL failure returns `MIGRATION_FAILED` and rolls back DDL/data/version changes.
 Resolve the failure before reopening; do not bypass it by editing versions.
 Future versions or disagreeing PRAGMA/metadata versions return
-`SCHEMA_UNSUPPORTED`. Bundle v1 accepts database schemas 1–4. It validates the exact
+`SCHEMA_UNSUPPORTED`. Bundle v1 accepts database schemas 1–5. It validates the exact
 schema for the declared version before upgrading only its private staging database;
 unexpected tables, views, triggers or mismatched versions remain rejected. Export
-always writes schema 4 and retains authored components, instance references and
+always writes schema 5 and retains authored components, instance references and
 overrides; virtual children are never persisted. There is no public bundle route yet.
 Note rows are bounded (5000), their JSON `id` must equal the row and each note must
-anchor to an existing node. Schema 4 is one-way:
+anchor to an existing node. The database schema upgrade is one-way:
 an older binary reports `SCHEMA_UNSUPPORTED` rather than reading it. No downgrade or overwrite restore is provided.
 
 ## Executed verification

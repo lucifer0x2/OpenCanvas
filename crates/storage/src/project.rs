@@ -51,6 +51,22 @@ impl Project {
         }
         Ok(s)
     }
+    pub(crate) fn update_privacy(&self, privacy: PrivacyStatus) -> Result<(ProjectMeta, bool)> {
+        self.check_paths()?;
+        let mut conn = self.writer.lock().map_err(|_| poisoned())?;
+        let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let mut meta = read_meta(&tx)?;
+        let changed = meta.privacy_status != privacy;
+        if changed {
+            tx.execute(
+                "UPDATE project_meta SET privacy_status=?1 WHERE singleton=1",
+                [privacy.as_str()],
+            )?;
+            meta.privacy_status = privacy;
+        }
+        tx.commit()?;
+        Ok((meta, changed))
+    }
     pub(crate) fn request_ids(&self, project: &str, key: &str) -> Result<()> {
         if project != self.project_id {
             return Err(StorageError::validation(

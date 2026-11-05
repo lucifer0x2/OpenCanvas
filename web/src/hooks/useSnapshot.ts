@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { projectPath, read } from "../api";
+import { ApiError, projectPath, read } from "../api";
 import type { Snapshot } from "../types";
 
 /**
@@ -53,10 +53,14 @@ export function useSnapshot(
           accepted.current(next);
         }
       } catch (cause) {
-        if (!stopped)
-          setError(
-            cause instanceof Error ? cause.message : "Snapshot unavailable.",
-          );
+        if (stopped) return;
+        if (cause instanceof ApiError && cause.status === 404) {
+          current.current = null;
+          setSnapshot(null);
+        }
+        setError(
+          cause instanceof Error ? cause.message : "Snapshot unavailable.",
+        );
       } finally {
         inFlight = false;
         if (dirty && !stopped) {
@@ -82,5 +86,10 @@ export function useSnapshot(
         : null,
     [projectId],
   );
-  return { snapshot, error, refresh, revision };
+  return {
+    snapshot: snapshot?.projectId === projectId ? snapshot : null,
+    error,
+    refresh,
+    revision,
+  };
 }

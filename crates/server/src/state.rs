@@ -35,6 +35,7 @@ pub struct AppState {
     pub events: broadcast::Sender<Value>,
     pub jobs: Arc<Jobs>,
     pub(crate) snapshot_representations: SnapshotRepresentations,
+    pub(crate) viewer_auth_limits: Arc<crate::viewer_auth::limits::Limits>,
     shutdown: Arc<watch::Sender<bool>>,
 }
 impl AppState {
@@ -49,6 +50,7 @@ impl AppState {
             events,
             jobs,
             snapshot_representations: SnapshotRepresentations::new(),
+            viewer_auth_limits: Arc::new(crate::viewer_auth::limits::Limits::new()),
             shutdown: Arc::new(watch::channel(false).0),
         }
     }

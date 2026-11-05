@@ -47,25 +47,38 @@ The backend serves the built viewer. For frontend development, `npm --prefix web
 Public sharing is disabled by default. Opt in with **both** `--public-viewer-port`
 and `--public-viewer-origin`. The public port is a separate router sharing the
 same projects, jobs and live event streams. It has no MCP, project creation or
-font import handlers. It permits GET/HEAD reads and only one POST operation:
-`/api/v1/projects/{project}/exports`, which creates files without changing the
-authored revision. Other mutation methods and ambiguous encoded paths fail
+font import handlers. It permits GET/HEAD reads and POST to the sign-in route
+and `/api/v1/projects/{project}/exports`, which creates files without changing
+the authored revision. Other mutation methods and ambiguous encoded paths fail
 closed, including requests carrying spoofed loopback or forwarded headers.
 The local listener keeps its existing MCP and write access.
 
-There is no authentication or per-project sharing filter. **Anyone with the
-public URL can read every project and its notes, assets and fonts, follow live
-updates, download original resources, and request/export files.** Use a separate
-SQLite data root or PostgreSQL database if only selected projects should be shared. Rendering still has the
-existing queue, pixel and file budgets; public viewers share that capacity with
+The public listener only serves projects marked `public`, including their
+notes, assets, fonts, events and generated exports. A shared password, when
+enabled, gates this public subset. Public viewers share rendering capacity with
 local agents.
+
+### Project visibility
+
+Every new or existing project starts as `private` unless explicitly published.
+On the local listener, use MCP `update_project` or
+`PATCH /api/v1/projects/{project}` to set `privacy_status` to `public` or
+`private`. The MCP arguments are `{"projectId":"<id>","privacy_status":"public"}`.
+Project list, creation, metadata and HTTP snapshot responses include
+`privacy_status`. Changing visibility leaves the authored design revision intact.
+
+The public listener omits private projects from its list and returns 404 for
+direct links, their resources and their render or export jobs. A viewer password
+only grants access to projects marked public.
+
+### Start the public listener
 
 First identify your machine's HTTPS Funnel origin (for example
 `https://machine.tailnet-name.ts.net`), then run an updated build:
 
 ```sh
 npm run build -- --offline
-npm run dev -- --public-viewer-port 3848 \
+OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP=127.0.0.1 npm run dev -- --public-viewer-port 3848 \
   --public-viewer-origin https://machine.tailnet-name.ts.net
 # In another terminal; requires Tailscale Funnel enabled for your tailnet:
 tailscale funnel --bg http://127.0.0.1:3848
@@ -85,6 +98,29 @@ Public responses project generated scene font/asset, PNG, export and font
 download links onto the configured HTTPS origin. Worker callbacks, cached jobs
 and local MCP responses retain their loopback URLs. Viewer and HTML preview use
 those public resources directly; authored strings are preserved.
+
+### Public viewer password
+
+Use the MCP tools on the local listener (3857 with PostgreSQL Compose).
+
+| Tool | Arguments | Effect |
+| --- | --- | --- |
+| `set_public_viewer_password` | `{"password":"<shared password>"}` | Requires the new password and revokes existing sessions. Pass `{"password":null}` to return to open access and revoke existing sessions. |
+| `list_public_viewer_sessions` | `{}` | Lists active session IDs, IP addresses, browser user agents, and issuance and expiry times in Unix seconds. |
+| `revoke_public_viewer_session` | `{"sessionId":"<id from list>"}` | Revokes that browser session. |
+
+The sign-in form sets an HTTPS-only, HttpOnly cookie containing a signed JWT
+for 90 days. SQLite and PostgreSQL persist session records and a token digest.
+The password is stored as a salted hash. If a valid cookie is used from a
+different IP, the server revokes its session and requires sign-in again. This
+also applies when a device switches networks and its public IP changes.
+
+For a direct connection the server uses the TCP peer IP. Behind Funnel, set
+`OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP` to the single proxy peer address **as seen
+by OpenCanvas**. The listener accepts a single valid `X-Forwarded-For` address
+from that peer. Tailscale's HTTP reverse proxy replaces the incoming header
+with the original client IP. Keep the host port on loopback and restrict
+access to the proxy hop. For Docker, follow the [Compose runbook](COMPOSE-POSTGRES.md#public-viewer).
 
 For Docker, the default `compose.yaml` remains local-only. Opt in with the
 additional override file and rebuild the image to include this feature:

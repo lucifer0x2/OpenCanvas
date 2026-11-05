@@ -36,7 +36,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Khi `LOG.md` vượt ~300 dòng: chuyển các mục đã đóng sang `docs/agents/history/<ngày>.md`, giữ một dòng con trỏ trong `LOG.md`.
 - Memory ngoài repo (thư mục memory của Claude Code, `~/.codex/memories`, file CLAUDE.md/AGENTS.md chung) chỉ lưu con trỏ hoặc sự thật cần dùng xuyên phiên, không chép nhật ký repo.
 
-## Trạng thái hiện tại — 2026-11-03
+## Trạng thái hiện tại — 2026-11-04
 
 - Repo GitHub đã tạo lại: `main` local/remote @ `b7178be`, đủ 71 commit đã làm sạch attribution AI, tree gồm PR #1 và public viewer. Toàn bộ thay đổi chưa commit (Task14/16/19, canvas continuity, review PG, spike) đã commit và push lên `feat/postgres-runtime-storage` (nhánh từ `origin/main`), chưa mở PR. Nhánh cục bộ `claude/design-properties` là lịch sử cũ, không push.
 - Main được bảo vệ bằng ruleset 26259563 active: PR, chỉ `lucifer0x2` cập nhật/merge, chặn xóa/force-push với người khác; chủ repo bypass always.
@@ -44,8 +44,8 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Task14 P1–P5 đã kiểm độc lập: scoped themes/instance paint, bulk JSON/dry run và MCP-first guide. Debug đồng bộ đã build; chưa restart dịch vụ thật/commit/push. U07 golden/payload chờ design worker; xem `docs/TASK14-REPORT.md`.
 - Storage: Task19 PostgreSQL full domain. CLI mặc định SQLite, `DATABASE_PROVIDER=postgresql` + `DATABASE_URL` bật PostgreSQL và Moka snapshot TTL 1 giờ; `PORT`, `DATABASE_POOL_SIZE`/`DATABASE_*_TIMEOUT_MS` chỉnh runtime. GET snapshot có Moka bytes + ETag, opt-in rows cho GET/MCP. Xem `README.md`, `docs/MOKA-SNAPSHOT-CACHE.md`, `docs/RUNTIME-STORAGE-BENCHMARK.md`. Chưa TLS. Spike Task15/17 và Task18 backlog ở `codex/pg-delta-redis-hot-reads` @`162579a`.
 - Runtime PostgreSQL trên OrbStack chuyển sang `opencanvas-postgres` Compose (2 container, volume riêng). Dump/restore toàn DB giữ ID, revision, lịch sử và binary của hai project, đã kiểm MCP/PNG/snapshot. Cụm Kubernetes đã dừng, app/PG scale 0 và giữ PVC nguồn. Xem `docs/COMPOSE-POSTGRES.md`. Task20/20b/21 đã push `origin/codex/kubernetes-local` @`c91c209`; lịch sử ở `docs/KUBERNETES.md`, `docs/API-MCP-MIGRATION.md`, `docs/TEXT-INK-DIAGNOSTICS-FIX.md`.
-- Native 3847/3848 do người dùng quản lý. Compose MCP ở loopback3857, public viewer chỉ đọc ở loopback3858, dùng HTTPS origin hiện có. Funnel do người dùng quản lý. Xem `docs/PUBLIC-VIEWER-REPORT.md` và `docs/COMPOSE-POSTGRES.md`.
-- Giới hạn đã công bố vẫn hiệu lực: default interaction state, không arbitrary authored history, deep layout explanation/diff, log pruning/GC, runtime hot replacement, backup UI/CLI/MCP; Task04 chỉ row wrap, `%`/breakpoint cần duyệt riêng. Chi tiết ở `docs/ACCEPTANCE.md`.
+- Native 3847/3848 do người dùng quản lý. Compose MCP loopback3857, viewer chỉ đọc loopback3858 với auth tùy chọn và project mặc định private. MCP `update_project` đổi quyền. Funnel foreground trỏ 3858 do người dùng quản lý. Xem `docs/PUBLIC-VIEWER-REPORT.md` và `docs/COMPOSE-POSTGRES.md`.
+- Responsive `%`/breakpoint đã tích hợp và kiểm trên nhánh Compose; image mới chỉ chạy canary. Người dùng tự cài app thật: agent không tự deploy. Xem `docs/RESPONSIVE-COMPOSE-REPORT.md`; các giới hạn khác ở `docs/ACCEPTANCE.md`.
 - Không reset/checkout/stash hay bỏ thay đổi của người khác; không push; không ghi `~/.opencanvas`.
 - Khi có yêu cầu mới: đọc mục này, mục đang mở trong `docs/agents/LOG.md`, README/ACCEPTANCE và `git status`.
 

@@ -26,7 +26,7 @@ fn rejects_cycles_and_non_finite_geometry() {
     input.nodes[0].parent_id = Some("t".into());
     assert!(compute(&input, &MeasureCache::new()).is_err());
     input.nodes[0].parent_id = None;
-    input.viewport.width = f32::NAN;
+    input.viewport.width = f64::NAN;
     assert!(compute(&input, &MeasureCache::new()).is_err());
 }
 #[test]

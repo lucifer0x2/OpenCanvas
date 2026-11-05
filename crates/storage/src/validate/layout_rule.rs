@@ -8,7 +8,7 @@ const JUSTIFIES: [&str; 4] = ["start", "center", "end", "space-between"];
 const PADDING_HELP: &str = "Padding is a number or 1–4 numbers like CSS: [all], [vertical, horizontal], [top, horizontal, bottom] or [top, right, bottom, left]; each 0..100000 or a dimension token";
 
 /// Checks every key of a resolved `layout` object except the wrap width chain.
-pub(super) fn validate_layout_rule(l: &Map<String, Value>) -> Result<()> {
+pub(super) fn validate_layout_rule(l: &Map<String, Value>, base: bool) -> Result<()> {
     let mode = l.get("mode").and_then(Value::as_str);
     if !matches!(mode, Some("row" | "column" | "free")) {
         let mut message = "Only row, column and free layout are supported".to_string();
@@ -22,6 +22,12 @@ pub(super) fn validate_layout_rule(l: &Map<String, Value>) -> Result<()> {
             "mode" => {}
             "padding" => padding(value)?,
             "gap" => number(value, 0., 100_000., key)?,
+            "wrap" if value == true && mode != Some("row") => {
+                return Err(StorageError::validation(
+                    "layout.wrap",
+                    "Wrap requires row mode",
+                ))
+            }
             "wrap" if value.is_boolean() => {}
             "wrap" => {
                 return Err(StorageError::validation(
@@ -31,6 +37,7 @@ pub(super) fn validate_layout_rule(l: &Map<String, Value>) -> Result<()> {
             }
             "align" => keyword("align", value, &ALIGNS)?,
             "justify" => keyword("justify", value, &JUSTIFIES)?,
+            "breakpoints" if base => {}
             _ => return Err(unknown_key(key)),
         }
     }
@@ -119,6 +126,18 @@ impl Resolver<'_> {
         let Some(layout) = layout.as_object_mut() else {
             return Ok(());
         };
+        // Validate structure before visiting alternate rules. Rule refs have one nesting level.
+        super::breakpoints::rules(layout)?;
+        self.resolve_layout_rule_refs(layout)?;
+        if let Some(entries) = layout.get_mut("breakpoints").and_then(Value::as_array_mut) {
+            for entry in entries {
+                self.resolve_layout_rule_refs(entry["layout"].as_object_mut().unwrap())?;
+            }
+        }
+        Ok(())
+    }
+
+    fn resolve_layout_rule_refs(&self, layout: &mut Map<String, Value>) -> Result<()> {
         if let Some(v) = layout.get_mut("padding") {
             // A bad token inside a side list gets the shorthand help, as before quad sharing.
             let list = v.is_array();
