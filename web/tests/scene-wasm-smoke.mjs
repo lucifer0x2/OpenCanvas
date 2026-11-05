@@ -64,12 +64,12 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto(`${base}/?scene=wasm`);
+  await page.goto(base);
   await page.getByText("Scene r7", { exact: true }).waitFor();
   assert.deepEqual(
     sceneRequests(),
     [],
-    "successful WASM frame makes no /scene call",
+    "default route computes a WASM frame without a /scene call",
   );
   assert.equal(
     fontRequests().length,
@@ -152,7 +152,7 @@ try {
     route.fulfill({ status: 404, body: "missing module" }),
   );
   const failed = await fallback.newPage();
-  await failed.goto(`${base}/?scene=wasm`);
+  await failed.goto(base);
   await failed.getByText("Scene r8", { exact: true }).waitFor();
   await failed
     .getByText(/Browser scene unavailable; using server scene/)
@@ -160,7 +160,7 @@ try {
   assert.equal(
     sceneRequests().length,
     1,
-    "module failure calls the original scene route",
+    "default route falls back to the original scene route on module failure",
   );
   await fallback.close();
 
@@ -201,6 +201,15 @@ try {
   await damaged.close();
 
   const ordinary = await browser.newContext();
+  await ordinary.addInitScript(() => {
+    window.__sceneWorkerStarts = 0;
+    window.Worker = class {
+      constructor() {
+        window.__sceneWorkerStarts++;
+        throw Error("server selection must not start a Worker");
+      }
+    };
+  });
   const normal = await ordinary.newPage();
   const wasmLoads = [];
   normal.on("request", (req) => {
@@ -208,17 +217,18 @@ try {
       wasmLoads.push(req.url());
   });
   const beforeOrdinary = sceneRequests().length;
-  await normal.goto(base);
+  await normal.goto(`${base}/?scene=server`);
   await normal.getByText("Scene r9", { exact: true }).waitFor();
   assert.equal(sceneRequests().length, beforeOrdinary + 1);
+  assert.equal(await normal.evaluate(() => window.__sceneWorkerStarts), 0);
   assert.deepEqual(
     wasmLoads,
     [],
-    "default route never starts or initializes WASM",
+    "explicit server route never starts or initializes WASM",
   );
   await ordinary.close();
   console.log(
-    "WASM scene smoke passed: frame compute, shared font bytes, unused missing face, accepted SSE snapshot, module/hash fallback and retry, default lazy path.",
+    "WASM scene smoke passed: default frame compute, shared font bytes, unused missing face, accepted SSE snapshot, default module fallback, hash fallback and retry, explicit server lazy path.",
   );
 } finally {
   await browser?.close();

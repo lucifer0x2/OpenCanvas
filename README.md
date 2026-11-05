@@ -40,13 +40,14 @@ By default, open [the local viewer](http://127.0.0.1:3847); with `--port 0`, use
 An **experimental, not yet pixel-accepted** native PNG/export backend is available
 with `RENDER_BACKEND=rust` or `--render-backend rust`; `chromium` remains the default.
 The native server computes and paints without Node, Chromium or layout-step.
-Run the built Rust binary directly to avoid the npm launcher; this does not move
-the browser viewer to WASM. See [native backend limits](docs/SERVER.md#experimental-native-render-backend)
+Run the built Rust binary directly to avoid the npm launcher; this backend
+selection leaves the browser's Canvas2D painter unchanged. See [native backend limits](docs/SERVER.md#experimental-native-render-backend)
 and the [Task11 acceptance plan](docs/TASK11-NATIVE-PLAN.md).
 
-Frame scene computation can separately run in a browser Worker with `?scene=wasm`
-after building the optional scene module. Painting stays on Canvas2D; the server
-path is the default and fallback. See [browser scene build, parity and timings](docs/VIEWER-WASM-SCENE.md).
+Frame scene computation uses WASM in a browser Worker by default. Build the scene
+module for local runs; Docker builds it automatically. Painting stays on Canvas2D,
+and failures fall back to the server. Use `?scene=server` to select the server
+explicitly. See [browser scene build, parity and timings](docs/VIEWER-WASM-SCENE.md).
 
 `DATABASE_PROVIDER` accepts `sqlite` (default) or `postgresql`. SQLite uses `~/.opencanvas` by default. Set `OPENCANVAS_DATA_ROOT` or pass `--data-root DIR` to override it. Each SQLite project uses `<data-root>/<slug>/db.sql` (SQLite binary) and `assets/`. Only `create_project` creates a project. Use a separate temporary data root for SQLite experiments and tests.
 

@@ -1,5 +1,11 @@
 # Nhật ký điều phối OpenCanvas
 
+### WASM scene mặc định — 2026-11-05
+
+- Người dùng chốt WASM làm mặc định, server chỉ fallback; giao fresh worker sửa cờ chọn engine và regression unit/browser, giữ override server tường minh. Chỉ worktree viewer riêng; không sửa checkout chính hoặc runtime thật. Nhánh đã push theo yêu cầu trước đó, cập nhật sau khi kiểm đủ thay đổi này.
+- Nhận thay đổi; root kiểm độc lập web68/68, typecheck, production build và WASM browser smoke đều đạt. URL thường không gọi scene API; module lỗi fallback một lần, server override không tạo Worker/tải WASM; storage thiếu/lỗi vẫn chọn WASM.
+- Điểm dừng trước commit: source/test tối đa239 dòng, reference VIEWER.md cũ254 dòng chỉ sửa mô tả, AGENTS trong ngân sách; diff/format sạch. Email Git đúng yêu cầu; duyệt commit nhỏ và cập nhật nhánh remote đã được người dùng cho push, không artifact/trailer hoặc deploy.
+
 ### Docker browser scene WASM — 2026-11-05
 
 - Người dùng yêu cầu build WASM trong image, loại artifact host khỏi context và phục vụ precompressed static; giao fresh workers cho Docker/build scripts, static HTTP và backstop Worker. Chỉ worktree viewer riêng, không push hoặc sửa main checkout; kiểm Compose dùng project/env/data tạm.

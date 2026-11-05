@@ -1,16 +1,17 @@
-/** Explicit query selection wins over a saved preference, including ?scene=server. */
+/** WASM is the default; recognized queries override a saved troubleshooting preference. */
 export function wasmSceneEnabled(
   search = globalThis.location?.search ?? "",
   storage?: Pick<Storage, "getItem">,
 ): boolean {
   const selected = new URLSearchParams(search).get("scene");
-  if (selected !== null) return selected === "wasm";
+  if (selected === "wasm") return true;
+  if (selected === "server") return false;
   try {
     return (
-      (storage ?? globalThis.localStorage)?.getItem("opencanvas.scene") ===
-      "wasm"
+      (storage ?? globalThis.localStorage)?.getItem("opencanvas.scene") !==
+      "server"
     );
   } catch {
-    return false;
+    return true;
   }
 }

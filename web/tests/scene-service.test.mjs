@@ -31,25 +31,71 @@ const snapshot = {
 };
 const signal = () => new AbortController().signal;
 
-test("scene engine is server by default and explicit query overrides storage", () => {
-  assert.equal(wasmSceneEnabled("", { getItem: () => null }), false);
-  assert.equal(wasmSceneEnabled("?scene=wasm"), true);
+test("scene engine defaults to WASM and honors only recognized preferences", () => {
+  for (const saved of [null, "wasm", "", "unknown"])
+    assert.equal(wasmSceneEnabled("", { getItem: () => saved }), true);
+  assert.equal(wasmSceneEnabled("", { getItem: () => "server" }), false);
+  for (const selected of ["", "unknown"])
+    assert.equal(
+      wasmSceneEnabled(`?scene=${selected}`, { getItem: () => null }),
+      true,
+      "unknown query values keep the WASM default",
+    );
   assert.equal(
-    wasmSceneEnabled("?scene=server", { getItem: () => "wasm" }),
+    wasmSceneEnabled("?scene=unknown", { getItem: () => "server" }),
     false,
+    "unknown query values preserve an explicit saved preference",
   );
-  assert.equal(wasmSceneEnabled("", { getItem: () => "wasm" }), true);
+});
+
+test("recognized scene query overrides storage without reading it", () => {
+  for (const selected of ["wasm", "server"])
+    for (const saved of ["wasm", "server"])
+      assert.equal(
+        wasmSceneEnabled(`?scene=${selected}`, { getItem: () => saved }),
+        selected === "wasm",
+      );
+  for (const selected of ["wasm", "server"])
+    assert.equal(
+      wasmSceneEnabled(`?scene=${selected}`, {
+        getItem: () => {
+          throw Error("must not read storage");
+        },
+      }),
+      selected === "wasm",
+    );
+});
+
+test("unavailable or denied localStorage keeps the WASM default", () => {
   assert.equal(
     wasmSceneEnabled("", {
       getItem: () => {
         throw Error("denied");
       },
     }),
-    false,
+    true,
   );
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  try {
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: undefined,
+    });
+    assert.equal(wasmSceneEnabled(""), true);
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      get: () => {
+        throw Error("denied");
+      },
+    });
+    assert.equal(wasmSceneEnabled(""), true);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, "localStorage", previous);
+    else delete globalThis.localStorage;
+  }
 });
 
-test("server default never starts browser compute; browser success never calls server", async () => {
+test("explicit server selection skips browser compute; browser success never calls server", async () => {
   let called = 0;
   const server = async () => ({ status: "ready", diagnostics: [] });
   const browser = async (desired, accepted) => {

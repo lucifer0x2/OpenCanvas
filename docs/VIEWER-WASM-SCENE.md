@@ -52,9 +52,11 @@ symlink was removed; dependencies are installed locally and ignored.
 Docker builds compile WASM in an isolated Rust stage and serve Brotli/gzip
 sidecars. Build measurements and container checks: [Docker report](VIEWER-WASM-DOCKER.md).
 
-Open a frame with **`?scene=wasm`**. A saved preference is also supported:
-`localStorage["opencanvas.scene"] = "wasm"`; explicit `?scene=server` wins.
-Server computation remains the default. The module initializes lazily in a
+Open a frame normally: **WASM is the default**, with server computation as backup.
+Explicit `?scene=wasm` or `?scene=server` overrides the saved
+`localStorage["opencanvas.scene"]` preference. A saved `server` preference selects
+the server for troubleshooting; absent/unknown preferences or inaccessible
+storage use WASM. The module initializes lazily in a
 dedicated Worker. Failure falls back to the existing scene job route and shows
 a notice even when ordinary notices are hidden. Aborting a request settles only
 that caller while the Worker and loaded fonts remain warm. Late success replies

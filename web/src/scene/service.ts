@@ -84,7 +84,7 @@ export async function computeBrowserScene(
   };
 }
 
-/** Default server route stays untouched; any opt-in computation error has a visible fallback. */
+/** WASM errors have a visible server fallback; explicit server selection skips browser compute. */
 export async function loadScene(
   request: SceneRequest,
   snapshot: Snapshot | null,
