@@ -1416,6 +1416,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "opencanvas-scene-wasm"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "opencanvas-layout",
+ "opencanvas-scene-input",
+ "opencanvas-text",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "opencanvas-server"
 version = "0.1.0"
 dependencies = [

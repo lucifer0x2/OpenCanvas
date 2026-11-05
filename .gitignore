@@ -2,6 +2,7 @@ node_modules/
 target/
 renderer/dist/
 web/dist/
+web/public/scene-wasm/
 spikes/pipeline/output/
 .DS_Store
 .runtime/
