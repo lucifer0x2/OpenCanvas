@@ -60,15 +60,24 @@ fn storage_font_compute_is_one_pass_and_never_follows_scene_urls() {
 
 #[tokio::test]
 async fn deadline_drains_owned_work_and_aborted_future_keeps_lane_guard() {
+    // Isolate deadline/cancellation ownership from other tests' native exports.
+    static TEST_LANE: Semaphore = Semaphore::const_new(1);
+    let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     let finished = Arc::new(AtomicBool::new(false));
     let end = finished.clone();
-    let error = blocking(Instant::now() + Duration::from_millis(30), move |_| {
-        std::thread::sleep(Duration::from_millis(70));
-        end.store(true, Ordering::SeqCst);
-        Ok(())
-    })
-    .await
-    .unwrap_err();
+    let work = blocking_with_lane(
+        Instant::now() + Duration::from_millis(30),
+        move |_| {
+            started_tx.send(()).unwrap();
+            std::thread::sleep(Duration::from_millis(70));
+            end.store(true, Ordering::SeqCst);
+            Ok(())
+        },
+        &TEST_LANE,
+    );
+    let (result, started) = tokio::join!(work, started_rx);
+    started.expect("the timed-out job must have entered the lane");
+    let error = result.unwrap_err();
     assert_eq!(error.0.code, "JOB_TIMEOUT");
     assert!(
         finished.load(Ordering::SeqCst),
@@ -78,7 +87,7 @@ async fn deadline_drains_owned_work_and_aborted_future_keeps_lane_guard() {
     let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     let (release_tx, release_rx) = std::sync::mpsc::channel();
     let (cancelled_tx, cancelled_rx) = tokio::sync::oneshot::channel();
-    let task = tokio::spawn(blocking(
+    let task = tokio::spawn(blocking_with_lane(
         Instant::now() + Duration::from_secs(2),
         move |control| {
             started_tx.send(()).unwrap();
@@ -88,16 +97,21 @@ async fn deadline_drains_owned_work_and_aborted_future_keeps_lane_guard() {
                 .unwrap();
             Ok(())
         },
+        &TEST_LANE,
     ));
     started_rx.await.unwrap();
     task.abort();
     let _ = task.await;
     let entered = Arc::new(AtomicBool::new(false));
     let marker = entered.clone();
-    let error = blocking(Instant::now() + Duration::from_millis(20), move |_| {
-        marker.store(true, Ordering::SeqCst);
-        Ok(())
-    })
+    let error = blocking_with_lane(
+        Instant::now() + Duration::from_millis(20),
+        move |_| {
+            marker.store(true, Ordering::SeqCst);
+            Ok(())
+        },
+        &TEST_LANE,
+    )
     .await
     .unwrap_err();
     assert_eq!(error.0.code, "JOB_TIMEOUT");
@@ -107,7 +121,11 @@ async fn deadline_drains_owned_work_and_aborted_future_keeps_lane_guard() {
     );
     release_tx.send(()).unwrap();
     assert_eq!(cancelled_rx.await.unwrap(), "JOB_CANCELLED");
-    blocking(Instant::now() + Duration::from_secs(2), |_| Ok(()))
-        .await
-        .unwrap();
+    blocking_with_lane(
+        Instant::now() + Duration::from_secs(2),
+        |_| Ok(()),
+        &TEST_LANE,
+    )
+    .await
+    .unwrap();
 }

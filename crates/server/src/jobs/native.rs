@@ -6,9 +6,9 @@ mod resources;
 mod tests;
 use super::queue::Work;
 use crate::error::{ApiError, Result};
-use opencanvas_layout::{LayoutError, LayoutInput, MeasureRequest, Measurement, TextMeasurer};
+use opencanvas_layout::{LayoutError, LayoutInput};
 use opencanvas_storage::Storage;
-use opencanvas_text::FontSet;
+use opencanvas_text::FontSetMeasurer;
 use serde_json::{json, Value};
 use std::{
     sync::{
@@ -38,10 +38,18 @@ pub(super) async fn blocking<T: Send + 'static>(
     deadline: Instant,
     run: impl FnOnce(Control) -> Result<T> + Send + 'static,
 ) -> Result<T> {
+    blocking_with_lane(deadline, run, &LANE).await
+}
+
+async fn blocking_with_lane<T: Send + 'static>(
+    deadline: Instant,
+    run: impl FnOnce(Control) -> Result<T> + Send + 'static,
+    lane: &'static Semaphore,
+) -> Result<T> {
     let control = Control::new(deadline);
     let _cancel_on_drop = CancelOnDrop(control.cancelled.clone());
     let until = tokio::time::Instant::from_std(deadline);
-    let permit = tokio::time::timeout_at(until, LANE.acquire())
+    let permit = tokio::time::timeout_at(until, lane.acquire())
         .await
         .map_err(|_| timeout())?
         .map_err(|_| ApiError::new("INTERNAL_ERROR", "Native compute lane unavailable"))?;
@@ -78,11 +86,12 @@ fn compute_sync(store: &Storage, input: Value, control: Control) -> Result<Compu
     let input: LayoutInput = serde_json::from_value(input)?;
     let resources = resources::load(store, &input, &control)?;
     control.check()?;
-    let mut measurer = Measurer {
-        fonts: &resources.fonts,
-        control: &control,
-        measured: 0,
-    };
+    let mut measurer = FontSetMeasurer::with_check(&resources.fonts, || {
+        control.check().map_err(|error| LayoutError {
+            code: error.0.code.clone(),
+            message: error.0.message.clone(),
+        })
+    });
     let mut scene = opencanvas_layout::compute_with_measurer(&input, &mut measurer)
         .map_err(|error| ApiError::new(&error.code, &error.message))?;
     control.check()?;
@@ -91,38 +100,13 @@ fn compute_sync(store: &Storage, input: Value, control: Control) -> Result<Compu
         .extend(resources.diagnostics.iter().cloned());
     let result = json!({"status":"ready","scene":scene,"readiness":resources.readiness,
         "diagnostics":resources.diagnostics,
-        "metrics":{"layoutPasses":1,"batchRPCs":0,"measuredItems":measurer.measured,
+        "metrics":{"layoutPasses":1,"batchRPCs":0,"measuredItems":measurer.measured(),
             "cacheEntriesBefore":0,"elapsedMs":started.elapsed().as_secs_f64()*1000.0}});
     control.check()?;
     Ok(Computed {
         value: result,
         bytes: Arc::new(resources.bytes),
     })
-}
-
-struct Measurer<'a> {
-    fonts: &'a FontSet,
-    control: &'a Control,
-    measured: usize,
-}
-impl TextMeasurer for Measurer<'_> {
-    fn measure(
-        &mut self,
-        request: &MeasureRequest,
-    ) -> std::result::Result<Measurement, LayoutError> {
-        let convert = |error: ApiError| LayoutError {
-            code: error.0.code.clone(),
-            message: error.0.message.clone(),
-        };
-        self.control.check().map_err(convert)?;
-        let measurement = self
-            .fonts
-            .measure(request)
-            .map_err(|error| convert(resources::text_error(error)))?;
-        self.measured += 1;
-        self.control.check().map_err(convert)?;
-        Ok(measurement)
-    }
 }
 
 pub(super) struct Control {
