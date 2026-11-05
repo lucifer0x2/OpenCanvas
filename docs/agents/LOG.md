@@ -1,5 +1,11 @@
 # Nhật ký điều phối OpenCanvas
 
+### Đồng bộ PR #7 với main — 2026-11-05
+
+- Người dùng yêu cầu merge main; giao fresh worker hòa conflict trong worktree tạm, giữ nguyên checkout/cache dev ở thư mục gốc. Giữ capabilities hover/responsive của main, bỏ khai báo animations trùng và bảo toàn nhật ký hai nhánh.
+- Nhận hai file đã hòa, không còn unmerged; root kiểm web68/68 và typecheck đạt. Kiểm Rust capabilities dùng target tạm riêng; chỉ push sau gate rồi dọn đúng worktree/cache tạm.
+- Điểm dừng trước merge commit: Rust capabilities1/1, scoped fmt/diff đạt; capabilities khớp main và toàn bộ dòng nhật ký hai parent còn đủ. Duyệt commit merge main04f6a05 vào nhánh PR, push rồi xác nhận GitHub hết conflict và dọn worktree/target tạm; target dev gốc vẫn1,5GiB.
+
 ### Compose Rust native mặc định và dọn worktree — 2026-11-05
 
 - Người dùng yêu cầu bật backend Rust native trong Compose, push rồi xóa worktree viewer riêng. Giao fresh worker sửa hai cấu hình SQLite/PostgreSQL, giữ override Chromium và kiểm merge public-viewer bằng env tạm. Không restart/deploy app thật, không sửa checkout chính; chỉ dọn worktree sau khi commit đã xác nhận trên remote.
@@ -207,6 +213,7 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Người dùng yêu cầu làm tiếp Task09 để chuyển renderer sang Rust. Máy là VM Linux aarch64 4 nhân không GPU (tiny-skia raster CPU nên không cần GPU); handoff gốc nhắm macOS, số đo ghi rõ nền tảng. Người dùng duyệt cài rustup stable 1.99.1 + `wasm32-unknown-unknown` (root cài thêm `build-essential`, `brotli` qua apt) và bỏ phần đo Chromium/Worker vì máy chưa có Node/Playwright.
 - Spike không build được trên `main` @`c2bf260` vì `opencanvas-layout` đã đổi `TextLine`/`Measurement`/`fill`/`radius`; root sửa 4 dòng để build lại native. Worktree `../OpenCanvas-task09`, nhánh `feat/task09-wasm-spike` từ `main`. Giao fresh worker: tách lib C-ABI, build WASM hai biến thể, đo size/native, so pixel native↔WASM qua runtime WASM nhúng trong spike.
+
 ### Xác thực public viewer — 2026-11-03
 
 - Giao worker backend cho xác thực riêng public listener, lưu phiên trong SQLite/PostgreSQL, công cụ quản trị MCP và IP qua proxy tin cậy. Giao worker frontend cho dialog và khóa mount viewer theo trạng thái phiên. Kiểm trên dữ liệu tạm trước khi đánh giá rollout.
@@ -285,3 +292,7 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Nhận P2: parity lên 71 PASS/4 FAIL ngoài text/13 REVIEW_TEXT; ảnh và gradient đều đạt trên matrix, source ổn định. Còn 4 ca stroke/clip/shadow 1× vượt ngưỡng, giao fresh P3 khảo sát raster/coverage có giới hạn; không thay fixture, mask hoặc tolerance. Unit/lint/WASM build của P2 chưa thay cho execution parity trên painter mới.
 - Nhận review server R1 có 3 Required: SVG-only bị chặn theo khả năng raster (COLRv1 hợp lệ), PNG có thể publish sau deadline, và provenance PNG thiếu scale. Root đọc bằng chứng và giao fresh S1 sửa + regression; không coi test cũ mong SVG fail là thay đổi AC được duyệt.
 - Nhận I1: 13/14 ICC captures đạt, RGB/gray + alpha max Δ4; CMYK ICC lệch toàn bộ fixture, native khớp reference tự tính còn Chromium khác nên chưa kết luận lỗi phía nào. Giao fresh I2 kiểm tính hợp lệ/PCS và chỉ sửa CMS nếu có căn cứ; profile hỏng vẫn là probe riêng, không tính vào pass.
+
+### Đồng bộ PR #6 với main — 2026-11-04
+
+- Merge `main` (`c2bf260`, hover animation trigger) vào `codex/compose-postgres`. Xung đột ở `capabilities.rs`, `implement-frame.md` và nhật ký: giữ `restrictions.layout` responsive và `restrictions.animations` hover dạng khóa riêng, giữ bullet overflow mới cùng hướng dẫn hover theo `triggerNodeId`, đặt các mục hover của main trước mục nhánh.
