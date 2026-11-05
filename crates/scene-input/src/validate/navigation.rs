@@ -101,7 +101,7 @@ impl Candidate {
 
     /// Drops links to nodes this batch deleted and did not recreate; an emptied `links` key is
     /// removed. Sources join `changed`. A link that never pointed at a node still fails later.
-    pub(crate) fn prune_links(&mut self, changed: &mut BTreeSet<String>) {
+    pub fn prune_links(&mut self, changed: &mut BTreeSet<String>) {
         if self.deleted.is_empty() {
             return;
         }

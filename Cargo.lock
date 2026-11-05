@@ -1406,6 +1406,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "opencanvas-scene-input"
+version = "0.1.0"
+dependencies = [
+ "opencanvas-layout",
+ "rusqlite",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "opencanvas-server"
 version = "0.1.0"
 dependencies = [
@@ -1417,6 +1427,7 @@ dependencies = [
  "moka",
  "opencanvas-layout",
  "opencanvas-render",
+ "opencanvas-scene-input",
  "opencanvas-storage",
  "opencanvas-text",
  "png",
@@ -1443,6 +1454,7 @@ dependencies = [
  "libc",
  "moka",
  "opencanvas-layout",
+ "opencanvas-scene-input",
  "postgres",
  "rusqlite",
  "serde",

@@ -28,7 +28,7 @@ mod text_props;
 mod token_graph;
 mod tokens;
 mod values;
-pub(crate) use candidate::Candidate;
+pub use candidate::Candidate;
 pub use refs::{
     referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
     resolved_tokens_for_theme,

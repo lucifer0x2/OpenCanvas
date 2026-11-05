@@ -102,14 +102,14 @@ pub enum PrivacyStatus {
 }
 
 impl PrivacyStatus {
-    pub(crate) fn as_str(self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             Self::Private => "private",
             Self::Public => "public",
         }
     }
 
-    pub(crate) fn from_storage(value: &str) -> crate::Result<Self> {
+    pub fn from_storage(value: &str) -> crate::Result<Self> {
         match value {
             "private" => Ok(Self::Private),
             "public" => Ok(Self::Public),

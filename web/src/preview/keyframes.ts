@@ -1,5 +1,5 @@
 /**
- * The motion spec of `props.animations` (crates/storage/src/animation_catalog.rs) as WAAPI
+ * The motion spec of `props.animations` (crates/scene-input/src/animation_catalog.rs) as WAAPI
  * keyframes. Pure: no DOM access, so the rules are unit tested in Node.
  *
  * - Omitted offsets spread like WAAPI; a lone keyframe without offset is offset 1.

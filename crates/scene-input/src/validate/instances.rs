@@ -4,6 +4,7 @@ use crate::{
     instances::{expand, INSTANCE_KEYS, OVERRIDE_KEYS},
     *,
 };
+use std::collections::BTreeSet;
 
 impl Candidate {
     pub(super) fn validate_instances(&self) -> Result<()> {

@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/layout", "crates/storage", "crates/server", "crates/text", "crates/render"]
+members = ["crates/layout", "crates/storage", "crates/server", "crates/text", "crates/render", "crates/scene-input"]
 resolver = "2"
 
 [workspace.package]

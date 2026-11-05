@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+opencanvas-scene-input = { path = "../scene-input" }
 opencanvas-storage = { path = "../storage" }
 opencanvas-layout = { path = "../layout" }
 opencanvas-text = { path = "../text" }

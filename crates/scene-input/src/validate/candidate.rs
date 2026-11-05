@@ -2,7 +2,7 @@ use super::values::*;
 use crate::{error::*, model::*};
 use std::collections::{BTreeMap, BTreeSet};
 #[derive(Clone)]
-pub(crate) struct Candidate {
+pub struct Candidate {
     pub(super) theme: String,
     pub nodes: BTreeMap<String, Node>,
     pub tokens: BTreeMap<String, Token>,

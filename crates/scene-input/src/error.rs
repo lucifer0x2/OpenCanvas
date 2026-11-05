@@ -93,6 +93,7 @@ impl From<serde_json::Error> for StorageError {
         Self::validation("json", "Invalid or unsupported JSON data")
     }
 }
+#[cfg(feature = "sqlite-errors")]
 impl From<rusqlite::Error> for StorageError {
     fn from(e: rusqlite::Error) -> Self {
         if matches!(
