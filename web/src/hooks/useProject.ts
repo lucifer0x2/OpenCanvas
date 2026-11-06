@@ -42,7 +42,7 @@ export function useProject() {
       const valid = reconcileSelection(next, previous);
       if (previous.frameId && valid.frameId !== previous.frameId)
         setNotice(
-          "The selected frame was removed. Showing the first available frame.",
+          "The selected frame was removed. Showing all frames on this page.",
         );
       else if (previous.nodeId && valid.nodeId !== previous.nodeId)
         setNotice("The selected layer was removed. Showing its frame.");

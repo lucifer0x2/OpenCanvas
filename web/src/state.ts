@@ -9,11 +9,12 @@ import type {
   Snapshot,
 } from "./types.ts";
 import { readNodeLink, selectionNode } from "./deepLink.ts";
+import { ALL_FRAMES, frameForNode } from "./frameScope.ts";
 
 export const EMPTY_SELECTION: Selection = {
   projectId: "",
   pageId: "",
-  frameId: "",
+  frameId: ALL_FRAMES,
   nodeId: "",
 };
 
@@ -22,7 +23,8 @@ export function children(nodes: DesignNode[], parentId: string | null) {
     .filter((node) => node.parentId === parentId)
     .sort(
       (a, b) =>
-        Number(a.sortKey) - Number(b.sortKey) || a.id.localeCompare(b.id),
+        Number(a.sortKey) - Number(b.sortKey) ||
+        (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
     );
 }
 
@@ -43,8 +45,19 @@ export function reconcileSelection(
   const frames = children(snapshot.nodes, page?.id ?? "").filter(
     (node) => node.kind === "frame",
   );
-  const frame =
-    frames.find((node) => node.id === previous.frameId) ?? frames[0];
+  const frame = frames.find((node) => node.id === previous.frameId);
+  if (!frame || previous.projectId !== snapshot.projectId) {
+    return {
+      projectId: snapshot.projectId,
+      pageId: page?.id ?? "",
+      frameId: ALL_FRAMES,
+      nodeId:
+        previous.projectId === snapshot.projectId &&
+        frameForNode(snapshot.nodes, previous.nodeId, page?.id ?? "")
+          ? previous.nodeId
+          : "",
+    };
+  }
   const byId = new Map(snapshot.nodes.map((node) => [node.id, node]));
   let candidate = selectionNode(snapshot.nodes, previous.nodeId);
   const seen = new Set<string>();

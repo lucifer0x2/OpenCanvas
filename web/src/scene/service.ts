@@ -1,8 +1,5 @@
-import { SCENE_VERSION, RENDERER_VERSION } from "../../../renderer/types.ts";
 import { fetchSceneJob } from "../sceneJob.ts";
-import { acceptsJob } from "../state.ts";
 import type { RenderJob, SceneRequest, Snapshot } from "../types.ts";
-import type { FontBytesProvider } from "../../../renderer/resource-bytes.ts";
 import { sceneFontBytes, untilAborted } from "./fontBytes.ts";
 import {
   decorateFonts,
@@ -10,10 +7,25 @@ import {
   snapshotResources,
 } from "./manifests.ts";
 import { sceneWorker } from "./workerClient.ts";
+import {
+  cachedBrowserScene,
+  type BrowserSceneResult,
+} from "./browserSceneCache";
+import { validateBrowserScene } from "./sceneIdentity";
 
-interface SceneResult {
-  job: RenderJob;
-  fontBytes?: FontBytesProvider;
+export function loadBrowserScene(
+  request: SceneRequest,
+  snapshot: Snapshot,
+  signal: AbortSignal,
+  bypassCache = false,
+) {
+  return cachedBrowserScene(
+    request,
+    snapshot,
+    signal,
+    computeBrowserScene,
+    bypassCache,
+  );
 }
 
 export const WASM_FALLBACK = "Browser scene unavailable; using server scene";
@@ -23,7 +35,7 @@ export async function computeBrowserScene(
   request: SceneRequest,
   snapshot: Snapshot,
   signal: AbortSignal,
-): Promise<SceneResult> {
+): Promise<BrowserSceneResult> {
   const manifests = snapshotResources(snapshot, request);
   const message = {
     request,
@@ -51,6 +63,7 @@ export async function computeBrowserScene(
     signal,
   );
   const scene = decorateResources(computed, manifests);
+  validateBrowserScene(scene, request);
   const job: RenderJob = {
     jobId: `browser-${scene.provenance.sourceSceneKey}`,
     status: "ready",
@@ -60,17 +73,6 @@ export async function computeBrowserScene(
     sceneKey: scene.provenance.sourceSceneKey,
     scene,
   };
-  if (
-    !acceptsJob(job, request) ||
-    !job.sceneKey ||
-    scene.schemaVersion !== 1 ||
-    scene.coordinateSpace !== "frame-local" ||
-    scene.provenance.sceneVersion !== SCENE_VERSION ||
-    scene.provenance.rendererVersion !== RENDERER_VERSION
-  )
-    throw new Error(
-      "Browser scene does not match this revision, viewport or pipeline.",
-    );
   return {
     job,
     fontBytes: (font, timeout) => {
@@ -90,13 +92,14 @@ export async function loadScene(
   snapshot: Snapshot | null,
   signal: AbortSignal,
   wasm: boolean,
-  browser = computeBrowserScene,
+  browser = loadBrowserScene,
   server = fetchSceneJob,
-): Promise<SceneResult> {
+  bypassCache = false,
+): Promise<BrowserSceneResult> {
   if (!wasm) return { job: await server(request, signal) };
   try {
     if (!snapshot) throw new Error("The authored snapshot is unavailable.");
-    return await browser(request, snapshot, signal);
+    return await browser(request, snapshot, signal, bypassCache);
   } catch (cause) {
     signal.throwIfAborted();
     const reason =

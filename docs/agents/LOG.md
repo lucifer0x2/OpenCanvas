@@ -1,31 +1,6 @@
 # Nhật ký điều phối OpenCanvas
 
-### Đồng bộ PR #7 với main — 2026-11-05
-
-- Người dùng yêu cầu merge main; giao fresh worker hòa conflict trong worktree tạm, giữ nguyên checkout/cache dev ở thư mục gốc. Giữ capabilities hover/responsive của main, bỏ khai báo animations trùng và bảo toàn nhật ký hai nhánh.
-- Nhận hai file đã hòa, không còn unmerged; root kiểm web68/68 và typecheck đạt. Kiểm Rust capabilities dùng target tạm riêng; chỉ push sau gate rồi dọn đúng worktree/cache tạm.
-- Điểm dừng trước merge commit: Rust capabilities1/1, scoped fmt/diff đạt; capabilities khớp main và toàn bộ dòng nhật ký hai parent còn đủ. Duyệt commit merge main04f6a05 vào nhánh PR, push rồi xác nhận GitHub hết conflict và dọn worktree/target tạm; target dev gốc vẫn1,5GiB.
-
-### Compose Rust native mặc định và dọn worktree — 2026-11-05
-
-- Người dùng yêu cầu bật backend Rust native trong Compose, push rồi xóa worktree viewer riêng. Giao fresh worker sửa hai cấu hình SQLite/PostgreSQL, giữ override Chromium và kiểm merge public-viewer bằng env tạm. Không restart/deploy app thật, không sửa checkout chính; chỉ dọn worktree sau khi commit đã xác nhận trên remote.
-- Nhận cấu hình, worker kiểm16 tổ hợp và đối chiếu toàn bộ config còn lại với HEAD; root kiểm thêm bốn trường hợp public-overlay mặc định/override, đều đạt. Hai Compose mặc định Rust, giữ env override Chromium; docs đã cập nhật, diff sạch, email đúng yêu cầu, AGENTS trong ngân sách.
-- Điểm dừng trước commit: duyệt commit năm file cấu hình/tài liệu và push lên đúng nhánh; sau khi remote khớp HEAD và worktree sạch sẽ xóa worktree cùng artifact generated. Không có build/process đang dùng worktree; `.runtime` là symlink nên chỉ bỏ liên kết, giữ thư mục đích ở checkout chính. App thật và volume Docker không được restart/xóa.
-
-### WASM scene mặc định — 2026-11-05
-
-- Người dùng chốt WASM làm mặc định, server chỉ fallback; giao fresh worker sửa cờ chọn engine và regression unit/browser, giữ override server tường minh. Chỉ worktree viewer riêng; không sửa checkout chính hoặc runtime thật. Nhánh đã push theo yêu cầu trước đó, cập nhật sau khi kiểm đủ thay đổi này.
-- Nhận thay đổi; root kiểm độc lập web68/68, typecheck, production build và WASM browser smoke đều đạt. URL thường không gọi scene API; module lỗi fallback một lần, server override không tạo Worker/tải WASM; storage thiếu/lỗi vẫn chọn WASM.
-- Điểm dừng trước commit: source/test tối đa239 dòng, reference VIEWER.md cũ254 dòng chỉ sửa mô tả, AGENTS trong ngân sách; diff/format sạch. Email Git đúng yêu cầu; duyệt commit nhỏ và cập nhật nhánh remote đã được người dùng cho push, không artifact/trailer hoặc deploy.
-
-### Docker browser scene WASM — 2026-11-05
-
-- Người dùng yêu cầu build WASM trong image, loại artifact host khỏi context và phục vụ precompressed static; giao fresh workers cho Docker/build scripts, static HTTP và backstop Worker. Chỉ worktree viewer riêng, không push hoặc sửa main checkout; kiểm Compose dùng project/env/data tạm.
-- Image baseline `opencanvas:kubernetes-local` hiện có 354.279.699 byte; sẽ đo thêm một build baseline cùng nguồn trước khi so kích thước. Email Git đã xác nhận đúng yêu cầu.
-- Nhận ba lát triển khai: shared script giữ flags release, Docker build tạo sidecars, static service negotiate br/gzip riêng với MIME gốc, và Worker có post-time backstop giữ deadline qua replay. Root kiểm web66/66, renderer11/11, binding2/2 và WASM browser smoke đạt; image mới build được, chuyển sang Compose tạm để kiểm end-to-end.
-- Compose/browser probe đạt: WASM Brotli đúng MIME, Worker vẽ71 node, không gọi scene API; static regression4/4 và parity20/20 không mismatch đạt. Lượt Rust cuối gặp đầy disk; chỉ dọn cache incremental generated của worktree rồi chạy lại không incremental. OrbStack đã dừng/socket mất sau đó; hỏi người dùng trước khi restart dịch vụ dùng chung để dọn canary, không tự restart.
-- Người dùng báo OrbStack đã chạy lại; root xác nhận và dọn đúng canary/container/network tạm. Rust cuối460 pass/0 fail/36 ignored, gồm server249; đủ gate yêu cầu. [Báo cáo Docker](../VIEWER-WASM-DOCKER.md) ghi size/time, artifact transfer và lệnh kiểm lại; chờ cache check/format cuối trước commit.
-- Điểm dừng trước commit: cache build10,49s và final image/browser probe đạt; canary đã dọn, format/syntax/diff sạch. Source/test tối đa224 dòng, AGENTS69 dòng/9476 byte; LOG append-only hiện275 dòng theo ngân sách riêng. Duyệt một commit cục bộ từ đúng source đã kiểm, email đúng yêu cầu, không artifact/attribution, không push hoặc sửa main checkout.
+- Các mục đã đóng về PR #7, Compose và WASM mặc định/Docker: [archive](history/2026-11-06-closed-viewer.md).
 
 ### Viewer WASM scene — 2026-11-05
 
@@ -296,3 +271,32 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 ### Đồng bộ PR #6 với main — 2026-11-04
 
 - Merge `main` (`c2bf260`, hover animation trigger) vào `codex/compose-postgres`. Xung đột ở `capabilities.rs`, `implement-frame.md` và nhật ký: giữ `restrictions.layout` responsive và `restrictions.animations` hover dạng khóa riêng, giữ bullet overflow mới cùng hướng dẫn hover theo `triggerNodeId`, đặt các mục hover của main trước mục nhánh.
+
+### Viewer All frames — 2026-11-06
+
+- Người dùng yêu cầu option All trong Frame, xem đủ frame của page với tên/khoảng cách và bố cục theo kích thước. Mở worktree riêng `OpenCanvas-viewer-wasm-scene` trên `feat/viewer-wasm-scene`, giữ nguyên checkout đang bẩn ở nhánh khác.
+- Giao hai worker mới: API batch scene theo page/revision có pagination giới hạn hàng đợi; frontend All dùng chung snapshot/WASM/font, bố cục cân đối, giữ tương tác và fallback server. Không commit/push/deploy hoặc dùng dữ liệu thật.
+- Người dùng nhắc app thật chạy native và cấm deploy khi chưa đồng ý; đã chuyển chỉ đạo cho workers. API worker báo unit scene3, jobs24 và HTTP integration3 đạt trên data root tạm; root đang review độc lập, frontend chưa nghiệm thu.
+- Root kiểm lại HTTP integration3 và strict server lib Clippy đạt. Chromium từ shell bị macOS MachPort error141/SIGTRAP chặn; native Chrome qua CUA đã xem All3/4/9 và Inspector frame-local, chưa thay thế smoke tự động. Review tìm ra xung đột sentinel, thứ tự ID và tiếp tục enqueue sau timeout; worker đã sửa, đang hoàn thiện nhãn đọc được khi Fit.
+- Nhận frontend hoàn tất: root kiểm 78 web tests, typecheck/build đạt; worker kiểm scoped format, reviewer độc lập 18 focused tests và không còn Required. Nhãn giữ 12 CSS px khi Fit; kiểm thuần bao phủ mức 27%/5%, screenshot cuối chưa chụp được do CUA timeout. Detector không có finding, mã/test sửa tối đa236 dòng.
+- Điểm dừng: [báo cáo và lệnh kiểm lại](../ALL-FRAMES-REPORT.md). Fixture/Vite đã dừng, không commit/push/deploy hoặc restart native. Playwright smoke/prerender Chromium còn chờ môi trường cho phép browser khởi động; không ghi pass thay cho phần chưa chạy.
+
+### Stress All frames 10.000 nodes/page — 2026-11-06
+
+- Người dùng yêu cầu page cao khác nhau, mỗi page10.000nodes. Giao fresh worker tạo stress harness và fixture thật qua API trong data root/server tạm; một project/page để giữ cap20.000/project,9frames/page để giữ cap2.048/frame, thêm probe10.000nodes trong một frame. Không tăng giới hạn hoặc chạm runtime native thật.
+
+### Bản test riêng viewer WASM/All frames — 2026-11-06
+
+- Theo yêu cầu người dùng, dựng snapshot source gồm All frames chưa commit và PostgreSQL cluster riêng; test viewer loopback3867, DB2704, không thay native3857/3858, launchd hay Funnel.
+- Kiểm5snapshot và170resource hashes trùng nguồn, đủ5projects/10.432nodes/88assets/82fonts; cả8bảng DB gồm lịch sử/idempotency/binary trùng digest. Tài khoản test bị DB nguồn từ chối; batch3frames, PNG native, WASM compute và helper stop/start/restart đạt.
+- Giữ bản test chạy để người dùng thử. Hướng dẫn vận hành và giới hạn nằm ở output `opencanvas-viewer-test.md` của chat; không commit/push hoặc sửa mã ứng dụng.
+
+### Viewer progressive scenes và persistent cache — 2026-11-06
+
+- All mặc định; board có skeleton theo authored geometry ngay, mỗi frame/resource hoàn tất được publish riêng; giữ camera và completed prefix khi fallback. IndexedDB dùng chung All/single, exact revision + source/WASM fingerprint, giới hạn64scene/32MiB; Retry bypass, lỗi storage quay về compute.
+- Typecheck và production web build đạt, diff whitespace sạch; không chạy browser/runtime/DB/tests/benchmark theo yêu cầu người dùng tự thử. Source mới/sửa tối đa232dòng, không file nào vượt250; chi tiết tại [báo cáo](../VIEWER-PROGRESSIVE-CACHE.md). Không deploy, đổi process/port, commit/push hoặc chạm dữ liệu.
+
+### Commit và push viewer All/progressive cache — 2026-11-06
+
+- Người dùng đã tự thử bản viewer riêng và chấp nhận, yêu cầu “ổn áp đấy, push đi”. Cho phép commit/push phần All frames và progressive IndexedDB cache trên `feat/viewer-wasm-scene`; giữ riêng stress harness của phiên khác.
+- Dùng kết quả typecheck/production build đã đạt cùng kiểm trước commit bằng Git; không chạy lại tests/benchmark, deploy hoặc chạm runtime/DB. Chuẩn bị một commit và push thường sau khi đối chiếu nhánh remote; chưa ghi push thành công trước khi xác minh.

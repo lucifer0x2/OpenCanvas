@@ -20,6 +20,18 @@ export interface SceneView {
   /** Requested project/frame/preset identity; revisions and authored dimensions are excluded. */
   cameraKey?: string;
   requestedRevision?: number;
+  frames?: FrameSceneView[];
+  progress?: { ready: number; total: number };
+}
+
+export interface FrameSceneView {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  scene?: Scene;
+  resources?: Resources;
+  error?: string;
 }
 
 const emptyView = (): SceneView => ({
@@ -52,10 +64,11 @@ export function useScene(
   });
   const lastRetry = useRef(retryKey);
   useEffect(() => {
-    if (lastRetry.current !== retryKey) {
+    const bypassCache = lastRetry.current !== retryKey;
+    if (bypassCache) {
       lastRetry.current = retryKey;
       // Retry resends the accepted snapshot, even when its revision is unchanged.
-      if (wasm) sceneWorker.clearSnapshotCache();
+      if (wasm && request) sceneWorker.clearSnapshotCache();
     }
     if (!request) {
       setLoaded({ key, scope, retryKey, view: emptyView() });
@@ -78,11 +91,14 @@ export function useScene(
         }));
     };
     const load = async () => {
-      const { job, fontBytes } = await loadScene(
+      const { job, fontBytes, persist } = await loadScene(
         desired,
         snapshot,
         controller.signal,
         wasm,
+        undefined,
+        undefined,
+        bypassCache,
       );
       if (stopped) return;
       const scene = job.scene!;
@@ -120,6 +136,8 @@ export function useScene(
           ],
         },
       });
+      if (resources.readiness.every((item) => item.status === "ready"))
+        persist?.();
     };
     load().catch((cause: Error) => fail(cause.message));
     return () => {

@@ -30,8 +30,8 @@ const PAN_STEP: Record<string, [number, number]> = {
   ArrowRight: [-40, 0],
 };
 
-export const clampScale = (value: number) =>
-  Math.max(MIN_SCALE, Math.min(MAX_SCALE, value));
+export const clampScale = (value: number, minimum = MIN_SCALE) =>
+  Math.max(minimum, Math.min(MAX_SCALE, value));
 
 /** Zoom factor for one wheel or trackpad step, proportional to the delta that step carries. */
 export function wheelZoomFactor(wheel: WheelEvent): number {
@@ -44,11 +44,13 @@ export function wheelZoomFactor(wheel: WheelEvent): number {
 
 /** Pan and zoom of the canvas viewport, with the host element it is measured against. */
 export function useCanvasTransform(
-  viewport: Viewport | undefined,
+  content: Viewport | undefined | ((size: Viewport) => Viewport | undefined),
   cameraKey: string | undefined,
+  minimumScale = MIN_SCALE,
 ) {
   const host = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const viewport = typeof content === "function" ? content(size) : content;
   const fitted = useRef({ cameraKey, done: false });
   const [transform, setTransform] = useState<Transform>({
     x: 60,
@@ -75,6 +77,7 @@ export function useCanvasTransform(
         (size.height - FIT_MARGIN.y) / viewport.height,
         1,
       ),
+      minimumScale,
     );
     setTransform({
       x: (size.width - viewport.width * scale) / 2,
@@ -97,7 +100,7 @@ export function useCanvasTransform(
     point: Point = { x: size.width / 2, y: size.height / 2 },
   ) =>
     setTransform((old) => {
-      const scale = clampScale(old.scale * factor);
+      const scale = clampScale(old.scale * factor, minimumScale);
       return {
         scale,
         x: point.x - ((point.x - old.x) / old.scale) * scale,
@@ -119,5 +122,15 @@ export function useCanvasTransform(
       setTransform((old) => ({ ...old, x: old.x + pan[0], y: old.y + pan[1] }));
   };
 
-  return { host, size, transform, zoom, fit, moveTo, handleKeyDown, STEP };
+  return {
+    host,
+    size,
+    viewport,
+    transform,
+    zoom,
+    fit,
+    moveTo,
+    handleKeyDown,
+    STEP,
+  };
 }

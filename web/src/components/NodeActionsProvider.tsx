@@ -20,11 +20,13 @@ export function NodeActionsProvider({
   selection,
   revision,
   select,
+  resolveSelection,
 }: {
   children: ReactNode;
   selection: Selection;
   revision?: number;
   select: (id: string) => void;
+  resolveSelection?: (id: string) => Selection;
 }) {
   const [menu, setMenu] = useState<Position | null>(null);
   const [message, setMessage] = useState("");
@@ -36,7 +38,10 @@ export function NodeActionsProvider({
     setMenu(null);
     try {
       await navigator.clipboard.writeText(
-        nodeLink(location.href, { ...selection, nodeId: id }),
+        nodeLink(
+          location.href,
+          resolveSelection?.(id) ?? { ...selection, nodeId: id },
+        ),
       );
       setMessage(
         "Link copied. Paste it into your AI chat to identify this element.",

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { ALL_FRAMES } from "../src/frameScope.ts";
 import {
   acceptsJob,
   bumpRevision,
@@ -101,11 +102,11 @@ test("reload keeps valid selection; deleted frame or layer gets a valid fallback
   );
   assert.equal(
     reconcileSelection(snapshot, { ...selection, frameId: "deleted" }).frameId,
-    "frame",
+    ALL_FRAMES,
   );
   assert.equal(
     reconcileSelection({ ...snapshot, nodes: [] }, selection).frameId,
-    "",
+    ALL_FRAMES,
   );
 });
 

@@ -84,29 +84,36 @@ function LayerRow({
 export function Layers({
   nodes,
   frameId,
+  frameIds,
   selectedId,
   select,
 }: {
   nodes: DesignNode[];
   frameId: string;
+  frameIds?: string[];
   selectedId: string;
   select: (id: string) => void;
 }) {
-  const root = nodes.find((node) => node.id === frameId);
+  const roots = frameIds
+    ? frameIds.flatMap((id) => nodes.find((node) => node.id === id) ?? [])
+    : nodes.filter((node) => node.id === frameId);
   return (
     <section className="layers-content" aria-label="Layers">
       <div className="section-heading">
         <span>Layers</span>
         <span className="subtle">Read only</span>
       </div>
-      {root ? (
+      {roots.length ? (
         <ul className="layers-list">
-          <LayerRow
-            node={root}
-            nodes={nodes}
-            selectedId={selectedId}
-            select={select}
-          />
+          {roots.map((root) => (
+            <LayerRow
+              key={root.id}
+              node={root}
+              nodes={nodes}
+              selectedId={selectedId}
+              select={select}
+            />
+          ))}
         </ul>
       ) : (
         <p className="panel-empty">Choose a frame to see its layers.</p>

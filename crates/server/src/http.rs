@@ -74,6 +74,7 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
         .route("/api/v1/events", get(workspace_events::events))
         .route("/api/v1/projects/{project}/events", get(events::events))
         .route("/api/v1/projects/{project}/scene", get(scene))
+        .route("/api/v1/projects/{project}/scenes", get(crate::scenes::get))
         .route(
             "/api/v1/projects/{project}/exports",
             post(crate::export::create),

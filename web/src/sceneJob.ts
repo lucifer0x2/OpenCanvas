@@ -5,6 +5,9 @@ import type { RenderJob, SceneRequest } from "./types";
 export const JOB_POLL_MS = 500;
 export const JOB_TIMEOUT_MS = 45_000;
 
+/** Only this error confirms that admission capacity was released by the worker. */
+export class RenderJobFailed extends Error {}
+
 export type SceneState = "default" | "hover" | "pressed" | "focus" | "disabled";
 
 const wait = (ms: number, signal: AbortSignal) =>
@@ -30,7 +33,6 @@ export async function fetchSceneJob(
   signal: AbortSignal,
   state: SceneState = "default",
 ): Promise<RenderJob> {
-  const started = Date.now();
   const query = new URLSearchParams({
     frameId: request.frameId,
     revision: String(request.revision),
@@ -39,10 +41,23 @@ export async function fetchSceneJob(
     theme: "default",
     state,
   });
-  let job = await read<RenderJob>(
+  const job = await read<RenderJob>(
     `${projectPath(request.projectId)}/scene?${query}`,
     signal,
   );
+  return settleSceneJob(job, request, signal, state);
+}
+
+/** Shared by single-frame requests and bounded page batches. */
+export async function settleSceneJob(
+  initial: RenderJob,
+  request: SceneRequest,
+  signal: AbortSignal,
+  state: SceneState = "default",
+) {
+  signal.throwIfAborted();
+  const started = Date.now();
+  let job = initial;
   let expectedJobId: string | undefined;
   for (;;) {
     if (!acceptsJob(job, request, expectedJobId, state))
@@ -50,7 +65,7 @@ export async function fetchSceneJob(
         "The render response does not match this revision or viewport. Retry this view.",
       );
     if (job.status === "failed")
-      throw new Error(
+      throw new RenderJobFailed(
         job.error?.message ?? "The render worker failed. Retry this view.",
       );
     if (job.status === "ready") return job;

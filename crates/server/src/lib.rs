@@ -19,6 +19,7 @@ mod public_viewer;
 mod reads;
 mod render_response;
 mod resources;
+mod scenes;
 mod schemas;
 mod snapshot_http;
 mod state;

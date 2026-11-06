@@ -8,7 +8,7 @@ export function CanvasMessage({
   view: SceneView;
   retry: () => void;
 }) {
-  if (view.scene && view.status !== "ready")
+  if ((view.scene || view.frames?.length) && view.status !== "ready")
     return (
       <div className="canvas-refresh" role="status" aria-live="polite">
         <h2>
@@ -17,7 +17,11 @@ export function CanvasMessage({
             : `Rendering r${view.requestedRevision}`}
         </h2>
         <p>
-          Showing scene r{view.scene.provenance.revision} ·{" "}
+          {view.progress
+            ? `${view.progress.ready}/${view.progress.total} frames ready · `
+            : ""}
+          {view.frames ? "All frames" : "Showing scene"} r
+          {view.scene?.provenance.revision ?? view.requestedRevision} ·{" "}
           {view.status === "failed"
             ? `Requested r${view.requestedRevision}: ${view.error}`
             : "You can keep panning and zooming."}
@@ -47,9 +51,15 @@ export function CanvasMessage({
           ) : (
             <>
               <Icon name="frame" size={30} />
-              <h2>A clear view of your design</h2>
+              <h2>
+                {view.frames
+                  ? "No frames on this page"
+                  : "A clear view of your design"}
+              </h2>
               <p>
-                Choose a project and frame to begin.
+                {view.frames
+                  ? "Choose another page or create a frame through your agent."
+                  : "Choose a project and frame to begin."}
                 <br />
                 Create designs through your agent's MCP tools.
               </p>

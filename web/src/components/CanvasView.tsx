@@ -1,8 +1,9 @@
 import { useRef } from "react";
-import { Stage, Layer, Shape, Rect } from "react-konva";
+import { Stage, Layer } from "react-konva";
 import type Konva from "konva";
-import { paintScene } from "../../../renderer/index";
-import { hitTest } from "../canvasHitTest";
+import { boardHitTest } from "../scene/boardHitTest";
+import { fitFrameBoard } from "../scene/frameLayout";
+import { CanvasScenes } from "./CanvasScenes";
 import { CanvasChrome } from "./CanvasChrome";
 import { CanvasMessage } from "./CanvasMessage";
 import {
@@ -33,10 +34,68 @@ export function CanvasView({
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
   const resources = view.resources;
-  const selected = scene?.nodes.find((node) => node.id === selectedId);
-  const viewport = scene?.provenance.viewport;
-  const { host, size, transform, zoom, fit, moveTo, handleKeyDown, STEP } =
-    useCanvasTransform(viewport, view.cameraKey);
+  const frames =
+    view.frames ??
+    (scene && resources
+      ? [
+          {
+            id: scene.provenance.frameId,
+            name: frameName,
+            ...scene.provenance.viewport,
+            scene,
+            resources,
+          },
+        ]
+      : []);
+  const layoutCache = useRef<{
+    geometry: string;
+    width: number;
+    height: number;
+    layout: ReturnType<typeof fitFrameBoard>;
+  } | null>(null);
+  const geometry = JSON.stringify(
+    frames.map(({ id, width, height }) => [id, width, height]),
+  );
+  const boardLayout = (size: { width: number; height: number }) => {
+    const cached = layoutCache.current;
+    if (
+      cached?.geometry === geometry &&
+      cached.width === size.width &&
+      cached.height === size.height
+    )
+      return cached.layout;
+    const layout = fitFrameBoard(frames, size);
+    layoutCache.current = { geometry, ...size, layout };
+    return layout;
+  };
+  const content = (size: { width: number; height: number }) =>
+    view.frames
+      ? frames.length
+        ? boardLayout(size)
+        : undefined
+      : scene?.provenance.viewport;
+  const {
+    host,
+    size,
+    viewport,
+    transform,
+    zoom,
+    fit,
+    moveTo,
+    handleKeyDown,
+    STEP,
+  } = useCanvasTransform(content, view.cameraKey, view.frames ? 0.0001 : 0.05);
+  const placements = view.frames
+    ? boardLayout(size).frames
+    : frames.map((frame) => ({ ...frame, x: 0, y: 0 }));
+  const findNode = (x: number, y: number) =>
+    boardHitTest(
+      frames,
+      placements,
+      (x - transform.x) / transform.scale,
+      (y - transform.y) / transform.scale,
+      view.requestedRevision,
+    );
   const pixelRatio = window.devicePixelRatio || 1;
   // Whole device pixels, so panning does not shift the painted scene by subpixel amounts.
   const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio;
@@ -83,7 +142,7 @@ export function CanvasView({
             document.activeElement.blur();
         }}
       >
-        {scene && resources && (
+        {frames.length > 0 && (
           <Stage
             ref={stage}
             width={size.width}
@@ -118,11 +177,7 @@ export function CanvasView({
                 ) > CLICK_SLOP
               )
                 return;
-              const found = hitTest(
-                scene,
-                (point.x - transform.x) / transform.scale,
-                (point.y - transform.y) / transform.scale,
-              );
+              const found = findNode(point.x, point.y);
               select(found?.id ?? "");
               if (!found && document.activeElement instanceof HTMLElement)
                 document.activeElement.blur();
@@ -130,11 +185,7 @@ export function CanvasView({
             onContextMenu={(event) => {
               const point = stage.current?.getPointerPosition();
               if (!point) return;
-              const found = hitTest(
-                scene,
-                (point.x - transform.x) / transform.scale,
-                (point.y - transform.y) / transform.scale,
-              );
+              const found = findNode(point.x, point.y);
               if (found && actions) {
                 event.evt.preventDefault();
                 actions.open(found.id, event.evt.clientX, event.evt.clientY);
@@ -148,31 +199,13 @@ export function CanvasView({
             }}
           >
             <Layer imageSmoothingEnabled>
-              <Rect
-                width={viewport!.width}
-                height={viewport!.height}
-                fill="white"
-                shadowColor="#1d2433"
-                shadowBlur={20}
-                shadowOffsetY={5}
-                shadowOpacity={0.12}
+              <CanvasScenes
+                frames={frames}
+                placements={placements}
+                scale={transform.scale}
+                selectedId={selectedId}
+                labels={Boolean(view.frames)}
               />
-              {/* Vectors under the stage transform each draw: sharp at every zoom, no raster. */}
-              <Shape
-                listening={false}
-                sceneFunc={(context) => {
-                  context._context.imageSmoothingQuality = "high";
-                  paintScene(context._context, scene, resources);
-                }}
-              />
-              {selected && (
-                <Rect
-                  {...selected.bounds}
-                  stroke="#1672e8"
-                  strokeWidth={1.5 / transform.scale}
-                  listening={false}
-                />
-              )}
             </Layer>
           </Stage>
         )}
@@ -180,9 +213,16 @@ export function CanvasView({
       </div>
       <CanvasChrome
         frameName={frameName}
-        viewport={viewport}
+        viewport={
+          view.frames && viewport
+            ? {
+                width: Math.round(viewport.width),
+                height: Math.round(viewport.height),
+              }
+            : viewport
+        }
         scale={transform.scale}
-        enabled={Boolean(scene)}
+        enabled={frames.length > 0}
         zoom={zoom}
         fit={fit}
         step={STEP}

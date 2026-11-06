@@ -1,3 +1,4 @@
+mod admission;
 mod export;
 mod export_fonts;
 mod export_resources;
@@ -8,6 +9,7 @@ mod native;
 mod pace;
 mod painter;
 mod png;
+mod prepared;
 mod queue;
 mod record;
 mod resource_bytes;
@@ -22,10 +24,9 @@ use crate::{
 };
 pub use export::{ExportSetting, ExportSpec};
 use opencanvas_storage::{Snapshot, Storage};
-use queue::{Priority, Queue, Work};
+use queue::{Priority, Queue};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use sha2::{Digest, Sha256};
+use serde_json::Value;
 use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::{broadcast, mpsc, watch, Mutex};
 pub use wait::MAX_WAIT_MS;
@@ -130,79 +131,9 @@ impl Jobs {
         priority: Priority,
         export: Option<ExportSpec>,
     ) -> Result<Value> {
-        input::check_request(&snapshot, &request)?;
-        let input = input::make_input(&snapshot, &request, &self.config.base_url)?;
-        let text_overflow_intent = if snapshot.notes.is_empty() {
-            Vec::new()
-        } else {
-            crate::text_diagnostics::overflow_ids(
-                &snapshot,
-                &serde_json::from_value::<Vec<opencanvas_storage::Node>>(input["nodes"].clone())?,
-            )
-        };
-        let mut basis =
-            json!({"input":input,"scale":request.scale,"pipeline":self.config.pipeline_identity});
-        if let Some(spec) = &export {
-            basis["export"] = json!(spec);
-        }
-        let key = format!("{:x}", Sha256::digest(serde_json::to_vec(&basis)?));
+        let prepared = prepared::Prepared::new(&snapshot, request, &self.config, export)?;
         let mut guard = self.table.lock().await;
-        let table = &mut *guard;
-        let direct = priority == Priority::Direct;
-        if let Some(entry) = table.entries.iter_mut().rev().find(|e| {
-            e.key == key
-                && (!retry || (e.value["status"] != "failed" && e.value.get("error").is_none()))
-        }) {
-            entry.requested |= direct;
-            let value = entry.value.clone();
-            if direct && value["status"] == "pending" {
-                table
-                    .queue
-                    .promote(value["jobId"].as_str().unwrap_or_default());
-            }
-            return Ok(value);
-        }
-        let id = format!("job_{}", uuid::Uuid::new_v4().simple());
-        let mut value = json!({"jobId":id,"status":"pending","projectId":snapshot.project_id,"revision":snapshot.revision,"frameId":request.frame_id,"sceneKey":key});
-        if let Some(spec) = &export {
-            value["kind"] = json!("export");
-            value["nodeId"] = json!(spec.node_id);
-        }
-        let work = Work {
-            text_overflow_intent,
-            id,
-            key: key.clone(),
-            input,
-            scale: request.scale,
-            frame: (snapshot.project_id.clone(), request.frame_id.clone()),
-            export,
-        };
-        match priority {
-            Priority::Direct => {
-                table.make_room()?;
-                if !table.queue.push_direct(work) {
-                    // Every queued requested render plus the running job finish first.
-                    let ahead = table.queue.direct_len() + 1;
-                    return Err(table
-                        .pace
-                        .queue_full("Render queue is full; retry later", ahead));
-                }
-            }
-            Priority::Background => {
-                // Forget what this prerender replaces before counting records. At most
-                // 1 + 8 + 8 + 8 (promoted) jobs are pending, so room is always found.
-                let dropped = table.queue.push_background(work);
-                table.forget(&dropped);
-                table.make_room()?;
-            }
-        }
-        table.entries.push_back(Entry {
-            key,
-            value: value.clone(),
-            png: None,
-            requested: direct,
-            files: Vec::new(),
-        });
+        let value = guard.admit(prepared, retry, priority)?;
         drop(guard);
         // Full means a ring is already pending; the loop drains the queue on it.
         let _ = self.doorbell.try_send(());
