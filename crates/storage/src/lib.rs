@@ -19,6 +19,7 @@ mod bundle_validation;
 mod db;
 mod fonts;
 mod hot_cache;
+mod inbox;
 pub use hot_cache::SnapshotCache;
 mod migration;
 mod persistence;

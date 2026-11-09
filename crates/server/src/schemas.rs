@@ -3,6 +3,7 @@ use serde_json::{json, Value};
 use std::{collections::HashMap, sync::OnceLock};
 mod batch;
 mod export;
+mod import;
 mod operations;
 mod render;
 mod validation;
@@ -15,9 +16,10 @@ fn catalog() -> &'static (Vec<Tool>, HashMap<String, Value>) {
         let schemas = tools
             .iter()
             .map(|t| {
-                // render_frame publishes a flat object; its arguments are checked in strict form.
+                // These publish a flat object; their arguments are checked in strict form.
                 let schema = match t.name.as_ref() {
                     "render_frame" => render::validation(),
+                    "import_asset" => import::validation(),
                     _ => Value::Object((*t.input_schema).clone()),
                 };
                 (t.name.to_string(), schema)
@@ -165,17 +167,8 @@ fn build() -> Vec<Tool> {
     );
     add(
         "import_asset",
-        "Import up to 10 MiB of base64 binary. Paths and arbitrary URLs are not accepted. Returns asset plus, as apply_batch does, committedRevision, changedIds, renderStatus and replayed at the top level (result repeats them).".into(),
-        object(
-            json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"mediaType":{"enum":["image/png","image/jpeg","image/webp","font/ttf","font/otf","font/woff2"]},"base64":{"type":"string","minLength":4,"maxLength":13981016},"font":object(json!({"id":id(),"family":text(256),"weight":{"type":"integer","minimum":1,"maximum":1000},"style":{"enum":["normal","italic"]},"license":{"type":["string","null"],"maxLength":1024}}),&["id","family","weight","style"])}),
-            &[
-                "projectId",
-                "expectedRevision",
-                "idempotencyKey",
-                "mediaType",
-                "base64",
-            ],
-        ),
+        import::DESCRIPTION.into(),
+        import::published(),
     );
     add(
         "render_frame",

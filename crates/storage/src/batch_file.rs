@@ -1,8 +1,7 @@
 //! Bulk input is data only. It never executes code or divides a request into commits.
+use crate::inbox::{self, Purpose};
 use crate::*;
 use serde::{Deserialize, Serialize};
-use std::io::Read;
-mod inbox;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -31,24 +30,7 @@ impl Project {
     pub fn read_batch_file_operations(&self, request: &BatchFileRequest) -> Result<Value> {
         self.check_paths()?;
         self.request_ids(&request.project_id, &request.idempotency_key)?;
-        let file = inbox::open(&self.root.path, &self.path, &request.path)?;
-        let metadata = file.metadata()?;
-        if !metadata.is_file() {
-            return Err(StorageError::new(
-                "PATH_REJECTED",
-                "Batch input must be a regular file",
-            ));
-        }
-        if metadata.len() > MAX_BATCH_BYTES as u64 {
-            return Err(StorageError::validation("path", "Batch file exceeds 2 MiB"));
-        }
-        // Check the stream too, so concurrent file growth cannot bypass the bound.
-        let mut bytes = Vec::new();
-        file.take(MAX_BATCH_BYTES as u64 + 1)
-            .read_to_end(&mut bytes)?;
-        if bytes.len() > MAX_BATCH_BYTES {
-            return Err(StorageError::validation("path", "Batch file exceeds 2 MiB"));
-        }
+        let bytes = inbox::read(&self.root.path, &self.path, &request.path, Purpose::Batch)?;
         let operations: Value = serde_json::from_slice(&bytes).map_err(|_| {
             StorageError::validation(
                 "operations",

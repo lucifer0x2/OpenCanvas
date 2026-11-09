@@ -24,12 +24,21 @@ impl Drop for Server {
 
 impl Server {
     pub async fn start() -> Self {
+        Self::start_with_inbox(None).await
+    }
+
+    /// `inbox_root` is the local directory holding `<slug>/inbox`, as `--data-root` sets it.
+    pub async fn start_with_inbox(inbox_root: Option<PathBuf>) -> Self {
         let dsn = std::env::var("TASK19_POSTGRES_URL")
             .expect("run scripts/task19-check.sh: fresh real PostgreSQL required");
         let storage = tokio::task::spawn_blocking(move || {
             let backend = PostgresBackend::connect(&dsn).unwrap();
             let cache = SnapshotCache::new(backend.cache_namespace());
-            Storage::new(backend.with_cache(cache).unwrap())
+            let storage = Storage::new(backend.with_cache(cache).unwrap());
+            match inbox_root {
+                Some(root) => storage.with_inbox_root(root),
+                None => storage,
+            }
         })
         .await
         .unwrap();

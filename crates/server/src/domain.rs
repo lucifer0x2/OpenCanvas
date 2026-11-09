@@ -4,22 +4,10 @@ use crate::{
     reads::changes::conflict,
     state::AppState,
 };
-use base64::{engine::general_purpose::STANDARD, Engine};
-use opencanvas_storage::{FontRegistration, ImportAssetRequest};
-use serde::Deserialize;
 use serde_json::{json, Value};
 mod batches;
+mod import;
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct ImportRequest {
-    project_id: String,
-    expected_revision: u64,
-    idempotency_key: String,
-    media_type: String,
-    base64: String,
-    font: Option<FontRegistration>,
-}
 pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> {
     // A commit that only touches notes changes no rendered pixel: skip its prerender.
     let mut notes_only = opencanvas_storage::is_note_batch(&args["operations"]);
@@ -29,33 +17,7 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
             notes_only = only_notes;
             result
         }
-        "import_asset" => {
-            let req: ImportRequest = serde_json::from_value(args)?;
-            if req.base64.len() > 13_981_016 {
-                return Err(ApiError::invalid("Asset exceeds 10 MiB"));
-            }
-            let bytes = STANDARD
-                .decode(&req.base64)
-                .map_err(|_| ApiError::invalid("Invalid base64 asset"))?;
-            if bytes.len() > opencanvas_storage::MAX_ASSET_BYTES {
-                return Err(ApiError::invalid("Asset exceeds 10 MiB"));
-            }
-            let req = ImportAssetRequest {
-                project_id: req.project_id,
-                expected_revision: req.expected_revision,
-                idempotency_key: req.idempotency_key,
-                media_type: req.media_type,
-                bytes,
-                font: req.font,
-            };
-            let (id, expected) = (req.project_id.clone(), req.expected_revision);
-            let result = state
-                .project(id.clone(), move |p| p.import_asset(req))
-                .await;
-            with_commit_fields(serde_json::to_value(
-                conflict::checked(state, &id, expected, result).await?,
-            )?)
-        }
+        "import_asset" => import::run(state, args).await?,
         _ => return Err(ApiError::invalid("Unknown mutation")),
     };
     let committed = &result;
@@ -89,16 +51,4 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
         }
     }
     Ok(result)
-}
-
-/// import_asset answers like apply_batch, with the commit fields at the top level; `result`
-/// still carries them for clients written against the earlier nested shape.
-fn with_commit_fields(mut value: Value) -> Value {
-    let commit = value.get("result").and_then(Value::as_object).cloned();
-    if let (Some(commit), Some(top)) = (commit, value.as_object_mut()) {
-        for (key, field) in commit {
-            top.entry(key).or_insert(field);
-        }
-    }
-    value
 }
