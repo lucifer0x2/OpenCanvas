@@ -57,7 +57,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 | `PLAN.md` | Trước mọi triển khai: nguồn yêu cầu sản phẩm và AC. |
 | `README.md` | Cần setup, chạy app hoặc kết nối MCP. |
 | `docs/ACCEPTANCE.md` | Nghiệm thu, cần AC, lệnh kiểm hoặc giới hạn đã công bố. |
-| `tasks/` | Trước khi định nghĩa việc mới. 01–05: responsive; 06–08: MCP reads/events; 09–13: Rust render (gác lại); 14: schemes/Structured Operations; 15: PG spike; 16: storage trait; 17: spike delta/Redis; 18: Redis-primary backlog; 19: runtime PG/bitcode cache. Trạng thái/AC ở đầu mỗi file. |
+| `tasks/` | Trước khi định nghĩa việc mới. 01–05: responsive; 06–08: MCP reads/events; 09–13: Rust render (gác lại); 14: schemes/Structured Operations; 15: PG spike; 16: storage trait; 17: spike delta/Redis; 18: Redis-primary backlog; 19: runtime PG/bitcode cache; 22: giảm token phiên design (import từ inbox, render gọn, props theo kind, read gọn); 23: đối chiếu triển khai với design (spec mong đợi + đo DOM, bảng expected/actual). Trạng thái/AC ở đầu mỗi file. |
 | `docs/TASK*-REPORT.md`, `docs/TASK04-PROPOSAL.md` | Cần chi tiết kỹ thuật, số đo hoặc rủi ro còn mở của Task03–08. |
 | `docs/SERVER.md` | Sửa hoặc gọi backend: MCP, HTTP API, jobs, SSE. |
 | `docs/CONTRACT.md` | Tích hợp giữa các module (viewer ↔ HTTP API, kiểu dữ liệu). |
