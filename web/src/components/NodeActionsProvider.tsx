@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext, useCallback, useContext, useEffect, useLayoutEffect,
+  useMemo, useRef, useState,
+} from "react";
 import type { ReactNode } from "react";
 import type { Selection } from "../types";
 import { nodeLink } from "../deepLink";
@@ -10,10 +13,11 @@ interface Actions {
   open: (id: string, x: number, y: number) => void;
   copy: (id?: string) => void;
   image: (format: "png" | "svg", id?: string) => void;
-  busy: boolean;
 }
 const Context = createContext<Actions | null>(null);
+const BusyContext = createContext(false);
 export const useNodeActions = () => useContext(Context);
+export const useNodeActionBusy = () => useContext(BusyContext);
 
 export function NodeActionsProvider({
   children,
@@ -34,13 +38,21 @@ export function NodeActionsProvider({
   const menuRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const active = useRef(false);
-  const copy = async (id = selection.nodeId) => {
+  // Commands retain their identity while reading the latest committed selection.
+  // Each export captures its project/revision before any asynchronous work.
+  const current = useRef({ selection, revision, select, resolveSelection });
+  useLayoutEffect(() => {
+    current.current = { selection, revision, select, resolveSelection };
+  }, [selection, revision, select, resolveSelection]);
+  const copy = useCallback(async (id?: string) => {
+    const { selection, resolveSelection } = current.current;
+    const nodeId = id ?? selection.nodeId;
     setMenu(null);
     try {
       await navigator.clipboard.writeText(
         nodeLink(
           location.href,
-          resolveSelection?.(id) ?? { ...selection, nodeId: id },
+          resolveSelection?.(nodeId) ?? { ...selection, nodeId },
         ),
       );
       setMessage(
@@ -51,15 +63,18 @@ export function NodeActionsProvider({
         "Could not copy the link. Allow clipboard access and try again.",
       );
     }
-  };
-  const image = async (format: "png" | "svg", id = selection.nodeId) => {
+  }, []);
+  const image = useCallback(async (format: "png" | "svg", id?: string) => {
+    const { selection, revision } = current.current;
     setMenu(null);
     if (active.current || revision === undefined) return;
     active.current = true;
     setBusy(true);
     setMessage(`Exporting ${format.toUpperCase()}…`);
     try {
-      await exportNode(selection.projectId, id, revision, format);
+      await exportNode(
+        selection.projectId, id ?? selection.nodeId, revision, format,
+      );
       setMessage(`${format.toUpperCase()} downloaded.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Export failed.");
@@ -67,7 +82,7 @@ export function NodeActionsProvider({
       active.current = false;
       setBusy(false);
     }
-  };
+  }, []);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -76,7 +91,7 @@ export function NodeActionsProvider({
         !(event.metaKey || event.ctrlKey) ||
         event.altKey ||
         event.shiftKey ||
-        !selection.nodeId
+        !current.current.selection.nodeId
       )
         return;
       if (
@@ -91,7 +106,7 @@ export function NodeActionsProvider({
     };
     window.addEventListener("keydown", keydown);
     return () => window.removeEventListener("keydown", keydown);
-  });
+  }, [copy]);
   useEffect(() => {
     setMenu(null);
   }, [selection.projectId, selection.pageId, selection.frameId]);
@@ -114,23 +129,23 @@ export function NodeActionsProvider({
       window.removeEventListener("keydown", escape);
     };
   }, [menu]);
-  const actions: Actions = {
+  const open = useCallback((id: string, x: number, y: number) => {
+    returnFocus.current = document.activeElement as HTMLElement;
+    current.current.select(id);
+    setMenu({
+      id,
+      x: Math.max(8, Math.min(x, innerWidth - 200)),
+      y: Math.max(8, Math.min(y, innerHeight - 140)),
+    });
+  }, []);
+  const actions = useMemo<Actions>(() => ({
     copy,
     image,
-    busy,
-    open: (id, x, y) => {
-      returnFocus.current = document.activeElement as HTMLElement;
-      select(id);
-      setMenu({
-        id,
-        x: Math.max(8, Math.min(x, innerWidth - 200)),
-        y: Math.max(8, Math.min(y, innerHeight - 140)),
-      });
-    },
-  };
+    open,
+  }), [copy, image, open]);
   return (
     <Context.Provider value={actions}>
-      {children}
+      <BusyContext.Provider value={busy}>{children}</BusyContext.Provider>
       {menu && (
         <div
           ref={menuRef}

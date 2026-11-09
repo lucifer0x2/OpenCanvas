@@ -1,7 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Group, Rect, Shape, Text } from "react-konva";
 import type Konva from "konva";
-import { paintScene } from "../../../renderer/index";
+import { indexScene, paintScene } from "../../../renderer/index";
 import type { FrameSceneView } from "../hooks/useScene";
 import type { FramePlacement } from "../scene/frameLayout";
 import { frameLabelMetrics } from "../scene/frameLabels";
@@ -26,13 +26,22 @@ export const CanvasFrame = memo(function CanvasFrame({
     scale,
     placement.labelSpace ?? 32,
   );
+  // Resource maps are shared across progressive slots; the ready frame's resource
+  // object is the boundary, including a new object when failed resources are retried.
+  const tree = useMemo(
+    () =>
+      frame.scene && frame.resources
+        ? indexScene(frame.scene, frame.resources)
+        : undefined,
+    [frame.scene, frame.resources],
+  );
   const paint = useCallback(
     (context: Konva.Context) => {
       if (!frame.scene || !frame.resources) return;
       context._context.imageSmoothingQuality = "high";
-      paintScene(context._context, frame.scene, frame.resources);
+      paintScene(context._context, frame.scene, frame.resources, tree);
     },
-    [frame.scene, frame.resources],
+    [frame.scene, frame.resources, tree],
   );
   const pending = !frame.scene && !frame.error;
   return (

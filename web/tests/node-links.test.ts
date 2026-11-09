@@ -3,6 +3,8 @@ import test from "node:test";
 import { nodeLink, readNodeLink, selectionNode } from "../src/deepLink.ts";
 import { readSelection, reconcileSelection } from "../src/state.ts";
 import type { Snapshot, Selection } from "../src/types.ts";
+import { frameForNode } from "../src/frameScope.ts";
+import { nodeIndex } from "../src/nodeIndex.ts";
 
 const selection: Selection = {
   projectId: "p",
@@ -66,6 +68,9 @@ test("linked selection overrides local storage and virtual children survive reco
   });
   assert.deepEqual(readSelection(), selection);
   assert.deepEqual(reconcileSelection(snapshot, selection), selection);
+  assert.equal(reconcileSelection(snapshot, selection), selection);
+  assert.equal(frameForNode(snapshot.nodes, selection.nodeId, "page")?.id, "frame");
+  assert.equal(nodeIndex(snapshot.nodes).byId.has(selection.nodeId), false);
   assert.equal(
     selectionNode(snapshot.nodes, selection.nodeId)?.props.text,
     "Placed",
@@ -76,6 +81,31 @@ test("linked selection overrides local storage and virtual children survive reco
       .nodeId,
     "frame",
   );
+});
+
+test("indexed resolution rejects unrelated master children and ancestry cycles", () => {
+  const nodes = [...snapshot.nodes,
+    { id: "unrelated", parentId: "frame", kind: "text", sortKey: 1, props: {} },
+    { id: "cycle-a", parentId: "cycle-b", kind: "group", sortKey: 0, props: {} },
+    { id: "cycle-b", parentId: "cycle-a", kind: "group", sortKey: 0, props: {} },
+  ];
+  assert.equal(selectionNode(nodes, "instance/unrelated"), undefined);
+  assert.equal(selectionNode(nodes, "instance/cycle-a"), undefined);
+  assert.equal(frameForNode(nodes, "cycle-a", "page"), undefined);
+  assert.equal(frameForNode(nodes, selection.nodeId, "other-page"), undefined);
+});
+
+test("a virtual descendant follows generated parent IDs back to its placed frame", () => {
+  const nodes = [
+    ...snapshot.nodes,
+    { id: "group", parentId: "master", kind: "group", sortKey: 1, props: {} },
+    { id: "nested", parentId: "group", kind: "text", sortKey: 0, props: {} },
+  ];
+  const virtualId = "instance/nested";
+  assert.equal(selectionNode(nodes, virtualId)?.parentId, "instance/group");
+  assert.equal(frameForNode(nodes, virtualId, "page")?.id, "frame");
+  const placed = { ...selection, nodeId: virtualId };
+  assert.equal(reconcileSelection({ ...snapshot, nodes }, placed), placed);
 });
 
 test("explicit deselection survives a fresh snapshot and SSE reconciliation", () => {

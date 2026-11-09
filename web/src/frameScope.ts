@@ -1,4 +1,5 @@
 import { selectionNode } from "./deepLink.ts";
+import { nodeIndex } from "./nodeIndex.ts";
 import type { DesignNode } from "./types.ts";
 
 /** Persisted picker value; never sent as a frame ID to a render endpoint. */
@@ -9,7 +10,7 @@ export function frameForNode(
   nodeId: string,
   pageId: string,
 ) {
-  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const { byId } = nodeIndex(nodes);
   let node = selectionNode(nodes, nodeId);
   const seen = new Set<string>();
   while (node && !seen.has(node.id)) {

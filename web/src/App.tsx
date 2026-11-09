@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CanvasView } from "./components/CanvasView";
 import { FollowToggle } from "./components/FollowToggle";
 import { PRESETS, ScopeControls } from "./components/ScopeControls";
@@ -11,7 +11,8 @@ import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
 import { usePageScenes } from "./hooks/usePageScenes";
 import { ALL_FRAMES, frameDimensions, frameForNode } from "./frameScope";
-import { children, nodeName } from "./state";
+import { nodeName } from "./state";
+import { EMPTY_NODES, nodeIndex } from "./nodeIndex";
 import type { SceneRequest } from "./types";
 import useLocalStorage from "./hooks/ultility/useLocalStorage";
 import { WASM_FALLBACK } from "./scene/service";
@@ -23,20 +24,34 @@ export function App() {
   const [rightOpen, setRightOpen] = useState(() => window.innerWidth >= 1000);
   const [preset, setPreset] = useState("frame");
   const [retryKey, setRetryKey] = useState(0);
-  const nodes = snapshot?.nodes ?? [];
-  const pages = children(nodes, null).filter((node) => node.kind === "page");
+  const nodes = snapshot?.nodes ?? EMPTY_NODES;
+  const index = nodeIndex(nodes);
+  const pages = useMemo(
+    () => (index.childrenByParent.get(null) ?? EMPTY_NODES)
+      .filter((node) => node.kind === "page"),
+    [index],
+  );
   const [isShowNoticeBar, setShowNoticeBar] = useLocalStorage(
     "is_show_notice_bar",
     false,
   );
 
-  const frames = children(nodes, selection.pageId).filter(
-    (node) => node.kind === "frame",
+  const frames = useMemo(
+    () => (index.childrenByParent.get(selection.pageId) ?? EMPTY_NODES)
+      .filter((node) => node.kind === "frame"),
+    [index, selection.pageId],
   );
-  const frame = nodes.find((node) => node.id === selection.frameId);
+  const frameIds = useMemo(() => frames.map((frame) => frame.id), [frames]);
+  const frame = index.byId.get(selection.frameId);
   const all = selection.frameId === ALL_FRAMES;
-  const selectedFrame = frameForNode(nodes, selection.nodeId, selection.pageId);
-  const selectedNode = selectionNode(nodes, selection.nodeId);
+  const selectedFrame = useMemo(
+    () => frameForNode(nodes, selection.nodeId, selection.pageId),
+    [nodes, selection.nodeId, selection.pageId],
+  );
+  const selectedNode = useMemo(
+    () => selectionNode(nodes, selection.nodeId),
+    [nodes, selection.nodeId],
+  );
   const viewport = PRESETS.find((entry) => entry.key === preset)!;
   const request: SceneRequest | null =
     snapshot && frame
@@ -64,7 +79,17 @@ export function App() {
   const fallbackNotice = view.diagnostics.find((message) =>
     message.startsWith(WASM_FALLBACK),
   );
-  const selectNode = (nodeId: string) => project.selectScope({ nodeId });
+  const { selectScope } = project;
+  const selectNode = useCallback(
+    (nodeId: string) => selectScope({ nodeId }), [selectScope],
+  );
+  const resolveSelection = useCallback(
+    (id: string) => ({
+      ...selection,
+      nodeId: id,
+      frameId: frameForNode(nodes, id, selection.pageId)?.id ?? selection.frameId,
+    }), [nodes, selection],
+  );
   const sceneStatus =
     view.status === "pending"
       ? view.progress
@@ -81,12 +106,7 @@ export function App() {
       selection={selection}
       revision={snapshot?.revision}
       select={selectNode}
-      resolveSelection={(id) => ({
-        ...selection,
-        nodeId: id,
-        frameId:
-          frameForNode(nodes, id, selection.pageId)?.id ?? selection.frameId,
-      })}
+      resolveSelection={resolveSelection}
     >
       <div
         className={`app-shell ${leftOpen ? "left-open" : ""} ${rightOpen ? "right-open" : ""}`}
@@ -126,7 +146,7 @@ export function App() {
               <Layers
                 nodes={nodes}
                 frameId={selection.frameId}
-                frameIds={all ? frames.map((frame) => frame.id) : undefined}
+                frameIds={all ? frameIds : undefined}
                 selectedId={selection.nodeId}
                 select={selectNode}
               />

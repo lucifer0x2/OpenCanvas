@@ -272,31 +272,21 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Merge `main` (`c2bf260`, hover animation trigger) vào `codex/compose-postgres`. Xung đột ở `capabilities.rs`, `implement-frame.md` và nhật ký: giữ `restrictions.layout` responsive và `restrictions.animations` hover dạng khóa riêng, giữ bullet overflow mới cùng hướng dẫn hover theo `triggerNodeId`, đặt các mục hover của main trước mục nhánh.
 
-### Viewer All frames — 2026-11-06
-
-- Người dùng yêu cầu option All trong Frame, xem đủ frame của page với tên/khoảng cách và bố cục theo kích thước. Mở worktree riêng `OpenCanvas-viewer-wasm-scene` trên `feat/viewer-wasm-scene`, giữ nguyên checkout đang bẩn ở nhánh khác.
-- Giao hai worker mới: API batch scene theo page/revision có pagination giới hạn hàng đợi; frontend All dùng chung snapshot/WASM/font, bố cục cân đối, giữ tương tác và fallback server. Không commit/push/deploy hoặc dùng dữ liệu thật.
-- Người dùng nhắc app thật chạy native và cấm deploy khi chưa đồng ý; đã chuyển chỉ đạo cho workers. API worker báo unit scene3, jobs24 và HTTP integration3 đạt trên data root tạm; root đang review độc lập, frontend chưa nghiệm thu.
-- Root kiểm lại HTTP integration3 và strict server lib Clippy đạt. Chromium từ shell bị macOS MachPort error141/SIGTRAP chặn; native Chrome qua CUA đã xem All3/4/9 và Inspector frame-local, chưa thay thế smoke tự động. Review tìm ra xung đột sentinel, thứ tự ID và tiếp tục enqueue sau timeout; worker đã sửa, đang hoàn thiện nhãn đọc được khi Fit.
-- Nhận frontend hoàn tất: root kiểm 78 web tests, typecheck/build đạt; worker kiểm scoped format, reviewer độc lập 18 focused tests và không còn Required. Nhãn giữ 12 CSS px khi Fit; kiểm thuần bao phủ mức 27%/5%, screenshot cuối chưa chụp được do CUA timeout. Detector không có finding, mã/test sửa tối đa236 dòng.
-- Điểm dừng: [báo cáo và lệnh kiểm lại](../ALL-FRAMES-REPORT.md). Fixture/Vite đã dừng, không commit/push/deploy hoặc restart native. Playwright smoke/prerender Chromium còn chờ môi trường cho phép browser khởi động; không ghi pass thay cho phần chưa chạy.
+- Các mục đã đóng All frames, dựng bản test riêng và progressive cache: [archive](history/2026-11-09-closed-viewer.md).
 
 ### Stress All frames 10.000 nodes/page — 2026-11-06
 
 - Người dùng yêu cầu page cao khác nhau, mỗi page10.000nodes. Giao fresh worker tạo stress harness và fixture thật qua API trong data root/server tạm; một project/page để giữ cap20.000/project,9frames/page để giữ cap2.048/frame, thêm probe10.000nodes trong một frame. Không tăng giới hạn hoặc chạm runtime native thật.
 
-### Bản test riêng viewer WASM/All frames — 2026-11-06
-
-- Theo yêu cầu người dùng, dựng snapshot source gồm All frames chưa commit và PostgreSQL cluster riêng; test viewer loopback3867, DB2704, không thay native3857/3858, launchd hay Funnel.
-- Kiểm5snapshot và170resource hashes trùng nguồn, đủ5projects/10.432nodes/88assets/82fonts; cả8bảng DB gồm lịch sử/idempotency/binary trùng digest. Tài khoản test bị DB nguồn từ chối; batch3frames, PNG native, WASM compute và helper stop/start/restart đạt.
-- Giữ bản test chạy để người dùng thử. Hướng dẫn vận hành và giới hạn nằm ở output `opencanvas-viewer-test.md` của chat; không commit/push hoặc sửa mã ứng dụng.
-
-### Viewer progressive scenes và persistent cache — 2026-11-06
-
-- All mặc định; board có skeleton theo authored geometry ngay, mỗi frame/resource hoàn tất được publish riêng; giữ camera và completed prefix khi fallback. IndexedDB dùng chung All/single, exact revision + source/WASM fingerprint, giới hạn64scene/32MiB; Retry bypass, lỗi storage quay về compute.
-- Typecheck và production web build đạt, diff whitespace sạch; không chạy browser/runtime/DB/tests/benchmark theo yêu cầu người dùng tự thử. Source mới/sửa tối đa232dòng, không file nào vượt250; chi tiết tại [báo cáo](../VIEWER-PROGRESSIVE-CACHE.md). Không deploy, đổi process/port, commit/push hoặc chạm dữ liệu.
-
 ### Commit và push viewer All/progressive cache — 2026-11-06
 
 - Người dùng đã tự thử bản viewer riêng và chấp nhận, yêu cầu “ổn áp đấy, push đi”. Cho phép commit/push phần All frames và progressive IndexedDB cache trên `feat/viewer-wasm-scene`; giữ riêng stress harness của phiên khác.
 - Dùng kết quả typecheck/production build đã đạt cùng kiểm trước commit bằng Git; không chạy lại tests/benchmark, deploy hoặc chạm runtime/DB. Chuẩn bị một commit và push thường sau khi đối chiếu nhánh remote; chưa ghi push thành công trước khi xác minh.
+
+### Viewer FE performance — 2026-11-09
+
+- Root giao khảo sát canvas chỉ đọc và audit toàn frontend, sau đó ba worker độc lập: canvas/prepared tree và viewport culling, React/indexed Layers và ranh giới state, HTTP ETag/snapshot lifecycle. Giữ source của phiên stress riêng, không tạo campaign benchmark hoặc triển khai app thật.
+- Nhận cả ba: bỏ index scene mỗi paint, culling bảo thủ, props/commands ổn định và index node dùng chung; revalidation ETag giữ auth/privacy và lifecycle. Các kiểm thuần lần lượt17/17,19/19,10/10 đạt; worker typecheck và root build tổng hợp/diff-check đạt. Source/test được giao tối đa233dòng. [Báo cáo, lệnh kiểm và giới hạn](../VIEWER-FE-PERFORMANCE.md).
+- Chromium launch bị MachPort1100/SIGTRAP, dừng retry; chưa đo FPS/timing hoặc xác nhận pixel parity. Giữ kiến trúc state hiện có sau rà ownership; không ép reducer/store chung.
+- Chỉ đồng bộ generated static assets vào bản test3867, giữ hash cũ, thay index nguyên tử sau cùng; HTTP index/bundle khớp byte. App17418/PG17389 và native23980 giữ thời điểm khởi động, nguồnPG2703 vẫn nghe; không restart/đổi launchd/Funnel, kiểm DB, render job, commit/push. Để app+PG test chạy cho người dùng tự thử.
+- Người dùng yêu cầu “push code đi”, cho phép commit và push thường phần tối ưu FE trên `feat/viewer-wasm-scene`. Dùng kết quả kiểm đã ghi, kiểm phạm vi/whitespace trước commit và đối chiếu remote; giữ riêng stress harness, không đổi runtime/DB hoặc generated assets. Chưa ghi push thành công trước khi xác minh remote.

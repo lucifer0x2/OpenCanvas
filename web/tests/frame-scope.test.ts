@@ -3,6 +3,7 @@ import test from "node:test";
 import { ALL_FRAMES, frameForNode } from "../src/frameScope.ts";
 import { children, reconcileSelection } from "../src/state.ts";
 import type { Selection, Snapshot } from "../src/types.ts";
+import { nodeIndex } from "../src/nodeIndex.ts";
 
 const snapshot = {
   projectId: "p",
@@ -77,4 +78,42 @@ test("All cannot collide with an authored ID and ties follow the server's ASCII 
       .map((node) => node.id),
     ["Z", "__all_frames__", "a", "frame"],
   );
+});
+
+test("a snapshot shares one sorted index without mutating input or public child results", () => {
+  const root = snapshot.nodes[1];
+  const nodes = [
+    { ...root, id: "last", sortKey: "10" },
+    { ...root, id: "a", sortKey: "2" },
+    { ...root, id: "Z", sortKey: 2 },
+    ...snapshot.nodes,
+  ];
+  const before = nodes.map((node) => node.id);
+  const index = nodeIndex(nodes);
+  assert.equal(nodeIndex(nodes), index);
+  assert.equal(index.byId.get("a"), nodes[1]);
+  assert.deepEqual(index.childrenByParent.get("page")?.map((node) => node.id),
+    ["frame", "other", "Z", "a", "last"]);
+  assert.deepEqual(nodes.map((node) => node.id), before);
+  children(nodes, "page").reverse();
+  assert.equal(children(nodes, "page")[0].id, "frame");
+  const updated = nodes.map((node) => node.id === "a" ? { ...node, sortKey: -1 } : node);
+  assert.notEqual(nodeIndex(updated), index);
+  assert.equal(children(updated, "page")[0].id, "a");
+  assert.deepEqual(children(nodes, "missing"), []);
+});
+
+test("reconciliation retains only an unchanged selection identity", () => {
+  assert.equal(reconcileSelection(snapshot, selection), selection);
+  const all = { ...selection, frameId: ALL_FRAMES };
+  assert.equal(reconcileSelection(snapshot, all), all);
+  const empty = { ...selection, nodeId: "" };
+  assert.equal(reconcileSelection(snapshot, empty), empty);
+  for (const patch of [
+    { projectId: "deleted" }, { pageId: "deleted" },
+    { frameId: "deleted" }, { nodeId: "deleted" },
+  ]) {
+    const invalid = { ...selection, ...patch };
+    assert.notEqual(reconcileSelection(snapshot, invalid), invalid);
+  }
 });

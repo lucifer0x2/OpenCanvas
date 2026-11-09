@@ -5,6 +5,7 @@ import { placeImage } from "./image-fit";
 import { paintStroke } from "./stroke";
 import { fillPath } from "./fill";
 import { paintOuterShadows, paintInsetShadows } from "./shadow";
+import type { SceneTree } from "./scene-tree";
 
 function paintFill(context: CanvasRenderingContext2D, node: SceneNode) {
   if (node.fill === "transparent" || node.kind === "text") return;
@@ -67,16 +68,19 @@ export function paintNode(
 /**
  * Paints the scene in scene units under the context's current transform, with CSS group opacity
  * (see paintTree). Never resizes or clears the target, so the worker PNG (via drawScene) and the
- * viewer's zoomed Konva layer share it.
+ * viewer's zoomed Konva layer share it. A retained tree must match this immutable scene and
+ * ready resource set; omit it to index immediately as before.
  */
 export function paintScene(
   context: CanvasRenderingContext2D,
   scene: Scene,
   resources: Resources,
+  tree?: SceneTree,
 ): PaintStats {
   // A stroke paints after the node's subtree, above its descendants: its own clip never cuts it;
   // ancestor clips and opacity (including its own group layer) do, as for its fill.
   return paintTree(context, scene, resources, paintNode, {
     paintOver: paintStroke,
+    tree,
   });
 }

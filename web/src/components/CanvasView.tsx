@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { Stage, Layer } from "react-konva";
 import type Konva from "konva";
 import { boardHitTest } from "../scene/boardHitTest";
@@ -34,29 +34,29 @@ export function CanvasView({
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
   const resources = view.resources;
-  const frames =
-    view.frames ??
-    (scene && resources
-      ? [
-          {
-            id: scene.provenance.frameId,
-            name: frameName,
-            ...scene.provenance.viewport,
-            scene,
-            resources,
-          },
-        ]
-      : []);
+  const frames = useMemo(
+    () => view.frames ?? (scene && resources
+      ? [{
+          id: scene.provenance.frameId,
+          name: frameName,
+          ...scene.provenance.viewport,
+          scene,
+          resources,
+        }]
+      : []),
+    [view.frames, scene, resources, frameName],
+  );
   const layoutCache = useRef<{
     geometry: string;
     width: number;
     height: number;
     layout: ReturnType<typeof fitFrameBoard>;
   } | null>(null);
-  const geometry = JSON.stringify(
-    frames.map(({ id, width, height }) => [id, width, height]),
+  const geometry = useMemo(
+    () => JSON.stringify(frames.map(({ id, width, height }) => [id, width, height])),
+    [frames],
   );
-  const boardLayout = (size: { width: number; height: number }) => {
+  const boardLayout = useCallback((size: { width: number; height: number }) => {
     const cached = layoutCache.current;
     if (
       cached?.geometry === geometry &&
@@ -67,13 +67,13 @@ export function CanvasView({
     const layout = fitFrameBoard(frames, size);
     layoutCache.current = { geometry, ...size, layout };
     return layout;
-  };
-  const content = (size: { width: number; height: number }) =>
-    view.frames
-      ? frames.length
-        ? boardLayout(size)
-        : undefined
-      : scene?.provenance.viewport;
+  }, [frames, geometry]);
+  const content = useCallback(
+    (size: { width: number; height: number }) => view.frames
+      ? frames.length ? boardLayout(size) : undefined
+      : scene?.provenance.viewport,
+    [view.frames, frames, boardLayout, scene],
+  );
   const {
     host,
     size,
@@ -85,9 +85,16 @@ export function CanvasView({
     handleKeyDown,
     STEP,
   } = useCanvasTransform(content, view.cameraKey, view.frames ? 0.0001 : 0.05);
-  const placements = view.frames
-    ? boardLayout(size).frames
-    : frames.map((frame) => ({ ...frame, x: 0, y: 0 }));
+  const placements = useMemo(
+    () => view.frames
+      ? boardLayout(size).frames
+      : frames.map((frame) => ({ ...frame, x: 0, y: 0 })),
+    [view.frames, boardLayout, size, frames],
+  );
+  const handleDrag = useCallback((event: Konva.KonvaEventObject<DragEvent>) => {
+    if (event.target === stage.current)
+      moveTo(event.target.x(), event.target.y());
+  }, [moveTo]);
   const findNode = (x: number, y: number) =>
     boardHitTest(
       frames,
@@ -152,14 +159,8 @@ export function CanvasView({
             scaleX={transform.scale}
             scaleY={transform.scale}
             draggable
-            onDragMove={(event) => {
-              if (event.target === stage.current)
-                moveTo(event.target.x(), event.target.y());
-            }}
-            onDragEnd={(event) => {
-              if (event.target === stage.current)
-                moveTo(event.target.x(), event.target.y());
-            }}
+            onDragMove={handleDrag}
+            onDragEnd={handleDrag}
             onPointerDown={() => {
               pointerStart.current = stage.current?.getPointerPosition() ?? {
                 x: 0,

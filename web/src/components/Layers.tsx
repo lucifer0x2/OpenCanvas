@@ -1,25 +1,26 @@
-import { useState } from "react";
-import { children, nodeName } from "../state";
+import { memo, useState } from "react";
+import { nodeName } from "../state";
+import { EMPTY_NODES, nodeIndex, type NodeIndex } from "../nodeIndex";
 import type { DesignNode } from "../types";
 import { Icon, type IconName } from "./Icon";
 import { useNodeActions } from "./NodeActionsProvider";
 
 function LayerRow({
   node,
-  nodes,
+  index,
   selectedId,
   select,
   depth = 0,
 }: {
   node: DesignNode;
-  nodes: DesignNode[];
+  index: NodeIndex;
   selectedId: string;
   select: (id: string) => void;
   depth?: number;
 }) {
   const [expanded, setExpanded] = useState(true);
   const actions = useNodeActions();
-  const nested = children(nodes, node.id);
+  const nested = index.childrenByParent.get(node.id) ?? EMPTY_NODES;
   return (
     <li>
       <div
@@ -69,7 +70,7 @@ function LayerRow({
             <LayerRow
               key={child.id}
               node={child}
-              nodes={nodes}
+              index={index}
               selectedId={selectedId}
               select={select}
               depth={depth + 1}
@@ -81,7 +82,7 @@ function LayerRow({
   );
 }
 
-export function Layers({
+export const Layers = memo(function Layers({
   nodes,
   frameId,
   frameIds,
@@ -94,9 +95,8 @@ export function Layers({
   selectedId: string;
   select: (id: string) => void;
 }) {
-  const roots = frameIds
-    ? frameIds.flatMap((id) => nodes.find((node) => node.id === id) ?? [])
-    : nodes.filter((node) => node.id === frameId);
+  const index = nodeIndex(nodes);
+  const roots = (frameIds ?? [frameId]).flatMap((id) => index.byId.get(id) ?? []);
   return (
     <section className="layers-content" aria-label="Layers">
       <div className="section-heading">
@@ -109,7 +109,7 @@ export function Layers({
             <LayerRow
               key={root.id}
               node={root}
-              nodes={nodes}
+              index={index}
               selectedId={selectedId}
               select={select}
             />
@@ -123,4 +123,4 @@ export function Layers({
       </div>
     </section>
   );
-}
+});

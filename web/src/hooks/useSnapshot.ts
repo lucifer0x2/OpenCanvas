@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, projectPath, read } from "../api";
+import { ApiError } from "../api";
+import { readSnapshot } from "../snapshotHttp";
+import type { AcceptedSnapshot } from "../snapshotHttp";
 import type { Snapshot } from "../types";
 
 /**
@@ -13,7 +15,7 @@ export function useSnapshot(
 ) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
-  const current = useRef<Snapshot | null>(null);
+  const current = useRef<AcceptedSnapshot | null>(null);
   const refreshRef = useRef<() => void>(() => {});
   const accepted = useRef(onAccepted);
   useEffect(() => {
@@ -37,21 +39,16 @@ export function useSnapshot(
       }
       inFlight = true;
       try {
-        const next = await read<Snapshot>(
-          `${projectPath(projectId)}/snapshot`,
+        const next = await readSnapshot(
+          projectId,
+          current.current,
           controller.signal,
         );
-        if (stopped || next.projectId !== projectId) return;
-        if (next.truncated)
-          throw new Error(
-            "This snapshot is incomplete. Retry or reduce the project size.",
-          );
-        if (!current.current || next.revision >= current.current.revision) {
-          current.current = next;
-          setSnapshot(next);
-          setError("");
-          accepted.current(next);
-        }
+        if (stopped || !next) return;
+        current.current = next;
+        setSnapshot(next.snapshot);
+        setError("");
+        accepted.current(next.snapshot);
       } catch (cause) {
         if (stopped) return;
         if (cause instanceof ApiError && cause.status === 404) {
@@ -81,8 +78,8 @@ export function useSnapshot(
   /** Revision of the accepted snapshot of `projectId`, or null before the first one. */
   const revision = useCallback(
     () =>
-      current.current?.projectId === projectId
-        ? current.current.revision
+      current.current?.snapshot.projectId === projectId
+        ? current.current.snapshot.revision
         : null,
     [projectId],
   );

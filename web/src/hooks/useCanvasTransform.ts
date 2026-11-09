@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 
 export interface Transform {
@@ -108,8 +108,10 @@ export function useCanvasTransform(
       };
     });
 
-  const moveTo = (x: number, y: number) =>
-    setTransform((old) => ({ ...old, x, y }));
+  const moveTo = useCallback(
+    (x: number, y: number) => setTransform((old) => ({ ...old, x, y })),
+    [],
+  );
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const pan = PAN_STEP[event.key];

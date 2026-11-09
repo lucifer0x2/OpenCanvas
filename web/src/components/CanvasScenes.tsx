@@ -1,8 +1,9 @@
+import { memo } from "react";
 import type { FrameSceneView } from "../hooks/useScene";
 import type { FramePlacement } from "../scene/frameLayout";
 import { CanvasFrame } from "./CanvasFrame";
 
-export function CanvasScenes({
+export const CanvasScenes = memo(function CanvasScenes({
   frames,
   placements,
   scale,
@@ -25,4 +26,4 @@ export function CanvasScenes({
       labels={labels}
     />
   ));
-}
+});

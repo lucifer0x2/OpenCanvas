@@ -138,6 +138,8 @@ export function indexScene(scene: Scene, resources: Resources): SceneTree {
     // The node's own clip cuts its children, never its stroke.
     let extent = union(ownExtent(n, resources), stroke && rectOf(stroke));
     extent = union(extent, shadow && rectOf(shadow));
+    // An inset shadow paints even on a transparent node, clipped to its own box.
+    if (n.shadow?.some((s) => s.inset)) extent = union(extent, rectOf(n.bounds));
     for (const child of tree.children.get(n.id) ?? []) {
       const inner = visit(child);
       if (inner) units++;

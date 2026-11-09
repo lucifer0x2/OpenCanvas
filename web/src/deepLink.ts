@@ -1,4 +1,5 @@
 import type { DesignNode, Selection } from "./types.ts";
+import { nodeIndex } from "./nodeIndex.ts";
 
 const KEYS = ["projectId", "pageId", "frameId", "nodeId"] as const;
 const PARAMS = ["project", "page", "frame", "node"] as const;
@@ -23,7 +24,7 @@ export function selectionNode(
   nodes: DesignNode[],
   id: string,
 ): DesignNode | undefined {
-  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const { byId } = nodeIndex(nodes);
   if (byId.has(id)) return byId.get(id);
   const [first, ...parts] = id.split("/");
   let instance = byId.get(first);
