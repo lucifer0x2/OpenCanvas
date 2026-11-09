@@ -49,6 +49,9 @@ impl Queue {
     pub fn direct_len(&self) -> usize {
         self.direct.len()
     }
+    pub fn is_background(&self, id: &str) -> bool {
+        self.background.iter().any(|work| work.id == id)
+    }
     /// Queues a prerender and returns the IDs of queued prerenders it removed: older ones of the
     /// same frame (replaced by this job), then the oldest of other frames while the tier is full.
     pub fn push_background(&mut self, work: Work) -> Vec<String> {

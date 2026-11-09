@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { drawScene, loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
-import { fetchSceneJob } from "../sceneJob";
-import type { SceneRequest } from "../types";
+import { loadScene } from "../scene/service";
+import { wasmSceneEnabled } from "../scene/flag";
+import { sceneWorker } from "../scene/workerClient";
+import type { SceneRequest, Snapshot } from "../types";
 import { diagnosticLabel } from "../diagnostics";
 
 export interface SceneView {
@@ -18,6 +20,18 @@ export interface SceneView {
   /** Requested project/frame/preset identity; revisions and authored dimensions are excluded. */
   cameraKey?: string;
   requestedRevision?: number;
+  frames?: FrameSceneView[];
+  progress?: { ready: number; total: number };
+}
+
+export interface FrameSceneView {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  scene?: Scene;
+  resources?: Resources;
+  error?: string;
 }
 
 const emptyView = (): SceneView => ({
@@ -35,8 +49,10 @@ export function useScene(
   request: SceneRequest | null,
   retryKey: number,
   preset: string,
+  snapshot: Snapshot | null = null,
 ) {
-  const key = request ? JSON.stringify(request) : "";
+  const wasm = wasmSceneEnabled();
+  const key = request ? JSON.stringify([request, wasm]) : "";
   const scope = request
     ? JSON.stringify([request.projectId, request.frameId, preset])
     : "";
@@ -46,7 +62,14 @@ export function useScene(
     retryKey,
     view: emptyView(),
   });
+  const lastRetry = useRef(retryKey);
   useEffect(() => {
+    const bypassCache = lastRetry.current !== retryKey;
+    if (bypassCache) {
+      lastRetry.current = retryKey;
+      // Retry resends the accepted snapshot, even when its revision is unchanged.
+      if (wasm && request) sceneWorker.clearSnapshotCache();
+    }
     if (!request) {
       setLoaded({ key, scope, retryKey, view: emptyView() });
       return;
@@ -68,11 +91,20 @@ export function useScene(
         }));
     };
     const load = async () => {
-      const job = await fetchSceneJob(desired, controller.signal);
+      const { job, fontBytes, persist } = await loadScene(
+        desired,
+        snapshot,
+        controller.signal,
+        wasm,
+        undefined,
+        undefined,
+        bypassCache,
+      );
       if (stopped) return;
       const scene = job.scene!;
       const resources = await loadResources(scene.fonts, scene.assets, {
         strict: false,
+        fontBytes,
       });
       if (stopped) return;
       const canvas = document.createElement("canvas");
@@ -104,6 +136,8 @@ export function useScene(
           ],
         },
       });
+      if (resources.readiness.every((item) => item.status === "ready"))
+        persist?.();
     };
     load().catch((cause: Error) => fail(cause.message));
     return () => {

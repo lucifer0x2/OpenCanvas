@@ -2,12 +2,7 @@ import { type AssetManifest, type FontManifest, type Resources } from "./types";
 import { PipelineError } from "./error";
 import { fontCSS, fontFamily } from "./font-family";
 import { parseCoverage } from "./glyph-coverage";
-
-const sha256 = async (bytes: ArrayBuffer) =>
-  Array.from(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
-    (x) => x.toString(16).padStart(2, "0"),
-  ).join("");
+import { checkedResourceBytes, type FontBytesProvider } from "./resource-bytes";
 
 async function bounded<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
@@ -32,40 +27,16 @@ async function bounded<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   }
 }
 
-async function checkedBytes(
-  resource: FontManifest | AssetManifest,
-  timeoutMs: number,
-): Promise<ArrayBuffer> {
-  let response: Response;
-  try {
-    response = await fetch(resource.url, {
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-  } catch {
-    throw new PipelineError(
-      "RESOURCE_UNAVAILABLE",
-      `Resource ${resource.id} unavailable`,
-    );
-  }
-  if (!response.ok)
-    throw new PipelineError(
-      "RESOURCE_UNAVAILABLE",
-      `Resource ${resource.id} unavailable`,
-    );
-  const bytes = await response.arrayBuffer();
-  if ((await sha256(bytes)) !== resource.hash)
-    throw new PipelineError(
-      "RESOURCE_HASH_MISMATCH",
-      `Resource ${resource.id} hash mismatch`,
-    );
-  return bytes;
-}
-
 /** Explicit bytes + SHA and private CSS families. Readiness does not prove glyph coverage. */
 export async function loadResources(
   fonts: FontManifest[],
   assets: AssetManifest[],
-  options: { strict?: boolean; timeoutMs?: number } = {},
+  options: {
+    strict?: boolean;
+    timeoutMs?: number;
+    /** Optional validated byte source shared with a browser scene computer. */
+    fontBytes?: FontBytesProvider;
+  } = {},
 ): Promise<Resources> {
   const result: Resources = {
     fonts: new Map(),
@@ -79,7 +50,10 @@ export async function loadResources(
   await Promise.all([
     ...fonts.map(async (font) => {
       try {
-        const bytes = await checkedBytes(font, timeoutMs);
+        const bytes = await (options.fontBytes ?? checkedResourceBytes)(
+          font,
+          timeoutMs,
+        );
         const family = fontFamily(font);
         const face = new FontFace(family, bytes, {
           weight: String(font.weight),
@@ -96,10 +70,7 @@ export async function loadResources(
         }
         document.fonts.add(face);
         await bounded(
-          document.fonts.load(
-            fontCSS(font, 16),
-            "Tiếng Việt ă â đ ê ô ơ ư",
-          ),
+          document.fonts.load(fontCSS(font, 16), "Tiếng Việt ă â đ ê ô ơ ư"),
           timeoutMs,
         );
         if (!document.fonts.check(fontCSS(font, 16)))
@@ -120,7 +91,7 @@ export async function loadResources(
     }),
     ...assets.map(async (asset) => {
       try {
-        const bytes = await checkedBytes(asset, timeoutMs);
+        const bytes = await checkedResourceBytes(asset, timeoutMs);
         const image = new Image();
         const url = URL.createObjectURL(
           new Blob([bytes], { type: asset.mediaType }),

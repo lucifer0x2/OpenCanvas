@@ -1,9 +1,12 @@
 //! Job record transitions out of `pending` when a run finishes. Every transition wakes `wait`.
-use super::{export::Rendered, Jobs};
+use super::{export::Rendered, Entry, Jobs};
 use crate::error::Result;
 use serde_json::{json, Value};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::sync::broadcast;
+#[cfg(test)]
+#[path = "record_tests.rs"]
+mod tests;
 
 impl Jobs {
     pub(super) async fn finish(
@@ -11,6 +14,7 @@ impl Jobs {
         id: String,
         result: Result<(Value, Result<Rendered>)>,
         elapsed: Duration,
+        deadline: Instant,
         events: &broadcast::Sender<Value>,
     ) {
         let mut table = self.table.lock().await;
@@ -36,11 +40,20 @@ impl Jobs {
                 entry.value["readiness"] = computed["readiness"].clone();
                 match rendered {
                     Ok(Rendered::Frame(png)) => {
-                        entry.png = super::png::decode(&png).ok();
+                        entry.png = Some(png.bytes);
+                        let png = png.value;
                         entry.value["imageUrl"] =
                             json!(format!("{}/api/v1/jobs/{id}/image", self.config.base_url));
                         entry.value["image"] = json!({"uri":entry.value["imageUrl"],"mimeType":"image/png","width":png["width"],"height":png["height"],"provenance":png["provenance"]});
-                        for field in ["browserVersion", "runtimeVersion"] {
+                        for field in [
+                            "browserVersion",
+                            "runtimeVersion",
+                            "engine",
+                            "engineVersion",
+                        ] {
+                            if png["provenance"][field].is_null() {
+                                continue;
+                            }
                             entry.value["scene"]["provenance"][field] =
                                 png["provenance"][field].clone();
                             entry.value["provenance"][field] = png["provenance"][field].clone();
@@ -51,9 +64,35 @@ impl Jobs {
                         entry.value["error"] = json!(error.0);
                     }
                 }
-                let _=events.send(json!({"event":"scene_ready","projectId":entry.value["projectId"],"revision":entry.value["revision"],"sceneKey":entry.value["sceneKey"],"jobId":id}));
             }
+        }
+        // The table lock is the publication boundary. Guard AFTER storage/metadata
+        // conversion too: a completed paint or SVG can expire while awaiting this lock.
+        if self.config.render_backend == crate::RenderBackend::Rust {
+            reject_expired(entry, deadline);
+        }
+        if entry.value.get("scene").is_some() {
+            let _=events.send(json!({"event":"scene_ready","projectId":entry.value["projectId"],"revision":entry.value["revision"],"sceneKey":entry.value["sceneKey"],"jobId":id}));
         }
         self.done.send_modify(|n| *n = n.wrapping_add(1));
     }
+}
+
+fn reject_expired(entry: &mut Entry, deadline: Instant) {
+    if entry.value["status"] != "ready" {
+        return;
+    }
+    let Err(error) = super::native::check_deadline(deadline) else {
+        return;
+    };
+    entry.png = None;
+    entry.files.clear();
+    let fields = entry.value.as_object_mut().unwrap();
+    for key in ["imageUrl", "image", "files"] {
+        fields.remove(key);
+    }
+    if fields.get("kind").is_some_and(|kind| kind == "export") {
+        fields.insert("status".into(), json!("failed"));
+    }
+    fields.insert("error".into(), json!(error.0));
 }

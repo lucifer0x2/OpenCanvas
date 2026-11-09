@@ -12,6 +12,9 @@ pub struct TextOpts {
     pub snap: bool,
 }
 
+/// The export path's options (`bench` defaults): gamma 1.45, snapped origins. Task 09 renders with these.
+pub const EXPORT_OPTS: TextOpts = TextOpts { gamma: 1.45, snap: true };
+
 struct Sink<'a> { pb: &'a mut PathBuilder, ox: f32, oy: f32, s: f32 }
 impl PathSink for Sink<'_> {
     fn move_to(&mut self, x: f32, y: f32) { self.pb.move_to(self.ox + x * self.s, self.oy - y * self.s) }

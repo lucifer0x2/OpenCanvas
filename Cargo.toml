@@ -1,8 +1,7 @@
 [workspace]
-members = ["crates/layout", "crates/storage", "crates/server"]
+members = ["crates/layout", "crates/storage", "crates/server", "crates/text", "crates/render", "crates/scene-input", "crates/scene-wasm"]
 resolver = "2"
 
 [workspace.package]
 edition = "2021"
 license = "MIT"
-

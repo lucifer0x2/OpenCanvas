@@ -6,15 +6,10 @@ use crate::{
     error::{ApiError, Result},
     svg::{scene_to_svg, Image},
 };
-use opencanvas_storage::Storage;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-/// Where the job reads image bytes: the project's asset store.
-pub struct AssetSource {
-    pub store: Storage,
-    pub project_id: String,
-}
+pub(super) use super::export_resources::AssetSource;
 
 fn not_ready(message: &str) -> ApiError {
     ApiError::new("RESOURCE_NOT_READY", message)
@@ -52,29 +47,27 @@ pub async fn images(
     if wanted.is_empty() {
         return Ok(HashMap::new());
     }
-    let (store, project) = (source.store.clone(), source.project_id.clone());
-    tokio::task::spawn_blocking(move || {
-        let project = store
-            .open_project(&project)
-            .map_err(|_| not_ready("Project is unavailable"))?;
-        let mut images = HashMap::new();
-        for (id, hash) in wanted {
-            let (asset, bytes) = project
-                .read_asset(&id)
-                .map_err(|_| not_ready("Image asset bytes are missing or changed"))?;
-            if asset.content_hash != hash {
-                return Err(not_ready(
-                    "Image asset changed since the scene was computed",
-                ));
+    let source = source.clone();
+    source
+        .clone()
+        .blocking(move || {
+            let mut images = HashMap::new();
+            for (id, hash) in wanted {
+                let (asset, bytes) = source
+                    .read_asset(&id)
+                    .map_err(|_| not_ready("Image asset bytes are missing or changed"))?;
+                if asset.content_hash != hash {
+                    return Err(not_ready(
+                        "Image asset changed since the scene was computed",
+                    ));
+                }
+                let image = Image::new(&asset.media_type, bytes)
+                    .ok_or_else(|| not_ready("Image asset header gives no readable size"))?;
+                images.insert(id, image);
             }
-            let image = Image::new(&asset.media_type, bytes)
-                .ok_or_else(|| not_ready("Image asset header gives no readable size"))?;
-            images.insert(id, image);
-        }
-        Ok(images)
-    })
-    .await
-    .map_err(|_| ApiError::new("INTERNAL_ERROR", "Storage task failed"))?
+            Ok(images)
+        })
+        .await
 }
 
 /// One SVG file. Width and height are the node's size in CSS pixels.

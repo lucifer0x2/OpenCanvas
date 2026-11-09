@@ -11,7 +11,7 @@ use crate::text::{TextOpts, TextPainter};
 use crate::text_mask::{self, TextMask};
 use crate::{par, text_full};
 use std::sync::Mutex;
-use std::time::Instant;
+use crate::clock::Instant;
 use tiny_skia::*;
 
 pub struct Painter<'a> {

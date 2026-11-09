@@ -190,7 +190,8 @@ fn border_aliases_suggest_stroke() {
 fn catalog_lists_stroke_for_box_kinds_only() {
     for kind in &NODE_KINDS {
         let listed = allowed_props(kind).contains(&"stroke");
-        let expected = !matches!(kind, NodeKind::Page | NodeKind::Text | NodeKind::Instance);
+        // Instances support stroke as paint on the expanded component root.
+        let expected = !matches!(kind, NodeKind::Page | NodeKind::Text);
         assert_eq!(listed, expected, "{kind:?}");
     }
 }

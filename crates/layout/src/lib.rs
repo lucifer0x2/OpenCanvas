@@ -1,11 +1,13 @@
-//! Synchronous Taffy layout with external batched browser measurement.
+//! Taffy layout with batched cached or synchronous text measurement.
 mod engine;
+mod measurement;
 mod model;
 #[cfg(test)]
 mod paint_tests;
 mod responsive;
 #[cfg(test)]
 mod responsive_tests;
+mod scene_builder;
 mod stack;
 #[cfg(test)]
 mod stack_tests;
@@ -21,7 +23,8 @@ mod util;
 mod validation;
 #[cfg(test)]
 mod wrap_tests;
-pub use engine::compute;
+pub use engine::{compute, compute_with_measurer};
+pub use measurement::TextMeasurer;
 pub use model::*;
 pub use responsive::{MAX_BREAKPOINTS, percentage, valid_breakpoint_width};
 pub const SCENE_VERSION: &str = "scene-3";

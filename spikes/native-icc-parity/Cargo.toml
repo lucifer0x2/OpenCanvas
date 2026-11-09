@@ -1,0 +1,24 @@
+[package]
+name = "native-icc-parity"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[workspace]
+
+[[bin]]
+name = "icc-fixtures"
+path = "fixtures/main.rs"
+
+# Reuse the G3 public-render-API I/O adapter without writing its source or outputs.
+[[bin]]
+name = "icc-native-adapter"
+path = "../native-paint-parity/native/main.rs"
+
+[dependencies]
+opencanvas-render = { path = "../../crates/render" }
+serde_json = "=1.0.154"
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp"] }
+moxcms = { version = "=0.8.1", default-features = false, features = ["lut"] }
+jpeg-decoder = { version = "=0.3.2", default-features = false, features = ["platform_independent"] }

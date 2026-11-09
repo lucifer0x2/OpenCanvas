@@ -1,0 +1,164 @@
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::BTreeMap;
+
+pub const SCHEMA_VERSION: u32 = 4;
+pub const MAX_BATCH_OPS: usize = 500;
+pub const MAX_BATCH_BYTES: usize = 2 * 1024 * 1024;
+pub const MAX_ASSET_BYTES: usize = 10 * 1024 * 1024;
+pub const MAX_NODES: usize = 20_000;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum NodeKind {
+    Page,
+    Frame,
+    Group,
+    Rectangle,
+    Text,
+    Image,
+    Instance,
+}
+impl NodeKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Page => "page",
+            Self::Frame => "frame",
+            Self::Group => "group",
+            Self::Rectangle => "rectangle",
+            Self::Text => "text",
+            Self::Image => "image",
+            Self::Instance => "instance",
+        }
+    }
+    pub fn container(&self) -> bool {
+        matches!(self, Self::Page | Self::Frame | Self::Group)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Node {
+    pub id: String,
+    pub parent_id: Option<String>,
+    pub sort_key: i64,
+    pub kind: NodeKind,
+    pub props: Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Token {
+    pub id: String,
+    pub name: String,
+    #[serde(rename = "type")]
+    pub token_type: String,
+    pub value: Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Style {
+    pub id: String,
+    pub name: String,
+    pub kind: String,
+    pub value: Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Asset {
+    pub id: String,
+    pub content_hash: String,
+    pub media_type: String,
+    pub byte_size: u64,
+    /// Opaque, content addressed key relative to assets/. Never an absolute path.
+    pub relative_key: String,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Font {
+    pub id: String,
+    pub family: String,
+    pub weight: u16,
+    pub style: String,
+    pub asset_id: Option<String>,
+    pub bundled_id: Option<String>,
+    pub content_hash: Option<String>,
+    pub license: Option<String>,
+    pub status: String,
+}
+
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum PrivacyStatus {
+    #[default]
+    Private,
+    Public,
+}
+
+impl PrivacyStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Private => "private",
+            Self::Public => "public",
+        }
+    }
+
+    pub fn from_storage(value: &str) -> crate::Result<Self> {
+        match value {
+            "private" => Ok(Self::Private),
+            "public" => Ok(Self::Public),
+            _ => Err(crate::StorageError::new(
+                "PROJECT_INVALID",
+                "Project privacy status is invalid",
+            )),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectMeta {
+    pub project_id: String,
+    pub slug: String,
+    pub name: String,
+    pub schema_version: u32,
+    pub revision: u64,
+    #[serde(default, rename = "privacy_status")]
+    pub privacy_status: PrivacyStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Retention {
+    pub oldest_commit_revision: u64,
+    pub idempotency_policy: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Snapshot {
+    pub schema_version: u32,
+    pub project_id: String,
+    pub slug: String,
+    pub name: String,
+    pub revision: u64,
+    pub nodes: Vec<Node>,
+    pub tokens: Vec<Token>,
+    pub styles: Vec<Style>,
+    pub assets: Vec<Asset>,
+    pub fonts: Vec<Font>,
+    #[serde(default)]
+    pub notes: Vec<Note>,
+    pub retention: Retention,
+}
+
+mod notes;
+mod requests;
+pub use notes::*;
+pub use requests::*;

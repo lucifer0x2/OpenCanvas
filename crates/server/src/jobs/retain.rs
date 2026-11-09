@@ -9,6 +9,43 @@ use crate::error::Result;
 pub const RECORD_CAP: usize = 32;
 
 impl Table {
+    /// Reserve the entire batch before eviction, keeping every cache hit the batch returns.
+    pub(super) fn reserve(&mut self, count: usize, keep: &[String]) -> Result<()> {
+        let needed = (self.entries.len() + count).saturating_sub(RECORD_CAP);
+        let removable = |e: &&Entry| {
+            e.value["status"] != "pending" && !keep.iter().any(|id| e.value["jobId"] == id.as_str())
+        };
+        let candidates: Vec<_> = self
+            .entries
+            .iter()
+            .filter(removable)
+            .filter(|e| !e.requested)
+            .chain(
+                self.entries
+                    .iter()
+                    .filter(removable)
+                    .filter(|e| e.requested),
+            )
+            .take(needed)
+            .map(|e| e.value["jobId"].clone())
+            .collect();
+        if candidates.len() < needed {
+            return Err(self
+                .pace
+                .queue_full("Render job capacity reached", self.entries.len()));
+        }
+        // Job IDs distinguish a failed attempt and its successful retry with the same key.
+        let mut remaining = needed;
+        self.entries.retain(|entry| {
+            if remaining > 0 && candidates.contains(&entry.value["jobId"]) {
+                remaining -= 1;
+                false
+            } else {
+                true
+            }
+        });
+        Ok(())
+    }
     /// Drops records until one more fits: finished prerenders nobody requested first, oldest
     /// first, then the oldest finished record of any kind. Fails with `QUEUE_FULL` when every
     /// retained record is still pending.
@@ -95,5 +132,25 @@ mod tests {
         table.forget(&["p0".into(), "p5".into()]);
         assert_eq!(table.entries.len(), RECORD_CAP - 2);
         table.make_room().unwrap();
+    }
+
+    #[test]
+    fn batch_reservation_keeps_cache_hits_and_failed_reservation_evicts_nothing() {
+        let mut table = Table::default();
+        table.entries.push_back(entry("cached", "ready", true));
+        table.entries.push_back(entry("discard", "ready", false));
+        for i in 2..RECORD_CAP {
+            table
+                .entries
+                .push_back(entry(&format!("pending{i}"), "pending", true));
+        }
+        let before = ids(&table);
+        let error = table.reserve(2, &["cached".into()]).unwrap_err();
+        assert_eq!(error.value()["error"]["code"], "QUEUE_FULL");
+        assert_eq!(ids(&table), before);
+        table.reserve(1, &["cached".into()]).unwrap();
+        assert_eq!(table.entries.len(), RECORD_CAP - 1);
+        assert!(ids(&table).contains(&"cached".to_owned()));
+        assert!(!ids(&table).contains(&"discard".to_owned()));
     }
 }

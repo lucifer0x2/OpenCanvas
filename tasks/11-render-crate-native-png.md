@@ -1,6 +1,11 @@
 # Task 11 — Crate render Rust dùng chung (native + WASM) và đường xuất PNG không cần Chromium
 
-**Trạng thái:** CHƯA GIAO. Đóng gói 2026-10-29.
+**Trạng thái:** ĐANG TRIỂN KHAI 2026-11-04, sau nền Task10 theo lựa chọn người dùng. Đóng gói gốc 2026-10-29.
+**Chốt mới 2026-11-04 (ưu tiên hơn mô tả gốc bên dưới):** native trước, không bị chặn bởi gate tốc độ WASM
+Task09; chưa làm viewer Task12. Người dùng xác nhận ngoài text, pixel Δ>8 dưới 0,5%; text có ảnh đối chiếu.
+Port đủ semantics hiện tại `scene-3`/`web-4`, gồm gradient/shadow/corners/typography/static face đã có,
+không coi chúng là tính năng ngoài scope như mô tả cũ. Kiểm build/parity WASM nếu khả thi nhưng không đổi mặc định.
+Giữ Chromium làm mặc định và không deploy/push. Nhánh `feat/task11-native-png` cùng worktree đã giữ Task09 dirty.
 **Phụ thuộc:** Task 10 (dùng chung `crates/text`). Task 09 phải ra **go** (WASM đủ nhỏ/nhanh, native↔WASM khớp);
 nếu no-go, bỏ yêu cầu WASM ở task này và hỏi lại người dùng trước khi làm.
 **Quyết định cần người dùng xác nhận khi giao:** ngưỡng pixel so với Chromium (AC thứ hai).

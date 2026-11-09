@@ -22,7 +22,10 @@ use rmcp::transport::streamable_http_server::{
 };
 use serde_json::{json, Value};
 use std::sync::Arc;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::{
+    services::{ServeDir, ServeFile},
+    set_header::SetResponseHeader,
+};
 
 pub fn router(state: AppState) -> Router {
     let mcp_state = state.clone();
@@ -71,6 +74,7 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
         .route("/api/v1/events", get(workspace_events::events))
         .route("/api/v1/projects/{project}/events", get(events::events))
         .route("/api/v1/projects/{project}/scene", get(scene))
+        .route("/api/v1/projects/{project}/scenes", get(crate::scenes::get))
         .route(
             "/api/v1/projects/{project}/exports",
             post(crate::export::create),
@@ -80,9 +84,14 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
         .route("/api/v1/jobs/{job}", get(job))
         .route("/api/v1/jobs/{job}/image", get(image))
         .route("/api/v1/jobs/{job}/files/{index}", get(crate::export::file))
-        .fallback_service(
-            ServeDir::new(&dist).not_found_service(ServeFile::new(dist.join("index.html"))),
-        )
+        .fallback_service(SetResponseHeader::overriding(
+            ServeDir::new(&dist)
+                .precompressed_br()
+                .precompressed_gzip()
+                .not_found_service(ServeFile::new(dist.join("index.html"))),
+            header::VARY,
+            HeaderValue::from_static("Accept-Encoding"),
+        ))
         .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
 }
 async fn viewer_access(origin: Origin) -> Json<Value> {

@@ -4,7 +4,8 @@
 //! cache per run), --gamma G (1.45), --no-snap, --paint full|bbox (bbox), --threads N (0 = one per
 //! core; or RUST_SPIKE_THREADS), --png PATH (first run; PATH-fast.png too), --geometry PATH,
 //! --json PATH (else stdout). With --iters 1 it is the cold measurement.
-use crate::font::{Shaper, FONT_PATH};
+use crate::assets::FONT_PATH;
+use crate::font::Shaper;
 use crate::measure::Face;
 use crate::mode::PaintMode;
 use crate::paint::Painter;

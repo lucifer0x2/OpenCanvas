@@ -1,4 +1,4 @@
-/** Image `fit` values, the same list the storage validator accepts (crates/storage/src/image_fit.rs). */
+/** Image `fit` values, the same list the scene-input validator accepts (crates/scene-input/src/image_fit.rs). */
 export const IMAGE_FITS = ["fit", "contain", "cover"] as const;
 export type ImageFit = (typeof IMAGE_FITS)[number];
 

@@ -1,0 +1,18 @@
+[package]
+name = "opencanvas-render"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+opencanvas-layout = { path = "../layout" }
+opencanvas-text = { path = "../text" }
+tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd"] }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp"] }
+# Only the original-CMYK ICC path: no rayon/OS codecs; deterministic scalar decode.
+jpeg-decoder = { version = "=0.3.2", default-features = false, features = ["platform_independent"] }
+moxcms = { version = "=0.8.1", default-features = false, features = ["lut"] }
+png = "=0.18.1"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+sha2 = "=0.10.9"

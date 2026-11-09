@@ -4,6 +4,22 @@
 ARG RUST_IMAGE=rust:1.99.1-slim-trixie
 ARG NODE_IMAGE=node:24.21.0-trixie-slim
 
+FROM ${RUST_IMAGE} AS scene-wasm
+WORKDIR /src
+# Tool installation is independent of project sources and remains cached across edits.
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/tmp/wasm-bindgen-target \
+    rustup target add wasm32-unknown-unknown \
+    && CARGO_TARGET_DIR=/tmp/wasm-bindgen-target cargo install wasm-bindgen-cli \
+        --version 0.2.129 --locked --root /opt/wasm-bindgen
+COPY Cargo.toml Cargo.lock ./
+COPY crates crates
+COPY scripts/build-scene-wasm.sh scripts/
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/src/target/scene-wasm \
+    WASM_BINDGEN=/opt/wasm-bindgen/bin/wasm-bindgen \
+    sh scripts/build-scene-wasm.sh /out/scene-wasm /src/target/scene-wasm
+
 FROM ${RUST_IMAGE} AS rust
 WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
@@ -27,7 +43,10 @@ COPY web/package.json web/package-lock.json web/
 RUN --mount=type=cache,target=/root/.npm npm ci && npm --prefix web ci
 COPY renderer renderer
 COPY web web
-RUN npm run build:renderer && npm --prefix web run build
+COPY --from=scene-wasm /out/scene-wasm web/public/scene-wasm
+COPY scripts/compress-scene-wasm.mjs scripts/
+RUN node scripts/compress-scene-wasm.mjs web/public/scene-wasm \
+    && npm run build:renderer && npm --prefix web run build
 
 FROM ${NODE_IMAGE} AS runtime
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.runtime/browsers

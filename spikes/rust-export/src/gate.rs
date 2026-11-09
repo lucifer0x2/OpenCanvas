@@ -9,7 +9,8 @@
 use crate::compare::read_png;
 use crate::convert;
 use crate::encode;
-use crate::font::{Shaper, FONT_PATH};
+use crate::assets::FONT_PATH;
+use crate::font::Shaper;
 use crate::measure::Face;
 use crate::mode::PaintMode;
 use crate::paint::Painter;
