@@ -26,6 +26,24 @@ impl SqliteBackend {
 }
 
 impl StorageBackend for SqliteBackend {
+    fn apply_scoped_batch(
+        &self,
+        project: &str,
+        request: crate::ScopedBatchRequest,
+    ) -> Result<BatchResult> {
+        self.pins
+            .open(&self.store, project)?
+            .apply_scoped_batch(request)
+    }
+    fn dry_run_scoped_batch(
+        &self,
+        project: &str,
+        request: crate::ScopedBatchRequest,
+    ) -> Result<DryRunResult> {
+        self.pins
+            .open(&self.store, project)?
+            .dry_run_scoped_batch(request)
+    }
     fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
         Some(self)
     }

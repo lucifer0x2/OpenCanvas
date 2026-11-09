@@ -37,7 +37,8 @@ pub(crate) fn validate(conn: &Connection, snapshot: &Snapshot) -> Result<()> {
         let revision: i64 = row.get(0)?;
         let base: i64 = row.get(1)?;
         let key: String = row.get(2)?;
-        let operations: Value = serde_json::from_str(&row.get::<_, String>(3)?)?;
+        let history: Value = serde_json::from_str(&row.get::<_, String>(3)?)?;
+        let operations = scoped::operations(history.clone());
         let changed: Vec<String> = serde_json::from_str(&row.get::<_, String>(4)?)?;
         let request_hash: String = row.get(5)?;
         let committed: i64 = row.get(6)?;
@@ -60,7 +61,10 @@ pub(crate) fn validate(conn: &Connection, snapshot: &Snapshot) -> Result<()> {
         {
             return Err(invalid("Invalid durable commit or idempotency metadata"));
         }
-        let request = replay_request(&snapshot.project_id, base, &key, operations)?;
+        if history.is_object() {
+            scoped::coverage(&history, &snapshot.project_id, base as u64)?;
+        }
+        let request = replay_request(&snapshot.project_id, base, &key, history)?;
         if hash(&serde_json::to_vec(&canonical_json(&request))?) != request_hash {
             return Err(invalid(
                 "Replay request hash differs from durable operations",
@@ -81,7 +85,54 @@ pub(crate) fn validate(conn: &Connection, snapshot: &Snapshot) -> Result<()> {
     Ok(())
 }
 
-fn replay_request(project: &str, base: i64, key: &str, operations: Value) -> Result<Value> {
+pub(crate) fn replay_request(
+    project: &str,
+    base: i64,
+    key: &str,
+    operations: Value,
+) -> Result<Value> {
+    if operations.is_object() {
+        let object = operations.as_object().unwrap();
+        if operations["scopeVersion"] != 1
+            || object.len() != 5
+            || ![
+                "scopeVersion",
+                "request",
+                "operations",
+                "scopes",
+                "scopeHash",
+            ]
+            .iter()
+            .all(|key| object.contains_key(*key))
+        {
+            return Err(invalid("Unsupported scoped history envelope"));
+        }
+        let _: Vec<String> = serde_json::from_value(operations["scopes"].clone())?;
+        let request = operations["request"].clone();
+        let expected = request["expectedRevision"]
+            .as_u64()
+            .filter(|r| *r <= base as u64)
+            .ok_or_else(|| invalid("Invalid scoped history base revision"))?;
+        let plain = &operations["operations"];
+        if request.get("pageIds").is_some() {
+            let scoped: ScopedBatchRequest = serde_json::from_value(request.clone())?;
+            if scoped.page_ids.is_empty()
+                || scoped.page_ids.len() > 100
+                || scoped.page_ids.iter().any(|id| !validate::valid_id(id))
+                || scoped.page_ids.iter().collect::<BTreeSet<_>>().len() != scoped.page_ids.len()
+                || scoped.project_id != project
+                || scoped.idempotency_key != key
+                || request["operations"] != *plain
+            {
+                return Err(invalid("Invalid scoped replay request"));
+            }
+        } else if expected != base as u64
+            || request != replay_request(project, base, key, plain.clone())?
+        {
+            return Err(invalid("History envelope differs from canonical request"));
+        }
+        return Ok(request);
+    }
     if operations[0]["op"] == "import_asset" {
         if operations.as_array().is_none_or(|ops| ops.len() != 1) {
             return Err(invalid("Invalid resource commit"));

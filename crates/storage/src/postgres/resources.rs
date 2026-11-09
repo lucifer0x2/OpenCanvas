@@ -98,8 +98,13 @@ pub(super) fn import(
         replayed: false,
     };
     let rows = stored.delta(&candidate)?;
+    let operations = crate::scoped::envelope(
+        &before,
+        &candidate,
+        value,
+        json!([{"op":"import_asset","asset":asset,"font":request.font}]),
+    )?;
     drop((stored, candidate));
-    let operations = json!([{"op":"import_asset","asset":asset,"font":request.font}]);
     let written = transaction::persist(
         &mut db,
         &before,

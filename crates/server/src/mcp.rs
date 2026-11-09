@@ -80,6 +80,13 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
         "apply_batch" | "apply_batch_file" | "import_asset" => {
             domain::mutate(state, name, args).await
         }
+        "get_edit_context" => {
+            let snapshot = state
+                .snapshot(args["projectId"].as_str().unwrap().into())
+                .await?;
+            let pages = serde_json::from_value(args["pageIds"].clone())?;
+            Ok(opencanvas_storage::edit_context(snapshot, pages)?)
+        }
         "get_outline" | "get_subtree" | "get_design_context" | "find_nodes" | "list_tokens"
         | "list_styles" | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
         "get_changes" => reads::changes::read(state, args).await,

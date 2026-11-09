@@ -35,7 +35,9 @@ pub(super) fn after(
                 revision: row.get::<_, i64>(0) as u64,
                 base_revision: row.get::<_, i64>(1) as u64,
                 batch_id: row.get(2),
-                operations: serde_json::from_str(&row.get::<_, String>(3))?,
+                operations: crate::scoped::operations(serde_json::from_str(
+                    &row.get::<_, String>(3),
+                )?),
                 changed_ids: serde_json::from_str(&row.get::<_, String>(4))?,
             })
         })

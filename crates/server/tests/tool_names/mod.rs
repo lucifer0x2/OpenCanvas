@@ -3,7 +3,7 @@
 use serde_json::Value;
 use std::collections::HashSet;
 
-pub const EXPECTED: [&str; 18] = [
+pub const EXPECTED: [&str; 19] = [
     "list_projects",
     "create_project",
     "update_project",
@@ -16,6 +16,7 @@ pub const EXPECTED: [&str; 18] = [
     "list_fonts",
     "list_assets",
     "get_changes",
+    "get_edit_context",
     "apply_batch",
     "apply_batch_file",
     "import_asset",

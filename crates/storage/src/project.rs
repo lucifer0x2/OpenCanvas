@@ -112,7 +112,7 @@ impl Project {
                     revision,
                     base_revision,
                     batch_id,
-                    operations: serde_json::from_str(&ops)?,
+                    operations: scoped::operations(serde_json::from_str(&ops)?),
                     changed_ids: serde_json::from_str(&summary)?,
                 })
             })

@@ -87,6 +87,14 @@ pub struct ProjectHandle {
 }
 
 impl ProjectHandle {
+    pub fn apply_scoped_batch(&self, request: crate::ScopedBatchRequest) -> Result<BatchResult> {
+        self.storage.backend.apply_scoped_batch(self.id(), request)
+    }
+    pub fn dry_run_scoped_batch(&self, request: crate::ScopedBatchRequest) -> Result<DryRunResult> {
+        self.storage
+            .backend
+            .dry_run_scoped_batch(self.id(), request)
+    }
     pub fn id(&self) -> &str {
         &self.project_id
     }

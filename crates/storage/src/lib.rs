@@ -33,6 +33,8 @@ pub use validate::{
 mod assets;
 mod backend;
 mod batch;
+mod scoped;
+pub use scoped::{edit_context, ScopedBatchRequest};
 mod batch_file;
 pub use backend::{ProjectHandle, SnapshotCacheIdentity, SqliteBackend, Storage, StorageBackend};
 pub use batch::DryRunResult;

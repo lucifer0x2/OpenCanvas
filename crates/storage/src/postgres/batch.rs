@@ -18,13 +18,23 @@ pub(super) fn apply(
     request: BatchRequest,
     dry: bool,
 ) -> Result<Outcome> {
+    apply_mode(session, key, request, dry, None)
+}
+
+pub(super) fn apply_mode(
+    session: &mut Session,
+    key: &str,
+    request: BatchRequest,
+    dry: bool,
+    pages: Option<Vec<String>>,
+) -> Result<Outcome> {
     if dry {
-        return preview(session, key, request).map(Outcome::Preview);
+        return preview(session, key, request, pages).map(Outcome::Preview);
     }
     let mut tx = session.client.transaction().map_err(sql)?;
     let mut db = Db::new(&mut tx, &mut session.statements);
     let project = projects::lookup(&mut db, key, true)?;
-    let (value, hash) = canonical(&project, &request)?;
+    let (value, hash) = canonical(&project, &request, pages.as_deref())?;
     // Read committed: this separate query sees any writer that released our row lock.
     if let Some((mut result, _)) = transaction::replay(
         &mut db,
@@ -35,12 +45,15 @@ pub(super) fn apply(
         result.replayed = true;
         return Ok(Outcome::Commit(result, None));
     }
-    if project.meta.revision != request.expected_revision {
+    if pages.is_none() && project.meta.revision != request.expected_revision {
         return Err(StorageError::conflict(project.meta.revision));
     }
     let identity = (project.generation, project.namespace.clone());
     let (before, binaries, stored) = snapshot::entities_for_write(&mut db, project)?;
     let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    if let Some(pages) = &pages {
+        check(&mut db, &before, &candidate, &request, pages)?;
+    }
     let result = BatchResult {
         project_id: before.project_id.clone(),
         committed_revision: before.revision + 1,
@@ -49,6 +62,12 @@ pub(super) fn apply(
         replayed: false,
     };
     let rows = stored.delta(&candidate)?;
+    let history = crate::scoped::envelope(
+        &before,
+        &candidate,
+        value.clone(),
+        value["operations"].clone(),
+    )?;
     drop((stored, candidate));
     let written = transaction::persist(
         &mut db,
@@ -56,7 +75,7 @@ pub(super) fn apply(
         rows,
         &request.idempotency_key,
         &hash,
-        &value["operations"],
+        &history,
         &result,
         None,
     )?;
@@ -70,22 +89,30 @@ pub(super) fn apply(
 /// project row lock, so it neither waits for nor blocks writers. It applies
 /// the commit path's request checks in the same order. A reused key with a
 /// different canonical request still fails; a matching key still previews.
-fn preview(session: &mut Session, key: &str, request: BatchRequest) -> Result<DryRunResult> {
+fn preview(
+    session: &mut Session,
+    key: &str,
+    request: BatchRequest,
+    pages: Option<Vec<String>>,
+) -> Result<DryRunResult> {
     let (mut tx, statements) = session.read_only()?;
     let mut db = Db::new(&mut tx, statements);
     let project = projects::lookup(&mut db, key, false)?;
-    let (_, hash) = canonical(&project, &request)?;
+    let (_, hash) = canonical(&project, &request, pages.as_deref())?;
     transaction::replay(
         &mut db,
         &project.meta.project_id,
         &request.idempotency_key,
         &hash,
     )?;
-    if project.meta.revision != request.expected_revision {
+    if pages.is_none() && project.meta.revision != request.expected_revision {
         return Err(StorageError::conflict(project.meta.revision));
     }
     let (before, _) = snapshot::entities_with_binaries(&mut db, project)?;
-    let (_, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    if let Some(pages) = &pages {
+        check(&mut db, &before, &candidate, &request, pages)?;
+    }
     Ok(DryRunResult {
         project_id: before.project_id,
         dry_run: true,
@@ -98,7 +125,11 @@ fn preview(session: &mut Session, key: &str, request: BatchRequest) -> Result<Dr
 /// Request checks shared by commits and previews: the request's project and
 /// key, the operation count and the canonical size. Returns the request value
 /// and its canonical hash.
-fn canonical(project: &projects::ProjectRow, request: &BatchRequest) -> Result<(Value, String)> {
+fn canonical(
+    project: &projects::ProjectRow,
+    request: &BatchRequest,
+    pages: Option<&[String]>,
+) -> Result<(Value, String)> {
     transaction::request_ids(
         &project.meta.project_id,
         &request.project_id,
@@ -110,7 +141,7 @@ fn canonical(project: &projects::ProjectRow, request: &BatchRequest) -> Result<(
             "Batch requires 1–500 operations",
         ));
     }
-    let value = serde_json::to_value(request)?;
+    let value = crate::scoped::request_value(request, pages)?;
     let bytes = serde_json::to_vec(&crate::canonical_json(&value))?;
     if bytes.len() > MAX_BATCH_BYTES {
         return Err(StorageError::validation(
@@ -119,4 +150,25 @@ fn canonical(project: &projects::ProjectRow, request: &BatchRequest) -> Result<(
         ));
     }
     Ok((value, crate::hash(&bytes)))
+}
+
+fn check<C: ::postgres::GenericClient>(
+    db: &mut Db<'_, C>,
+    before: &crate::Snapshot,
+    candidate: &crate::validate::Candidate,
+    request: &BatchRequest,
+    pages: &[String],
+) -> Result<()> {
+    let rows = db.query("SELECT revision,CASE WHEN sum(octet_length(operations)) OVER (ORDER BY revision)<=8388608 THEN operations ELSE 'null' END FROM commits WHERE project_id=$1 AND revision>$2 ORDER BY revision LIMIT 1001",
+        &[&before.project_id, &(request.expected_revision as i64)])?;
+    let commits = rows
+        .into_iter()
+        .map(|row| {
+            Ok((
+                row.get::<_, i64>(0) as u64,
+                serde_json::from_str(&row.get::<_, String>(1))?,
+            ))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    crate::scoped::check(before, candidate, request, pages, commits)
 }

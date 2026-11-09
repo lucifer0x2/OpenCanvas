@@ -40,6 +40,26 @@ pub struct SnapshotCacheIdentity {
 /// is optional. Engine-specific maintenance such as WAL checkpoints and SQLite
 /// bundles remains on `Store` and `Project`, outside this contract.
 pub trait StorageBackend: Send + Sync {
+    fn apply_scoped_batch(
+        &self,
+        _project: &str,
+        _request: crate::ScopedBatchRequest,
+    ) -> Result<BatchResult> {
+        Err(StorageError::new(
+            "STORAGE_UNSUPPORTED",
+            "This backend does not support scoped concurrency",
+        ))
+    }
+    fn dry_run_scoped_batch(
+        &self,
+        _project: &str,
+        _request: crate::ScopedBatchRequest,
+    ) -> Result<DryRunResult> {
+        Err(StorageError::new(
+            "STORAGE_UNSUPPORTED",
+            "This backend does not support scoped concurrency",
+        ))
+    }
     /// Optional workspace-wide viewer authentication for embedders with custom backends.
     fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
         None

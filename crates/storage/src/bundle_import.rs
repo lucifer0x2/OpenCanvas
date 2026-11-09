@@ -57,6 +57,8 @@ impl Store {
             )?;
             if !restore {
                 tx.execute_batch("DELETE FROM commits; DELETE FROM idempotency; UPDATE retention_metadata SET oldest_commit_revision=1 WHERE singleton=1;")?;
+            } else {
+                scoped::scrub(&tx)?;
             }
             tx.commit()?;
             let actual = read_meta(&conn)?;
