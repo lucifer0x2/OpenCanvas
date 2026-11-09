@@ -22,7 +22,6 @@ use rmcp::transport::streamable_http_server::{
 };
 use serde_json::{json, Value};
 use std::sync::Arc;
-use tower_http::services::{ServeDir, ServeFile};
 
 pub fn router(state: AppState) -> Router {
     let mcp_state = state.clone();
@@ -80,9 +79,7 @@ pub(crate) fn viewer_routes(state: &AppState) -> Router<AppState> {
         .route("/api/v1/jobs/{job}", get(job))
         .route("/api/v1/jobs/{job}/image", get(image))
         .route("/api/v1/jobs/{job}/files/{index}", get(crate::export::file))
-        .fallback_service(
-            ServeDir::new(&dist).not_found_service(ServeFile::new(dist.join("index.html"))),
-        )
+        .fallback_service(crate::viewer_static::service(&dist))
         .layer(DefaultBodyLimit::max(15 * 1024 * 1024))
 }
 async fn viewer_access(origin: Origin) -> Json<Value> {

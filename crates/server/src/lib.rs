@@ -26,6 +26,7 @@ mod text_diagnostics;
 mod viewer_auth;
 mod viewer_origin;
 mod viewer_privacy;
+mod viewer_static;
 mod worker;
 mod workspace_events;
 
