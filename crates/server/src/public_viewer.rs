@@ -2,12 +2,11 @@
 use crate::{
     http,
     viewer_auth::{self, http as auth, http::Access},
-    viewer_origin::ViewerOrigin,
     viewer_privacy, AppState,
 };
 use axum::{
     extract::{DefaultBodyLimit, Request, State},
-    http::{header, HeaderValue, Method, StatusCode, Uri},
+    http::{header, HeaderValue, Method, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -16,34 +15,31 @@ use axum::{
 use serde_json::json;
 use std::net::IpAddr;
 
+mod origins;
+
 #[derive(Clone, Debug)]
 pub struct PublicViewer {
-    origin: String,
-    authority: String,
+    origins: origins::AllowedOrigins,
     pub(crate) trusted_proxy: Option<IpAddr>,
 }
 
 impl PublicViewer {
     /// An HTTPS origin only: no credentials, path, query or fragment.
     pub fn new(origin: &str) -> Result<Self, &'static str> {
-        let uri: Uri = origin.parse().map_err(|_| "Invalid public viewer origin")?;
-        let authority = uri.authority().ok_or("Public viewer origin needs a host")?;
-        if uri.scheme_str() != Some("https")
-            || authority.as_str().contains('@')
-            || origin.contains(['?', '#'])
-            || !matches!(uri.path(), "" | "/")
-        {
-            return Err("Public viewer origin must be an HTTPS origin without a path");
-        }
         Ok(Self {
-            origin: format!("https://{authority}"),
-            authority: authority.to_string(),
+            origins: origins::AllowedOrigins::new(origin)?,
             trusted_proxy: None,
         })
     }
 
     pub fn origin(&self) -> &str {
-        &self.origin
+        self.origins.primary()
+    }
+
+    /// Add a comma-separated list of exact HTTPS origins (at most eight total).
+    pub fn with_allowed_origins(mut self, origins: &str) -> Result<Self, &'static str> {
+        self.origins = self.origins.additional(origins)?;
+        Ok(self)
     }
 
     /// Accept one client address from X-Forwarded-For only from this transport peer.
@@ -60,7 +56,6 @@ impl PublicViewer {
                     .post(auth::login)
                     .layer(DefaultBodyLimit::max(16 * 1024)),
             )
-            .layer(Extension(ViewerOrigin(self.origin.clone())))
             .layer(Extension(self.clone()))
             .layer(middleware::from_fn_with_state(
                 (self.clone(), state.clone()),
@@ -82,7 +77,7 @@ fn denied(code: &str, message: &str) -> Response {
 
 async fn guard(
     State((public, state)): State<(PublicViewer, AppState)>,
-    request: Request,
+    mut request: Request,
     next: Next,
 ) -> Response {
     let path = request.uri().path();
@@ -108,26 +103,16 @@ async fn guard(
             "Public viewer permits reads, exports and viewer sign-in only",
         );
     }
-    let headers = request.headers();
-    let mut hosts = headers.get_all(header::HOST).iter();
-    if hosts.next().and_then(|v| v.to_str().ok()) != Some(&public.authority)
-        || hosts.next().is_some()
-    {
-        return denied("HOST_REJECTED", "Configured public Host required");
-    }
-    let mut origins = headers.get_all(header::ORIGIN).iter();
-    let origin = origins.next();
-    if origin.is_some_and(|v| v != public.origin.as_str())
-        || origins.next().is_some()
-        || (login && origin.is_none())
-    {
-        return denied("ORIGIN_REJECTED", "Origin is not authorized");
-    }
+    let origin = match public.origins.request(request.headers(), login) {
+        Ok(origin) => origin,
+        Err(code) => return denied(code, "Configured public Host and matching Origin required"),
+    };
     // Public data routes use /api/. The shell and the capability/status probes must load before login.
     let api = path.starts_with("/api/");
     let protected = api && !auth_path && path != "/api/v1/viewer";
+    request.extensions_mut().insert(origin.clone());
     let mut response = if protected {
-        match auth::access(&state, &public, auth::presented(&public, &request)).await {
+        match auth::access(&state, &origin.0, auth::presented(&public, &request)).await {
             Ok(Access::Open) => {
                 let response = viewer_privacy::run(&state, request, next).await;
                 viewer_auth::stream::monitor(state, None, response)

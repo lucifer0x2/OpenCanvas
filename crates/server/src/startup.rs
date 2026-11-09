@@ -25,6 +25,7 @@ Public viewer is disabled by default; both public options are required. This sep
 shares public projects, their live events, resources and exports. Projects default to private.
 Local MCP can require a password for the public viewer. Behind a trusted reverse proxy set
 OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP to its socket peer IP to use a single X-Forwarded-For address.
+OPENCANVAS_PUBLIC_ALLOWED_ORIGINS adds comma-separated exact HTTPS origins (at most 8 total).
 Point Funnel only at the public viewer port, NEVER at the local MCP port.";
 
 pub struct Startup {
@@ -92,13 +93,20 @@ impl Startup {
             (Some(p), Some(_)) if p != 0 && p == port => {
                 return Err("Local and public viewer ports must differ".into());
             }
-            (Some(p), Some(viewer)) => Some((
-                p,
-                match trusted_proxy()? {
-                    Some(proxy) => viewer.with_trusted_proxy(proxy),
-                    None => viewer,
-                },
-            )),
+            (Some(p), Some(viewer)) => {
+                let viewer = match env::var("OPENCANVAS_PUBLIC_ALLOWED_ORIGINS") {
+                    Ok(origins) => viewer.with_allowed_origins(&origins)?,
+                    Err(env::VarError::NotPresent) => viewer,
+                    Err(_) => return Err("Invalid OPENCANVAS_PUBLIC_ALLOWED_ORIGINS".into()),
+                };
+                Some((
+                    p,
+                    match trusted_proxy()? {
+                        Some(proxy) => viewer.with_trusted_proxy(proxy),
+                        None => viewer,
+                    },
+                ))
+            }
             (None, None) => None,
             _ => {
                 return Err(
