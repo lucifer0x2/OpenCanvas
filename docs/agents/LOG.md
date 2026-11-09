@@ -353,3 +353,8 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Ghép một candidate trên nền live: delta không chồng file, `COMBINED_PATCH` áp lại khớp. PG tạm: storage 9 + server 26 test, smoke hai backend render và canary cache đều đạt; 566 payload ngoài binary giữ nguyên live.
 - Điểm dừng: [candidate ghép](../NATIVE-COMBINED-CANDIDATE.md), chưa kích hoạt, chưa commit/push. Cần backup ngay trước khi cài vì binary cũ không đọc envelope lịch sử mới.
 - Người dùng yêu cầu deploy native và backup. Backup thủ công `backup-20261109T052151Z` restore kiểm chứng đạt; cài release `+scope-cache.f271654aad80`, chỉ đổi `OPENCANVAS_RELEASE` (giữ bản `server.env` cũ), restart riêng server. Sau cài: 5 snapshot giống hệt, MCP có `pageIds`/`get_edit_context`, PNG/WASM đạt, HTML `no-store`, bundle hash `immutable`, public 401/403 đúng, HTTPS Cloudflare `DYNAMIC`. Các phiên design cần kết nối lại MCP; trình duyệt có thể cần hard reload một lần.
+
+### Sửa React runtime sau deploy native — 2026-11-09
+
+- Production bundle từ checkout main với dependencies được copy chứa hai React dispatcher: hooks của app và renderer nạp hai đường dẫn khác nhau, cùng phiên bản. Thêm `resolve.dedupe` cho `react`/`react-dom` ở Vite; không đổi component, hooks hoặc quyền sở hữu state.
+- Typecheck/build và audit module graph đạt: một React runtime, bundle trở lại `index-CZExainG.js`. Root tái hiện browser trắng trên native, kiểm bản staging rồi kiểm lại native thật: `All frames · 3`, `Scene r10` hiển thị. Chuyển release frontend riêng, giữ binary/overlay native, assets cũ và rollback; không đổi PostgreSQL, auth, domain hoặc bản test 3867. Chưa commit/push sửa này.
