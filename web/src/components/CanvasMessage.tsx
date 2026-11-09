@@ -8,6 +8,20 @@ export function CanvasMessage({
   view: SceneView;
   retry: () => void;
 }) {
+  // Earlier scenes stay on screen while a revision renders: one quiet, delayed line.
+  if (view.revalidating && view.status === "pending")
+    return (
+      <div className="canvas-refresh quiet" role="status" aria-live="polite">
+        <p>
+          Updating to r{view.requestedRevision}
+          {view.progress
+            ? ` · ${view.progress.ready}/${view.progress.total} frames current`
+            : ""}{" "}
+          · Showing scene r
+          {view.scene?.provenance.revision ?? view.requestedRevision}
+        </p>
+      </div>
+    );
   if ((view.scene || view.frames?.length) && view.status !== "ready")
     return (
       <div className="canvas-refresh" role="status" aria-live="polite">

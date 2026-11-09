@@ -9,8 +9,16 @@ the queue from monopolizing input. Cancellation stops future admissions and late
 scene/resource/cache publications. Inspector and hit testing use the exact current revision.
 
 Production WASM views share IndexedDB `opencanvas.browser-scenes` between All and
-single-frame loading. Keys include schema, actual source/WASM content fingerprint,
-engine, scene/painter versions, project/revision/frame, viewport, default theme/state.
+single-frame loading. Keys (schema 2) include schema, actual source/WASM content fingerprint,
+engine, scene/painter versions, project, frame content digest, frame, viewport, default
+theme/state; not the project revision. The digest is SHA-256 of the frame's exact layout
+input without its revision, computed in WASM by `frame_keys` (`crates/scene-wasm/src/content_key.rs`
+over `scene-input` `frame_content_bases`): subtree, resolved tokens/aliases/themes/styles,
+expanded component instances and overrides, used font faces and asset hashes, viewport/
+theme/state, plus note-derived overflow intent. One key pass per page and revision reuses
+the worker's one snapshot transfer. Equal digests at a newer revision are served from a
+96-entry memory tier, then disk, restamped to the accepted revision; computed scenes are
+never restamped and must match the request. A module without `frame_keys` computes uncached.
 Vite hashes dirty frontend/renderer/Rust scene/text sources and deployed WASM bytes;
 Git HEAD alone is insufficient. Dev/HMR disables persistence to avoid a stale startup hash.
 The cache never replaces the accepted HTTP/SSE snapshot or stores authored snapshots,
@@ -24,8 +32,9 @@ server mode bypasses browser persistence. A WASM fallback starts at the uncomple
 server batches remain at most four and await terminal outcomes before advancing.
 Unknown job transport/timeout errors stop further admission and late callbacks.
 
-Bounds: 64 scenes, 32 MiB total, 8 MiB per scene. Old project revisions are evicted on
-successful writes, followed by oldest stored entries. An index key cursor reads eviction
+Bounds: 256 scenes, 64 MiB total, 8 MiB per scene. Entries of another schema or build
+are evicted on successful writes, followed by oldest stored entries; older revisions stay
+valid because keys are content digests. An index key cursor reads eviction
 metadata without cloning cached payloads. Opening and each transaction have 350 ms
 deadlines; unavailable/corrupt/blocked/quota storage degrades to computation. Successful
 resource-ready scenes schedule writes at idle (or after paint), without awaiting disk.
@@ -35,6 +44,15 @@ callbacks are memoized. Konva still redraws the shared vector layer on board upd
 there is no new full-size raster per frame, and overflow/shadows retain their behavior.
 Cold computation still does the full first-pass scene work. This change provides earlier
 partial visibility and subsequent reuse; it makes no measured CPU/latency claim.
+
+Revisions are stale-while-revalidate (2026-11-09): after a first render, a new revision of
+the same page/frame/preset keeps every frame's last scene on screen (`scene/staleFrames.ts`).
+Frames whose content key is unchanged become current immediately, keeping their loaded
+resources; changed frames swap in individually; frames added show a skeleton, removed ones
+disappear. Progress is one quiet line that fades in only after 600 ms. A failed frame or page
+keeps its last scene and reports through the compact status with Retry. Placeholders appear
+only on first load, a new scope, a never-rendered frame or Retry. Stale scenes are not hit
+tested or inspected as current until revalidated.
 
 Verification performed: `npm --prefix web run typecheck`,
 `npm --prefix web run build` (includes TypeScript), and `git diff --check`.

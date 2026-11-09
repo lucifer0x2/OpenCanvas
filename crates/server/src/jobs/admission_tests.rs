@@ -88,3 +88,28 @@ async fn insufficient_batch_capacity_admits_no_partial_jobs_and_retry_reuses_ids
     assert_eq!(retry, first);
     assert_eq!(jobs.table.lock().await.entries.len(), 6);
 }
+
+/// The viewer accepts a job only for its requested revision. Job keys hash the layout input,
+/// which carries the revision, so an unchanged frame at a new revision gets a fresh job of that
+/// revision instead of a reused job labelled with the old one.
+#[tokio::test]
+async fn unchanged_frames_get_jobs_of_the_new_revision() {
+    let (jobs, snapshot) = fixture();
+    let first = jobs
+        .enqueue_batch(&snapshot, requests(200.0))
+        .await
+        .unwrap();
+    let mut next = snapshot.clone();
+    next.revision = 2;
+    let mut later = requests(200.0);
+    for request in &mut later {
+        request.revision = 2;
+    }
+    let second = jobs.enqueue_batch(&next, later).await.unwrap();
+    for (old, new) in first.iter().zip(&second) {
+        assert_eq!(old["revision"], 1);
+        assert_eq!(new["revision"], 2);
+        assert_ne!(old["jobId"], new["jobId"]);
+        assert_ne!(old["sceneKey"], new["sceneKey"]);
+    }
+}

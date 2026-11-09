@@ -12,19 +12,27 @@ import {
   type BrowserSceneResult,
 } from "./browserSceneCache";
 import { validateBrowserScene } from "./sceneIdentity";
+import { browserFrameKeys } from "./frameKeys.ts";
 
-export function loadBrowserScene(
+/** `digest` comes from a page's batched key pass; a single frame asks for its own. */
+export async function loadBrowserScene(
   request: SceneRequest,
   snapshot: Snapshot,
   signal: AbortSignal,
   bypassCache = false,
+  digest?: string,
 ) {
+  digest ??=
+    (await browserFrameKeys([request], snapshot, signal)).get(
+      request.frameId,
+    ) ?? "";
   return cachedBrowserScene(
     request,
     snapshot,
     signal,
     computeBrowserScene,
     bypassCache,
+    digest,
   );
 }
 

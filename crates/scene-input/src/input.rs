@@ -4,7 +4,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,6 +14,45 @@ pub struct SceneOptions {
     pub height: f64,
     pub theme: String,
     pub state: String,
+}
+
+/// One theme's resolved and expanded nodes, indexed once so several frames share a pass.
+pub struct ResolvedNodes {
+    all: Vec<Node>,
+    first: HashMap<String, usize>,
+    children: HashMap<String, Vec<usize>>,
+}
+
+impl ResolvedNodes {
+    pub fn new(snapshot: &Snapshot, theme: &str) -> Result<Self> {
+        let all = resolved_expanded_nodes(snapshot, theme)?;
+        let mut first = HashMap::new();
+        let mut children: HashMap<String, Vec<usize>> = HashMap::new();
+        for (index, node) in all.iter().enumerate() {
+            first.entry(node.id.clone()).or_insert(index);
+            if let Some(parent) = &node.parent_id {
+                children.entry(parent.clone()).or_default().push(index);
+            }
+        }
+        // Stable: equal sort keys keep their resolved order, as before indexing.
+        for list in children.values_mut() {
+            list.sort_by_key(|&index| all[index].sort_key);
+        }
+        Ok(Self {
+            all,
+            first,
+            children,
+        })
+    }
+
+    fn collect(&self, id: &str, out: &mut Vec<Node>) {
+        if let Some(&index) = self.first.get(id) {
+            out.push(self.all[index].clone());
+            for &child in self.children.get(id).into_iter().flatten() {
+                self.collect(&self.all[child].id, out);
+            }
+        }
+    }
 }
 
 /// Resolve one authored revision into the existing schema-1 layout JSON contract.
@@ -31,15 +70,26 @@ pub fn make_input_with_scale(
     scale: f64,
 ) -> Result<Value> {
     check_viewport(options.width, options.height, scale)?;
-    let all = resolved_expanded_nodes(snapshot, &options.theme)?;
-    if !all
-        .iter()
-        .any(|n| n.id == options.frame_id && n.kind == NodeKind::Frame)
+    let resolved = ResolvedNodes::new(snapshot, &options.theme)?;
+    frame_input(snapshot, &resolved, options)
+}
+
+/// The layout input of one frame from nodes already resolved for `options.theme`.
+/// Callers check the viewport budget for their own output scale first.
+pub fn frame_input(
+    snapshot: &Snapshot,
+    resolved: &ResolvedNodes,
+    options: &SceneOptions,
+) -> Result<Value> {
+    if !resolved
+        .first
+        .get(&options.frame_id)
+        .is_some_and(|&index| resolved.all[index].kind == NodeKind::Frame)
     {
         return Err(invalid("frameId must identify a frame"));
     }
     let mut nodes = Vec::new();
-    collect(&all, &options.frame_id, &mut nodes);
+    resolved.collect(&options.frame_id, &mut nodes);
     // A frame scene is standalone; its authored parent is outside the input.
     nodes[0].parent_id = None;
     if nodes.len() > 2048 {
@@ -74,20 +124,6 @@ pub fn make_input_with_scale(
         "frameId":options.frame_id,"viewport":{"width":options.width,"height":options.height},
         "theme":options.theme,"state":options.state,"nodes":nodes,"fonts":fonts,"assets":assets}),
     )
-}
-
-fn collect(all: &[Node], id: &str, out: &mut Vec<Node>) {
-    if let Some(node) = all.iter().find(|n| n.id == id) {
-        out.push(node.clone());
-        let mut children: Vec<_> = all
-            .iter()
-            .filter(|n| n.parent_id.as_deref() == Some(id))
-            .collect();
-        children.sort_by_key(|n| n.sort_key);
-        for child in children {
-            collect(all, &child.id, out);
-        }
-    }
 }
 
 fn invalid(message: &str) -> StorageError {

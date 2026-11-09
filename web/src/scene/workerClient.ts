@@ -1,5 +1,5 @@
 import type { FontManifest, Scene } from "../../../renderer/types.ts";
-import type { ComputeMessage, ComputeReply } from "./protocol.ts";
+import type { ComputeMessage, ComputeReply, FrameKey } from "./protocol.ts";
 import { RevisionCache } from "./revisionCache.ts";
 
 type Pending = {
@@ -42,6 +42,11 @@ export class SceneWorkerClient {
 
   compute(message: Request, signal: AbortSignal): Promise<Scene> {
     return this.send({ ...message, kind: "compute" }, signal);
+  }
+
+  /** Content digests for `message.frames`; transfers the snapshot only once per revision. */
+  keys(message: Request, signal: AbortSignal): Promise<FrameKey[]> {
+    return this.send({ ...message, kind: "keys" }, signal);
   }
 
   /** Retry invalidates both ends together, including inconsistent snapshot references. */

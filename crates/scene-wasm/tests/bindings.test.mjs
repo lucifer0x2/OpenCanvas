@@ -73,3 +73,22 @@ test("generated discovery and compute reject viewport budgets before resolving o
   }
   computer.free();
 });
+
+test("generated frame_keys digests the effective input without the revision", () => {
+  const computer = new SceneComputer();
+  const frames = JSON.stringify([
+    { frameId: "frame", width: 200, height: 120 },
+    { frameId: "text", width: 200, height: 120 },
+  ]);
+  const keys = (value) => JSON.parse(computer.frame_keys(JSON.stringify(value), frames, "default"));
+  const [first, notFrame] = keys(snapshot());
+  assert.match(first.digest, /^[0-9a-f]{64}$/);
+  assert.equal(notFrame.error.code, "INVALID_REQUEST");
+  const later = snapshot();
+  later.revision = 8;
+  assert.equal(keys(later)[0].digest, first.digest);
+  const edited = snapshot();
+  edited.nodes[2].props.text = "Edited";
+  assert.notEqual(keys(edited)[0].digest, first.digest);
+  computer.free();
+});

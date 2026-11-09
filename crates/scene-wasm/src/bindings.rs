@@ -49,6 +49,16 @@ impl SceneComputer {
             .map_err(js_error)
     }
 
+    /// `[{frameId, digest} | {frameId, error}]` for `[{frameId, width, height}]`, one pass.
+    pub fn frame_keys(
+        &self,
+        snapshot_json: &str,
+        frames_json: &str,
+        theme: &str,
+    ) -> Result<String, JsValue> {
+        crate::frame_keys_json(snapshot_json, frames_json, theme).map_err(js_error)
+    }
+
     pub fn compute_scene(
         &self,
         snapshot_json: &str,

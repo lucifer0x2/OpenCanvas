@@ -3,15 +3,19 @@ import type { Scene } from "../../../renderer/types";
 import type { SceneRequest } from "../types";
 import { acceptsJob } from "../state";
 
-export const SCENE_CACHE_SCHEMA = 1;
+/** 2: entries are keyed by a frame content digest instead of the project revision. */
+export const SCENE_CACHE_SCHEMA = 2;
 const build =
   typeof __SCENE_BUILD_FINGERPRINT__ === "string"
     ? __SCENE_BUILD_FINGERPRINT__
     : "";
 
-/** Engine is explicit: server scenes never read or populate the browser cache. */
-export function sceneCacheKey(request: SceneRequest) {
-  return build
+/**
+ * In-memory identity: the frame's revision-free input digest (from the scene module) plus
+ * the pipeline and viewport. Equal keys compute equal scenes, apart from provenance revision.
+ */
+export function frameContentKey(request: SceneRequest, digest: string) {
+  return /^[0-9a-f]{64}$/.test(digest)
     ? JSON.stringify([
         SCENE_CACHE_SCHEMA,
         build,
@@ -19,7 +23,7 @@ export function sceneCacheKey(request: SceneRequest) {
         SCENE_VERSION,
         RENDERER_VERSION,
         request.projectId,
-        request.revision,
+        digest,
         request.frameId,
         request.width,
         request.height,
@@ -27,6 +31,34 @@ export function sceneCacheKey(request: SceneRequest) {
         "default",
       ])
     : "";
+}
+
+/** Engine is explicit: server scenes never read or populate the browser cache. */
+export function sceneCacheKey(request: SceneRequest, digest: string) {
+  return build ? frameContentKey(request, digest) : "";
+}
+
+/** Persisted keys of an older schema or build can never be read again. */
+export function currentCacheKey(key: unknown) {
+  return (
+    typeof key === "string" &&
+    key.startsWith(
+      JSON.stringify([SCENE_CACHE_SCHEMA, build]).slice(0, -1) + ",",
+    )
+  );
+}
+
+/**
+ * Restamp a scene whose content key matched under a newer accepted revision. Only the
+ * provenance revision differs; callers still validate the result against `request`.
+ */
+export function rebaseScene(scene: Scene, request: SceneRequest): Scene {
+  return scene.provenance.revision === request.revision
+    ? scene
+    : {
+        ...scene,
+        provenance: { ...scene.provenance, revision: request.revision },
+      };
 }
 
 /** Check the boundary before persisting, after JSON decode and before painting. */

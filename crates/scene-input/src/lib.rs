@@ -1,6 +1,7 @@
 //! Pure authored models, validation, expansion and scene input preparation.
 //! Default features require no database, filesystem, network or async runtime.
 mod animation_catalog;
+mod content_key;
 mod error;
 mod export_settings;
 mod image_fit;
@@ -16,12 +17,13 @@ pub mod validate;
 mod viewport;
 
 pub use animation_catalog::{AnimationKey, ANIMATED_PROPS, ANIMATION_KEYS, KEYFRAME_KEYS};
+pub use content_key::{frame_content_bases, frame_content_basis, CONTENT_BASIS_VERSION};
 pub use error::{NodeErrorContext, Result, StorageError};
 pub use export_settings::{
     check_export_settings, export_format, export_suffix, EXPORT_FORMATS, MAX_EXPORT_SETTINGS,
 };
 pub use image_fit::IMAGE_FITS;
-pub use input::{make_input, make_input_with_scale, SceneOptions};
+pub use input::{frame_input, make_input, make_input_with_scale, ResolvedNodes, SceneOptions};
 pub use links::{
     flow_start, node_links, Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME,
 };

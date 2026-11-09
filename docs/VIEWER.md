@@ -114,15 +114,17 @@ frame at a time, yields for paint/input between frames and pauses new admissions
 the tab is hidden. Each frame replaces its skeleton as soon as its own resources are
 ready; accessible `x/y` progress stays compact and the camera/geometry stays stable.
 Production builds share a bounded IndexedDB scene cache between All and single-frame
-views, always after an accepted authoritative snapshot and only at the exact revision.
+views, always after an accepted authoritative snapshot, keyed by each frame's content
+digest so unchanged frames are reused across revisions.
 See [cache identity, bounds and verification](VIEWER-PROGRESSIVE-CACHE.md).
 The board shares loaded manifests and retains vectors rather than N full-resolution canvases.
 Server mode and fallback admit batches of four, waiting for confirmed terminal jobs
 before advancing; unknown timeout/transport errors stop admission and expose Retry.
 Failed frames retain labeled slots, and fallback retains completed browser frames.
 Selection, actions, links and inspector stay frame-local; healthy current frames remain
-inspectable during progressive loading and partial failure. Board revision changes replace
-older scenes with current skeletons; they never expose old geometry as current.
+inspectable during progressive loading and partial failure. Board revision changes keep
+older scenes on screen until each frame revalidates (unchanged frames immediately); they
+never expose old geometry as current to hit testing or the inspector.
 
 See [ALL-FRAMES-REPORT.md](ALL-FRAMES-REPORT.md) for checks and the macOS Chromium
 launch limitation. Unit regressions run in `npm --prefix web test`; the isolated

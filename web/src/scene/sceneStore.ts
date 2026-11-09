@@ -1,15 +1,18 @@
+import { currentCacheKey } from "./sceneIdentity";
+
 /** Best effort disk storage. All transactions and opening have a short hard deadline. */
 export interface SceneRecord {
   key: string;
   projectId: string;
+  /** The revision that computed it; informational, since keys are content digests. */
   revision: number;
   payload: string;
   digest: string;
   bytes: number;
   used: number;
 }
-export const SCENE_CACHE_ENTRIES = 64;
-export const SCENE_CACHE_BYTES = 32 * 1024 * 1024;
+export const SCENE_CACHE_ENTRIES = 256;
+export const SCENE_CACHE_BYTES = 64 * 1024 * 1024;
 export const SCENE_CACHE_ENTRY_BYTES = 8 * 1024 * 1024;
 const DEADLINE = 350;
 let opening: Promise<IDBDatabase | undefined> | undefined;
@@ -118,15 +121,11 @@ export const sceneStore = {
       cursor.onsuccess = () => {
         const item = cursor.result;
         if (item) {
-          const [projectId, revision, used, size] = item.key as [
-            string,
-            number,
-            number,
-            number,
-          ];
+          const [, , used, size] = item.key as [string, number, number, number];
+          // Older revisions stay valid under content keys; other schemas or builds never are.
           if (
             item.primaryKey === record.key ||
-            (projectId === record.projectId && revision !== record.revision)
+            !currentCacheKey(item.primaryKey)
           )
             store.delete(item.primaryKey);
           else {
