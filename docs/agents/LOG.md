@@ -363,3 +363,8 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Theo yêu cầu mới của người dùng, fetch `origin/main` tại `4905dd5` (chứa `97f0f5e`), build đồng bộ server/layout release, renderer, WASM và web trong checkout/target riêng. Giữ nguyên compatibility overlay allowlist đang cài (`33bbe9f75b87`); không commit/push hoặc sửa các checkout khác.
 - Backup restore-verified, canary PostgreSQL riêng và kiểm MCP/PNG/WASM/auth đạt trước app-only cutover. Sau deploy, năm snapshot và fingerprint đầy đủ của database giữ nguyên; PostgreSQL và phiên test khác giữ nguyên. Primary HTTPS route từ máy trả connection refused; không đổi proxy/Funnel. Chi tiết và rollback ở báo cáo riêng `outputs/native-main-deploy.md` của chat vận hành.
+
+### Gộp nhánh và dọn nhánh — 2026-11-09
+
+- Người dùng yêu cầu làm FE trên nhánh hiện tại thay vì worktree từ `origin/main`; dừng subagent cũ. Commit công việc chưa commit thành 4 commit (allowlist domain, cache viewer, revision theo page, runtime native), merge `origin/main`, thêm `resolve.dedupe` React; `crates/`/`web/` khớp source bản native đang chạy. Sau merge: typecheck web, 82 test web, 11 storage + 29 server test đạt. Lệch rustfmt ở `crates/render` có sẵn từ main.
+- Theo yêu cầu chỉ giữ `main` và nhánh task09: đưa harness stress All frames + nhật ký từ worktree cũ vào nhánh, tag `archive/pg-delta-redis-hot-reads` cho spike Redis, gỡ worktree `OpenCanvas-viewer-wasm-scene`/`OpenCanvas-frame-cache`, xóa 12 nhánh local (nội dung đã có trong nhánh, xét theo patch), đổi tên thành `feat/page-concurrency`, fast-forward `main`. Chỉ local: không push, không xóa nhánh remote. Worktree Codex detached `native-main-20261109` giữ nguyên (không phải nhánh).
