@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import { sceneFingerprint } from "./sceneFingerprint.ts";
 
 export default defineConfig(({ command }) => ({
+  // Copied or linked dependencies must share the app renderer's hook dispatcher.
+  resolve: { dedupe: ["react", "react-dom"] },
   // HMR can replace algorithms after startup, so persistence is production-build only.
   define: {
     __SCENE_BUILD_FINGERPRINT__: JSON.stringify(
