@@ -1,11 +1,8 @@
 import { projectPath, read } from "../api";
 import { RenderJobFailed, settleSceneJob } from "../sceneJob";
 import type { RenderJob, SceneRequest, Snapshot } from "../types";
-import {
-  computeBrowserScene,
-  loadBrowserScene,
-  WASM_FALLBACK,
-} from "./service";
+import type { computeBrowserScene } from "./service";
+import { browserPagePass } from "./browserPage";
 import { yieldFrame } from "./yieldFrame";
 import { sceneFontBytes } from "./fontBytes";
 import { SCENE_VERSION, RENDERER_VERSION } from "../../../renderer/types";
@@ -16,7 +13,17 @@ export type FrameResult = {
   fontBytes?: Awaited<ReturnType<typeof computeBrowserScene>>["fontBytes"];
   error?: string;
   persist?: () => void;
+  /** Revision-free identity of the frame's render input, when the scene module supplied one. */
+  contentKey?: string;
+  /** The consumer already shows a scene with this content key; nothing was loaded. */
+  reused?: boolean;
 };
+export interface PageSceneOptions {
+  onFrame?: (result: FrameResult, signal: AbortSignal) => Promise<void>;
+  bypassCache?: boolean;
+  /** Claim a frame whose content key the consumer already displays. */
+  reuse?: (request: SceneRequest, contentKey: string) => boolean;
+}
 interface PageBatch {
   projectId: string;
   revision: number;
@@ -34,37 +41,15 @@ export async function loadPageScenes(
   signal: AbortSignal,
   wasm: boolean,
   override?: { width: number; height: number },
-  options: {
-    onFrame?: (result: FrameResult, signal: AbortSignal) => Promise<void>;
-    bypassCache?: boolean;
-  } = {},
+  options: PageSceneOptions = {},
 ): Promise<FrameResult[]> {
   if (!requests.length) return [];
   let fallback = "";
   const results: FrameResult[] = [];
   if (wasm) {
-    for (const request of requests) {
-      await yieldFrame(signal);
-      let result: FrameResult;
-      try {
-        result = {
-          request,
-          ...(await loadBrowserScene(
-            request,
-            snapshot,
-            signal,
-            options.bypassCache,
-          )),
-        };
-      } catch (cause) {
-        signal.throwIfAborted();
-        fallback = `${WASM_FALLBACK}: ${cause instanceof Error ? cause.message : "Browser computation failed."}`;
-        break;
-      }
-      await options.onFrame?.(result, signal);
-      signal.throwIfAborted();
-      results.push(result);
-    }
+    const pass = await browserPagePass(requests, snapshot, signal, options);
+    results.push(...pass.results);
+    fallback = pass.fallback;
     if (!fallback) return results;
   }
   const first = requests[0];

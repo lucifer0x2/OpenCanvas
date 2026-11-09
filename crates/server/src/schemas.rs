@@ -149,6 +149,11 @@ fn build() -> Vec<Tool> {
         ),
     );
     add(
+        "get_edit_context",
+        "Read a page edit guard and transitive dependency keys at one authoritative revision. Read authored data at this same revision, or use the revision of an existing authored read directly with pageIds in apply_batch/apply_batch_file. Never replace a stale design read's revision with a newer guard. Storage derives dependencies; conflicts require rereading and rebasing with a new key.".into(),
+        object(json!({"projectId":id(),"pageIds":{"type":"array","minItems":1,"maxItems":100,"uniqueItems":true,"items":id()}}), &["projectId","pageIds"]),
+    );
+    add(
         "apply_batch",
         batch::INLINE_DESCRIPTION.into(),
         batch::inline(),

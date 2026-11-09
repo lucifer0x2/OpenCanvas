@@ -55,6 +55,18 @@ pretend that memory has been read, initialized or saved.
    tokens and text/style overrides where possible; inspect expanded resolved values.
 4. Submit ordered `apply_batch` operations (1–500 per atomic batch) with caller-chosen IDs,
    `expectedRevision`, and one stable `idempotencyKey` per exact request body.
+   For edits inside existing pages, also supply `pageIds:["page-id"]`, using the
+   revision from the **actual authored read**. Storage derives all page and
+   transitive shared-dependency guards, so unrelated pages/resources can commit
+   concurrently. `get_edit_context` reports guard/dependency metadata; never use
+   a newer guard to relabel an older design read. After scoped success, reuse
+   `editGuard` for the next batch; after a valid preview it remains provisional.
+   Cross-page moves require both pages. Omit `pageIds` for strict revision mode
+   when writing shared tokens/styles/fonts/assets, notes, page structure or
+   `flowStart`, creating the first root frame, or deleting/reparenting/reordering
+   root frames. A later root frame may be appended without an explicit index.
+   Scoped deletion that cascades notes is rejected. Read again before switching
+   a rejected scoped batch to strict mode; never just raise its revision.
    After a lost response replay that body; never change a replay body under the
    same key.
 5. On explicit `REVISION_CONFLICT`, inspect `error.changedSince` (`fromRevision`,

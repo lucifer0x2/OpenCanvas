@@ -290,3 +290,87 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Chromium launch bị MachPort1100/SIGTRAP, dừng retry; chưa đo FPS/timing hoặc xác nhận pixel parity. Giữ kiến trúc state hiện có sau rà ownership; không ép reducer/store chung.
 - Chỉ đồng bộ generated static assets vào bản test3867, giữ hash cũ, thay index nguyên tử sau cùng; HTTP index/bundle khớp byte. App17418/PG17389 và native23980 giữ thời điểm khởi động, nguồnPG2703 vẫn nghe; không restart/đổi launchd/Funnel, kiểm DB, render job, commit/push. Để app+PG test chạy cho người dùng tự thử.
 - Người dùng yêu cầu “push code đi”, cho phép commit và push thường phần tối ưu FE trên `feat/viewer-wasm-scene`. Dùng kết quả kiểm đã ghi, kiểm phạm vi/whitespace trước commit và đối chiếu remote; giữ riêng stress harness, không đổi runtime/DB hoặc generated assets. Chưa ghi push thành công trước khi xác minh remote.
+
+### Native runtime và backup PostgreSQL — 2026-11-06
+
+- Người dùng yêu cầu chuyển Docker sang service native và PostgreSQL native, ưu tiên backup database. Host hiện tại là macOS; đang làm rõ máy Linux/systemd hay Mac/launchd và nơi lưu backup ngoài máy.
+- Giao worker khảo sát chỉ đọc phạm vi dữ liệu PostgreSQL, runtime và cách kiểm restore; chưa thay service, dữ liệu hoặc container thật. Giữ nguyên file nghiên cứu Graphite ngoài phạm vi.
+- Người dùng chốt chạy ngay trên Mac bằng launchd, backup local trước và giữ 14 bản. Giao hai task độc lập: bộ backup/restore có kiểm thử, và chuẩn bị runtime native từ đúng commit image đang chạy (`727cd33`) cùng rehearsal restore; root kiểm trước cutover.
+- Người dùng chốt PostgreSQL native cổng `2703`; MCP/public giữ `3857/3858`, Funnel giữ nguyên. Homebrew PostgreSQL 16.15 đã có; dùng cluster riêng, không thay cluster Homebrew hiện hữu.
+- Root kiểm độc lập bộ backup trên cluster PostgreSQL 16 tạm: restore cả bytea/history/auth/sequence/large object, phát hiện hỏng archive/fingerprint, failed dump không prune, giữ 14 bản hoàn tất và lịch local-day đều đạt. Runtime native đang chuẩn bị; chưa cutover.
+- Nhận bộ backup và review độc lập: hai lỗi cleanup khi nhận TERM đã sửa, root chạy lại test TERM/collision đạt và ShellCheck sạch. Giao worker nhỏ bổ sung runbook recovery để app và lịch backup cùng chuyển sang database khôi phục.
+- Rehearsal native đạt đối chiếu toàn DB; root kiểm riêng cả 5 snapshot, ETag304, asset WASM/JS đúng image, quyền file và public auth/read-only. Đang kiểm lifecycle/render trước chuyển cổng thật.
+- Nhận runbook recovery đã sửa đồng bộ cấu hình app/backup; lifecycle graceful và crash khi worker đang chạy đạt, không orphan. Root duyệt cutover trong phạm vi yêu cầu setup native.
+- Hoàn tất chuyển native: root xác nhận PostgreSQL `2703` chỉ loopback, app `3857/3858` do launchd quản lý, 5 checksum/revision giữ nguyên và HTTPS Funnel hoạt động. Backup đầu tiên đã restore kiểm chứng, checksum đạt; lịch 03:00 đã nạp và lần chạy đầu exit 0, không còn scratch DB. Hai container Docker dừng/restart=no, giữ volume và dump nguồn riêng để khôi phục.
+- Điểm dừng: [runtime](../NATIVE-RUNTIME.md), [backup/recovery](../NATIVE-BACKUP.md); LaunchAgents cần user đăng nhập. Chưa commit/push; file nghiên cứu Graphite của người khác giữ nguyên. Native là nguồn dữ liệu hiện tại, không quay lại database Docker cũ sau khi đã nhận thay đổi.
+
+### Domain public viewer — 2026-11-06
+
+- Người dùng yêu cầu duyệt domain custom cho cổng 3858, ưu tiên giữ cả domain Funnel. Bản hiện tại chỉ nhận một HTTPS origin; giao worker bổ sung allowlist tường minh, kiểm auth theo từng domain và chuẩn bị cập nhật riêng native app, giữ PostgreSQL/backup.
+- Review độc lập đã đóng lỗi parser port; root chạy riêng 3 integration test allowlist/auth/export đạt. Domain mới chưa có DNS A/AAAA/CNAME public; vẫn kiểm được approval bằng Host/Origin trên loopback. Đang dựng canary từ đúng nền native 727cd33 trước khi thay riêng app.
+- Canary clone đạt MCP/PNG/WASM và auth theo từng domain; root kiểm riêng 14 trường hợp Host/Origin/local isolation cùng 5 snapshot, toàn DB live không đổi. Đã duyệt thay riêng native app/config, giữ PostgreSQL, backup và Funnel.
+- Người dùng đổi domain mới sang subdomain custom, yêu cầu gỡ apex khỏi allowlist và giữ Funnel. Subdomain có DNS A/AAAA Cloudflare, nhưng curl và Node HTTPS đều lỗi TLS handshake; đường Funnel vẫn 200/readOnly. Đang nạp delta cấu hình app, không sửa DNS/proxy.
+- Hoàn tất cấu hình subdomain: root kiểm 12 trường hợp trên 3858 đạt, apex bị từ chối, hai domain được nhận và cross-origin bị chặn; toàn DB/static assets và 5 revision giữ nguyên. TLS subdomain sau đó hoạt động lại; root kiểm HTTPS cả subdomain mới và Funnel đều 200/readOnly, không tắt xác minh chứng chỉ. Lịch backup giữ nguyên, đang dọn clone thử và chốt runbook.
+- Điểm dừng: canary/clone đã dọn, native app/PG/backup giữ hoạt động; cả hai HTTPS đã kiểm auth/read-only. Bản binary/config cũ giữ để rollback riêng app; runbook ở [native runtime](../NATIVE-RUNTIME.md#public-viewer-domain-allowlist). Không commit/push.
+
+### Domain lấy từ ENV — 2026-11-06
+
+- Người dùng yêu cầu không hardcode domain và gỡ commit chứa domain nếu agent đã tạo. Kiểm xác nhận chưa có commit mới; runtime đã dùng ENV nhưng installer và fixture/ví dụ còn tên host thật. Giao worker bỏ giá trị thật khỏi các file triển khai/test/tài liệu vừa tạo, giữ cấu hình riêng và dịch vụ đang chạy.
+- Hoàn tất: installer bắt buộc primary ENV và nhận optional allowlist ENV; test/ví dụ và ghi chú tiến độ dùng host mẫu hoặc tên vai trò. Worker kiểm 2 unit + 6 integration đạt, fmt/ShellCheck sạch; root kiểm độc lập thiếu/empty ENV dừng trước tạo root, scan hostname thật trong phần vừa sửa không còn kết quả.
+- Điểm dừng: domain thật chỉ giữ trong cấu hình runtime riêng, không reload app/PG/backup. HEAD vẫn là commit trước phiên này, không có commit/staged change cần xóa và không rewrite history; chưa commit/push.
+
+### Khảo sát hai agent cùng design — 2026-11-09
+
+- Đọc cơ chế batch SQLite/PostgreSQL, conflict history, tài nguyên dùng chung và bundle: hiện revision/commit guard ở cấp project; bundle SQLite chưa thuộc hợp đồng StorageBackend dùng chung.
+- Đề xuất để người dùng cân nhắc: giữ project revision cho snapshot/events/cache, bổ sung precondition theo page và dependency để giảm conflict khác page; clone phù hợp thử phương án độc lập nhưng cần xử lý dependency/ID và kiểm bản gốc khi nhập về.
+- Điểm dừng: mới khảo sát và tư vấn, chưa chốt hướng hoặc giao triển khai; không sửa code, dữ liệu thiết kế hay runtime, không chạy test vì không đổi hành vi.
+- Người dùng chốt triển khai revision theo page và dependency trước, do hai phiên design đang bị chặn. Giao một worker triển khai lát dọc storage SQLite/PostgreSQL → MCP và targeted tests; giữ global revision và strict legacy semantics, không deploy/restart dịch vụ thật.
+- Chốt phạm vi kỹ thuật với worker: guard theo page + dependency tự suy ra, dấu phạm vi ghi bền trong commit envelope có version; thiếu lịch sử/metadata thì từ chối an toàn. Giao reviewer chỉ đọc rà dependency, side effects và replay/bundle để bổ sung ca đối kháng trong khi triển khai.
+- Nhận audit kiến trúc: yêu cầu bổ sung dependency font qua instance override/theme, kiểm envelope hỏng, side effects điều hướng/notes và replay sau commit với base cũ. Worker đang xử lý trong cùng task; chưa nghiệm thu hoặc cập nhật runtime.
+- Nhận source ổn định và review mã độc lập: không còn P1/P2; sửa ca append root sau sort-key gaps và bổ sung wildcard cho thay đổi điều hướng toàn project. Root kiểm riêng SQLite, MCP/HTTP và PostgreSQL tạm đạt; kiểm lại 8 scoped/history/navigation/bundle test sau sửa cuối đạt, không chạm DB thật.
+- Do checkout cũ hơn runtime đang chạy, giao worker mới chuẩn bị candidate riêng từ đúng binary/provenance live và chỉ ghép delta tính năng. Chưa cho phép kích hoạt; candidate phải giữ renderer/artifacts hiện tại và kiểm canary trên PG/cổng tạm trước bước đồng ý cập nhật runtime.
+
+### Kiểm tra All frames trên public — 2026-11-09
+
+- Kiểm chỉ đọc runtime: HTML trên 3857 và 3858 với Host hợp lệ giống hệt, cùng bundle `index-CZExainG.js`; bundle public có All frames. Nhật ký worktree viewer cũng ghi nhận frontend native đã được cập nhật.
+- Chưa xác minh được đường HTTPS primary do không kết nối được cổng 443 từ môi trường kiểm. Không đổi source ứng dụng, runtime, cấu hình hoặc dữ liệu; chưa kết luận nguyên nhân giao diện người dùng thiếu option.
+- Người dùng đính chính public qua Cloudflare Tunnel. Kiểm HTTPS domain alternate thành công: HTML thường và thêm query đều `CF-Cache-Status: DYNAMIC`, tham chiếu `index-CZExainG.js`; bundle trả 200/MISS và chứa All frames, có browser cache TTL 14.400 giây. Không có bằng chứng edge đang trả frontend cũ tại lượt kiểm; chưa kiểm cache/tab trong browser người dùng. Đường Funnel primary là cấu hình cũ, không đại diện public đang dùng.
+
+### Sửa cache trình duyệt viewer — 2026-11-09
+
+- Người dùng xác nhận ẩn danh có All frames và yêu cầu sửa. Giao fresh worker xử lý chính sách cache static dùng chung local/public, thêm kiểm hồi quy bằng workspace/data root tạm và báo cáo cách đưa delta vào đúng nền native hiện tại.
+- Phạm vi: HTML/SPA entry và static URL thay đổi nội dung phải kiểm lại; giữ cache hiệu quả cho bundle có content hash và giữ API/auth/privacy. Chưa cho phép deploy/restart runtime thật; không commit/push hoặc xóa dữ liệu trình duyệt.
+- Giao fresh worker vận hành chuẩn bị candidate từ đúng provenance release native đang chạy, chỉ thêm delta cache sau khi source ổn định và kiểm canary bằng SQLite/workspace tạm; không kích hoạt dịch vụ thật hoặc dùng database người dùng.
+- Nhận source: module static riêng, HTML/stable URLs `no-store`, bundle Vite có hash `immutable`; giữ Brotli/gzip/Vary và API cache/auth/privacy. Worker kiểm cache + public CLI 6/6, scoped Clippy/rustfmt/diff-check đạt; root chạy riêng cache 3/3 đạt. Mã mới/sửa tối đa196 dòng. [Chính sách và cách tích hợp](../VIEWER-CACHE-POLICY.md).
+- Candidate native từ đúng release live đã build; 12 test cache/auth/privacy/CLI trên nền này đạt, payload ngoài server giữ byte-for-byte. Canary nền cũ tái hiện stale304; candidate trả HTML mới với cùng mtime. Root chạy độc lập canary hai listener đạt cache/compression/MCP/auth/privacy và xác nhận release thật vẫn khớp baseline; canary/dữ liệu tạm đã dọn.
+- Điểm dừng: code và candidate đã kiểm, chưa kích hoạt native/đổi cấu hình/commit/push. Giữ yêu cầu người dùng trước đây về không tự deploy app thật; cần đồng ý rõ ràng trước bước kích hoạt riêng bản cache đã kiểm. Cache trình duyệt cũ có thể cần hard reload một lần trước khi nhận chính sách mới.
+- Candidate, fingerprint và cách kích hoạt/rollback: [báo cáo native cache](../VIEWER-CACHE-CANDIDATE.md). Root đối chiếu độc lập manifest giữ nguyên566 payload và hash server/patch đạt; AGENTS.md còn trong ngân sách.
+
+### Hoàn thiện revision theo page — 2026-11-09
+
+- Người dùng yêu cầu hoàn thiện nốt phiên Codex. Source scoped concurrency và candidate riêng đã xong; hai candidate (page concurrency, cache viewer) cùng nền live nhưng tách rời, cài một bản sẽ mất bản kia.
+- Kiểm lại checkout chính: fmt sạch, storage scoped/bundle 11 và server liên quan 19 test đạt. Lỗi có sẵn ngoài phạm vi: `stroke_props` (Instance có `stroke`) và lint Clippy `--all-targets` ở test không sửa.
+- Ghép một candidate trên nền live: delta không chồng file, `COMBINED_PATCH` áp lại khớp. PG tạm: storage 9 + server 26 test, smoke hai backend render và canary cache đều đạt; 566 payload ngoài binary giữ nguyên live.
+- Điểm dừng: [candidate ghép](../NATIVE-COMBINED-CANDIDATE.md), chưa kích hoạt, chưa commit/push. Cần backup ngay trước khi cài vì binary cũ không đọc envelope lịch sử mới.
+- Người dùng yêu cầu deploy native và backup. Backup thủ công `backup-20261109T052151Z` restore kiểm chứng đạt; cài release `+scope-cache.f271654aad80`, chỉ đổi `OPENCANVAS_RELEASE` (giữ bản `server.env` cũ), restart riêng server. Sau cài: 5 snapshot giống hệt, MCP có `pageIds`/`get_edit_context`, PNG/WASM đạt, HTML `no-store`, bundle hash `immutable`, public 401/403 đúng, HTTPS Cloudflare `DYNAMIC`. Các phiên design cần kết nối lại MCP; trình duyệt có thể cần hard reload một lần.
+
+### Sửa React runtime sau deploy native — 2026-11-09
+
+- Production bundle từ checkout main với dependencies được copy chứa hai React dispatcher: hooks của app và renderer nạp hai đường dẫn khác nhau, cùng phiên bản. Thêm `resolve.dedupe` cho `react`/`react-dom` ở Vite; không đổi component, hooks hoặc quyền sở hữu state.
+- Typecheck/build và audit module graph đạt: một React runtime, bundle trở lại `index-CZExainG.js`. Root tái hiện browser trắng trên native, kiểm bản staging rồi kiểm lại native thật: `All frames · 3`, `Scene r10` hiển thị. Chuyển release frontend riêng, giữ binary/overlay native, assets cũ và rollback; không đổi PostgreSQL, auth, domain hoặc bản test 3867. Chưa commit/push sửa này.
+
+### Native deploy latest main — 2026-11-09
+
+- Theo yêu cầu mới của người dùng, fetch `origin/main` tại `4905dd5` (chứa `97f0f5e`), build đồng bộ server/layout release, renderer, WASM và web trong checkout/target riêng. Giữ nguyên compatibility overlay allowlist đang cài (`33bbe9f75b87`); không commit/push hoặc sửa các checkout khác.
+- Backup restore-verified, canary PostgreSQL riêng và kiểm MCP/PNG/WASM/auth đạt trước app-only cutover. Sau deploy, năm snapshot và fingerprint đầy đủ của database giữ nguyên; PostgreSQL và phiên test khác giữ nguyên. Primary HTTPS route từ máy trả connection refused; không đổi proxy/Funnel. Chi tiết và rollback ở báo cáo riêng `outputs/native-main-deploy.md` của chat vận hành.
+
+### Gộp nhánh và dọn nhánh — 2026-11-09
+
+- Người dùng yêu cầu làm FE trên nhánh hiện tại thay vì worktree từ `origin/main`; dừng subagent cũ. Commit công việc chưa commit thành 4 commit (allowlist domain, cache viewer, revision theo page, runtime native), merge `origin/main`, thêm `resolve.dedupe` React; `crates/`/`web/` khớp source bản native đang chạy. Sau merge: typecheck web, 82 test web, 11 storage + 29 server test đạt. Lệch rustfmt ở `crates/render` có sẵn từ main.
+- Theo yêu cầu chỉ giữ `main` và nhánh task09: đưa harness stress All frames + nhật ký từ worktree cũ vào nhánh, tag `archive/pg-delta-redis-hot-reads` cho spike Redis, gỡ worktree `OpenCanvas-viewer-wasm-scene`/`OpenCanvas-frame-cache`, xóa 12 nhánh local (nội dung đã có trong nhánh, xét theo patch), đổi tên thành `feat/page-concurrency`, fast-forward `main`. Chỉ local: không push, không xóa nhánh remote. Worktree Codex detached `native-main-20261109` giữ nguyên (không phải nhánh).
+
+### Cache FE theo frame và deploy — 2026-11-09
+
+- Subagent sửa cache scene: khóa theo SHA-256 input render của từng frame (tính trong WASM `frame_keys`) thay cho project revision; giữ scene cũ khi revalidate, chỉ frame đổi tính lại. Root kiểm lại: web 93/93, Rust scene-input/scene-wasm 23, server jobs 26, binding 3/3, browser thật trên server tạm đạt. Đường server vẫn tạo job mới mỗi revision (input có `revision`), không sửa.
+- Người dùng yêu cầu push và deploy: commit `a7b6e6b`, push `feat/page-concurrency` lên origin. Release FE-only `+frame-cache.a7b6e6b` clone từ release live, chỉ thay `web/dist` entry/worker/scene-wasm, giữ asset hash cũ cho tab đang mở; 554 file ngoài web giống live. Canary browser trên release tạm đạt.
+- Backup `backup-20261109T080130Z` restore kiểm chứng; chỉ đổi `OPENCANVAS_RELEASE` (bản cũ ở `server.env.pre-frame-cache-20261109`), restart riêng server. Sau deploy: 5 snapshot giống hệt, bundle `index-CfxC__M2.js` + `frame_keys`, HTML `no-store`, PNG/WASM đạt, public 200/401/403, HTTPS Cloudflare `DYNAMIC`, viewer thật render 3 frame không lỗi console. Rollback: khôi phục `server.env` cũ và restart, không cần đụng DB.

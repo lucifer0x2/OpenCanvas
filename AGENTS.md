@@ -36,16 +36,17 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Khi `LOG.md` vượt ~300 dòng: chuyển các mục đã đóng sang `docs/agents/history/<ngày>.md`, giữ một dòng con trỏ trong `LOG.md`.
 - Memory ngoài repo (thư mục memory của Claude Code, `~/.codex/memories`, file CLAUDE.md/AGENTS.md chung) chỉ lưu con trỏ hoặc sự thật cần dùng xuyên phiên, không chép nhật ký repo.
 
-## Trạng thái hiện tại — 2026-11-04
+## Trạng thái hiện tại — 2026-11-09
 
-- Repo GitHub đã tạo lại: `main` local/remote @ `b7178be`, đủ 71 commit đã làm sạch attribution AI, tree gồm PR #1 và public viewer. Toàn bộ thay đổi chưa commit (Task14/16/19, canvas continuity, review PG, spike) đã commit và push lên `feat/postgres-runtime-storage` (nhánh từ `origin/main`), chưa mở PR. Nhánh cục bộ `claude/design-properties` là lịch sử cũ, không push.
+- Nhánh (2026-11-09): chỉ còn `main` (= `origin/main` @`4905dd5`) và `feat/page-concurrency` — nhánh làm việc mặc định, gồm main + revision theo page + cache viewer + allowlist domain + runtime native, source `crates/`/`web/` khớp bản native đang chạy. Nhánh local cũ đã xóa; nhánh `origin/*` khác là lịch sử, không dùng. Chưa push `feat/page-concurrency`.
 - Main được bảo vệ bằng ruleset 26259563 active: PR, chỉ `lucifer0x2` cập nhật/merge, chặn xóa/force-push với người khác; chủ repo bypass always.
 - 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
 - Task14 P1–P5 đã kiểm độc lập: scoped themes/instance paint, bulk JSON/dry run và MCP-first guide. Debug đồng bộ đã build; chưa restart dịch vụ thật/commit/push. U07 golden/payload chờ design worker; xem `docs/TASK14-REPORT.md`.
-- Storage: Task19 PostgreSQL full domain. CLI mặc định SQLite, `DATABASE_PROVIDER=postgresql` + `DATABASE_URL` bật PostgreSQL và Moka snapshot TTL 1 giờ; `PORT`, `DATABASE_POOL_SIZE`/`DATABASE_*_TIMEOUT_MS` chỉnh runtime. GET snapshot có Moka bytes + ETag, opt-in rows cho GET/MCP. Xem `README.md`, `docs/MOKA-SNAPSHOT-CACHE.md`, `docs/RUNTIME-STORAGE-BENCHMARK.md`. Chưa TLS. Spike Task15/17 và Task18 backlog ở `codex/pg-delta-redis-hot-reads` @`162579a`.
-- Runtime PostgreSQL trên OrbStack chuyển sang `opencanvas-postgres` Compose (2 container, volume riêng). Dump/restore toàn DB giữ ID, revision, lịch sử và binary của hai project, đã kiểm MCP/PNG/snapshot. Cụm Kubernetes đã dừng, app/PG scale 0 và giữ PVC nguồn. Xem `docs/COMPOSE-POSTGRES.md`. Task20/20b/21 đã push `origin/codex/kubernetes-local` @`c91c209`; lịch sử ở `docs/KUBERNETES.md`, `docs/API-MCP-MIGRATION.md`, `docs/TEXT-INK-DIAGNOSTICS-FIX.md`.
-- Native 3847/3848 do người dùng quản lý. Compose MCP loopback3857, viewer chỉ đọc loopback3858 với auth tùy chọn và project mặc định private. MCP `update_project` đổi quyền. Funnel foreground trỏ 3858 do người dùng quản lý. Xem `docs/PUBLIC-VIEWER-REPORT.md` và `docs/COMPOSE-POSTGRES.md`.
+- Storage: Task19 PostgreSQL full domain. CLI mặc định SQLite, `DATABASE_PROVIDER=postgresql` + `DATABASE_URL` bật PostgreSQL và Moka snapshot TTL 1 giờ; `PORT`, `DATABASE_POOL_SIZE`/`DATABASE_*_TIMEOUT_MS` chỉnh runtime. GET snapshot có Moka bytes + ETag, opt-in rows cho GET/MCP. Xem `README.md`, `docs/MOKA-SNAPSHOT-CACHE.md`, `docs/RUNTIME-STORAGE-BENCHMARK.md`. Chưa TLS. Spike Task15/17 và Task18 backlog ở tag `archive/pg-delta-redis-hot-reads` @`162579a`.
+- Runtime macOS/launchd, PG 16.15 loopback `2703`, cluster riêng; cluster Homebrew cũ giữ nguyên. Live chạy release `+scope-cache.f271654aad80+frame-cache.a7b6e6b` (nền `4905dd5`; server binary của scope-cache, frontend/scene-wasm từ `a7b6e6b`); `feat/page-concurrency` khớp source đó. Xem `docs/NATIVE-RUNTIME.md` và provenance của release thật.
+- Native MCP loopback3857, public viewer loopback3858; domain lấy từ `OPENCANVAS_PUBLIC_ORIGIN` và `OPENCANVAS_PUBLIC_ALLOWED_ORIGINS` trong cấu hình riêng. Auth/privacy và Funnel giữ nguyên. Backup local 03:00 mỗi ngày, giữ 14 bản đã restore kiểm chứng; xem `docs/NATIVE-BACKUP.md`. LaunchAgents chạy khi user đăng nhập. Giữ container/volume Docker nguồn; không quay về database cũ sau khi native nhận thay đổi.
 - Responsive `%`/breakpoint đã tích hợp và kiểm trên nhánh Compose; image mới chỉ chạy canary. Người dùng tự cài app thật: agent không tự deploy. Xem `docs/RESPONSIVE-COMPOSE-REPORT.md`; các giới hạn khác ở `docs/ACCEPTANCE.md`.
+- Scoped concurrency đã kiểm SQLite/PG/MCP và review độc lập; `pageIds` bật guard theo page/dependency, global revision giữ nguyên. Live native đã chạy bản ghép scoped + cache viewer từ 2026-11-09 (theo yêu cầu người dùng, backup trước khi cài): `docs/NATIVE-COMBINED-CANDIDATE.md`. Xem `docs/PAGE-CONCURRENCY.md`.
 - Không reset/checkout/stash hay bỏ thay đổi của người khác; không push; không ghi `~/.opencanvas`.
 - Khi có yêu cầu mới: đọc mục này, mục đang mở trong `docs/agents/LOG.md`, README/ACCEPTANCE và `git status`.
 
@@ -56,13 +57,14 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 | `PLAN.md` | Trước mọi triển khai: nguồn yêu cầu sản phẩm và AC. |
 | `README.md` | Cần setup, chạy app hoặc kết nối MCP. |
 | `docs/ACCEPTANCE.md` | Nghiệm thu, cần AC, lệnh kiểm hoặc giới hạn đã công bố. |
-| `tasks/` | Trước khi định nghĩa việc mới. 01–05: responsive; 06–08: MCP reads/events; 09–13: Rust render (gác lại); 14: schemes/Structured Operations; 15: PG spike; 16: storage trait; 17: spike delta/Redis; 18: Redis-primary backlog; 19: runtime PG/bitcode cache. Trạng thái/AC ở đầu mỗi file. |
+| `tasks/` | Trước khi định nghĩa việc mới. 01–05: responsive; 06–08: MCP reads/events; 09–13: Rust render (gác lại); 14: schemes/Structured Operations; 15: PG spike; 16: storage trait; 17: spike delta/Redis; 18: Redis-primary backlog; 19: runtime PG/bitcode cache; 22: giảm token phiên design (import từ inbox, render gọn, props theo kind, read gọn); 23: đối chiếu triển khai với design (spec mong đợi + đo DOM, bảng expected/actual). Trạng thái/AC ở đầu mỗi file. |
 | `docs/TASK*-REPORT.md`, `docs/TASK04-PROPOSAL.md` | Cần chi tiết kỹ thuật, số đo hoặc rủi ro còn mở của Task03–08. |
 | `docs/SERVER.md` | Sửa hoặc gọi backend: MCP, HTTP API, jobs, SSE. |
 | `docs/CONTRACT.md` | Tích hợp giữa các module (viewer ↔ HTTP API, kiểu dữ liệu). |
 | `docs/VIEWER.md` | Sửa viewer `web/` hoặc renderer dùng chung. |
 | `docs/RESOLUTION.md` | Đụng token, alias, theme hoặc resolver M3. |
 | `docs/BACKUP.md` | Đụng migration, export/import/restore bundle M4. |
+| `docs/NATIVE-RUNTIME.md`, `docs/NATIVE-BACKUP.md` | Vận hành native macOS, PostgreSQL 2703, launchd, backup và recovery. |
 | `docs/checkpoints/` | Cần bối cảnh bàn giao cũ của M1 server, M3, M4. |
 | `spikes/e2e/README.md` | Chạy hoặc sửa E2E thật (`npm run test:e2e`). |
 | `docs/agents/LOG.md` | Đầu phiên (mục đang mở) và mỗi lần ghi nhật ký. |

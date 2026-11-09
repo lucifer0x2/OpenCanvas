@@ -1,5 +1,5 @@
 use super::{admin::auth, config, crypto, now, valid_password, LIFETIME};
-use crate::{error::Result, ApiError, AppState, PublicViewer};
+use crate::{error::Result, viewer_origin::ViewerOrigin, ApiError, AppState, PublicViewer};
 use axum::{
     extract::{ConnectInfo, FromRequest, Request, State},
     http::{header, HeaderMap, StatusCode},
@@ -53,7 +53,7 @@ impl Proof {
 
 pub(crate) async fn access(
     state: &AppState,
-    public: &PublicViewer,
+    origin: &str,
     presented: Option<Presented>,
 ) -> Result<Access> {
     let Some(config) = config(state).await? else {
@@ -62,7 +62,7 @@ pub(crate) async fn access(
     let Some(Presented { token, ip }) = presented else {
         return Ok(Access::Locked);
     };
-    let Some(claims) = crypto::verify(&token, public.origin(), &config.signing_key) else {
+    let Some(claims) = crypto::verify(&token, origin, &config.signing_key) else {
         return Ok(Access::Locked);
     };
     let proof = Proof {
@@ -121,10 +121,11 @@ pub(crate) async fn local_status() -> impl IntoResponse {
 pub(crate) async fn public_status(
     State(state): State<AppState>,
     Extension(public): Extension<PublicViewer>,
+    Extension(origin): Extension<ViewerOrigin>,
     request: Request,
 ) -> Result<Json<Value>> {
     Ok(
-        match access(&state, &public, presented(&public, &request)).await? {
+        match access(&state, &origin.0, presented(&public, &request)).await? {
             Access::Open => status(true, false),
             Access::Session(_) => status(true, true),
             Access::Locked => status(false, true),
@@ -141,6 +142,7 @@ struct Login {
 pub(crate) async fn login(
     State(state): State<AppState>,
     Extension(public): Extension<PublicViewer>,
+    Extension(origin): Extension<ViewerOrigin>,
     request: Request,
 ) -> Result<Response> {
     let Some(config) = config(&state).await? else {
@@ -188,7 +190,7 @@ pub(crate) async fn login(
     let Some(hash) = hash else {
         return Ok(unauthorized());
     };
-    let (token, claims) = crypto::sign(public.origin(), &config.signing_key)?;
+    let (token, claims) = crypto::sign(&origin.0, &config.signing_key)?;
     let session = ViewerSession {
         session_id: claims.jti.to_string(),
         ip_address: ip.to_string(),

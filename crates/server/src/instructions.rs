@@ -47,6 +47,13 @@ or props.content. Node props are listed per kind in skill://opencanvas/props.md;
 opencanvas://capabilities by fingerprint/pipeline version and refresh on change before workarounds. \
 A wrong key fails with field props.<key>, allowedKeys and a suggestion.
 
+For edits within existing pages, include pageIds in apply_batch/apply_batch_file and use \
+expectedRevision from the actual authored read. Storage derives transitive shared-dependency \
+guards and permits unrelated page/resource commits. get_edit_context reports guard metadata; \
+never fetch a newer guard to relabel an older design read. Scoped success returns editGuard \
+for the next batch. Shared-resource/note/page/global-flow writes, first root-frame creation, \
+and root-frame deletion/reparent/reorder require strict mode (omit pageIds) after rereading. \
+Cross-page moves require both pages. A scoped conflict still requires reread/rebase. \
 Mutations need caller-chosen IDs, expectedRevision and a stable idempotencyKey. After a lost \
 response retry the exact same body and key. After success use committedRevision without an \
 unnecessary revision-only read. A REVISION_CONFLICT carries changedSince {fromRevision, \

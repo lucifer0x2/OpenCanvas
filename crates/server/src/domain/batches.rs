@@ -6,6 +6,7 @@ pub(super) async fn run(state: &AppState, name: &str, mut args: Value) -> Result
     // The public schema checked this boolean; remove it before decoding the legacy
     // BatchRequest so Rust callers can keep constructing that struct unchanged.
     let dry_run = args.as_object_mut().unwrap().remove("dryRun") == Some(json!(true));
+    let page_ids = args.as_object_mut().unwrap().remove("pageIds");
     if name == "apply_batch_file" {
         let file: BatchFileRequest = serde_json::from_value(args)?;
         let to_read = file.clone();
@@ -20,6 +21,35 @@ pub(super) async fn run(state: &AppState, name: &str, mut args: Value) -> Result
         crate::schemas::validate("apply_batch", &args)?;
     }
     let notes_only = opencanvas_storage::is_note_batch(&args["operations"]);
+    if let Some(pages) = &page_ids {
+        args["pageIds"] = pages.clone();
+    }
+    if page_ids.is_some() {
+        let request: opencanvas_storage::ScopedBatchRequest = serde_json::from_value(args)?;
+        let (project, expected, pages) = (
+            request.project_id.clone(),
+            request.expected_revision,
+            request.page_ids.clone(),
+        );
+        let result = state
+            .project(project.clone(), move |p| {
+                if dry_run {
+                    serde_json::to_value(p.dry_run_scoped_batch(request)?).map_err(Into::into)
+                } else {
+                    serde_json::to_value(p.apply_scoped_batch(request)?).map_err(Into::into)
+                }
+            })
+            .await;
+        let mut result = conflict::checked(state, &project, expected, result).await?;
+        let revision = if dry_run {
+            result["baseRevision"].clone()
+        } else {
+            result["committedRevision"].clone()
+        };
+        result["editGuard"] =
+            json!({"projectId":project,"expectedRevision":revision,"pageIds":pages});
+        return Ok((result, notes_only));
+    }
     let request: BatchRequest = serde_json::from_value(args)?;
     let (project, expected) = (request.project_id.clone(), request.expected_revision);
     let result = state

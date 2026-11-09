@@ -22,6 +22,8 @@ export interface SceneView {
   requestedRevision?: number;
   frames?: FrameSceneView[];
   progress?: { ready: number; total: number };
+  /** An earlier revision stays on screen while this one renders; no placeholder is due. */
+  revalidating?: boolean;
 }
 
 export interface FrameSceneView {
@@ -32,6 +34,14 @@ export interface FrameSceneView {
   scene?: Scene;
   resources?: Resources;
   error?: string;
+  /** Revision-free identity of `scene`'s render input, when the scene module supplied one. */
+  contentKey?: string;
+  /** `scene` is from an earlier revision and this one has not replaced it yet. */
+  stale?: boolean;
+  /** Revalidation failed; `scene` stays as last rendered. */
+  updateError?: string;
+  diagnostics?: string[];
+  missing?: string[];
 }
 
 const emptyView = (): SceneView => ({
@@ -43,6 +53,7 @@ const refreshing = (view: SceneView): SceneView => ({
   ...view,
   status: "pending",
   error: undefined,
+  revalidating: Boolean(view.scene),
 });
 
 export function useScene(

@@ -1,5 +1,5 @@
 import type { FontManifest, Scene } from "../../../renderer/types";
-import type { ComputeMessage, ComputeReply } from "./protocol";
+import type { ComputeMessage, ComputeReply, FrameKey } from "./protocol";
 import { RevisionCache } from "./revisionCache";
 
 export interface SceneComputer {
@@ -20,6 +20,8 @@ export interface SceneComputer {
     height: number,
     theme: string,
   ): string;
+  /** Absent from modules built before content keys; callers then compute without a cache. */
+  frame_keys?(snapshot: string, frames: string, theme: string): string;
 }
 
 /** The serial queue owns snapshot encoding, WASM initialization and mutable font state. */
@@ -35,7 +37,7 @@ export function sceneWorkerRuntime(
 
   async function compute(
     message: ComputeMessage,
-  ): Promise<Scene | FontManifest[]> {
+  ): Promise<Scene | FontManifest[] | FrameKey[]> {
     if (projectId && projectId !== message.request.projectId) {
       (await initializing)?.free();
       initializing = undefined;
@@ -67,6 +69,22 @@ export function sceneWorkerRuntime(
       );
     }
     reply({ id: message.id, started: "computing" });
+    if (message.kind === "keys") {
+      if (typeof instance.frame_keys !== "function")
+        throw Object.assign(
+          new Error("Browser scene module has no frame keys."),
+          {
+            code: "KEYS_UNAVAILABLE",
+          },
+        );
+      return JSON.parse(
+        instance.frame_keys(
+          snapshotJSON,
+          JSON.stringify(message.frames ?? []),
+          "default",
+        ),
+      );
+    }
     instance.set_resource_urls(JSON.stringify(message.urls));
     if (message.kind === "prepare")
       return JSON.parse(

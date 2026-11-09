@@ -134,9 +134,18 @@ OPENCANVAS_PUBLIC_TRUSTED_PROXY_IP=127.0.0.1 npm run dev -- --public-viewer-port
 tailscale funnel --bg http://127.0.0.1:3848
 ```
 
-Use the actual HTTPS origin with no path, query or credentials. Public Host must
-match that origin's authority; a supplied Origin must match the configured
-origin. Both public flags must be supplied together; nonzero public and local
+Use the actual HTTPS origin with no path, query or credentials. To serve another
+domain on the same public listener, set `OPENCANVAS_PUBLIC_ALLOWED_ORIGINS` to a
+comma-separated list of additional exact HTTPS origins, for example
+`https://alternate.example.invalid`. The primary flag remains required. The list accepts at
+most eight distinct origins including the primary; empty entries, wildcards and
+invalid origins fail startup. Duplicate origins are ignored.
+
+Public Host must match an allowed origin's exact authority (including any port);
+a supplied Origin must match the origin selected by that Host. Cross-domain
+Host/Origin pairs are rejected even when both domains are allowed. Navigation
+and downloads may omit Origin; sign-in requires it. Both public flags must be
+supplied together; nonzero public and local
 ports must differ and fit in 16 bits. Port `0` is supported for isolated checks;
 startup prints both actual bound ports. Both listeners use `--host` (loopback by
 default) and shut down together on Ctrl-C, including open SSE streams.
@@ -145,7 +154,10 @@ default) and shut down together on Ctrl-C, including open SSE streams.
 listener's route graph defines read-only access; Host, Origin, forwarding
 headers and loopback peer addresses never grant local mutation privileges.
 Public responses project generated scene font/asset, PNG, export and font
-download links onto the configured HTTPS origin. Worker callbacks, cached jobs
+download links onto the request's matched HTTPS origin. Viewer sessions are bound
+to that same origin; each domain signs in separately using a host-only cookie,
+and adding another domain preserves existing primary-domain sessions.
+Worker callbacks, cached jobs
 and local MCP responses retain their loopback URLs. Viewer and HTML preview use
 those public resources directly; authored strings are preserved.
 

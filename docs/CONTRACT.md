@@ -111,6 +111,19 @@ must report missing/moved IDs rather than silently substituting a different node
 
 MCP Streamable HTTP `/mcp`, versioned typed schemas and bounded results. Public storage/layout types remain authoritative for exact Rust signatures. Domain operations are ordered: `create_node`, `update_node`, `reparent_node`, `reorder_node`, `delete_subtree`, `upsert_token`, `upsert_style`. Resource imports use bounded bytes, never arbitrary filesystem paths. See worker reports for validation and limits.
 
+`apply_batch` / `apply_batch_file` optionally accept `pageIds` (1–100 distinct
+existing pages). In scoped mode `expectedRevision` is the revision of the actual
+authored read: the backend derives page and transitive shared-resource guards
+and permits unrelated newer commits. Without `pageIds`, strict global revision
+matching is unchanged. Scoped success adds `editGuard {projectId,expectedRevision,
+pageIds}`; `get_edit_context {projectId,pageIds}` returns guard metadata and up to
+100 dependency keys from one snapshot, without design data or internal paths.
+Never replace an older design read's revision with a newer metadata-only guard.
+Project revision remains the identity for snapshots/SSE/jobs/cache. Unsupported
+scoped operations fail explicitly; shared writes, notes, page/global navigation
+structure and first-root creation use strict mode after rereading. Complete
+coverage, persistence, conflict recovery and limits: [page concurrency](PAGE-CONCURRENCY.md).
+
 Tool arguments are checked against the published bounded schema at runtime.
 Tree/context/resource reads return one authored revision, `truncated` and
 `nextCursor`. Cursors bind project, revision, tool and query scope/filters/bounds;

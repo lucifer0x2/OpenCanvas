@@ -56,6 +56,36 @@ fn identity(
 }
 
 impl StorageBackend for PostgresBackend {
+    fn apply_scoped_batch(
+        &self,
+        project: &str,
+        request: crate::ScopedBatchRequest,
+    ) -> Result<BatchResult> {
+        let key = project.to_owned();
+        let (request, pages) = request.split();
+        let (result, committed) = self.pool.run(move |session| {
+            match batch::apply_mode(session, &key, request, false, Some(pages))? {
+                batch::Outcome::Commit(result, committed) => Ok((result, committed)),
+                _ => unreachable!(),
+            }
+        })?;
+        self.fill(committed);
+        Ok(result)
+    }
+    fn dry_run_scoped_batch(
+        &self,
+        project: &str,
+        request: crate::ScopedBatchRequest,
+    ) -> Result<DryRunResult> {
+        let key = project.to_owned();
+        let (request, pages) = request.split();
+        self.pool.run(move |session| {
+            match batch::apply_mode(session, &key, request, true, Some(pages))? {
+                batch::Outcome::Preview(result) => Ok(result),
+                _ => unreachable!(),
+            }
+        })
+    }
     fn viewer_auth(&self) -> Option<&dyn crate::ViewerAuthStore> {
         Some(self)
     }

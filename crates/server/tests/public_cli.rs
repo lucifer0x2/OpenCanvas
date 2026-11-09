@@ -48,11 +48,43 @@ async fn public_flags_fail_before_opening_the_data_root() {
     }
 }
 
+#[tokio::test]
+async fn invalid_additional_origins_fail_before_opening_the_data_root() {
+    let root = tempfile::tempdir().unwrap();
+    for origins in [
+        "",
+        ",",
+        "https://*.site",
+        "https://alternate.example.invalid/path",
+        "https://alternate.example.invalid:65536",
+    ] {
+        let output = Command::new(BINARY)
+            .env("OPENCANVAS_PUBLIC_ALLOWED_ORIGINS", origins)
+            .args([
+                "--public-viewer-port",
+                "0",
+                "--public-viewer-origin",
+                ORIGIN,
+                "--data-root",
+            ])
+            .arg(root.path())
+            .output()
+            .await
+            .unwrap();
+        assert!(!output.status.success(), "{origins}");
+        assert!(std::fs::read_dir(root.path()).unwrap().next().is_none());
+    }
+}
+
 #[cfg(unix)]
 #[tokio::test]
 async fn both_random_listeners_stop_with_active_sse_on_one_interrupt() {
     let root = tempfile::tempdir().unwrap();
     let mut child = Command::new(BINARY)
+        .env(
+            "OPENCANVAS_PUBLIC_ALLOWED_ORIGINS",
+            "https://alternate.example.invalid",
+        )
         .args([
             "--port",
             "0",
@@ -89,6 +121,14 @@ async fn both_random_listeners_stop_with_active_sse_on_one_interrupt() {
         .next()
         .unwrap();
     let client = reqwest::Client::new();
+    let secondary = client
+        .get(format!("http://{public_addr}/api/v1/viewer"))
+        .header("host", "alternate.example.invalid")
+        .header("origin", "https://alternate.example.invalid")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(secondary.status(), 200);
     let local_stream = client
         .get(format!("{local_url}/api/v1/events"))
         .send()

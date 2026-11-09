@@ -124,13 +124,19 @@ impl Project {
             render_status: "pending".into(),
             replayed: false,
         };
+        let history = scoped::envelope(
+            &before,
+            &candidate,
+            canonical,
+            json!([{"op":"import_asset","asset":asset,"font":request.font}]),
+        )?;
         self.persist(
             &mut conn,
             &before,
             &candidate,
             &request.idempotency_key,
             &request_hash,
-            &json!([{"op":"import_asset","asset":asset,"font":request.font}]),
+            &history,
             &result,
             &mut BatchMetrics::default(),
         )?;
