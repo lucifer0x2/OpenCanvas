@@ -1,5 +1,35 @@
 # Nhật ký điều phối OpenCanvas
 
+- Các mục đã đóng về PR #7, Compose và WASM mặc định/Docker: [archive](history/2026-11-06-closed-viewer.md).
+
+### Viewer WASM scene — 2026-11-05
+
+- Người dùng giao compute scene bằng Rust WASM, giữ Canvas2D paint và server default/fallback; yêu cầu mới thay phạm vi painter của Task12 cũ. Worktree riêng `/private/tmp/opencanvas-viewer-wasm-scene`, nhánh `feat/viewer-wasm-scene` từ `feat/task11-native-png`; không commit/push/deploy hoặc dữ liệu thật.
+- Giao fresh worker tách resolver/model/input thuần WASM và adapter text; root điều phối và kiểm chứng. Các bước WASM binding, viewer worker và parity sẽ nối theo API đã đóng băng.
+- Giao fresh worker binding/build WASM và fresh worker viewer/FontFace dùng chung bytes. API ghim `SceneComputer`, URL maps do adapter cung cấp trước compute; font discovery dùng cùng resolver để không tải font ngoài frame. Native check core đạt; chưa nghiệm thu parity/browser.
+- Nhận core extraction và WASM binding: workers báo native/WASM check, resolver regression, binding smoke và strict Clippy đạt. WASM đã sinh, raw khoảng 3,55 MB; root sẽ kiểm độc lập và giao fresh worker làm matrix parity/timing trên fixture tạm.
+- Giao worker parity 5 frame × 4 viewport. Root review phát hiện native bổ sung text overflow advisories sau layout; giao fresh worker tách cùng logic thuần cho WASM để giữ JSON diagnostics, không bỏ qua khác biệt đó trong comparator. Workspace suite đang chạy; sẽ kiểm lại khi nguồn cuối ổn định.
+- Nhận advisory parity và gate fixes: logic overflow/note intent dùng chung, golden thêm đúng effectiveTheme có từ nền, test deadline dùng semaphore riêng, smoke chọn preference notices rõ ràng. Root đã kiểm WASM smoke/35 web tests/typechecks/build/continuity; matrix worker báo 20/20 scene exact sau khi giữ HTTP JSON nguyên bản, đang kiểm báo cáo và chạy workspace suite cuối.
+- Root kiểm lại độc lập 20 scene đã capture: 0 mismatch và mọi source/artifact hash còn khớp. Actions smoke cuối đạt. Giao fresh fix nhỏ cho worker error reply để Retry khởi tạo worker mới, tránh giữ module import lỗi trong worker cũ; không đổi Rust/parity.
+- Nhận worker recovery đạt; root kiểm 37 web tests, build và WASM smoke cuối, thêm production viewer/backend tạm với instance: 0 request scene và MIME WASM đúng. Full workspace kết thúc 528 pass/1 fail/36 ignored, chỉ test catalog stroke cũ loại Instance trong khi nền đã cho phép; giao fresh worker sửa đúng test, không đổi hành vi sản phẩm.
+- Điểm dừng: full workspace cuối **529 pass/0 fail/36 ignored**, 37 web tests, native/WASM check, strict library Clippy, scoped fmt và browser/continuity/actions/WASM/production smokes đạt; parity 20/20 exact. [Báo cáo triển khai](../VIEWER-WASM-SCENE.md), [parity/timing](../VIEWER-WASM-PARITY.md). Mọi source/test ≤236 dòng; viewer reference cũ 254 dòng. Không commit/push/deploy, main giữ nguyên source; dữ liệu kiểm đều tạm.
+- Follow-up: giao fresh worker sửa đường dẫn source đã di chuyển và fresh worker cải thiện hủy request/cache snapshot. Chỉ làm tại worktree này; người dùng cho phép commit sau khi kiểm đủ gate, không push hoặc chạm main checkout. Email Git đã xác nhận đúng yêu cầu.
+- Nhận sửa đường dẫn: renderer 11/11, không còn `storage/src` trong source/script được yêu cầu. Lượt Rust trong sandbox bị chặn socket loopback; chạy lại với quyền phù hợp. Giao fresh worker chuẩn bị nhóm commit có kiểm build từng bước, chờ root xác nhận đủ gate trước khi commit.
+- Nhận worker reuse/cache: root kiểm web 43/43, renderer 11/11, hai typecheck, production build, WASM browser smoke, Clippy năm crate và parity 20/20 không mismatch; source/test tối đa 236 dòng. Rust suite còn chạy; cho worker chuẩn bị index/build bước đầu, chưa commit.
+- Rust cuối đạt 448 pass/0 fail/36 ignored (server 243 pass); tất cả gate người dùng yêu cầu đã đạt. Cho worker build từng index export rồi commit bảy nhóm phụ thuộc, không push. Cập nhật [báo cáo follow-up](../VIEWER-WASM-SCENE.md#follow-up-verification--2026-11-05) và parity; chỉ working tree riêng được sửa.
+- Nhận commit extraction `7694b8f`: build từ index export đạt cùng renderer typecheck/build/image-fit. Worker tiếp tục các nhóm còn lại; source sản phẩm không đổi sau gate cuối.
+- Nhận commit shared measurer `a9c6679`, native build từ index export đạt; bước WASM dùng binary wasm-bindgen đã ghim tại thư mục công cụ tạm, không cài thêm toolchain.
+- Nhận WASM `30669b1` và viewer `d5835d2`: native/WASM build từ index export đạt, WASM hash giữ nguyên; renderer/web build, web 43/43 và renderer 11/11 đạt trên tree viewer đã stage đủ regression cache.
+- Nhận regression `5707967` và housekeeping `83fa8b0`: native/web build, traversal 3/3 và stroke 6/6 đạt; chỉ bỏ symlink dependency đã track, không thay thư mục dependency cục bộ.
+- Điểm dừng trước commit cuối: mọi gate yêu cầu đạt, sáu nhóm source/housekeeping đã commit cục bộ; duyệt nhóm parity harness/tài liệu sau kiểm compile capture trên index export. Source/test tối đa 236 dòng, AGENTS 69 dòng/9476 byte; không push, không deploy, không sửa main checkout. Rust parse-once là tùy chọn chưa làm; snapshot đã encode/cache trong Worker.
+- Review tiếp: giao fresh workers sửa recovery/timeout và phân loại lỗi Worker, dùng chung viewport budget giữa server/WASM, cùng cache font theo byte. Chỉ worktree riêng, không push/main checkout; email Git vẫn đúng. Các regression mới phải kiểm được lỗi review, source/test ≤250 dòng, chờ đủ gate trước commit fix.
+- Nhận cache font 64 MiB +32 entry và hook Retry invalidation: focused font test 6/6 đạt; chờ API Worker cuối trước typecheck toàn web. Shared viewport giữ server downscale hợp lệ, WASM dùng scale1.
+- Shared guard/neutral measurer/path docs đã sẵn sàng: root kiểm binding WASM mới 2/2, renderer 11/11 và typecheck đạt; WASM đã rebuild từ source mới. Giao fresh worker chuẩn bị một commit fix, chờ đủ gate. Recovery được gia cố để replay request còn sống sau lỗi init của request đã hủy.
+- Nhận runtime cuối: root kiểm web 62/62, gồm r1 abort/r2 replay, real Worker chạy obsolete compute lâu hơn timeout và một budget chung init+compute; font/code-error/Retry regressions đạt. Native capture mới + parity đã đạt 20/20 không mismatch, strict Clippy năm crate đạt; final Rust/browser gates còn đang hoàn tất.
+- Kiểm font mirror phát hiện lỗi sau khi font hash mới được nạp nhưng compute trả structured error: client có thể giữ ack hash cũ. Giao fresh worker sửa invalidation của mirror và regression quay lại hash cũ; giữ Worker, không đổi Rust. Chưa commit.
+- Nhận font mirror fix: hai regression fail trước/đạt sau sửa, worker 27/27; root chạy cuối web 64/64, typecheck/build và WASM browser smoke đạt. Rust cuối 456 pass/0 fail/36 ignored (scene-input11, scene-wasm9, text38, storage153, server245); renderer11/11, binding2/2, Clippy và parity20/20 không mismatch đều đạt.
+- Điểm dừng trước commit fix: đủ tám mục review, source/test tối đa206 dòng, AGENTS69 dòng/9476 byte; tài liệu tham chiếu cũ chỉ sửa path và cập nhật báo cáo. Duyệt một commit cục bộ từ source đã kiểm; không push, deploy hoặc sửa main checkout. Artifact/capture/binary generated vẫn ignore.
+
 Các mục đã đóng về push main/ruleset và khảo sát app: [archive](history/2026-11-02-publish-notes.md).
 
 Các mục đã đóng về build, design memory và P24: [archive](history/2026-11-03-closed-build-p24.md).
@@ -158,6 +188,7 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 
 - Người dùng yêu cầu làm tiếp Task09 để chuyển renderer sang Rust. Máy là VM Linux aarch64 4 nhân không GPU (tiny-skia raster CPU nên không cần GPU); handoff gốc nhắm macOS, số đo ghi rõ nền tảng. Người dùng duyệt cài rustup stable 1.99.1 + `wasm32-unknown-unknown` (root cài thêm `build-essential`, `brotli` qua apt) và bỏ phần đo Chromium/Worker vì máy chưa có Node/Playwright.
 - Spike không build được trên `main` @`c2bf260` vì `opencanvas-layout` đã đổi `TextLine`/`Measurement`/`fill`/`radius`; root sửa 4 dòng để build lại native. Worktree `../OpenCanvas-task09`, nhánh `feat/task09-wasm-spike` từ `main`. Giao fresh worker: tách lib C-ABI, build WASM hai biến thể, đo size/native, so pixel native↔WASM qua runtime WASM nhúng trong spike.
+
 ### Xác thực public viewer — 2026-11-03
 
 - Giao worker backend cho xác thực riêng public listener, lưu phiên trong SQLite/PostgreSQL, công cụ quản trị MCP và IP qua proxy tin cậy. Giao worker frontend cho dialog và khóa mount viewer theo trạng thái phiên. Kiểm trên dữ liệu tạm trước khi đánh giá rollout.
@@ -201,6 +232,64 @@ Lịch sử đến hết Task01–08 và commit `215313c`: `docs/agents/history/
 - Khôi phục `feat/task09-wasm-spike` từ `c560961` trong worktree riêng, merge nền Compose `dbd37a0` vào Task09. Giữ hướng dẫn hover mới, responsive và cả hai đuôi nhật ký; không sửa working tree Compose hoặc push/deploy.
 - Sandbox sạch cùng commit, không tìm thấy số đo WASM hoặc source chưa push trong phạm vi đã kiểm. WASM type-check và 5 test responsive đạt; native spike bị chặn ở adapter viewport `f64`/`f32`, để worker tiếp theo sửa đúng phạm vi spike. Chưa benchmark hoặc kết luận go/no-go.
 - Điểm dừng và lệnh tiếp tục: [Task09 recovery](../../spikes/rust-export/RECOVERY.md). Source spike giữ nguyên; có whitespace cũ từ notice bar trên nền Compose, không chỉnh ngoài phạm vi.
+- Nhận merge cục bộ `9e19d38`; root chuyển phiên sang worktree Task09 và giao worker mới hoàn thiện adapter, gia cố runner rồi đo native/WASM trong Chromium Worker. Target WASM đã có sẵn; không cần cài toolchain, không push/deploy hoặc thay engine sản phẩm.
+- Nhận source/benchmark và bảng Phần E: size/parity đạt nhưng latency vượt gate trên host tải cao; tile DPR1 còn lệch crop dù native/WASM khớp. Root giao reviewer fresh chỉ đọc và chạy lại phép đo độc lập trước chốt; không coi toàn CLI lint/fmt xanh vì lỗi/style cũ đã công bố.
+- Reviewer không có Required; root chạy lại native/Chromium, kiểm hash input và 12 phép so RGBA đều trùng, 10 Node + 1 Rust test đạt. Hai lượt vẫn vượt gate thời gian trên host tải cao; giữ no-go hiện tại, cần đo máy rảnh trước quyết định dài hạn. [Bảng số và giới hạn](../../spikes/rust-export/README.md#phần-e--task09-wasm-trong-chromium-web-worker-2026-11-04).
+- Điểm dừng: native release rebuild và diff-check đạt, source tạo/sửa dưới 200 dòng, AGENTS trong ngân sách. Merge nền đã commit cục bộ; phần hoàn thiện/kiểm chứng để chưa commit, không push/deploy. Compose gốc giữ commit và checksum log sau bàn giao; generated evidence ignored, symlink tooling chỉ dùng cục bộ. Task10–13 chưa triển khai.
+
+### Task10 nền → Task11 — Rust native PNG — 2026-11-04
+
+- Người dùng chọn làm nền Task10 trước Task11, ưu tiên native khi gate tốc độ WASM chưa đạt; xác nhận ngưỡng ngoài text có pixel Δ>8 dưới 0,5%, text xem ảnh đối chiếu. Giữ Chromium mặc định, không làm Task12 hoặc deploy app thật.
+- Giao worker khảo sát fresh để đối chiếu handoff cũ với text/paint hiện tại và đề xuất ranh giới module/lát triển khai. Giữ nguyên phần Task09 chưa commit; không push hoặc thay dữ liệu/runtime thật.
+- Nhận khảo sát: phải giữ typography và paint hiện tại, không dùng adapter spike bỏ mất thuộc tính; startup fingerprint cũng phải bỏ Node cho đường Rust. Người dùng đồng ý diagnostic MISSING_GLYPH/.notdef không fallback hệ thống. Tạo nhánh `feat/task11-native-png` giữ nguyên Task09 dirty; cập nhật chốt handoff và giao hai worker độc lập cho text foundation và synchronous layout.
+- Giao worker riêng tạo oracle Chromium theo semantics hiện tại và font bytes xác định; giao worker render crate native thuần. Các lane có ownership riêng, kiểm nặng giới hạn và không dùng dữ liệu thật; mọi kết quả parity/paint chưa được coi đạt trước khi tích hợp/kiểm độc lập.
+- Giao lát startup/config riêng: cờ backend và fingerprint native không gọi Node từ constructor; chưa nối runner Rust trong lát này, không coi cờ cấu hình là bằng chứng render native đã hoạt động.
+- Nhận layout provider đồng bộ giữ chung engine/cache và mã lỗi; worker báo 41 test đạt. Nhận startup/config backend opt-in, fingerprint Rust không probe Node; worker báo 16 test/startup đạt. Root đang kiểm độc lập; chưa có runner native.
+- Nhận oracle Chromium pin với font Noto/Inter/Lato và SF có trak: 3.422 request, 56 trường hợp loại vì glyph/fallback; repeat ổn định. Đây là chuẩn đối chiếu, chưa phải parity text native.
+- Nhận text foundation thuần dùng chung positioned runs, WOFF2/hash và policy glyph đã chốt; worker báo 16 test/lint/fmt/WASM build đạt. Root tự kiểm lại layout 6 và startup/config 16 test đạt, giao worker fresh đối chiếu text native với oracle và chỉ sửa mismatch có chứng cứ.
+- Giao lát nối compute native vào jobs theo provider đã chốt, nạp font từ store và giữ states/diagnostics/readiness. Đây là bước nền Task10; đường PNG còn Chromium cho tới khi render crate bàn giao, không nhận nghiệm thu Task11 sớm.
+- Sau compact, người dùng xác nhận việc hủy worker chỉ để thu gọn context và yêu cầu chạy tiếp. Nối lại đúng ba phiên render crate, parity text và compute jobs từ mã dở; không giao trùng ownership hoặc bỏ thay đổi. Chưa có kết quả nghiệm thu mới, không deploy/push.
+- Nhận F2: compute trong Rust trước khi khởi động worker, giữ scene-ready khi strict PNG lỗi và drain blocking task sau timeout. Worker báo unit2, integration3, Chromium2 và lint/fmt đạt; root đã đọc seam và đang chạy lại đúng nhóm kiểm. PNG/export vẫn tạm dùng Chromium, chờ render crate để giao F3.
+- Root chạy lại F2 unit2/integration3 và Chromium render2 đều đạt (helper test cũ có warning dead_code); chưa có bằng chứng no-Node PNG. Giao worker fresh làm fixture/đối chiếu paint trong spike riêng, không sửa render/text/server đang có chủ sở hữu.
+- Nhận render crate: worker báo unit28/lint/WASM và native↔WASM đạt; root chạy độc lập unit28 đạt. Chromium pixel gate chưa chạy. Giao F3 fresh nối render/export native và giữ default Chromium, readiness, provenance, sizing; cần kiểm riêng scale thập phân vì API render hiện dùng f32.
+- Nhận G2: geometry exact trên corpus chính và probes, 56 exclusions chỉ glyph thiếu; ink còn khác, đặc biệt dấu kết hợp trong Inter trộn Greek/Latin. Root chạy lại comparator trước khi chốt và giao lát fresh sửa itemization/mark attachment có bằng chứng, không nới gate hoặc đổi API text.
+- Root chạy lại hai comparator G2: geometry 3.366/3.366 và 2.160/2.160 khớp tuyệt đối, lỗi/metadata mismatch đều 0; xác nhận ink lớn nhất 3,7978/6,609375 px còn là gap thật. Các số này chưa chứng minh PNG hoặc full-scene bounds.
+- Nhận G3: 88 captures có 47 PASS, 28 FAIL ngoài text và 13 REVIEW_TEXT; ngưỡng/mask không đổi, ICC chưa có fixture. Root xem strip shadow/ảnh/stroke/text, giao fresh worker sửa paint theo bằng chứng; F3 tiếp tục server và chỉ sở hữu API/scale/readiness để tránh đụng module paint.
+- Giao kiểm full-scene layout hai backend trên fixture repo/font upload và viewport responsive trong test riêng; comparator text không thay thế AC bounds mọi node. Test không sửa server/native helper do F3 đang sở hữu.
+- Nhận H1: đã sửa attachment Inter bằng itemization, giữ geometry corpus cũ; stress mới còn 120 lỗi tracking dấu khác script và 11 lỗi tích lũy dòng dài. Root chạy lại stress ở output riêng và giao fresh H2 sửa đúng các nhóm đã phát hiện; không mở rộng ngoại lệ hoặc tiếp tục sinh stress vô hạn.
+- Root xác nhận độc lập H1 stress: 5.089/5.220 eligible exact, 131 mismatch, 72 exclusions glyph thiếu, không lỗi native/metadata. Ink/height lệch lớn do vị trí dấu và wrap vẫn chặn nghiệm thu; H2 đang xử lý đúng nhóm lỗi này.
+- Worker paint chạm usage limit trước bàn giao; người dùng yêu cầu tiếp tục. Root giữ mã dở (có module coverage/gradient/image_sample mới, chưa có báo cáo hay lượt parity mới) và giao fresh worker tiếp quản đúng scope. Kết quả 47/28/13 vẫn là baseline, không coi sửa dở đã đạt.
+- F3 đã dừng sửa và xác nhận giữ nguyên paint work-in-progress. Root đọc native dispatch/export/deadline/provenance, bắt đầu kiểm độc lập native binary/PNG/export/unsupported và default Chromium; chưa ghi pass trước kết quả chạy.
+- Root kiểm F3: 3 native unit, 9 native integration và 6 default Chromium render/export đều đạt. Binary Rust thật với PATH rỗng, workspace không Node/layout-step tạo design, tải PNG và export PNG+SVG thành công; scale/target sizing, readiness và cache bytes đã kiểm. Nhận L1 16 cặp scene/296 node geometry exact, ink còn lệch nhỏ; root chưa chạy lại L1 sau các sửa text đang làm.
+- Cập nhật hướng dẫn opt-in/provenance và gắn rõ trạng thái experimental chưa đạt pixel. Giao reviewer fresh chỉ đọc phần tích hợp server đã ổn định; không review mã paint/text đang sửa như thể đó là bản cuối.
+- Nhận H2 sửa toàn bộ 131 geometry failures trên stress cũ, giữ corpus chính/probes và API dùng chung. Root đang chạy lại bốn comparator, text/captured regressions và full-scene layout. Giao kiểm ICC độc lập bằng fixture tổng hợp có nguồn rõ trong spike riêng để lấp gap chưa được Chromium đối chứng; không sửa painter đang có chủ sở hữu.
+- Root chạy lại H2: 11.166 eligible phép đo exact, 31 text test và 3 captured regression đạt; full-scene layout chạy riêng đạt sau khi lượt ghép trước hết timeout tổng. Probe bổ sung Inter variable weight400/700/900 phát hiện 4/6 lệch do trục weight bị bỏ qua (max width 42,390625 px). Giao fresh worker sửa lựa chọn instance chung đo/vẽ, không coi corpus mặc định400 là đủ static-face/variable coverage.
+- Nhận P2: parity lên 71 PASS/4 FAIL ngoài text/13 REVIEW_TEXT; ảnh và gradient đều đạt trên matrix, source ổn định. Còn 4 ca stroke/clip/shadow 1× vượt ngưỡng, giao fresh P3 khảo sát raster/coverage có giới hạn; không thay fixture, mask hoặc tolerance. Unit/lint/WASM build của P2 chưa thay cho execution parity trên painter mới.
+- Nhận review server R1 có 3 Required: SVG-only bị chặn theo khả năng raster (COLRv1 hợp lệ), PNG có thể publish sau deadline, và provenance PNG thiếu scale. Root đọc bằng chứng và giao fresh S1 sửa + regression; không coi test cũ mong SVG fail là thay đổi AC được duyệt.
+- Nhận I1: 13/14 ICC captures đạt, RGB/gray + alpha max Δ4; CMYK ICC lệch toàn bộ fixture, native khớp reference tự tính còn Chromium khác nên chưa kết luận lỗi phía nào. Giao fresh I2 kiểm tính hợp lệ/PCS và chỉ sửa CMS nếu có căn cứ; profile hỏng vẫn là probe riêng, không tính vào pass.
+
+### Đồng bộ PR #6 với main — 2026-11-04
+
+- Merge `main` (`c2bf260`, hover animation trigger) vào `codex/compose-postgres`. Xung đột ở `capabilities.rs`, `implement-frame.md` và nhật ký: giữ `restrictions.layout` responsive và `restrictions.animations` hover dạng khóa riêng, giữ bullet overflow mới cùng hướng dẫn hover theo `triggerNodeId`, đặt các mục hover của main trước mục nhánh.
+
+- Các mục đã đóng All frames, dựng bản test riêng và progressive cache: [archive](history/2026-11-09-closed-viewer.md).
+
+### Stress All frames 10.000 nodes/page — 2026-11-06
+
+- Người dùng yêu cầu page cao khác nhau, mỗi page10.000nodes. Giao fresh worker tạo stress harness và fixture thật qua API trong data root/server tạm; một project/page để giữ cap20.000/project,9frames/page để giữ cap2.048/frame, thêm probe10.000nodes trong một frame. Không tăng giới hạn hoặc chạm runtime native thật.
+
+### Commit và push viewer All/progressive cache — 2026-11-06
+
+- Người dùng đã tự thử bản viewer riêng và chấp nhận, yêu cầu “ổn áp đấy, push đi”. Cho phép commit/push phần All frames và progressive IndexedDB cache trên `feat/viewer-wasm-scene`; giữ riêng stress harness của phiên khác.
+- Dùng kết quả typecheck/production build đã đạt cùng kiểm trước commit bằng Git; không chạy lại tests/benchmark, deploy hoặc chạm runtime/DB. Chuẩn bị một commit và push thường sau khi đối chiếu nhánh remote; chưa ghi push thành công trước khi xác minh.
+
+### Viewer FE performance — 2026-11-09
+
+- Root giao khảo sát canvas chỉ đọc và audit toàn frontend, sau đó ba worker độc lập: canvas/prepared tree và viewport culling, React/indexed Layers và ranh giới state, HTTP ETag/snapshot lifecycle. Giữ source của phiên stress riêng, không tạo campaign benchmark hoặc triển khai app thật.
+- Nhận cả ba: bỏ index scene mỗi paint, culling bảo thủ, props/commands ổn định và index node dùng chung; revalidation ETag giữ auth/privacy và lifecycle. Các kiểm thuần lần lượt17/17,19/19,10/10 đạt; worker typecheck và root build tổng hợp/diff-check đạt. Source/test được giao tối đa233dòng. [Báo cáo, lệnh kiểm và giới hạn](../VIEWER-FE-PERFORMANCE.md).
+- Chromium launch bị MachPort1100/SIGTRAP, dừng retry; chưa đo FPS/timing hoặc xác nhận pixel parity. Giữ kiến trúc state hiện có sau rà ownership; không ép reducer/store chung.
+- Chỉ đồng bộ generated static assets vào bản test3867, giữ hash cũ, thay index nguyên tử sau cùng; HTTP index/bundle khớp byte. App17418/PG17389 và native23980 giữ thời điểm khởi động, nguồnPG2703 vẫn nghe; không restart/đổi launchd/Funnel, kiểm DB, render job, commit/push. Để app+PG test chạy cho người dùng tự thử.
+- Người dùng yêu cầu “push code đi”, cho phép commit và push thường phần tối ưu FE trên `feat/viewer-wasm-scene`. Dùng kết quả kiểm đã ghi, kiểm phạm vi/whitespace trước commit và đối chiếu remote; giữ riêng stress harness, không đổi runtime/DB hoặc generated assets. Chưa ghi push thành công trước khi xác minh remote.
 
 ### Native runtime và backup PostgreSQL — 2026-11-06
 

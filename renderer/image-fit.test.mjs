@@ -9,7 +9,7 @@ const wide = { width: 200, height: 100 };
 
 test("renderer fit names are the validator's", () => {
   const source = readFileSync(
-    new URL("../crates/storage/src/image_fit.rs", import.meta.url),
+    new URL("../crates/scene-input/src/image_fit.rs", import.meta.url),
     "utf8",
   );
   const list = source.match(/IMAGE_FITS: \[&str; \d+\] = \[([^\]]*)\]/)[1];

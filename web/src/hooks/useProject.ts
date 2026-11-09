@@ -33,7 +33,7 @@ export function useProject() {
   const visibleSelection = selectedIsVisible ? selection : EMPTY_SELECTION;
   const projectId = visibleSelection.projectId;
 
-  const accepted = (next: Snapshot) => {
+  const accepted = useCallback((next: Snapshot) => {
     setNotice((previous) =>
       TRANSIENT.some((prefix) => previous.startsWith(prefix)) ? "" : previous,
     );
@@ -42,13 +42,13 @@ export function useProject() {
       const valid = reconcileSelection(next, previous);
       if (previous.frameId && valid.frameId !== previous.frameId)
         setNotice(
-          "The selected frame was removed. Showing the first available frame.",
+          "The selected frame was removed. Showing all frames on this page.",
         );
       else if (previous.nodeId && valid.nodeId !== previous.nodeId)
         setNotice("The selected layer was removed. Showing its frame.");
       return valid;
     });
-  };
+  }, []);
   const snap = useSnapshot(projectId, reload, accepted);
 
   useEffect(() => {
@@ -127,14 +127,15 @@ export function useProject() {
     },
   });
 
-  const selectScope = (patch: Partial<Selection>) => {
+  const acceptedSnapshot = snap.snapshot;
+  const selectScope = useCallback((patch: Partial<Selection>) => {
     setNotice("");
     setSelection((previous) =>
-      snap.snapshot
-        ? reconcileSelection(snap.snapshot, { ...previous, ...patch })
+      acceptedSnapshot && previous.projectId === acceptedSnapshot.projectId
+        ? reconcileSelection(acceptedSnapshot, { ...previous, ...patch })
         : previous,
     );
-  };
+  }, [acceptedSnapshot]);
   return {
     projects: list.projects,
     loadingProjects: list.loading,

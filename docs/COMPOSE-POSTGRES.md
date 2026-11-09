@@ -7,6 +7,14 @@ project stores authored data and resources in its `postgres-data` named volume.
 The PostgreSQL image matches the Kubernetes digest and the app reuses the local
 `opencanvas:kubernetes-local` image. The default `compose.yaml` serves SQLite.
 
+Both Compose configurations pass `RENDER_BACKEND` into the app container and
+default it to `rust`. Set `RENDER_BACKEND=chromium` in the Compose env file to
+select Chromium instead. The public-viewer overlay preserves this setting.
+After changing it, recreate just the app with
+`compose_pg up -d --no-deps --force-recreate opencanvas`, keeping the same overlay
+arguments when enabled. Native backend limits are documented in
+[SERVER.md](SERVER.md#experimental-native-render-backend).
+
 ## Start and stop
 
 Run from the repository root with Docker Compose on OrbStack. If the app image

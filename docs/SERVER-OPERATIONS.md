@@ -134,7 +134,7 @@ fields under `result`, the earlier nested shape, so existing clients keep workin
 Read `committedRevision` at the top level for the next `expectedRevision`
 (`tests/image_fit.rs`).
 
-Image `fit` has one vocabulary, `IMAGE_FITS` in `crates/storage/src/image_fit.rs`:
+Image `fit` has one vocabulary, `IMAGE_FITS` in `crates/scene-input/src/image_fit.rs`:
 `fit` stretches the image to its bounds (CSS `object-fit: fill`), `contain` (the
 default) shows the whole image inside them, and `cover` fills them and crops.
 Authored props, `resolvedProps` and scene nodes all carry the authored name;

@@ -4,7 +4,7 @@ import {
   type Scene,
   type SceneNode,
 } from "./types";
-import { indexScene, intersect, rectOf, type LogicalRect } from "./scene-tree";
+import { indexScene, intersect, rectOf, type LogicalRect, type SceneTree } from "./scene-tree";
 
 /** Pixels all live opacity layers may hold at once; beyond it a group folds its alpha instead. */
 export const MAX_LAYER_PIXELS = MAX_PIXELS;
@@ -57,10 +57,16 @@ export function paintTree(
   scene: Scene,
   resources: Resources,
   paintNode: PaintNode,
-  options: { maxLayerPixels?: number; paintOver?: PaintNode } = {},
+  options: {
+    maxLayerPixels?: number;
+    paintOver?: PaintNode;
+    /** Prepared for this immutable scene and ready resource set; never shared across retries. */
+    tree?: SceneTree;
+  } = {},
 ): PaintStats {
   const { paintOver } = options;
-  const tree = indexScene(scene, resources);
+  // Callers may retain this index for an immutable scene and ready resource set.
+  const tree = options.tree ?? indexScene(scene, resources);
   const budget = options.maxLayerPixels ?? MAX_LAYER_PIXELS;
   const stats: PaintStats = { opacityLayers: 0, opacityLayerFallbacks: 0 };
   let livePixels = 0;
@@ -71,17 +77,21 @@ export function paintTree(
     node: SceneNode,
     alpha: number,
     clip: LogicalRect,
+    transform: DOMMatrix,
   ) => {
     const a = alpha * node.opacity;
     if (!(a > 0)) return;
+    // Extents include overflow, text ink, strokes and shadows. Never reject a subtree
+    // from its authored box: descendants may paint outside it. Unknown extents stay visible.
+    const extent = tree.extent.get(node.id);
+    if (extent === null) return;
+    const r = extent ? toDevice(extent, transform, clip) : clip;
+    if (!r) return;
     if (a < 1 && (tree.units.get(node.id) ?? 0) >= 2) {
-      const extent = tree.extent.get(node.id);
-      const r = extent && toDevice(extent, ctx.getTransform(), clip);
-      if (!r) return;
       const w = r.x1 - r.x0,
         h = r.y1 - r.y0;
       if (livePixels + w * h <= budget) {
-        composite(ctx, node, a, r, w, h);
+        composite(ctx, node, a, r, w, h, transform);
         return;
       }
       stats.opacityLayerFallbacks++;
@@ -96,13 +106,13 @@ export function paintTree(
     r: LogicalRect,
     w: number,
     h: number,
+    m: DOMMatrix,
   ) => {
     const layer = document.createElement("canvas");
     layer.width = w;
     layer.height = h;
     const lctx = layer.getContext("2d");
     if (!lctx) return contents(ctx, node, alpha, r);
-    const m = ctx.getTransform();
     // Whole-pixel offset only, so antialiasing lands on the same grid as direct painting.
     lctx.setTransform(m.a, m.b, m.c, m.d, m.e - r.x0, m.f - r.y0);
     lctx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
@@ -133,15 +143,18 @@ export function paintTree(
     const children = tree.children.get(node.id);
     if (children) {
       ctx.save();
+      // Siblings restore this transform. Read after paintNode, since custom painters
+      // may change it for descendants; avoid a host getTransform call per leaf.
+      const transform = ctx.getTransform();
       let inner: LogicalRect | null = clip;
       if (node.clip) {
         const b = node.bounds;
-        inner = toDevice(rectOf(b), ctx.getTransform(), clip);
+        inner = toDevice(rectOf(b), transform, clip);
         ctx.beginPath();
         ctx.roundRect(b.x, b.y, b.width, b.height, node.radius ?? 0);
         ctx.clip();
       }
-      if (inner) for (const child of children) draw(ctx, child, alpha, inner);
+      if (inner) for (const child of children) draw(ctx, child, alpha, inner, transform);
       ctx.restore();
     }
     paintOver?.(ctx, node, resources);
@@ -154,6 +167,7 @@ export function paintTree(
     x1: context.canvas.width,
     y1: context.canvas.height,
   };
-  for (const root of tree.roots) draw(context, root, 1, canvas);
+  const transform = context.getTransform();
+  for (const root of tree.roots) draw(context, root, 1, canvas, transform);
   return stats;
 }

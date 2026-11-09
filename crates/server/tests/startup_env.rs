@@ -10,6 +10,7 @@ fn server() -> Command {
         "PORT",
         "OPENCANVAS_DATA_ROOT",
         "HOME",
+        "RENDER_BACKEND",
     ] {
         command.env_remove(variable);
     }

@@ -7,6 +7,7 @@ node_modules
 artifacts
 renderer/dist
 web/dist
+web/public/scene-wasm
 .impeccable
 spikes/pipeline/output
 **/.DS_Store

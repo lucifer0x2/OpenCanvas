@@ -1,3 +1,4 @@
+mod backend;
 mod cache_hints;
 mod domain;
 mod error;
@@ -18,6 +19,7 @@ mod public_viewer;
 mod reads;
 mod render_response;
 mod resources;
+mod scenes;
 mod schemas;
 mod snapshot_http;
 mod state;
@@ -30,6 +32,7 @@ mod viewer_static;
 mod worker;
 mod workspace_events;
 
+pub use backend::RenderBackend;
 pub use error::ApiError;
 pub use http::router;
 pub use public_viewer::PublicViewer;

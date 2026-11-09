@@ -25,7 +25,9 @@ pub fn to_paint(s: &LayoutScene) -> Scene {
         })
         .collect();
     let v = &s.provenance.viewport;
-    Scene { provenance: Provenance { viewport: Viewport { width: v.width, height: v.height } }, nodes }
+    // The layout API uses f64 viewports; this prototype's painter (like its bounds) uses f32.
+    // Narrow only at this adapter, not in the production layout contract.
+    Scene { provenance: Provenance { viewport: Viewport { width: v.width as f32, height: v.height as f32 } }, nodes }
 }
 
 /// `[[id, x, y, width, height, [[text, x, y, width], ...]], ...]`, the fields the gate compares.

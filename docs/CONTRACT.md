@@ -60,7 +60,11 @@ RenderJob: `{ jobId, status: "pending"|"ready"|"failed", projectId, revision, fr
 ExportJob (same routes and job table): `{ jobId, kind: "export", nodeId, status, projectId, revision, frameId (the root frame), sceneKey, provenance?, readiness?, files?: [{ url, fileName, format, mimeType, scale, width, height, bytes }], error? }`; never `scene` or `imageUrl`. A failed export (for example `EMPTY_BOUNDS`, `PIXEL_BUDGET`, `EXPORT_SCALE_RANGE`) has `status: "failed"`. Details: `docs/SERVER.md`, "Exporting node images".
 
 `sceneKey` equals `scene.provenance.sourceSceneKey`. Successful PNG metadata also
-includes MIME, dimensions, scale and actual Node/Chromium versions. Cache keys
+includes MIME, dimensions, scale and runtime identity. Default Chromium jobs keep
+their actual `browserVersion`/`runtimeVersion`. Opt-in native jobs instead carry
+`engine: "native"`, `engineVersion: "opencanvas-render-0.1.0/tiny-skia-0.12.0"`
+and `runtimeVersion: "rust-native"`, with no invented `browserVersion`.
+Native and Chromium pipeline fingerprints/cache identities are separate. Cache keys
 bind immutable input, revision, concrete design theme/state, scale and a startup
 pipeline/runtime fingerprint. Restart after replacing runtime or pipeline files.
 Failed jobs remain inspectable by ID; a new enqueue can retry the same request.

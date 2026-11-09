@@ -1,8 +1,9 @@
+import { memo } from "react";
 import type { Scene } from "../../../renderer/types";
 import { nodeName } from "../state";
 import type { DesignNode } from "../types";
 import { Icon, type IconName } from "./Icon";
-import { useNodeActions } from "./NodeActionsProvider";
+import { useNodeActions, useNodeActionBusy } from "./NodeActionsProvider";
 
 function Property({ name, value }: { name: string; value: unknown }) {
   const display =
@@ -15,7 +16,7 @@ function Property({ name, value }: { name: string; value: unknown }) {
   );
 }
 
-export function Inspector({
+export const Inspector = memo(function Inspector({
   node,
   scene,
 }: {
@@ -24,6 +25,7 @@ export function Inspector({
 }) {
   const computed = scene?.nodes.find((entry) => entry.id === node?.id);
   const actions = useNodeActions();
+  const busy = useNodeActionBusy();
   return (
     <aside className="inspector" aria-label="Read-only inspector">
       <div className="section-heading">
@@ -44,13 +46,13 @@ export function Inspector({
             <div className="node-actions" aria-label="Element actions">
               <button onClick={() => actions.copy()}>Copy link</button>
               <button
-                disabled={actions.busy || node.kind === "page"}
+                disabled={busy || node.kind === "page"}
                 onClick={() => actions.image("png")}
               >
                 Export PNG
               </button>
               <button
-                disabled={actions.busy || node.kind === "page"}
+                disabled={busy || node.kind === "page"}
                 onClick={() => actions.image("svg")}
               >
                 Export SVG
@@ -116,4 +118,4 @@ export function Inspector({
       )}
     </aside>
   );
-}
+});

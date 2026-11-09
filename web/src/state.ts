@@ -9,21 +9,28 @@ import type {
   Snapshot,
 } from "./types.ts";
 import { readNodeLink, selectionNode } from "./deepLink.ts";
+import { ALL_FRAMES, frameForNode } from "./frameScope.ts";
+import { nodeIndex } from "./nodeIndex.ts";
 
 export const EMPTY_SELECTION: Selection = {
   projectId: "",
   pageId: "",
-  frameId: "",
+  frameId: ALL_FRAMES,
   nodeId: "",
 };
 
 export function children(nodes: DesignNode[], parentId: string | null) {
-  return nodes
-    .filter((node) => node.parentId === parentId)
-    .sort(
-      (a, b) =>
-        Number(a.sortKey) - Number(b.sortKey) || a.id.localeCompare(b.id),
-    );
+  // Keep the public helper's independently mutable result.
+  return [...(nodeIndex(nodes).childrenByParent.get(parentId) ?? [])];
+}
+
+function retainSelection(previous: Selection, next: Selection): Selection {
+  return previous.projectId === next.projectId &&
+    previous.pageId === next.pageId &&
+    previous.frameId === next.frameId &&
+    previous.nodeId === next.nodeId
+    ? previous
+    : next;
 }
 
 export function nodeName(node?: DesignNode) {
@@ -43,9 +50,20 @@ export function reconcileSelection(
   const frames = children(snapshot.nodes, page?.id ?? "").filter(
     (node) => node.kind === "frame",
   );
-  const frame =
-    frames.find((node) => node.id === previous.frameId) ?? frames[0];
-  const byId = new Map(snapshot.nodes.map((node) => [node.id, node]));
+  const frame = frames.find((node) => node.id === previous.frameId);
+  if (!frame || previous.projectId !== snapshot.projectId) {
+    return retainSelection(previous, {
+      projectId: snapshot.projectId,
+      pageId: page?.id ?? "",
+      frameId: ALL_FRAMES,
+      nodeId:
+        previous.projectId === snapshot.projectId &&
+        frameForNode(snapshot.nodes, previous.nodeId, page?.id ?? "")
+          ? previous.nodeId
+          : "",
+    });
+  }
+  const { byId } = nodeIndex(snapshot.nodes);
   let candidate = selectionNode(snapshot.nodes, previous.nodeId);
   const seen = new Set<string>();
   while (candidate && candidate.id !== frame?.id && !seen.has(candidate.id)) {
@@ -60,12 +78,12 @@ export function reconcileSelection(
       : candidate?.id === frame?.id
         ? previous.nodeId
         : (frame?.id ?? page?.id ?? "");
-  return {
+  return retainSelection(previous, {
     projectId: snapshot.projectId,
     pageId: page?.id ?? "",
     frameId: frame?.id ?? "",
     nodeId,
-  };
+  });
 }
 
 export function commitAction(

@@ -1,6 +1,6 @@
 # Read-only browser viewer
 
-The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage only the editor shell, local pan/zoom, and selection overlays. The browser never computes layout or wraps text; a Konva `Shape` paints the scene with the shared `paintScene` and the resources from `loadResources`, using precomputed text lines. A blue outline highlights selection without resize handles.
+The viewer lives in `web/` and imports the shared Canvas2D renderer from `renderer/`. React and Konva manage the editor shell, local pan/zoom, and selection overlays. By default, WASM computes default-state frame scenes and text lines with the shared Rust core in a browser Worker, using accepted snapshots and exact font bytes; failures fall back to the server. Use `?scene=server` to select server computation explicitly. See [build instructions, measurements and limits](VIEWER-WASM-SCENE.md). Both paths use the existing `paintScene` and `loadResources`; WASM does not paint. A blue outline highlights selection without resize handles.
 
 ## Run
 
@@ -99,7 +99,36 @@ folds its alpha like before and counts in `opacityLayerFallbacks` of `drawScene`
 
 ## Consistency
 
-Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to a valid frame when a target disappears. A visible message explains removed frame/layer fallbacks.
+### All frames on a page
+
+**All** is the default for initial, invalid, project and page selections. A valid saved
+single-frame selection or element deep link remains respected. All shows every root
+frame of the page on a shared pan/zoom canvas and persists across reload and SSE. Packing uses actual frame
+dimensions, pane aspect, centered rows and label clearance. Labels stay 12 CSS pixels
+at Fit and normal zoom, with ellipsis bounded to the displayed frame width. At extreme
+zoom-out, collision-prone labels hide; names remain in Layers. Zoom/pan never repack;
+resize adapts the arrangement while preserving the camera.
+
+The whole board appears immediately with static skeleton slots. WASM computes one
+frame at a time, yields for paint/input between frames and pauses new admissions while
+the tab is hidden. Each frame replaces its skeleton as soon as its own resources are
+ready; accessible `x/y` progress stays compact and the camera/geometry stays stable.
+Production builds share a bounded IndexedDB scene cache between All and single-frame
+views, always after an accepted authoritative snapshot and only at the exact revision.
+See [cache identity, bounds and verification](VIEWER-PROGRESSIVE-CACHE.md).
+The board shares loaded manifests and retains vectors rather than N full-resolution canvases.
+Server mode and fallback admit batches of four, waiting for confirmed terminal jobs
+before advancing; unknown timeout/transport errors stop admission and expose Retry.
+Failed frames retain labeled slots, and fallback retains completed browser frames.
+Selection, actions, links and inspector stay frame-local; healthy current frames remain
+inspectable during progressive loading and partial failure. Board revision changes replace
+older scenes with current skeletons; they never expose old geometry as current.
+
+See [ALL-FRAMES-REPORT.md](ALL-FRAMES-REPORT.md) for checks and the macOS Chromium
+launch limitation. Unit regressions run in `npm --prefix web test`; the isolated
+browser fixture is `npm --prefix web run test:all-frames`.
+
+Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed frame/layer fallbacks.
 
 The first snapshot request and the event stream start in the same effect pass; every stream open refetches the snapshot, so a commit between the two is never lost. The stream cursor is based on the last accepted HTTP snapshot. Duplicates and foreign project commits are ignored; a commit, gap, reset, or reconnect refetches the authoritative snapshot. Reconnect uses bounded exponential backoff with jitter. Concurrent refreshes coalesce without losing a subsequent refresh. HTTP snapshots never move revision backwards.
 

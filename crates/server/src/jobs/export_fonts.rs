@@ -10,9 +10,8 @@ mod tests;
 
 pub async fn embed(source: &AssetSource, scene: &Value) -> Result<(Value, String)> {
     let mut scene = scene.clone();
-    let (store, project_id) = (source.store.clone(), source.project_id.clone());
-    tokio::task::spawn_blocking(move || {
-        let project = store.open_project(&project_id)?;
+    let source = source.clone();
+    source.clone().blocking(move || {
         let wanted: Vec<String> = scene["nodes"].as_array().into_iter().flatten()
             .filter(|n| n["kind"] == "text")
             .map(|n| n["fontId"].as_str().unwrap_or_default().to_owned()).collect();
@@ -26,7 +25,7 @@ pub async fn embed(source: &AssetSource, scene: &Value) -> Result<(Value, String
         }
         for manifest in fonts.iter_mut().filter(|f| wanted.iter().any(|id| f["id"] == *id)) {
             let id = manifest["id"].as_str().unwrap_or_default();
-            let (font, mime, bytes) = project.read_font(id)?;
+            let (font, mime, bytes) = source.read_font(id)?;
             let hash = font.content_hash.as_deref().unwrap_or_default();
             if manifest["hash"] != hash || manifest["weight"] != font.weight || manifest["style"] != font.style {
                 return Err(ApiError::new("RESOURCE_NOT_READY", "Font changed since scene computation"));
@@ -40,5 +39,5 @@ pub async fn embed(source: &AssetSource, scene: &Value) -> Result<(Value, String
             }
         }
         Ok((scene, css))
-    }).await.map_err(|_| ApiError::new("INTERNAL_ERROR", "Font storage task failed"))?
+    }).await
 }

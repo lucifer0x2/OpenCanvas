@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CanvasView } from "./components/CanvasView";
-import { CustomSelect } from "./components/CustomSelect";
 import { FollowToggle } from "./components/FollowToggle";
-import { Icon } from "./components/Icon";
+import { PRESETS, ScopeControls } from "./components/ScopeControls";
 import { Inspector } from "./components/Inspector";
 import { Layers } from "./components/Layers";
 import { Topbar } from "./components/Topbar";
@@ -10,16 +9,13 @@ import { NodeActionsProvider } from "./components/NodeActionsProvider";
 import { selectionNode } from "./deepLink";
 import { useProject } from "./hooks/useProject";
 import { useScene } from "./hooks/useScene";
-import { children, nodeName } from "./state";
+import { usePageScenes } from "./hooks/usePageScenes";
+import { ALL_FRAMES, frameDimensions, frameForNode } from "./frameScope";
+import { nodeName } from "./state";
+import { EMPTY_NODES, nodeIndex } from "./nodeIndex";
 import type { SceneRequest } from "./types";
 import useLocalStorage from "./hooks/ultility/useLocalStorage";
-
-const PRESETS = [
-  { key: "frame", name: "Frame size", width: 0, height: 0 },
-  { key: "desktop", name: "Desktop", width: 1440, height: 900 },
-  { key: "tablet", name: "Tablet", width: 768, height: 1024 },
-  { key: "mobile", name: "Mobile", width: 390, height: 844 },
-];
+import { WASM_FALLBACK } from "./scene/service";
 
 export function App() {
   const project = useProject();
@@ -28,33 +24,77 @@ export function App() {
   const [rightOpen, setRightOpen] = useState(() => window.innerWidth >= 1000);
   const [preset, setPreset] = useState("frame");
   const [retryKey, setRetryKey] = useState(0);
-  const nodes = snapshot?.nodes ?? [];
-  const pages = children(nodes, null).filter((node) => node.kind === "page");
-  const [isShowNoticeBar, setShowNoticeBar] = useLocalStorage("is_show_notice_bar", false);
-  
-  const frames = children(nodes, selection.pageId).filter(
-    (node) => node.kind === "frame",
+  const nodes = snapshot?.nodes ?? EMPTY_NODES;
+  const index = nodeIndex(nodes);
+  const pages = useMemo(
+    () => (index.childrenByParent.get(null) ?? EMPTY_NODES)
+      .filter((node) => node.kind === "page"),
+    [index],
   );
-  const frame = nodes.find((node) => node.id === selection.frameId);
-  const selectedNode = selectionNode(nodes, selection.nodeId);
+  const [isShowNoticeBar, setShowNoticeBar] = useLocalStorage(
+    "is_show_notice_bar",
+    false,
+  );
+
+  const frames = useMemo(
+    () => (index.childrenByParent.get(selection.pageId) ?? EMPTY_NODES)
+      .filter((node) => node.kind === "frame"),
+    [index, selection.pageId],
+  );
+  const frameIds = useMemo(() => frames.map((frame) => frame.id), [frames]);
+  const frame = index.byId.get(selection.frameId);
+  const all = selection.frameId === ALL_FRAMES;
+  const selectedFrame = useMemo(
+    () => frameForNode(nodes, selection.nodeId, selection.pageId),
+    [nodes, selection.nodeId, selection.pageId],
+  );
+  const selectedNode = useMemo(
+    () => selectionNode(nodes, selection.nodeId),
+    [nodes, selection.nodeId],
+  );
   const viewport = PRESETS.find((entry) => entry.key === preset)!;
-  const dimension = (value: unknown, fallback: number) =>
-    typeof value === "number" && value > 0 ? value : fallback;
   const request: SceneRequest | null =
     snapshot && frame
       ? {
           projectId: snapshot.projectId,
           revision: snapshot.revision,
           frameId: frame.id,
-          width: viewport.width || dimension(frame.props.width, 800),
-          height: viewport.height || dimension(frame.props.height, 600),
+          width: viewport.width || frameDimensions(frame).width,
+          height: viewport.height || frameDimensions(frame).height,
         }
       : null;
-  const view = useScene(request, retryKey, preset);
-  const selectNode = (nodeId: string) => project.selectScope({ nodeId });
+  const singleView = useScene(request, retryKey, preset, snapshot);
+  const pageView = usePageScenes(
+    all ? snapshot : null,
+    selection.pageId,
+    frames,
+    preset,
+    viewport,
+    retryKey,
+  );
+  const view = all ? pageView : singleView;
+  const inspectorScene = all
+    ? view.frames?.find((entry) => entry.id === selectedFrame?.id)?.scene
+    : view.scene;
+  const fallbackNotice = view.diagnostics.find((message) =>
+    message.startsWith(WASM_FALLBACK),
+  );
+  const { selectScope } = project;
+  const selectNode = useCallback(
+    (nodeId: string) => selectScope({ nodeId }), [selectScope],
+  );
+  const resolveSelection = useCallback(
+    (id: string) => ({
+      ...selection,
+      nodeId: id,
+      frameId: frameForNode(nodes, id, selection.pageId)?.id ?? selection.frameId,
+    }), [nodes, selection],
+  );
   const sceneStatus =
     view.status === "pending"
-      ? "Scene pending"
+      ? view.progress
+        ? `${view.progress.ready}/${view.progress.total} frames ready`
+        : "Scene pending"
       : view.status === "failed"
         ? "Render failed"
         : view.status === "ready"
@@ -66,6 +106,7 @@ export function App() {
       selection={selection}
       revision={snapshot?.revision}
       select={selectNode}
+      resolveSelection={resolveSelection}
     >
       <div
         className={`app-shell ${leftOpen ? "left-open" : ""} ${rightOpen ? "right-open" : ""}`}
@@ -83,7 +124,7 @@ export function App() {
               : undefined
           }
           refresh={project.retry}
-          frameId={frame?.id ?? ""}
+          frameId={frame?.id ?? selectedFrame?.id ?? ""}
           leftOpen={leftOpen}
           rightOpen={rightOpen}
           toggleLeft={() => setLeftOpen(!leftOpen)}
@@ -91,73 +132,21 @@ export function App() {
           isShowNoticeBar={isShowNoticeBar}
           setShowNoticeBar={setShowNoticeBar}
         />
-        <div className="viewbar">
-          <div className="scope-controls">
-            <label>
-              <span>Page</span>
-              <CustomSelect
-                label="Page"
-                disabled={!pages.length}
-                value={selection.pageId}
-                placeholder="No pages"
-                options={pages.map((page) => ({
-                  value: page.id,
-                  label: nodeName(page),
-                }))}
-                onChange={(pageId) =>
-                  project.selectScope({
-                    pageId,
-                    frameId: "",
-                    nodeId: "",
-                  })
-                }
-              />
-            </label>
-            <span className="scope-slash">/</span>
-            <label>
-              <span>Frame</span>
-              <CustomSelect
-                label="Frame"
-                disabled={!frames.length}
-                value={selection.frameId}
-                placeholder="No frames"
-                options={frames.map((entry) => ({
-                  value: entry.id,
-                  label: nodeName(entry),
-                }))}
-                onChange={(frameId) =>
-                  project.selectScope({
-                    frameId,
-                    nodeId: frameId,
-                  })
-                }
-              />
-            </label>
-          </div>
-          <label className="viewport-picker">
-            <Icon name="frame" />
-            <span className="sr-only">Viewport</span>
-            <CustomSelect
-              label="Viewport"
-              value={preset}
-              disabled={!frame}
-              onChange={setPreset}
-              options={PRESETS.map((entry) => ({
-                value: entry.key,
-                label: entry.name,
-                description: entry.width
-                  ? `${entry.width} × ${entry.height}`
-                  : undefined,
-              }))}
-            />
-          </label>
-        </div>
+        <ScopeControls
+          pages={pages}
+          frames={frames}
+          selection={selection}
+          select={project.selectScope}
+          preset={preset}
+          setPreset={setPreset}
+        />
         <div className="workspace">
           {leftOpen && (
             <aside className="left-panel">
               <Layers
                 nodes={nodes}
                 frameId={selection.frameId}
+                frameIds={all ? frameIds : undefined}
                 selectedId={selection.nodeId}
                 select={selectNode}
               />
@@ -168,25 +157,38 @@ export function App() {
             selectedId={selection.nodeId}
             select={selectNode}
             retry={() => setRetryKey((key) => key + 1)}
-            frameName={frame ? nodeName(frame) : ""}
+            frameName={
+              all
+                ? `All frames · ${frames.length}`
+                : frame
+                  ? nodeName(frame)
+                  : ""
+            }
           />
           {rightOpen && (
             <Inspector
               node={selectedNode}
-              scene={view.status === "ready" ? view.scene : undefined}
+              scene={
+                inspectorScene?.provenance.projectId === snapshot?.projectId &&
+                inspectorScene?.provenance.revision === snapshot?.revision
+                  ? inspectorScene
+                  : undefined
+              }
             />
           )}
         </div>
         {(project.error ||
           project.notice ||
           view.missing.length > 0 ||
-          view.diagnostics.length > 0) && isShowNoticeBar ?  (
+          view.diagnostics.length > 0) &&
+        (isShowNoticeBar || fallbackNotice) ? (
           <div
             className={`notice-bar ${project.error || view.missing.length ? "warning" : ""}`}
             role="status"
           >
             <span>
               {project.error ||
+                fallbackNotice ||
                 view.missing.join(" · ") ||
                 view.diagnostics.join(" · ") ||
                 project.notice}

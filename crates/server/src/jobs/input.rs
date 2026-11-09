@@ -2,58 +2,37 @@ use crate::{
     error::{ApiError, Result},
     jobs::SceneRequest,
 };
-use opencanvas_storage::{resolved_expanded_nodes, Node, NodeKind, Snapshot};
-use serde_json::{json, Value};
-use std::collections::HashSet;
+use opencanvas_scene_input::{check_viewport, SceneOptions};
+use opencanvas_storage::Snapshot;
+use serde_json::Value;
 
 pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Result<Value> {
-    let all = resolved_expanded_nodes(snapshot, &request.theme)?;
-    if !all
-        .iter()
-        .any(|n| n.id == request.frame_id && n.kind == NodeKind::Frame)
-    {
-        return Err(ApiError::invalid("frameId must identify a frame"));
+    let options = SceneOptions {
+        frame_id: request.frame_id.clone(),
+        width: request.width,
+        height: request.height,
+        theme: request.theme.clone(),
+        state: request.state.clone(),
+    };
+    let mut input =
+        opencanvas_scene_input::make_input_with_scale(snapshot, &options, request.scale)?;
+    for font in input["fonts"].as_array_mut().unwrap() {
+        font["url"] = format!(
+            "{base}/api/v1/projects/{}/fonts/{}/download",
+            snapshot.project_id,
+            font["id"].as_str().unwrap()
+        )
+        .into();
     }
-    let mut nodes = Vec::new();
-    collect(&all, &request.frame_id, &mut nodes);
-    // A frame scene is a standalone subtree; its authored page is outside this input.
-    nodes[0].parent_id = None;
-    if nodes.len() > 2048 {
-        return Err(ApiError::invalid("Frame exceeds 2048 render nodes"));
+    for asset in input["assets"].as_array_mut().unwrap() {
+        asset["url"] = format!(
+            "{base}/api/v1/projects/{}/assets/{}",
+            snapshot.project_id,
+            asset["id"].as_str().unwrap()
+        )
+        .into();
     }
-    let fonts_used: HashSet<_> = nodes
-        .iter()
-        .filter(|n| n.kind == NodeKind::Text)
-        .map(|n| n.props["fontId"].as_str().unwrap_or("font_bundled"))
-        .collect();
-    let assets_used: HashSet<_> = nodes
-        .iter()
-        .filter_map(|n| n.props["assetId"].as_str())
-        .collect();
-    let fonts:Vec<_> = snapshot.fonts.iter().filter(|f| fonts_used.contains(f.id.as_str())).map(|f| {
-        let url = format!("{base}/api/v1/projects/{}/fonts/{}/download",snapshot.project_id,f.id);
-        json!({"id":f.id,"family":f.family,"hash":f.content_hash,"url":url,"weight":f.weight,"style":f.style})
-    }).collect();
-    let assets:Vec<_> = snapshot.assets.iter().filter(|a| assets_used.contains(a.id.as_str())).map(|a|
-        json!({"id":a.id,"hash":a.content_hash,"url":format!("{base}/api/v1/projects/{}/assets/{}",snapshot.project_id,a.id),"mediaType":a.media_type})).collect();
-    Ok(
-        json!({"schemaVersion":1,"projectId":snapshot.project_id,"revision":snapshot.revision,
-        "frameId":request.frame_id,"viewport":{"width":request.width,"height":request.height},
-        "theme":request.theme,"state":request.state,"nodes":nodes,"fonts":fonts,"assets":assets}),
-    )
-}
-fn collect(all: &[Node], id: &str, out: &mut Vec<Node>) {
-    if let Some(node) = all.iter().find(|n| n.id == id) {
-        out.push(node.clone());
-        let mut children: Vec<_> = all
-            .iter()
-            .filter(|n| n.parent_id.as_deref() == Some(id))
-            .collect();
-        children.sort_by_key(|n| n.sort_key);
-        for child in children {
-            collect(all, &child.id, out);
-        }
-    }
+    Ok(input)
 }
 /// Rejects a request outside the render budget or the supported interaction state.
 pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> {
@@ -63,21 +42,7 @@ pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> 
             "Requested authored revision is unavailable",
         ));
     }
-    if !request.width.is_finite()
-        || !request.height.is_finite()
-        || request.width <= 0.0
-        || request.height <= 0.0
-        || request.width > 100000.0
-        || request.height > 100000.0
-        || !request.scale.is_finite()
-        || request.scale <= 0.0
-        || request.scale > 4.0
-        || request.width * request.height * request.scale * request.scale > 16_000_000.0
-    {
-        return Err(ApiError::invalid(
-            "Viewport or scale exceeds the render budget",
-        ));
-    }
+    check_viewport(request.width, request.height, request.scale)?;
     if !matches!(
         request.state.as_str(),
         "default" | "hover" | "pressed" | "focus" | "disabled"
@@ -86,3 +51,7 @@ pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> 
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "input_tests.rs"]
+mod tests;
