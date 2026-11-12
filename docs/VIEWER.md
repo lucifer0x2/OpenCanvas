@@ -51,10 +51,17 @@ editable content and selected page text is preserved. Clicking empty canvas clea
 selection and input focus; a pan or right-click does not deselect. Empty selection
 survives snapshot reconciliation and live SSE refreshes.
 
-Links contain stable project/page/frame/node IDs (`/?project=…&page=…&frame=…&node=…`),
-including percent-encoded virtual instance child IDs. Opening one in a fresh tab
-overrides stored selection, restores scope and highlights the element at the latest
-revision. It encodes no viewport/cache/revision. The MCP connection instructions and
+Navigation lives in the search query: `project`, `page` and `frame` identify the
+scope; `node` is optional. A three-key address opens the scope without highlighting
+an element. Four-key links also highlight the addressed node, including
+percent-encoded virtual instance child IDs. `frame=%3Aall%3A` means All frames.
+The URL is the selection authority on load, reload and Back/Forward; legacy
+`opencanvas.selection` storage is no longer read or written. Missing/invalid IDs
+are normalized against the authoritative list/snapshot and display fallback notices.
+Explicit choices push history; automatic defaults and revision cleanup replace
+the current entry. Address-bar changes preserve other query parameters and hash.
+Copy link keeps its canonical `/?project=…&page=…&frame=…[&node=…]` contract,
+excluding transient viewport/cache/revision parameters. The MCP connection instructions and
 `skill://opencanvas/implement-frame.md` teach AI clients to confirm the exact node ID
 with `find_nodes`, then read its `get_design_context`; deleted/moved IDs must be
 reported rather than guessed. A stale browser address displays a fallback notice.
@@ -135,7 +142,7 @@ See [ALL-FRAMES-REPORT.md](ALL-FRAMES-REPORT.md) for checks and the macOS Chromi
 launch limitation. Unit regressions run in `npm --prefix web test`; the isolated
 browser fixture is `npm --prefix web run test:all-frames`.
 
-Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed frame/layer fallbacks.
+Selection persists in the URL query. Reload validates the project, page, frame, and optional node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed page/frame/layer fallbacks.
 
 The first snapshot request and event stream start together. SWR owns project-list and
 snapshot server state inside the authorized viewer lifetime. Snapshot request keys include
@@ -186,7 +193,7 @@ stream is closed before its backoff timer opens a replacement.
   context, and the choice persists in local storage (`opencanvas.followAgent`) when available.
 
 Code: App explicitly composes `useProjectList` (SWR list and revision hints),
-`useProject` (persisted selection/fallback notices only), `useSnapshot` (SWR snapshot), and
+`useProject` (URL-derived selection/fallback notices only), `useSnapshot` (SWR snapshot), and
 `useProjectLive` (single-stream handlers, follow/activity). `useProjectStream` owns connection
 lifetime/backoff; `useFollowAgent` owns the follow preference. Pure reducers
 `mergeProjects`, `bumpRevision`, `markActivity`, `clearActivity`, `pickProject` and
@@ -198,6 +205,13 @@ trees. Revisiting an evicted project reads it again. Small request/pointer/epoch
 remain until that project is evicted or the authorized route unmounts. Locking/unmounting
 discards the whole provider and aborts its pending snapshot reads; another authorization
 lifetime cannot reuse its payloads or validators.
+
+`useNavigationUrl` observes history through `useSyncExternalStore`; selection is
+never copied into a React reducer or localStorage. Pure selection transitions are
+applied to the address, with obsolete-address checks before automatic writes.
+Follow hints for unlisted projects wait for authoritative membership and cancel
+when the user navigates, disables follow, retries, disconnects or unmounts.
+See `docs/URL-NAVIGATION.md` for verification and the navigation contract.
 
 ## Verification — 2026-10-28
 

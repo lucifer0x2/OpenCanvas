@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearActivity,
   commitAction,
@@ -21,6 +21,13 @@ export function useProjectLive(
   const [reload, setReload] = useState(0);
   const [activity, setActivity] = useState<string[]>([]);
   const [follow, setFollow] = useFollowAgent();
+  const followGeneration = useRef(0);
+  useEffect(
+    () => () => {
+      followGeneration.current++;
+    },
+    [follow, projectId, reload],
+  );
   const selectProject = useCallback(
     (id: string) => {
       setActivity((marked) => clearActivity(marked, id));
@@ -28,10 +35,34 @@ export function useProjectLive(
     },
     [navigation.selectProject],
   );
-  const hinted = (id: string, name: string, created: boolean) => {
+  const hinted = (
+    id: string,
+    name: string,
+    created: boolean,
+    membership?: ReturnType<typeof list.refetch>,
+  ) => {
     if (followTarget(follow, id, projectId)) {
-      selectProject(id);
-      if (projectId) navigation.setNotice(`Following the agent to ${name}.`);
+      const navigate = () => {
+        selectProject(id);
+        if (projectId) navigation.setNotice(`Following the agent to ${name}.`);
+      };
+      if (list.projects.some((project) => project.projectId === id)) navigate();
+      else {
+        const generation = ++followGeneration.current;
+        const href = window.location.href;
+        void (membership ?? list.refetch()).then((projects) => {
+          if (
+            generation !== followGeneration.current ||
+            window.location.href !== href
+          )
+            return;
+          if (projects?.some((project) => project.projectId === id)) navigate();
+          else
+            navigation.setNotice(
+              "The linked or selected project is unavailable. Keeping the current project.",
+            );
+        });
+      }
     } else if (id !== projectId) {
       if (!created)
         setActivity((marked) => markActivity(marked, id, projectId));
@@ -67,10 +98,13 @@ export function useProjectLive(
       list.refetch();
       void snapshot.refresh(true);
     },
-    onReconnect: list.refetch,
+    onReconnect: () => {
+      followGeneration.current++;
+      void list.refetch();
+    },
     onCreated: (project) => {
-      list.refetch();
-      hinted(project.projectId, project.name, true);
+      const membership = list.refetch();
+      hinted(project.projectId, project.name, true, membership);
     },
     onActivity: (event) => {
       list.bump(event);
@@ -83,6 +117,7 @@ export function useProjectLive(
     },
   });
   const retry = useCallback(() => {
+    followGeneration.current++;
     list.refetch();
     void snapshot.refresh();
     setReload((value) => value + 1);

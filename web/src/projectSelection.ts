@@ -39,9 +39,15 @@ export function projectSelection(
     case "accepted": {
       if (selection.projectId !== action.snapshot.projectId) return state;
       const valid = reconcileSelection(action.snapshot, selection);
-      if (notice.startsWith("Catching up") || notice.startsWith("Refreshing after"))
+      if (
+        notice.startsWith("Catching up") ||
+        notice.startsWith("Refreshing after")
+      )
         notice = "";
-      if (selection.frameId && valid.frameId !== selection.frameId)
+      if (selection.pageId && valid.pageId !== selection.pageId)
+        notice =
+          "The selected page was removed. Showing the first available page.";
+      else if (selection.frameId && valid.frameId !== selection.frameId)
         notice =
           "The selected frame was removed. Showing all frames on this page.";
       else if (selection.nodeId && valid.nodeId !== selection.nodeId)
@@ -58,7 +64,8 @@ export function projectSelection(
         });
       break;
   }
-  const sameSelection = selection === state.selection ||
+  const sameSelection =
+    selection === state.selection ||
     (Object.keys(EMPTY_SELECTION) as (keyof Selection)[]).every(
       (key) => selection[key] === state.selection[key],
     );

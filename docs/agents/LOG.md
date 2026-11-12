@@ -273,3 +273,16 @@ Các mục đã đóng Task19/Task20 và vận hành 2026-11-03: [archive](histo
 ### Commit tối ưu React/SWR và URL navigation — 2026-11-12
 
 - Người dùng yêu cầu commit checkpoint hiện tại trước, rồi chuyển project/page/frame thành search query, node optional. Giao worker commit toàn bộ source/tests/docs đã kiểm, loại runtime/artifacts ignored; không push.
+- Nhận checkpoint `72a4499` (70 file), working tree sạch. Giao worker mới làm URL là nguồn selection, node optional, history Back/Forward và kiểm cache/race; giữ preview3877 đang phục vụ checkpoint trong lúc triển khai.
+- Nhận URL navigation: bỏ selection localStorage, history push/replace tách rõ, href guard chống phản hồi cũ và follow chờ HTTP membership. Root review bắt render regression; worker giữ callback người dùng ổn định, Layers trở lại 3/27 rows +1 frame. Root build/typecheck, 124 unit/HTTP và React browser tổng hợp đạt; kiểm canvas/actions còn đang chạy.
+- Giao worker runtime mới cập nhật riêng bản thử3877 sang build deep link đã kiểm; native3857/3858, PostgreSQL2703 và instance3867 giữ nguyên. Kiểm lại link ba tham số/node optional và history trên browser thật, không mutation dữ liệu.
+- Root kiểm cuối đạt: build/typecheck, 124 unit/HTTP, React shell +17 browser tests +Layers/fonts, continuity, All frames và cả chín nhóm actions trên backend tạm. Chi tiết và giới hạn tại [URL navigation](../URL-NAVIGATION.md); feature chưa commit, checkpoint `72a4499` giữ nguyên.
+- Nhận preview mới: worker kiểm đủ18 asset, sáu snapshot, SSE và navigation thật ở WASM/server đều đạt, không lỗi hoặc authored request. Root đối chiếu bundle/snapshot, listener và xem ảnh node-optional đã bỏ selection.
+- Điểm dừng: thử tại `http://127.0.0.1:3877`, preview đã cập nhật; native/PG/instance3867 giữ nguyên, checkpoint `72a4499` đã commit và feature URL để riêng chưa commit. Diff/size audit đạt, AGENTS trong ngân sách; không push hoặc deploy native.
+
+### Review URL navigation: link thiếu page và list lỗi — 2026-11-12
+
+- Root review feature URL chưa commit: typecheck, 18 pure +12 Chromium navigation đạt nhưng có 2 lỗi. (1) Link thiếu `page` luôn chọn page đầu, bỏ frame/node ở page khác với notice "removed" sai. (2) `accepted` chờ list `loaded`; list lỗi thì URL partial giữ `frameId=""`, page/frame mất không được reconcile.
+- Người dùng yêu cầu sửa cả hai. Giao worker mới trong checkout hiện tại (không commit/push, không đụng preview3877/native).
+- Nhận kết quả: `pageInference.ts` suy page từ frame gốc rồi tổ tiên node (kể cả con ảo) khi link thiếu `page`; page tường minh giữ hành vi cũ. `accepted` chỉ bỏ qua khi list đã tải và thiếu project. Thêm test thuần và browser list 503 (đã xác nhận test bắt lỗi cũ). Chi tiết ở [URL navigation](../URL-NAVIGATION.md).
+- Root kiểm lại: repro ba URL đúng pg2/f2/t2 không notice; typecheck, 25 pure, 17 navigation, 2 hooks/cache, Layers smoke, diff --check đạt. Chưa chạy `test:react`/actions đầy đủ, chưa cập nhật preview3877; chưa commit/push.

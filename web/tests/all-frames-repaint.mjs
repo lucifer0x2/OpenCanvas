@@ -92,15 +92,16 @@ try {
     deviceScaleFactor: Number(args.dpr),
   });
   await context.addInitScript(repaintProbe);
-  await context.addInitScript((selection) => {
-    localStorage.setItem("opencanvas.selection", JSON.stringify(selection));
-  }, { projectId: project.projectId, pageId: "page", frameId: ":all:", nodeId: "" });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.setDefaultTimeout(180_000);
   const started = Date.now();
-  await page.goto(viewer.url);
+  const viewerAddress = new URL(viewer.url);
+  viewerAddress.search = new URLSearchParams({
+    project: project.projectId, page: "page", frame: ":all:",
+  });
+  await page.goto(viewerAddress.href);
   await page.waitForFunction(() => window.__repaint && document.querySelector(".statusbar"));
   await page.evaluate((r) => window.__repaint.whenCurrent(r), project.revision);
   const coldMs = Date.now() - started;
@@ -121,7 +122,7 @@ try {
   // A second tab reads every frame from the IndexedDB scene cache: a burst of fast frames.
   const warmPage = await context.newPage();
   const warmStarted = Date.now();
-  await warmPage.goto(viewer.url);
+  await warmPage.goto(viewerAddress.href);
   await warmPage.waitForFunction(() => window.__repaint && document.querySelector(".statusbar"));
   await warmPage.evaluate((r) => window.__repaint.whenCurrent(r), project.revision);
   const warmMs = Date.now() - warmStarted;

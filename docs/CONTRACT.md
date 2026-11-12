@@ -97,10 +97,16 @@ Above all thresholds, the base layout applies. Every rule is validated in all
 themes and follows the same wrap guards. Render, preview and `inspect_layout`
 share the computed scene for the same revision, viewport, theme and state.
 
-Element addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>&node=<nodeId>`.
+Viewer addresses use `/?project=<projectId>&page=<pageId>&frame=<frameId>[&node=<nodeId>]`.
 All query values are percent-encoded stable IDs, including virtual IDs with `/`.
-Opening a complete address overrides localStorage selection and loads the latest
-revision; viewport and cached job IDs are deliberately absent. Removed or moved
+The three required scope keys open without a selected node; `frame=:all:` denotes
+all frames on the page. The optional `node` selects an element and is omitted on
+deselection. Partial addresses are completed after authoritative reads. The URL
+owns selection; localStorage does not participate. Browser Back/Forward restores
+scope without reload. Explicit navigation pushes history; defaults/fallback and
+revision cleanup replace it, preserving unrelated query/hash and `history.state`.
+Canonical copied links omit unrelated query/hash, viewport and cached job IDs.
+All addresses load the latest revision. Removed or moved
 nodes use the viewer's visible missing-selection notice and scope fallback. AI
 clients URL-decode the query once, confirm `find_nodes {projectId,ids:[nodeId]}`,
 then read `get_design_context {projectId,frameId}` and verify ancestry. Use

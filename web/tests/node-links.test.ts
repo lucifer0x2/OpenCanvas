@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nodeLink, readNodeLink, selectionNode } from "../src/deepLink.ts";
-import { readSelection, reconcileSelection } from "../src/state.ts";
+import {
+  navigationLink,
+  nodeLink,
+  readNavigation,
+  readNodeLink,
+  selectionNode,
+} from "../src/deepLink.ts";
+import { reconcileSelection } from "../src/state.ts";
 import type { Snapshot, Selection } from "../src/types.ts";
 import { frameForNode } from "../src/frameScope.ts";
 import { nodeIndex } from "../src/nodeIndex.ts";
@@ -57,19 +63,30 @@ test("stable addresses encode virtual IDs and omit viewport/revision/cache", () 
   assert.equal(readNodeLink("http://localhost/?project=p&node=label"), null);
 });
 
-test("linked selection overrides local storage and virtual children survive reconciliation", () => {
-  Object.defineProperty(globalThis, "location", {
-    configurable: true,
-    value: { href: nodeLink("http://localhost", selection) },
+test("optional node and partial addresses retain scope without storage", () => {
+  const scope = { ...selection, nodeId: "" };
+  const link = nodeLink("http://localhost", scope);
+  assert.deepEqual(readNodeLink(link), scope);
+  assert.equal(new URL(link).searchParams.has("node"), false);
+  assert.deepEqual(readNavigation("http://localhost/?project=p"), {
+    projectId: "p",
+    pageId: "",
+    frameId: "",
+    nodeId: "",
   });
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: { getItem: () => JSON.stringify({ ...selection, nodeId: "wrong" }) },
-  });
-  assert.deepEqual(readSelection(), selection);
+  assert.equal(
+    navigationLink("http://localhost/?scene=server#kept", scope),
+    "http://localhost/?scene=server&project=p&page=page&frame=frame#kept",
+  );
+});
+
+test("virtual children survive reconciliation", () => {
   assert.deepEqual(reconcileSelection(snapshot, selection), selection);
   assert.equal(reconcileSelection(snapshot, selection), selection);
-  assert.equal(frameForNode(snapshot.nodes, selection.nodeId, "page")?.id, "frame");
+  assert.equal(
+    frameForNode(snapshot.nodes, selection.nodeId, "page")?.id,
+    "frame",
+  );
   assert.equal(nodeIndex(snapshot.nodes).byId.has(selection.nodeId), false);
   assert.equal(
     selectionNode(snapshot.nodes, selection.nodeId)?.props.text,
@@ -84,10 +101,23 @@ test("linked selection overrides local storage and virtual children survive reco
 });
 
 test("indexed resolution rejects unrelated master children and ancestry cycles", () => {
-  const nodes = [...snapshot.nodes,
+  const nodes = [
+    ...snapshot.nodes,
     { id: "unrelated", parentId: "frame", kind: "text", sortKey: 1, props: {} },
-    { id: "cycle-a", parentId: "cycle-b", kind: "group", sortKey: 0, props: {} },
-    { id: "cycle-b", parentId: "cycle-a", kind: "group", sortKey: 0, props: {} },
+    {
+      id: "cycle-a",
+      parentId: "cycle-b",
+      kind: "group",
+      sortKey: 0,
+      props: {},
+    },
+    {
+      id: "cycle-b",
+      parentId: "cycle-a",
+      kind: "group",
+      sortKey: 0,
+      props: {},
+    },
   ];
   assert.equal(selectionNode(nodes, "instance/unrelated"), undefined);
   assert.equal(selectionNode(nodes, "instance/cycle-a"), undefined);

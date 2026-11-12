@@ -54,11 +54,7 @@ export function useProjectList() {
     [query.data, hints.data],
   );
   const refetch = useCallback(() => {
-    void query.mutate(undefined, {
-      revalidate: true,
-      populateCache: false,
-      throwOnError: false,
-    });
+    return query.mutate().catch(() => undefined);
   }, [query.mutate]);
   const bump = useCallback(
     (event: ActivityEvent) => {

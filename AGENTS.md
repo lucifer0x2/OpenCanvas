@@ -38,7 +38,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 
 ## Trạng thái hiện tại — 2026-11-12
 
-- Nhánh hiện tại: `codex/react-frontend-optimization` từ `feat/viewer-frame-paint` @`f54f7c2`; tối ưu React/SWR, tách navigation/list/snapshot/live, cache project/revision. Chưa commit/push/deploy; khác native live. FE thử3877 proxy API native3857 → PG2703. Kiểm chứng: `docs/REACT-FRONTEND-OPTIMIZATION.md`.
+- Nhánh `codex/react-frontend-optimization`: React/SWR `72a4499` đã commit, chưa push; URL selection project/page/frame, node optional đã kiểm, chưa commit. FE thử3877 đã cập nhật, proxy native3857 → PG2703. Báo cáo: `docs/REACT-FRONTEND-OPTIMIZATION.md`, `docs/URL-NAVIGATION.md`.
 - Main được bảo vệ bằng ruleset 26259563 active: PR, chỉ `lucifer0x2` cập nhật/merge, chặn xóa/force-push với người khác; chủ repo bypass always.
 - 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
 - Task14 P1–P5 đã kiểm độc lập: scoped themes/instance paint, bulk JSON/dry run và MCP-first guide. Debug đồng bộ đã build; chưa restart dịch vụ thật/commit/push. U07 golden/payload chờ design worker; xem `docs/TASK14-REPORT.md`.

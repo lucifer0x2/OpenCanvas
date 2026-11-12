@@ -8,9 +8,10 @@ import type {
   Selection,
   Snapshot,
 } from "./types.ts";
-import { readNodeLink, selectionNode } from "./deepLink.ts";
+import { selectionNode } from "./deepLink.ts";
 import { ALL_FRAMES, frameForNode } from "./frameScope.ts";
 import { nodeIndex } from "./nodeIndex.ts";
+import { inferPageId } from "./pageInference.ts";
 
 export const EMPTY_SELECTION: Selection = {
   projectId: "",
@@ -46,7 +47,13 @@ export function reconcileSelection(
   const pages = children(snapshot.nodes, null).filter(
     (node) => node.kind === "page",
   );
-  const page = pages.find((node) => node.id === previous.pageId) ?? pages[0];
+  // An explicit page wins; a partial link infers it from its frame or node.
+  const pageId =
+    previous.pageId ||
+    (previous.projectId === snapshot.projectId
+      ? inferPageId(snapshot.nodes, previous)
+      : "");
+  const page = pages.find((node) => node.id === pageId) ?? pages[0];
   const frames = children(snapshot.nodes, page?.id ?? "").filter(
     (node) => node.kind === "frame",
   );
@@ -128,34 +135,6 @@ export function acceptsJob(
   );
 }
 
-export function readSelection(): Selection {
-  const link =
-    typeof location !== "undefined" ? readNodeLink(location.href) : null;
-  if (link) return link;
-  try {
-    const stored: unknown = JSON.parse(
-      localStorage.getItem("opencanvas.selection") ?? "{}",
-    );
-    if (!stored || typeof stored !== "object") return EMPTY_SELECTION;
-    const selection = { ...EMPTY_SELECTION };
-    for (const key of Object.keys(selection) as (keyof Selection)[]) {
-      const value: unknown = Reflect.get(stored, key);
-      if (typeof value === "string") selection[key] = value;
-    }
-    return selection;
-  } catch {
-    return EMPTY_SELECTION;
-  }
-}
-
-export function saveSelection(selection: Selection) {
-  try {
-    localStorage.setItem("opencanvas.selection", JSON.stringify(selection));
-  } catch {
-    /* Viewing still works without storage. */
-  }
-}
-
 /** Union by projectId, keeping the newest revision, in the list API's slug order. */
 export function mergeProjects(
   current: ProjectRef[],
@@ -164,8 +143,12 @@ export function mergeProjects(
   const byId = new Map(current.map((entry) => [entry.projectId, entry]));
   for (const entry of incoming) {
     const known = byId.get(entry.projectId);
-    const revision = Math.max(known?.revision ?? entry.revision, entry.revision);
-    const same = known &&
+    const revision = Math.max(
+      known?.revision ?? entry.revision,
+      entry.revision,
+    );
+    const same =
+      known &&
       known.slug === entry.slug &&
       known.name === entry.name &&
       known.revision === revision;
@@ -174,13 +157,17 @@ export function mergeProjects(
   const next = [...byId.values()].sort((a, b) =>
     a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0,
   );
-  return next.length === current.length && next.every((entry, i) => entry === current[i])
+  return next.length === current.length &&
+    next.every((entry, i) => entry === current[i])
     ? current
     : next;
 }
 
 /** HTTP listing is authoritative for membership; live hints can retain newer revisions. */
-export function reconcileProjects(current: ProjectRef[], incoming: ProjectRef[]) {
+export function reconcileProjects(
+  current: ProjectRef[],
+  incoming: ProjectRef[],
+) {
   const visible = new Set(incoming.map(({ projectId }) => projectId));
   const retained = current.every(({ projectId }) => visible.has(projectId))
     ? current

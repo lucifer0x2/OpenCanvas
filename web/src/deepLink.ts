@@ -7,16 +7,32 @@ const PARAMS = ["project", "page", "frame", "node"] as const;
 /** A design address follows stable IDs at the latest revision, independent of viewport. */
 export function readNodeLink(href: string): Selection | null {
   const url = new URL(href);
-  if (!PARAMS.every((key) => url.searchParams.get(key))) return null;
+  if (!PARAMS.slice(0, 3).every((key) => url.searchParams.get(key)))
+    return null;
+  return readNavigation(href);
+}
+
+/** Partial addresses are retained until authoritative data can supply defaults. */
+export function readNavigation(href: string): Selection {
+  const url = new URL(href);
   return Object.fromEntries(
-    KEYS.map((key, i) => [key, url.searchParams.get(PARAMS[i])!]),
+    KEYS.map((key, i) => [key, url.searchParams.get(PARAMS[i]) ?? ""]),
   ) as unknown as Selection;
 }
 
-export function nodeLink(href: string, selection: Selection): string {
-  const url = new URL("/", href);
-  KEYS.forEach((key, i) => url.searchParams.set(PARAMS[i], selection[key]));
+/** Address-bar updates preserve unrelated query parameters and the fragment. */
+export function navigationLink(href: string, selection: Selection): string {
+  const url = new URL(href);
+  KEYS.forEach((key, i) => {
+    if (selection.projectId && selection[key])
+      url.searchParams.set(PARAMS[i], selection[key]);
+    else url.searchParams.delete(PARAMS[i]);
+  });
   return url.href;
+}
+
+export function nodeLink(href: string, selection: Selection): string {
+  return navigationLink(new URL("/", href).href, selection);
 }
 
 /** Resolve just the addressed virtual child; do not expand the whole component graph. */
