@@ -1,4 +1,4 @@
-import type { DesignNode } from "./types.ts";
+import type { DesignNode, Snapshot } from "./types.ts";
 
 export interface NodeIndex {
   byId: ReadonlyMap<string, DesignNode>;
@@ -6,12 +6,19 @@ export interface NodeIndex {
 }
 
 const indexes = new WeakMap<DesignNode[], NodeIndex>();
+// Retain only the newest authored revision per visited project until this tab reloads.
+// Array bindings below are auxiliary and disappear when old snapshots are released.
+const projects = new Map<string, { revision: number; index: NodeIndex }>();
 export const EMPTY_NODES: DesignNode[] = [];
 
-/** Snapshot node arrays are immutable; release their index with the snapshot. */
+/** Array-only helpers and standalone/subset callers share immutable node arrays. */
 export function nodeIndex(nodes: DesignNode[]): NodeIndex {
   const cached = indexes.get(nodes);
   if (cached) return cached;
+  return buildNodeIndex(nodes);
+}
+
+function buildNodeIndex(nodes: DesignNode[]): NodeIndex {
   const byId = new Map<string, DesignNode>();
   const childrenByParent = new Map<string | null, DesignNode[]>();
   for (const node of nodes) {
@@ -28,5 +35,24 @@ export function nodeIndex(nodes: DesignNode[]): NodeIndex {
   }
   const index = { byId, childrenByParent };
   indexes.set(nodes, index);
+  return index;
+}
+
+/** Authored nodes change only with a project's revision, even across JSON refetches. */
+export function snapshotNodeIndex(
+  snapshot: Pick<Snapshot, "projectId" | "revision" | "nodes">,
+): NodeIndex {
+  const cached = projects.get(snapshot.projectId);
+  if (cached?.revision === snapshot.revision) {
+    indexes.set(snapshot.nodes, cached.index);
+    return cached.index;
+  }
+  const index = cached && snapshot.revision > cached.revision
+    ? buildNodeIndex(snapshot.nodes)
+    : nodeIndex(snapshot.nodes);
+  // Obsolete renders may still consult their old snapshot; never downgrade the project.
+  if (!cached || snapshot.revision > cached.revision) {
+    projects.set(snapshot.projectId, { revision: snapshot.revision, index });
+  }
   return index;
 }

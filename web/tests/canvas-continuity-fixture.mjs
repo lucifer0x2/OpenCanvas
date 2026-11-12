@@ -10,6 +10,32 @@ export async function startContinuityFixture() {
     streams = new Set(),
     requests = [];
   const data = fixtureData("none", () => ({}));
+  const createJob = (projectId, frameId, rev, width, height) => {
+    const scene = data.scene(rev, width, height);
+    Object.assign(scene.provenance, { projectId, frameId });
+    scene.fonts = [];
+    scene.nodes = scene.nodes.filter((node) => node.kind !== "text");
+    if (frameId !== "frame") {
+      scene.nodes = scene.nodes.map((node) => ({
+        ...node,
+        id: node.id === "frame" ? frameId : `${frameId}-${node.id}`,
+        parentId: node.parentId === "frame" ? frameId : node.parentId,
+      }));
+    }
+    const job = {
+      jobId: `${projectId}-${frameId}-${rev}-${width}-${height}`,
+      projectId,
+      revision: rev,
+      frameId,
+      status: mode === "mismatch" ? "ready" : mode,
+      sceneKey: scene.provenance.sourceSceneKey,
+      scene,
+      error: { code: "RENDER_FAILED", message: "Controlled render failure." },
+    };
+    if (mode === "mismatch") job.revision--;
+    jobs.set(job.jobId, job);
+    return job;
+  };
   const server = createServer((req, res) => {
     requests.push({ method: req.method, url: req.url });
     const url = new URL(req.url, "http://fixture");
@@ -59,23 +85,23 @@ export async function startContinuityFixture() {
       const width = Number(url.searchParams.get("width"));
       const height = Number(url.searchParams.get("height"));
       const frameId = url.searchParams.get("frameId");
-      const scene = data.scene(rev, width, height);
-      Object.assign(scene.provenance, { projectId, frameId });
-      scene.fonts = [];
-      scene.nodes = scene.nodes.filter((node) => node.kind !== "text");
-      const job = {
-        jobId: `${projectId}-${frameId}-${rev}-${width}-${height}`,
+      return json(createJob(projectId, frameId, rev, width, height));
+    }
+    if (url.pathname.endsWith("/scenes")) {
+      const rev = Number(url.searchParams.get("revision"));
+      const width = Number(url.searchParams.get("width"));
+      const height = Number(url.searchParams.get("height"));
+      return json({
         projectId,
         revision: rev,
-        frameId,
-        status: mode === "mismatch" ? "ready" : mode,
-        sceneKey: scene.provenance.sourceSceneKey,
-        scene,
-        error: { code: "RENDER_FAILED", message: "Controlled render failure." },
-      };
-      if (mode === "mismatch") job.revision--;
-      jobs.set(job.jobId, job);
-      return json(job);
+        pageId: url.searchParams.get("pageId"),
+        total: 2,
+        nextOffset: null,
+        jobs: [
+          createJob(projectId, "frame", rev, width || frameWidth, height || 600),
+          createJob(projectId, "other", rev, width || 500, height || 400),
+        ],
+      });
     }
     if (url.pathname.startsWith("/api/v1/jobs/"))
       return json(jobs.get(url.pathname.split("/").at(-1)));

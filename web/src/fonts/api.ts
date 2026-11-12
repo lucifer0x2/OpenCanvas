@@ -1,7 +1,7 @@
 import { ApiError, projectPath, read, viewerFetch } from "../api";
 import type { FontImport, FontList, ProjectFont } from "./types";
 
-export const listFonts = (projectId: string, signal: AbortSignal) =>
+export const listFonts = (projectId: string, signal?: AbortSignal) =>
   read<FontList>(`${projectPath(projectId)}/fonts`, signal);
 
 export class FontImportError extends ApiError {
@@ -53,7 +53,9 @@ export async function downloadFont(
   const fileName =
     disposition.match(/filename="([^"]+)"/)?.[1] ??
     `${font.family}.${font.mediaType === "font/woff2" ? "woff2" : font.mediaType === "font/otf" ? "otf" : "ttf"}`;
-  const url = URL.createObjectURL(await response.blob());
+  const blob = await response.blob();
+  signal.throwIfAborted();
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;

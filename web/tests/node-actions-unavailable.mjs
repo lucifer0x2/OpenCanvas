@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 /** A scene that cannot mount a Stage must still let background clicks dismiss selection. */
 export async function verifyUnavailableCanvas(page, address, projectId) {
   for (const status of ["pending", "failed"]) {
-    const scene = async (route) =>
-      route.fulfill({
+    let intercepted = 0;
+    const scene = async (route) => {
+      intercepted += 1;
+      await route.fulfill({
         json: {
           jobId: "unavailable",
           projectId,
@@ -14,8 +16,11 @@ export async function verifyUnavailableCanvas(page, address, projectId) {
           error: { code: "WORKER_FAILED", message: "Unavailable fixture" },
         },
       });
+    };
     await page.route("**/scene?**", scene);
-    await page.goto(address("box"));
+    const unavailableAddress = new URL(address("box"));
+    unavailableAddress.searchParams.set("scene", "server");
+    await page.goto(unavailableAddress.href);
     await page
       .getByRole("heading", { name: "Export box updated", exact: true })
       .waitFor();
@@ -26,6 +31,12 @@ export async function verifyUnavailableCanvas(page, address, projectId) {
         exact: true,
       })
       .waitFor();
+    assert.ok(intercepted > 0, `${status} scene request was intercepted`);
+    assert.equal(
+      await page.evaluate(() => window.Konva.stages.length),
+      0,
+      `${status} canvas has no Stage`,
+    );
     await page.evaluate(() => {
       const input = document.createElement("input");
       input.id = "pending-focus";

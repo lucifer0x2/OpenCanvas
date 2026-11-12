@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stage, Layer } from "react-konva";
 import type Konva from "konva";
 import { BoardPaint } from "../paint/boardPaint";
 import { boardHitTest } from "../scene/boardHitTest";
-import { fitFrameBoard } from "../scene/frameLayout";
 import { CanvasScenes } from "./CanvasScenes";
 import { CanvasChrome } from "./CanvasChrome";
 import { CanvasMessage } from "./CanvasMessage";
@@ -13,11 +12,12 @@ import {
 } from "../hooks/useCanvasTransform";
 import type { SceneView } from "../hooks/useScene";
 import { useNodeActions } from "./NodeActionsProvider";
+import { useCanvasFrames } from "../hooks/useCanvasFrames";
 
 // A click that moves further than this is a pan, not a selection.
 const CLICK_SLOP = 5;
 
-export function CanvasView({
+export const CanvasView = memo(function CanvasView({
   view,
   selectedId,
   select,
@@ -41,47 +41,7 @@ export function CanvasView({
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
   const resources = view.resources;
-  const frames = useMemo(
-    () => view.frames ?? (scene && resources
-      ? [{
-          id: scene.provenance.frameId,
-          name: frameName,
-          ...scene.provenance.viewport,
-          scene,
-          resources,
-          revision: scene.provenance.revision,
-        }]
-      : []),
-    [view.frames, scene, resources, frameName],
-  );
-  const layoutCache = useRef<{
-    geometry: string;
-    width: number;
-    height: number;
-    layout: ReturnType<typeof fitFrameBoard>;
-  } | null>(null);
-  const geometry = useMemo(
-    () => JSON.stringify(frames.map(({ id, width, height }) => [id, width, height])),
-    [frames],
-  );
-  const boardLayout = useCallback((size: { width: number; height: number }) => {
-    const cached = layoutCache.current;
-    if (
-      cached?.geometry === geometry &&
-      cached.width === size.width &&
-      cached.height === size.height
-    )
-      return cached.layout;
-    const layout = fitFrameBoard(frames, size);
-    layoutCache.current = { geometry, ...size, layout };
-    return layout;
-  }, [frames, geometry]);
-  const content = useCallback(
-    (size: { width: number; height: number }) => view.frames
-      ? frames.length ? boardLayout(size) : undefined
-      : scene?.provenance.viewport,
-    [view.frames, frames, boardLayout, scene],
-  );
+  const { frames, boardLayout, content } = useCanvasFrames(view, frameName);
   const {
     host,
     size,
@@ -239,4 +199,4 @@ export function CanvasView({
       />
     </main>
   );
-}
+});

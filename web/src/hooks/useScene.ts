@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { drawScene, loadResources } from "../../../renderer/index";
 import type { Resources, Scene } from "../../../renderer/types";
 import { loadScene } from "../scene/service";
@@ -51,11 +51,14 @@ export interface FrameSceneView {
   missing?: string[];
 }
 
-const emptyView = (): SceneView => ({
+const EMPTY_VIEW: SceneView = {
   status: "empty",
   missing: [],
   diagnostics: [],
-});
+};
+const EMPTY_REQUEST: SceneRequest = {
+  projectId: "", revision: 0, frameId: "", width: 0, height: 0,
+};
 const refreshing = (view: SceneView): SceneView => ({
   ...view,
   status: "pending",
@@ -70,15 +73,21 @@ export function useScene(
   snapshot: Snapshot | null = null,
 ) {
   const wasm = wasmSceneEnabled();
-  const key = request ? JSON.stringify([request, wasm]) : "";
-  const scope = request
-    ? JSON.stringify([request.projectId, request.frameId, preset])
+  const enabled = request !== null;
+  const { projectId, revision, frameId, width, height } = request ?? EMPTY_REQUEST;
+  const desired = useMemo(
+    () => enabled ? { projectId, revision, frameId, width, height } : null,
+    [enabled, projectId, revision, frameId, width, height],
+  );
+  const key = desired ? JSON.stringify([desired, wasm]) : "";
+  const scope = desired
+    ? JSON.stringify([desired.projectId, desired.frameId, preset])
     : "";
   const [loaded, setLoaded] = useState({
     key: "",
     scope: "",
     retryKey,
-    view: emptyView(),
+    view: EMPTY_VIEW,
   });
   const lastRetry = useRef(retryKey);
   useEffect(() => {
@@ -86,20 +95,22 @@ export function useScene(
     if (bypassCache) {
       lastRetry.current = retryKey;
       // Retry resends the accepted snapshot, even when its revision is unchanged.
-      if (wasm && request) sceneWorker.clearSnapshotCache();
+      if (wasm && desired) sceneWorker.clearSnapshotCache();
     }
-    if (!request) {
-      setLoaded({ key, scope, retryKey, view: emptyView() });
+    if (!desired) {
+      setLoaded((old) => old.view === EMPTY_VIEW
+        ? old
+        : { key, scope, retryKey, view: EMPTY_VIEW },
+      );
       return;
     }
-    const desired = request;
     let stopped = false;
     const controller = new AbortController();
     setLoaded((old) => ({
       key,
       scope,
       retryKey,
-      view: refreshing(old.scope === scope ? old.view : emptyView()),
+      view: refreshing(old.scope === scope ? old.view : EMPTY_VIEW),
     }));
     const fail = (message: string) => {
       if (!stopped)
@@ -162,16 +173,18 @@ export function useScene(
       stopped = true;
       controller.abort();
     };
-    // The serialized immutable request prevents object identity from restarting jobs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, scope, retryKey]);
+  }, [desired, snapshot, wasm, key, scope, retryKey]);
   // Derive before effects: retain only this scope, and never label an older request ready.
-  const view = !request
-    ? emptyView()
-    : loaded.key === key &&
-        loaded.scope === scope &&
-        loaded.retryKey === retryKey
-      ? loaded.view
-      : refreshing(loaded.scope === scope ? loaded.view : emptyView());
-  return { ...view, cameraKey: scope, requestedRevision: request?.revision };
+  const view = useMemo(
+    () => !desired
+      ? EMPTY_VIEW
+      : loaded.key === key && loaded.scope === scope && loaded.retryKey === retryKey
+        ? loaded.view
+        : refreshing(loaded.scope === scope ? loaded.view : EMPTY_VIEW),
+    [desired, loaded, key, scope, retryKey],
+  );
+  return useMemo(
+    () => ({ ...view, cameraKey: scope, requestedRevision: desired?.revision }),
+    [view, scope, desired?.revision],
+  );
 }

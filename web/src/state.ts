@@ -133,10 +133,16 @@ export function readSelection(): Selection {
     typeof location !== "undefined" ? readNodeLink(location.href) : null;
   if (link) return link;
   try {
-    return {
-      ...EMPTY_SELECTION,
-      ...JSON.parse(localStorage.getItem("opencanvas.selection") ?? "{}"),
-    };
+    const stored: unknown = JSON.parse(
+      localStorage.getItem("opencanvas.selection") ?? "{}",
+    );
+    if (!stored || typeof stored !== "object") return EMPTY_SELECTION;
+    const selection = { ...EMPTY_SELECTION };
+    for (const key of Object.keys(selection) as (keyof Selection)[]) {
+      const value: unknown = Reflect.get(stored, key);
+      if (typeof value === "string") selection[key] = value;
+    }
+    return selection;
   } catch {
     return EMPTY_SELECTION;
   }
@@ -158,16 +164,28 @@ export function mergeProjects(
   const byId = new Map(current.map((entry) => [entry.projectId, entry]));
   for (const entry of incoming) {
     const known = byId.get(entry.projectId);
-    byId.set(
-      entry.projectId,
-      known && known.revision > entry.revision
-        ? { ...entry, revision: known.revision }
-        : entry,
-    );
+    const revision = Math.max(known?.revision ?? entry.revision, entry.revision);
+    const same = known &&
+      known.slug === entry.slug &&
+      known.name === entry.name &&
+      known.revision === revision;
+    byId.set(entry.projectId, same ? known : { ...entry, revision });
   }
-  return [...byId.values()].sort((a, b) =>
+  const next = [...byId.values()].sort((a, b) =>
     a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0,
   );
+  return next.length === current.length && next.every((entry, i) => entry === current[i])
+    ? current
+    : next;
+}
+
+/** HTTP listing is authoritative for membership; live hints can retain newer revisions. */
+export function reconcileProjects(current: ProjectRef[], incoming: ProjectRef[]) {
+  const visible = new Set(incoming.map(({ projectId }) => projectId));
+  const retained = current.every(({ projectId }) => visible.has(projectId))
+    ? current
+    : current.filter(({ projectId }) => visible.has(projectId));
+  return mergeProjects(retained, incoming);
 }
 
 /** A `project_activity` hint only moves a listed project's revision forward. */

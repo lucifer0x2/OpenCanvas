@@ -1,92 +1,69 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError } from "../api";
-import { readSnapshot } from "../snapshotHttp";
+import { useCallback, useEffect } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import type { AcceptedSnapshot } from "../snapshotHttp";
 import type { Snapshot } from "../types";
+import {
+  snapshotEpochKey,
+  snapshotHeadKey,
+  snapshotKey,
+  snapshotReadKey,
+  type SnapshotPointer,
+} from "../data/snapshotKeys";
+import { snapshotResource } from "../data/snapshotResource";
 
-/**
- * The authoritative HTTP snapshot of one project. Concurrent refreshes coalesce without losing
- * a later one, and an accepted snapshot never moves the revision backwards.
- */
+/** Latest authored snapshot at a revision watermark; scene parameters never enter its key. */
 export function useSnapshot(
   projectId: string,
-  reload: number,
-  onAccepted: (next: Snapshot) => void,
+  knownRevision: number | null = null,
 ) {
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [error, setError] = useState("");
-  const current = useRef<AcceptedSnapshot | null>(null);
-  const refreshRef = useRef<() => void>(() => {});
-  const accepted = useRef(onAccepted);
-  useEffect(() => {
-    accepted.current = onAccepted;
-  });
-
-  useEffect(() => {
-    current.current = null;
-    setSnapshot(null);
-    setError("");
-    refreshRef.current = () => {};
-    if (!projectId) return;
-    let stopped = false;
-    let inFlight = false;
-    let dirty = false;
-    const controller = new AbortController();
-    const refresh = async () => {
-      if (inFlight) {
-        dirty = true;
-        return;
-      }
-      inFlight = true;
-      try {
-        const next = await readSnapshot(
-          projectId,
-          current.current,
-          controller.signal,
-        );
-        if (stopped || !next) return;
-        current.current = next;
-        setSnapshot(next.snapshot);
-        setError("");
-        accepted.current(next.snapshot);
-      } catch (cause) {
-        if (stopped) return;
-        if (cause instanceof ApiError && cause.status === 404) {
-          current.current = null;
-          setSnapshot(null);
-        }
-        setError(
-          cause instanceof Error ? cause.message : "Snapshot unavailable.",
-        );
-      } finally {
-        inFlight = false;
-        if (dirty && !stopped) {
-          dirty = false;
-          void refresh();
-        }
-      }
-    };
-    refreshRef.current = () => void refresh();
-    void refresh();
-    return () => {
-      stopped = true;
-      controller.abort();
-    };
-  }, [projectId, reload]);
-
-  const refresh = useCallback(() => refreshRef.current(), []);
-  /** Revision of the accepted snapshot of `projectId`, or null before the first one. */
+  const { cache, mutate } = useSWRConfig();
+  const resource = snapshotResource(cache, mutate);
+  const { data: epoch = 0 } = useSWR<number>(
+    projectId ? snapshotEpochKey(projectId) : null,
+    null,
+  );
+  const { data: head } = useSWR<{ revision: number }>(
+    projectId ? snapshotHeadKey(projectId) : null,
+    null,
+  );
+  const query = useSWR<SnapshotPointer>(
+    projectId ? snapshotReadKey(projectId, knownRevision, epoch) : null,
+    resource.fetch,
+    {
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+  const { data: accepted } = useSWR<AcceptedSnapshot>(
+    projectId && head ? snapshotKey(projectId, head.revision) : null,
+    null,
+  );
+  const refresh = useCallback(
+    (visibilityChanged = false) =>
+      resource.invalidate(projectId, visibilityChanged),
+    [projectId, resource],
+  );
   const revision = useCallback(
-    () =>
-      current.current?.snapshot.projectId === projectId
-        ? current.current.snapshot.revision
-        : null,
-    [projectId],
+    () => resource.current(projectId)?.snapshot.revision ?? null,
+    [projectId, resource],
   );
   return {
-    snapshot: snapshot?.projectId === projectId ? snapshot : null,
-    error,
+    snapshot: accepted?.snapshot ?? null,
+    error: query.error instanceof Error ? query.error.message : "",
     refresh,
     revision,
+    validation: query.data?.validation,
   };
+}
+
+/** A 304 is an accepted validation too, even though the snapshot identity stays stable. */
+export function useAcceptedSnapshot(
+  snapshot: Snapshot | null,
+  validation: number | undefined,
+  accept: (snapshot: Snapshot) => void,
+) {
+  useEffect(() => {
+    if (snapshot && validation !== undefined) accept(snapshot);
+  }, [accept, snapshot, validation]);
 }

@@ -1,15 +1,28 @@
-import { StrictMode } from "react";
+import { lazy, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App";
 import { ViewerGate } from "./auth/ViewerGate";
-import { PreviewApp } from "./preview/PreviewApp";
+import { RouteBoundary } from "./app/RouteBoundary";
 import { isPreviewPath } from "./preview/route";
+import { SessionDataProvider } from "./data/SessionDataProvider";
 import "./styles.css";
+
+const App = lazy(() =>
+  import("./App").then((module) => ({ default: module.App })),
+);
+const PreviewApp = lazy(() =>
+  import("./preview/PreviewApp").then((module) => ({
+    default: module.PreviewApp,
+  })),
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ViewerGate>
-      {isPreviewPath(location.pathname) ? <PreviewApp /> : <App />}
+      <SessionDataProvider>
+        <RouteBoundary>
+          {isPreviewPath(location.pathname) ? <PreviewApp /> : <App />}
+        </RouteBoundary>
+      </SessionDataProvider>
     </ViewerGate>
   </StrictMode>,
 );

@@ -51,14 +51,18 @@ try {
   });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("http://127.0.0.1:5179");
+  // This fixture simulates the single-frame server pending/failure lifecycle.
+  // All-frame browser computation has its own harness and does not use these job states.
+  const viewerURL =
+    "http://127.0.0.1:5179/?project=fixture&page=page&frame=frame&node=title&scene=server";
+  await page.goto(viewerURL);
   const authored = (rev) =>
     page.getByText(`Authored r${rev}`, { exact: true }).waitFor();
   const ready = (rev) =>
     page.getByText(`Scene r${rev}`, { exact: true }).waitFor();
   await ready(7);
   await verifyCustomSelects(page);
-  await verifyEmptySelects(browser, "http://127.0.0.1:5179");
+  await verifyEmptySelects(browser, viewerURL);
   await page.getByRole("button", { name: "Headline", exact: true }).click();
   await page.getByRole("heading", { name: "Headline", exact: true }).waitFor();
   await page.screenshot({

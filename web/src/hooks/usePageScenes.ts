@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DesignNode, Snapshot } from "../types";
 import { frameDimensions } from "../frameScope";
 import { diagnosticLabel } from "../diagnostics";
@@ -16,11 +16,11 @@ import { publishScheduler } from "../scene/publishScheduler";
 import { sceneWorker } from "../scene/workerClient";
 import type { FrameSceneView, SceneView } from "./useScene";
 
-const empty = (): SceneView => ({
+const EMPTY_VIEW: SceneView = {
   status: "empty",
   missing: [],
   diagnostics: [],
-});
+};
 type Loaded = { scope: string; key: string; retryKey: number; view: SceneView };
 
 export function usePageScenes(
@@ -36,25 +36,28 @@ export function usePageScenes(
     ? JSON.stringify([snapshot.projectId, pageId, "all", preset])
     : "";
   const key = snapshot ? JSON.stringify([scope, snapshot.revision, wasm]) : "";
+  const { width, height } = viewport;
   // All authored slots exist before an effect or a scene finishes. Their geometry is immutable.
   const targets = useMemo(
     () =>
       frames.map((frame) => ({
         id: frame.id,
         name: nodeName(frame),
-        ...(viewport.width ? viewport : frameDimensions(frame)),
+        ...(width ? { width, height } : frameDimensions(frame)),
       })),
-    [key],
+    [frames, width, height],
   );
   const [loaded, setLoaded] = useState<Loaded>({
     scope: "",
     key: "",
     retryKey,
-    view: empty(),
+    view: EMPTY_VIEW,
   });
   // The latest published view seeds the next revision of the same scope.
   const latest = useRef(loaded);
-  latest.current = loaded;
+  useLayoutEffect(() => {
+    latest.current = loaded;
+  }, [loaded]);
   // One loader per scope: immutable manifests already loaded stay loaded across revisions.
   const loader = useRef<{
     scope: string;
@@ -122,7 +125,7 @@ export function usePageScenes(
         snapshot,
         signal,
         wasm,
-        viewport.width ? viewport : undefined,
+        width ? { width, height } : undefined,
         {
           bypassCache,
           reuse: (request, contentKey) => {
@@ -188,13 +191,19 @@ export function usePageScenes(
       controller.abort();
       publisher.cancel();
     };
-  }, [key, retryKey]);
-  const view = !snapshot
-    ? empty()
-    : loaded.key === key && loaded.retryKey === retryKey
-      ? loaded.view
-      : transition(loaded, scope, retryKey, targets);
-  return { ...view, cameraKey: scope, requestedRevision: snapshot?.revision };
+  }, [snapshot, pageId, targets, width, height, wasm, key, scope, retryKey]);
+  const view = useMemo(
+    () => !snapshot
+      ? EMPTY_VIEW
+      : loaded.key === key && loaded.retryKey === retryKey
+        ? loaded.view
+        : transition(loaded, scope, retryKey, targets),
+    [snapshot, loaded, key, scope, retryKey, targets],
+  );
+  return useMemo(
+    () => ({ ...view, cameraKey: scope, requestedRevision: snapshot?.revision }),
+    [view, scope, snapshot?.revision],
+  );
 }
 
 /** Before the effect's first publish: keep the scope's scenes, else show placeholders. */

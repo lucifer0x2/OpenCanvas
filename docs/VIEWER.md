@@ -137,7 +137,19 @@ browser fixture is `npm --prefix web run test:all-frames`.
 
 Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed frame/layer fallbacks.
 
-The first snapshot request and the event stream start in the same effect pass; every stream open refetches the snapshot, so a commit between the two is never lost. The stream cursor is based on the last accepted HTTP snapshot. Duplicates and foreign project commits are ignored; a commit, gap, reset, or reconnect refetches the authoritative snapshot. Reconnect uses bounded exponential backoff with jitter. Concurrent refreshes coalesce without losing a subsequent refresh. HTTP snapshots never move revision backwards.
+The first snapshot request and event stream start together. SWR owns project-list and
+snapshot server state inside the authorized viewer lifetime. Snapshot request keys include
+project, known revision watermark, object representation, visibility scope and an explicit
+metadata invalidation epoch; scene viewport/theme/frame parameters are independent. The
+snapshot endpoint returns latest, so a newer response is stored only under its actual
+canonical revision. Same-revision events, list refreshes, focus/reconnect and warm project
+switches reuse that payload without another snapshot GET. Every stream open reconciles the
+authoritative list/revision watermarks, and durable commits replay from the last accepted
+HTTP snapshot cursor. Foreign/duplicate commits are ignored; newer commits advance the
+watermark. Different revision requests share an in-flight latest read, then perform a
+follow-up if the response did not satisfy a newer queued watermark. Explicit reset,
+visibility and manual retry invalidate metadata even at the same authored revision, retaining
+ETag/304 and monotonic snapshot checks. Reconnect uses bounded exponential backoff and jitter.
 
 Each render request has an effect lifetime and validates project/revision/frame, expected job ID, viewport, theme/state, and source scene key. A newer revision in the same project/frame/preset retains the last ready scene and loaded resources while pending or failed. A compact, nonblocking status explicitly names the displayed scene revision and requested revision, with Retry on failure; the canvas remains mounted and interactive even during an active drag. The region exposes `aria-busy` while pending. Computed inspector geometry is suppressed until the scene exactly matches the current request, so it cannot silently mix with newer authored properties. Project/frame/preset navigation immediately hides incompatible content before effects run. Late resources and jobs cannot publish into a newer request. Pending jobs are polled at 500 ms and time out after 45 seconds. The top-level job error is distinct from snapshot/connection error; missing fonts and assets display labeled shared-renderer placeholders and explicit status text. Scene and authored revisions are displayed separately.
 
@@ -155,27 +167,37 @@ and asset requests after three tabs. With a project selected the tab uses the pr
 (`/api/v1/events`). Switching closes the previous stream before opening the next, and a failed
 stream is closed before its backoff timer opens a replacement.
 
-- **Live project list.** `project_created` inserts or updates the project in the selector by
-  `projectId`, in the list API's slug order, without a reload. While the workspace is empty the
-  viewer selects the new project, as on first load, and switches to its project stream;
-  otherwise a short notice names the new project.
+- **Live project list.** `project_created` refreshes the authoritative HTTP list. All pages
+  are read before publishing membership. While the workspace is empty the viewer selects
+  the first listed project and switches to its project stream; otherwise a short notice
+  names the new project. A hint alone cannot add a project to the selector.
 - **Activity marks.** `project_activity` from another project bumps its revision in the list,
   marks it with `●` in the selector, shows a count next to the selector and a short notice with
   the project's name. It never refetches the snapshot in view. Selecting the project clears its
   mark and loads its newest revision.
-- **Hints are not durable.** On every stream open and every `reset_required` the viewer refetches
-  both the snapshot and `GET /api/v1/projects`; the list merges by `projectId` and never drops a
-  hinted project or moves a revision backwards. Only the first page (100 projects) is read.
+- **Hints are not durable.** Every stream open/reconnect and reset refreshes
+  `GET /api/v1/projects`, including pagination. HTTP owns visible membership; hints retain
+  newer revision watermarks for listed projects. Unchanged watermarks reuse snapshots;
+  reset/visibility events explicitly revalidate snapshot metadata. Removed projects and
+  snapshot 404s invalidate their cached payloads.
 - **Follow agent** (status bar checkbox). When on, `project_created` or `project_activity` moves
   the viewer to that project. It is **off by default** (`FOLLOW_AGENT_DEFAULT` in
   `web/src/hooks/useFollowAgent.ts`), because jumping away from the project in view loses
   context, and the choice persists in local storage (`opencanvas.followAgent`) when available.
 
-Code: `useProjectList` (list and refetch), `useProjectStream` (the single stream),
-`useSnapshot` (authoritative snapshot), `useFollowAgent`, composed by `useProject`; pure reducers
+Code: App explicitly composes `useProjectList` (SWR list and revision hints),
+`useProject` (persisted selection/fallback notices only), `useSnapshot` (SWR snapshot), and
+`useProjectLive` (single-stream handlers, follow/activity). `useProjectStream` owns connection
+lifetime/backoff; `useFollowAgent` owns the follow preference. Pure reducers
 `mergeProjects`, `bumpRevision`, `markActivity`, `clearActivity`, `pickProject` and
 `followTarget` live in `web/src/state.ts` with unit tests. Passive scene viewing sends only GET;
 explicit font imports and computed exports use their documented POST endpoints.
+
+The scoped cache retains at most eight latest project snapshot payloads, with no historical
+trees. Revisiting an evicted project reads it again. Small request/pointer/epoch records
+remain until that project is evicted or the authorized route unmounts. Locking/unmounting
+discards the whole provider and aborts its pending snapshot reads; another authorization
+lifetime cannot reuse its payloads or validators.
 
 ## Verification — 2026-10-28
 

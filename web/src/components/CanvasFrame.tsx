@@ -7,6 +7,7 @@ import type { FramePlacement } from "../scene/frameLayout";
 import { frameLabelMetrics } from "../scene/frameLabels";
 import type { BoardPaint } from "../paint/boardPaint";
 import { FrameBitmap } from "../paint/frameBitmap";
+import { sceneNodes } from "../scene/sceneNodes";
 
 /** Stable ready frames keep their React nodes and paint callback when the next slot completes. */
 export const CanvasFrame = memo(function CanvasFrame({
@@ -25,7 +26,9 @@ export const CanvasFrame = memo(function CanvasFrame({
   /** Board bitmap cache; without it (single frame) the scene paints as vectors. */
   board?: BoardPaint;
 }) {
-  const selected = frame.scene?.nodes.find((node) => node.id === selectedId);
+  const selected = frame.scene && selectedId
+    ? sceneNodes(frame.scene).get(selectedId)
+    : undefined;
   const label = frameLabelMetrics(
     frame.width,
     scale,
