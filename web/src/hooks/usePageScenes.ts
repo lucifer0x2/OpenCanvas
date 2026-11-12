@@ -12,6 +12,7 @@ import {
   reuseFrame,
   seedFrames,
 } from "../scene/staleFrames";
+import { publishScheduler } from "../scene/publishScheduler";
 import { sceneWorker } from "../scene/workerClient";
 import type { FrameSceneView, SceneView } from "./useScene";
 
@@ -84,14 +85,28 @@ export function usePageScenes(
     )
       loader.current = { scope, load: pageResourceLoader() };
     const resources = loader.current.load;
-    const publish = (finished = false, error?: string) => {
+    let finished = false;
+    let failure: string | undefined;
+    // Every frame event schedules; one load commits at most once per animation frame, reading
+    // the latest entries. The final result and errors commit at once; abort drops the rest.
+    const publisher = publishScheduler(() => {
       if (signal.aborted) return;
       setLoaded({
         scope,
         key,
         retryKey,
-        view: pageView(entries, { finished, error, seeded: Boolean(seeded) }),
+        view: pageView(entries, {
+          finished,
+          error: failure,
+          seeded: Boolean(seeded),
+        }),
       });
+    });
+    const publish = () => publisher.schedule();
+    const finish = (error?: string) => {
+      finished = true;
+      failure = error;
+      publisher.flush();
     };
     publish();
     const load = async () => {
@@ -145,6 +160,7 @@ export function usePageScenes(
               ...targets[index],
               scene,
               resources: loaded,
+              revision: result.request.revision,
               contentKey: result.contentKey,
               diagnostics: [
                 ...scene.diagnostics,
@@ -161,15 +177,17 @@ export function usePageScenes(
           },
         },
       );
-      publish(true);
+      finish();
     };
     load().catch((cause) =>
-      publish(
-        true,
+      finish(
         cause instanceof Error ? cause.message : "Page rendering failed.",
       ),
     );
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      publisher.cancel();
+    };
   }, [key, retryKey]);
   const view = !snapshot
     ? empty()

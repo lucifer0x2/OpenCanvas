@@ -1,5 +1,6 @@
 import type { SceneView } from "../hooks/useScene";
 import { Icon } from "./Icon";
+import { shownRevision } from "../scene/staleFrames";
 
 export function CanvasMessage({
   view,
@@ -18,7 +19,7 @@ export function CanvasMessage({
             ? ` · ${view.progress.ready}/${view.progress.total} frames current`
             : ""}{" "}
           · Showing scene r
-          {view.scene?.provenance.revision ?? view.requestedRevision}
+          {shownRevision(view) ?? view.requestedRevision}
         </p>
       </div>
     );
@@ -35,7 +36,7 @@ export function CanvasMessage({
             ? `${view.progress.ready}/${view.progress.total} frames ready · `
             : ""}
           {view.frames ? "All frames" : "Showing scene"} r
-          {view.scene?.provenance.revision ?? view.requestedRevision} ·{" "}
+          {shownRevision(view) ?? view.requestedRevision} ·{" "}
           {view.status === "failed"
             ? `Requested r${view.requestedRevision}: ${view.error}`
             : "You can keep panning and zooming."}

@@ -22,6 +22,8 @@ export interface SceneView {
   requestedRevision?: number;
   frames?: FrameSceneView[];
   progress?: { ready: number; total: number };
+  /** Accepted revision `scene` is shown for; a reused board scene keeps an older provenance. */
+  sceneRevision?: number;
   /** An earlier revision stays on screen while this one renders; no placeholder is due. */
   revalidating?: boolean;
 }
@@ -33,6 +35,11 @@ export interface FrameSceneView {
   height: number;
   scene?: Scene;
   resources?: Resources;
+  /**
+   * Accepted revision `scene` answers. A reused scene keeps its object (and its older
+   * `provenance.revision`) so paint caches hold; compare this field, never provenance.
+   */
+  revision?: number;
   error?: string;
   /** Revision-free identity of `scene`'s render input, when the scene module supplied one. */
   contentKey?: string;

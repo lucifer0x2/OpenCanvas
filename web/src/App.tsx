@@ -16,6 +16,7 @@ import { EMPTY_NODES, nodeIndex } from "./nodeIndex";
 import type { SceneRequest } from "./types";
 import useLocalStorage from "./hooks/ultility/useLocalStorage";
 import { WASM_FALLBACK } from "./scene/service";
+import { currentScene, shownRevision } from "./scene/staleFrames";
 
 export function App() {
   const project = useProject();
@@ -73,9 +74,17 @@ export function App() {
     retryKey,
   );
   const view = all ? pageView : singleView;
-  const inspectorScene = all
-    ? view.frames?.find((entry) => entry.id === selectedFrame?.id)?.scene
-    : view.scene;
+  // Computed geometry only from a scene that answers exactly the current snapshot.
+  const inspected = all
+    ? currentScene(
+        view.frames?.find((entry) => entry.id === selectedFrame?.id),
+        snapshot?.revision,
+      )
+    : shownRevision(view) === snapshot?.revision
+      ? view.scene
+      : undefined;
+  const inspectorScene =
+    inspected?.provenance.projectId === snapshot?.projectId ? inspected : undefined;
   const fallbackNotice = view.diagnostics.find((message) =>
     message.startsWith(WASM_FALLBACK),
   );
@@ -98,7 +107,7 @@ export function App() {
       : view.status === "failed"
         ? "Render failed"
         : view.status === "ready"
-          ? `Scene r${view.scene!.provenance.revision}`
+          ? `Scene r${shownRevision(view)}`
           : "No scene";
 
   return (
@@ -168,12 +177,8 @@ export function App() {
           {rightOpen && (
             <Inspector
               node={selectedNode}
-              scene={
-                inspectorScene?.provenance.projectId === snapshot?.projectId &&
-                inspectorScene?.provenance.revision === snapshot?.revision
-                  ? inspectorScene
-                  : undefined
-              }
+              scene={inspectorScene}
+              revision={snapshot?.revision}
             />
           )}
         </div>

@@ -1,10 +1,12 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { Group, Rect, Shape, Text } from "react-konva";
 import type Konva from "konva";
 import { indexScene, paintScene } from "../../../renderer/index";
 import type { FrameSceneView } from "../hooks/useScene";
 import type { FramePlacement } from "../scene/frameLayout";
 import { frameLabelMetrics } from "../scene/frameLabels";
+import type { BoardPaint } from "../paint/boardPaint";
+import { FrameBitmap } from "../paint/frameBitmap";
 
 /** Stable ready frames keep their React nodes and paint callback when the next slot completes. */
 export const CanvasFrame = memo(function CanvasFrame({
@@ -13,12 +15,15 @@ export const CanvasFrame = memo(function CanvasFrame({
   scale,
   selectedId,
   labels,
+  board,
 }: {
   frame: FrameSceneView;
   placement: FramePlacement;
   scale: number;
   selectedId: string;
   labels: boolean;
+  /** Board bitmap cache; without it (single frame) the scene paints as vectors. */
+  board?: BoardPaint;
 }) {
   const selected = frame.scene?.nodes.find((node) => node.id === selectedId);
   const label = frameLabelMetrics(
@@ -35,13 +40,26 @@ export const CanvasFrame = memo(function CanvasFrame({
         : undefined,
     [frame.scene, frame.resources],
   );
+  // One bitmap per mounted frame, released on unmount; it re-rasterizes itself when the
+  // scene, resources or resting zoom differ from what it holds.
+  const bitmap = useMemo(() => board && new FrameBitmap(board), [board]);
+  useEffect(() => () => bitmap?.release(), [bitmap]);
+  // A slot back to its skeleton (Retry, new scope) draws no Shape, so free its pixels here.
+  useEffect(() => {
+    if (!frame.scene) bitmap?.release();
+  }, [bitmap, frame.scene]);
   const paint = useCallback(
     (context: Konva.Context) => {
-      if (!frame.scene || !frame.resources) return;
-      context._context.imageSmoothingQuality = "high";
-      paintScene(context._context, frame.scene, frame.resources, tree);
+      if (!frame.scene || !frame.resources || !tree) return;
+      const content = { scene: frame.scene, resources: frame.resources, tree };
+      const vector = (target: CanvasRenderingContext2D) => {
+        target.imageSmoothingQuality = "high";
+        paintScene(target, content.scene, content.resources, content.tree);
+      };
+      if (bitmap) bitmap.draw(context._context, content, vector);
+      else vector(context._context);
     },
-    [frame.scene, frame.resources, tree],
+    [frame.scene, frame.resources, tree, bitmap],
   );
   const pending = !frame.scene && !frame.error;
   return (

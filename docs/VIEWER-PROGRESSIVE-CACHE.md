@@ -40,16 +40,22 @@ deadlines; unavailable/corrupt/blocked/quota storage degrades to computation. Su
 resource-ready scenes schedule writes at idle (or after paint), without awaiting disk.
 
 Geometry packing is keyed by authored sizes, and ready frame React components and paint
-callbacks are memoized. Konva still redraws the shared vector layer on board updates;
-there is no new full-size raster per frame, and overflow/shadows retain their behavior.
-Cold computation still does the full first-pass scene work. This change provides earlier
-partial visibility and subsequent reuse; it makes no measured CPU/latency claim.
+callbacks are memoized. Konva still redraws the one shared layer on every board update,
+but since 2026-11-10 each ready frame of the All board paints from its own device-pixel
+bitmap at the resting zoom (`web/src/paint/`): a redraw caused by another frame, selection,
+labels or pan blits bitmaps and runs `paintScene` only for the frame whose scene changed.
+Zoom gestures, frames larger than the canvas and unbounded content paint vectors; off-screen
+frames paint nothing. One page load publishes at most once per animation frame. Overflow,
+shadows and the frame label/selection/skeleton overlays keep their behavior. Design,
+limits and before/after measurements: [VIEWER-FRAME-PAINT.md](VIEWER-FRAME-PAINT.md).
+Cold computation still does the full first-pass scene work.
 
 Revisions are stale-while-revalidate (2026-11-09): after a first render, a new revision of
 the same page/frame/preset keeps every frame's last scene on screen (`scene/staleFrames.ts`).
 Frames whose content key is unchanged become current immediately, keeping their loaded
-resources; changed frames swap in individually; frames added show a skeleton, removed ones
-disappear. Progress is one quiet line that fades in only after 600 ms. A failed frame or page
+resources and the identical scene object (the accepted revision is carried on the frame
+as `FrameSceneView.revision`, not restamped into `provenance`); changed frames swap in
+individually; frames added show a skeleton, removed ones disappear. Progress is one quiet line that fades in only after 600 ms. A failed frame or page
 keeps its last scene and reports through the compact status with Retry. Placeholders appear
 only on first load, a new scope, a never-rendered frame or Retry. Stale scenes are not hit
 tested or inspected as current until revalidated.

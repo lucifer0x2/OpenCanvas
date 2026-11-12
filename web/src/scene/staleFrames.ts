@@ -1,6 +1,6 @@
 import type { FrameSceneView, SceneView } from "../hooks/useScene";
+import type { Scene } from "../../../renderer/types";
 import type { SceneRequest } from "../types";
-import { rebaseScene } from "./sceneIdentity";
 
 export type FrameTarget = Pick<
   FrameSceneView,
@@ -24,6 +24,7 @@ export function seedFrames(
           ...target,
           scene: old.scene,
           resources: old.resources,
+          revision: old.revision,
           contentKey: old.contentKey,
           diagnostics: old.diagnostics,
           missing: old.missing,
@@ -33,7 +34,11 @@ export function seedFrames(
   });
 }
 
-/** A stale frame with the same content key is current again without loading anything. */
+/**
+ * A stale frame with the same content key is current again without loading anything. The
+ * scene and resources objects stay identical, so indexes and frame bitmaps keyed on them hold;
+ * only `revision` moves to the request.
+ */
 export function reuseFrame(
   entry: FrameSceneView | undefined,
   request: SceneRequest,
@@ -48,7 +53,22 @@ export function reuseFrame(
   )
     return;
   const { stale: _stale, updateError: _error, ...current } = entry;
-  return { ...current, scene: rebaseScene(entry.scene, request) };
+  return { ...current, revision: request.revision };
+}
+
+/** The frame's scene, only when it answers exactly `revision` (hit testing, inspector). */
+export function currentScene(
+  frame: FrameSceneView | undefined,
+  revision: number | undefined,
+): Scene | undefined {
+  return frame?.scene && !frame.stale && revision !== undefined && frame.revision === revision
+    ? frame.scene
+    : undefined;
+}
+
+/** The revision a view's displayed scene stands for (single-frame scenes carry their own). */
+export function shownRevision(view: SceneView) {
+  return view.sceneRevision ?? view.scene?.provenance.revision;
 }
 
 /** A failed frame keeps its last scene, if any, and reports the failure beside it. */
@@ -83,6 +103,7 @@ export function pageView(
     frames: [...entries],
     scene: shown?.scene,
     resources: shown?.resources,
+    sceneRevision: shown?.revision,
     diagnostics: [
       ...new Set(entries.flatMap((entry) => entry.diagnostics ?? [])),
     ],

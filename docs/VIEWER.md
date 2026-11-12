@@ -69,6 +69,9 @@ re-rasterized or cached per zoom level: the Konva layer stays the size of the ca
 zoom allocates no canvas and costs one paint of the scene per frame (about 1.4 ms p95 for an
 857-node, 716-line scene in headless Chromium). Images are drawn with
 `imageSmoothingQuality = "high"`, which only affects the viewer, never the worker PNG.
+This describes the single-frame view. The All board paints the same vectors during a zoom
+gesture, then caches each frame as a bitmap once the zoom rests
+([VIEWER-FRAME-PAINT.md](VIEWER-FRAME-PAINT.md)).
 
 `paintScene` is the same code the worker PNG runs through `drawScene`, which only validates the
 pipeline, sizes and clears the target and sets its scale before painting. The viewer still draws
@@ -117,7 +120,9 @@ Production builds share a bounded IndexedDB scene cache between All and single-f
 views, always after an accepted authoritative snapshot, keyed by each frame's content
 digest so unchanged frames are reused across revisions.
 See [cache identity, bounds and verification](VIEWER-PROGRESSIVE-CACHE.md).
-The board shares loaded manifests and retains vectors rather than N full-resolution canvases.
+The board shares loaded manifests. Each ready frame keeps one bitmap at the resting zoom,
+never larger than the canvas, so board redraws blit instead of repainting every frame; see
+[VIEWER-FRAME-PAINT.md](VIEWER-FRAME-PAINT.md).
 Server mode and fallback admit batches of four, waiting for confirmed terminal jobs
 before advancing; unknown timeout/transport errors stop admission and expose Retry.
 Failed frames retain labeled slots, and fallback retains completed browser frames.

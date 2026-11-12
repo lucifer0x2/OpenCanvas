@@ -3,7 +3,7 @@ import test from "node:test";
 import { sceneModule } from "./scene-module.mjs";
 import { sceneFor } from "./scene-fixtures.mjs";
 
-const { seedFrames, reuseFrame, failFrame, pageView } =
+const { seedFrames, reuseFrame, failFrame, pageView, currentScene, shownRevision } =
   await sceneModule("staleFrames");
 const { browserPagePass } = await sceneModule("browserPage");
 const { cachedBrowserScene } = await sceneModule("browserSceneCache");
@@ -66,6 +66,7 @@ function page(digests) {
             ...targets[index(result.request.frameId)],
             scene: result.job.scene,
             resources: {},
+            revision: result.request.revision,
             contentKey: result.contentKey,
           };
           result.persist?.();
@@ -107,11 +108,19 @@ test("a new revision keeps every rendered frame and recomputes only changed or a
   // Only the changed and the added frame were loaded or computed.
   assert.deepEqual(loaded, ["b", "d"]);
   assert.deepEqual(computed, ["a@7", "b@7", "c@7", "b@8", "d@8"]);
+  assert.equal(next.entries[0].revision, 8, "reused scene is current");
   assert.equal(
-    next.entries[0].scene.provenance.revision,
-    8,
-    "reused scene is current",
+    next.entries[0].scene,
+    first.entries[0].scene,
+    "reuse keeps the scene object, so indexes and frame bitmaps hold",
   );
+  assert.equal(next.entries[0].scene.provenance.revision, 7);
+  assert.equal(currentScene(next.entries[0], 8), first.entries[0].scene);
+  assert.equal(currentScene(next.entries[0], 7), undefined);
+  assert.equal(next.view.sceneRevision, 8);
+  assert.equal(shownRevision(next.view), 8);
+  assert.equal(next.entries[1].revision, 8, "recomputed frame answers r8");
+  assert.equal(next.entries[1].scene.provenance.revision, 8);
   assert.equal(
     next.entries[0].resources,
     first.entries[0].resources,
@@ -120,6 +129,22 @@ test("a new revision keeps every rendered frame and recomputes only changed or a
   assert.ok(next.entries.every((e) => !e.stale));
   assert.equal(next.view.status, "ready");
   assert.equal(next.view.revalidating, false);
+});
+
+test("a seeded frame keeps its last revision but is never current until revalidated", () => {
+  const scene = sceneFor(request(4, "a"));
+  const [stale] = seedFrames(
+    [target("a")],
+    [{ ...target("a"), scene, resources: {}, revision: 4, contentKey: "k" }],
+  );
+  assert.equal(stale.revision, 4);
+  assert.equal(currentScene(stale, 4), undefined, "stale scenes are not hit or inspected");
+  assert.equal(currentScene(stale, 5), undefined);
+  const reused = reuseFrame(stale, request(5, "a"), "k");
+  assert.equal(reused.scene, scene);
+  assert.equal(reused.resources, stale.resources);
+  assert.equal(currentScene(reused, 5), scene);
+  assert.equal(currentScene(reused, undefined), undefined);
 });
 
 test("a fresh view of an unchanged frame at a later revision is served from memory", async () => {

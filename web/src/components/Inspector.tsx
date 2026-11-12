@@ -19,9 +19,12 @@ function Property({ name, value }: { name: string; value: unknown }) {
 export const Inspector = memo(function Inspector({
   node,
   scene,
+  revision,
 }: {
   node?: DesignNode;
+  /** Only a scene current at `revision`; a reused scene keeps an older provenance revision. */
   scene?: Scene;
+  revision?: number;
 }) {
   const computed = scene?.nodes.find((entry) => entry.id === node?.id);
   const actions = useNodeActions();
@@ -73,7 +76,7 @@ export const Inspector = memo(function Inspector({
             {computed ? (
               <>
                 <p className="section-note">
-                  Frame-local pixels · revision {scene!.provenance.revision}
+                  Frame-local pixels · revision {revision}
                 </p>
                 <dl className="bounds-grid">
                   {Object.entries(computed.bounds).map(([name, value]) => (
@@ -101,7 +104,7 @@ export const Inspector = memo(function Inspector({
             <section className="inspect-section">
               <h3>Scene source</h3>
               <dl>
-                <Property name="Revision" value={scene.provenance.revision} />
+                <Property name="Revision" value={revision} />
                 <Property
                   name="Renderer"
                   value={scene.provenance.rendererVersion}

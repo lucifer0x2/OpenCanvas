@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stage, Layer } from "react-konva";
 import type Konva from "konva";
+import { BoardPaint } from "../paint/boardPaint";
 import { boardHitTest } from "../scene/boardHitTest";
 import { fitFrameBoard } from "../scene/frameLayout";
 import { CanvasScenes } from "./CanvasScenes";
@@ -30,6 +31,12 @@ export function CanvasView({
   frameName: string;
 }) {
   const stage = useRef<Konva.Stage>(null);
+  const layer = useRef<Konva.Layer>(null);
+  // Frame bitmaps of the All board share zoom-settle and memory state; one per canvas.
+  const [board] = useState(
+    () => new BoardPaint(() => layer.current?.batchDraw()),
+  );
+  useEffect(() => () => board.dispose(), [board]);
   const actions = useNodeActions();
   const pointerStart = useRef({ x: 0, y: 0 });
   const scene = view.scene;
@@ -42,6 +49,7 @@ export function CanvasView({
           ...scene.provenance.viewport,
           scene,
           resources,
+          revision: scene.provenance.revision,
         }]
       : []),
     [view.frames, scene, resources, frameName],
@@ -199,13 +207,14 @@ export function CanvasView({
                 zoom(factor, stage.current?.getPointerPosition() ?? undefined);
             }}
           >
-            <Layer imageSmoothingEnabled>
+            <Layer ref={layer} imageSmoothingEnabled>
               <CanvasScenes
                 frames={frames}
                 placements={placements}
                 scale={transform.scale}
                 selectedId={selectedId}
                 labels={Boolean(view.frames)}
+                board={view.frames ? board : undefined}
               />
             </Layer>
           </Stage>
