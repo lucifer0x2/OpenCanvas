@@ -3,7 +3,7 @@ use rmcp::{model::*, ErrorData};
 #[path = "capabilities.rs"]
 mod capabilities;
 
-const SKILLS: [(&str, &str, &str); 2] = [
+const SKILLS: [(&str, &str, &str); 3] = [
     (
         "skill://opencanvas/implement-frame.md",
         "Implement an OpenCanvas frame",
@@ -13,6 +13,11 @@ const SKILLS: [(&str, &str, &str); 2] = [
         "skill://opencanvas/author-frame.md",
         "Author an OpenCanvas frame",
         include_str!("../skills/author-frame.md"),
+    ),
+    (
+        "skill://opencanvas/ocd.md",
+        "OCD source for apply_batch",
+        include_str!("../skills/ocd.md"),
     ),
 ];
 

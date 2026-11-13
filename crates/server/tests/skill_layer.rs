@@ -40,7 +40,7 @@ async fn resources_are_advertised_embedded_and_read_only_with_tool_compatibility
         .contains("NO_REFLOW_INFORMATION"));
     let resources = s.rpc("resources/list", json!({})).await;
     let listed = resources["resources"].as_array().unwrap();
-    assert_eq!(listed.len(), 4);
+    assert_eq!(listed.len(), 5);
     assert!(resources["nextCursor"].is_null());
     for (index, (uri, expected)) in [
         (
@@ -50,6 +50,10 @@ async fn resources_are_advertised_embedded_and_read_only_with_tool_compatibility
         (
             "skill://opencanvas/author-frame.md",
             include_str!("../skills/author-frame.md"),
+        ),
+        (
+            "skill://opencanvas/ocd.md",
+            include_str!("../skills/ocd.md"),
         ),
     ]
     .iter()
