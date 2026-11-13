@@ -13,9 +13,9 @@ Usage: build-release.sh <git-ref> <output-dir>
 Resolves <git-ref> to a full commit, archives that exact tree into a private source
 directory and builds natively: scene WASM, renderer bundle, viewer, release server and
 layout-step. Copies Node (for verify-runtime.mjs), then writes RENDER_BACKEND, REVISION,
-PROVENANCE and SHA256SUMS. The release runs the Rust render backend: run-server.sh exports
-its RENDER_BACKEND, and no Chromium is copied. <output-dir> must not exist; it appears only
-after a complete build.
+PROVENANCE and SHA256SUMS. run-server.sh exports the release's RENDER_BACKEND: Chromium by
+default (the Playwright browser is copied), or the experimental Rust backend (no browser).
+<output-dir> must not exist; it appears only after a complete build.
 
 Environment (optional):
   CARGO_TARGET_DIR     Cargo cache (default <repo>/.runtime/native/target)
@@ -24,7 +24,7 @@ Environment (optional):
                        target/scene-wasm/tools, then PATH)
   OPENCANVAS_NODE      Node binary matching the Dockerfile pin (default nvm Node)
   OPENCANVAS_RENDER_BACKEND
-                       rust (default) or chromium. chromium also copies the Playwright
+                       chromium (default) or rust. chromium also copies the Playwright
                        browser from OPENCANVAS_BROWSERS (default <repo>/.runtime/browsers).
 Builds run offline (cargo --offline, npm ci --offline); dependencies must be cached.
 EOF
@@ -39,7 +39,7 @@ output=$2
 parent=$(dirname "$output")
 [[ -d "$parent" ]] || die "Output parent directory does not exist: $parent"
 sha=$(git -C "$NATIVE_REPO" rev-parse --verify --quiet "$ref^{commit}") || die "Unknown git ref: $ref"
-backend=${OPENCANVAS_RENDER_BACKEND:-rust}
+backend=${OPENCANVAS_RENDER_BACKEND:-chromium}
 [[ "$backend" == rust || "$backend" == chromium ]] || die "OPENCANVAS_RENDER_BACKEND must be rust or chromium"
 cache="$NATIVE_REPO/.runtime/native"
 export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$cache/target}
