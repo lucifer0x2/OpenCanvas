@@ -112,6 +112,16 @@ fn eviction_and_expiry_rebuild_without_invalidating_reader() {
 #[test]
 fn lazy_scope_index_is_reused_and_its_full_metadata_fits_admission_reservation() {
     let mut snapshot = snapshot();
+    // Frame positions are additional metadata; roots/frames/notes must all fit.
+    for i in 0..100 {
+        snapshot.nodes.push(Node {
+            id: format!("frame{i}"),
+            parent_id: Some("page".into()),
+            sort_key: i,
+            kind: NodeKind::Frame,
+            props: json!({"width":10,"height":10}),
+        });
+    }
     snapshot.notes = (0..5000)
         .map(|i| Note {
             id: format!("note{i}"),
@@ -134,6 +144,10 @@ fn lazy_scope_index_is_reused_and_its_full_metadata_fits_admission_reservation()
         indexes.read_scope.lock().unwrap().as_ref().unwrap()
     ));
     assert!(first.estimated_bytes() <= indexes.read_weight);
+    let scoped = again.scoped().unwrap();
+    assert_eq!(scoped.roots().count(), 1);
+    assert_eq!(scoped.frames().count(), 100);
+    assert_eq!(scoped.children("page").count(), 100);
     assert_eq!(
         again.scoped().unwrap().notes_for_nodes(["page"]).len(),
         5000

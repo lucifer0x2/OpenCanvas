@@ -26,6 +26,12 @@ fn scoped_scene_bytes_match_full_for_authored_and_nested_virtual_frames() {
                 serde_json::to_vec(&make_input(&snapshot, &request).unwrap()).unwrap(),
                 serde_json::to_vec(&scoped.make_input_with_scale(&request, 1.).unwrap()).unwrap()
             );
+            let (prepared, nodes) = scoped.prepare_input_with_scale(&request, 1.).unwrap();
+            assert_eq!(
+                prepared,
+                scoped.make_input_with_scale(&request, 1.).unwrap()
+            );
+            assert_eq!(nodes.stats.resolved_nodes, nodes.stats.expanded_nodes);
         }
     }
 }

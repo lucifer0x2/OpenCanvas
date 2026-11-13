@@ -1,10 +1,21 @@
 //! Scene preparation shares the same frame contract and budgets as full input.
-use super::{ReadScope, ScopedSnapshot};
+use super::{ReadScope, ScopedNodes, ScopedSnapshot};
 use crate::{check_viewport, frame_input, ResolvedNodes, Result, SceneOptions, StorageError};
 use serde_json::Value;
 
-impl ScopedSnapshot<'_> {
+impl<'a> ScopedSnapshot<'a> {
     pub fn make_input_with_scale(&self, options: &SceneOptions, scale: f64) -> Result<Value> {
+        self.prepare_input_with_scale(options, scale)
+            .map(|(input, _)| input)
+    }
+
+    /// Prepare exact scene bytes and retain their authored dependency closure for
+    /// indexed note intent. The caller can drop the closure before queue admission.
+    pub fn prepare_input_with_scale(
+        &self,
+        options: &SceneOptions,
+        scale: f64,
+    ) -> Result<(Value, ScopedNodes<'a>)> {
         check_viewport(options.width, options.height, scale)?;
         // Requested theme errors precede frame lookup, as on the full path.
         crate::validate::check_scoped_theme(self.snapshot, &options.theme)?;
@@ -18,6 +29,6 @@ impl ScopedSnapshot<'_> {
                 }
             })?;
         let resolved = ResolvedNodes::from_nodes(self.resolve(&mut nodes, &options.theme)?);
-        frame_input(self.snapshot, &resolved, options)
+        Ok((frame_input(self.snapshot, &resolved, options)?, nodes))
     }
 }

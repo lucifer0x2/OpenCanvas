@@ -67,26 +67,30 @@ impl<'a> Intent<'a> {
                 .as_array()
                 .is_some_and(|a| !a.is_empty())
     }
+
+    /// Mark rendered descendants using this intent's indexed authored sources.
+    pub fn overflow_ids(&self, nodes: &[Node]) -> Vec<String> {
+        let by_id: HashMap<_, _> = nodes.iter().map(|n| (n.id.as_str(), n)).collect();
+        let mut marked = HashSet::new();
+        for node in nodes {
+            let mut current = Some(node);
+            while let Some(ancestor) = current {
+                if self.noted(ancestor, true) {
+                    marked.insert(node.id.clone());
+                    break;
+                }
+                current = ancestor
+                    .parent_id
+                    .as_deref()
+                    .and_then(|id| by_id.get(id).copied());
+            }
+        }
+        let mut marked: Vec<_> = marked.into_iter().collect();
+        marked.sort();
+        marked
+    }
 }
 
 pub fn overflow_ids(snapshot: &Snapshot, nodes: &[Node]) -> Vec<String> {
-    let intent = Intent::new(snapshot);
-    let by_id: HashMap<_, _> = nodes.iter().map(|n| (n.id.as_str(), n)).collect();
-    let mut marked = HashSet::new();
-    for node in nodes {
-        let mut current = Some(node);
-        while let Some(ancestor) = current {
-            if intent.noted(ancestor, true) {
-                marked.insert(node.id.clone());
-                break;
-            }
-            current = ancestor
-                .parent_id
-                .as_deref()
-                .and_then(|id| by_id.get(id).copied());
-        }
-    }
-    let mut marked: Vec<_> = marked.into_iter().collect();
-    marked.sort();
-    marked
+    Intent::new(snapshot).overflow_ids(nodes)
 }

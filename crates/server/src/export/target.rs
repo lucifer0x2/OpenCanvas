@@ -17,10 +17,10 @@ pub struct Nodes<'a> {
 }
 
 impl<'a> Nodes<'a> {
-    pub fn new(snapshot: &'a Snapshot, resolved: &'a [Node]) -> Self {
+    pub fn new(authored: &'a [Node], resolved: &'a [Node]) -> Self {
         let by_id = |nodes: &'a [Node]| nodes.iter().map(|n| (n.id.as_str(), n)).collect();
         Self {
-            authored: by_id(&snapshot.nodes),
+            authored: by_id(authored),
             resolved: by_id(resolved),
         }
     }

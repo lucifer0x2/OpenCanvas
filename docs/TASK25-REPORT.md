@@ -837,3 +837,95 @@ pass targeted rustfmt/diff whitespace checks and remain below 250 lines: find
 pagination differential 46, read differential tests 173 and fixture 81. The
 `reads.rs` integration changes only find dispatch. No storage format, production
 cap, live service, native data, deployment or push was changed.
+
+## Slice 4c — scoped render, export and job admission
+
+Runtime render, context viewports, page scene batches, export targets and commit
+prerenders now borrow one `Storage::shared_snapshot` result per request. Builtin
+authority uses the same revision-bound scoped capability as authored context.
+`ScopedSnapshot::prepare_input_with_scale` returns the existing exact frame input
+and its dependency closure; `make_input_with_scale` delegates to it. Preparation
+retains no closure in the queue. Public `Jobs::enqueue(Snapshot, ...)` and custom
+or replaced-Arc shared snapshots still take the original full-validation path.
+
+Jobs reuse one input/URL/key assembly and unchanged locked admission for both
+sources. Revision, viewport/pixel and interaction-state checks retain their
+priority, followed by theme/frame errors and the exact 2,048-node frame budget.
+Indexed dependency notes feed `Intent::overflow_ids`, preserving master/source
+markers and rendered ancestor propagation without scanning all notes or nodes.
+The original free `overflow_ids(snapshot, nodes)` delegates to the same algorithm.
+Page scene selection uses indexed authored children; prerender selection walks
+indexed ancestors and source-order frame metadata, retaining its existing first
+frames fallback, including nested authored frames. This write-adjacent selection
+may examine frame metadata beyond the selected frames; it never expands them.
+
+Exports retain the global requested-theme check before per-node missing-target
+errors. Each target resolves its scoped ancestors/master dependencies, then its
+root frame uses shared job preparation. Settings, sanitized filenames, virtual
+targets, root-frame dimensions and per-item failures match the full reference.
+Untrusted export sources still validate/resolve the entire original snapshot.
+Context reads pass the same shared snapshot to authored and computed paths and
+retain existing failure/retry, queue-full, reflow, bounds and diagnostic behavior.
+Inspection already reads only the retained immutable job; a new test successfully
+inspects a job whose project does not exist in current storage, proving no current
+snapshot is required. Its existing cursor/scene implementation is unchanged.
+
+Actual checks on the integrated 4b/4d source:
+
+| Check | Result |
+| --- | --- |
+| Scoped scene-input parity/errors and exact render-node boundaries | 10 passed |
+| Metadata reservation with roots, 100 frames and 5,000 indexed notes | 1 passed |
+| Prepared input bytes/key/overflow/errors and untrusted invalid-global fallback | 3 passed |
+| Server library unit tests | 96 passed initially; one new fixture corrected and its targeted rerun passed |
+| Chromium/native render/export, scene batches, viewports, inspection, queues and failures | 32 passed across 14 targets |
+| Three-crate strict library clippy | passed after the two 4b tree lint warnings were fixed separately in `7f5b104` |
+| Three-package fmt, raw diff whitespace and touched Rust module sizes | passed; largest 201 lines |
+
+Prepared-input differential coverage includes normal/nested virtual frames,
+placed/default/night/day themes, bundled font transport URLs, state/revision/
+viewport/frame error priority, master source markers and ancestor intent. The
+unchanged target's closure/expanded/resolved/indexed-note work remains
+**11 / 7 / 7 / 9** after adding 20 unrelated pages, frames and notes. Counts exclude
+cold SQL loading and revision-index construction; resource metadata retains its
+existing cost. This is bounded-work evidence, not a release latency measurement.
+Frame bytes, scene keys, pipeline identity, stale job revision/provenance, native
+font/byte caching, PNG/SVG export settings, public privacy and queue retries are
+covered by the pure comparisons and existing real runtime fixtures.
+
+The initial new prerender fixture used `sortKey` in a `create_node` operation;
+the existing schema correctly rejected it. Removing that unsupported field fixed
+the fixture, and the indexed/full selector comparison then passed. A first unit
+test command filtered by a filename rather than its Rust module and selected no
+tests; the corrected `jobs::shared::tests` command ran all three tests. Runtime
+checks used temporary SQLite roots and random loopback listeners, with Chromium
+and native rendering. No live services, native data or user project roots were
+read or changed.
+
+Strict library clippy initially found two mechanical warnings in 4b's tree module.
+A fresh focused worker fixed only that module in `7f5b104`; its six scoped-tree
+tests passed, then the three-crate strict library clippy rerun passed. The final
+complete combined suite is still coordinator-owned.
+
+```sh
+cargo test --offline -p opencanvas-scene-input -j2 --test scoped_input --test scoped -- --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-storage -j2 --lib lazy_scope_index -- --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-server -j2 --lib jobs::shared::tests -- --test-threads=2 --nocapture
+rtk bypass cargo test --offline -p opencanvas-server -j2 --lib -- --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-server -j2 --lib reads::targets::tests::indexed_prerender -- --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-server -j2 --test render --test render_response --test render_wait --test export_nodes --test export_svg --test native_exports --test scenes --test multi_viewport --test multi_failures --test prerender_targets --test inspect_paging --test render_queue --test failures --test states_render -- --test-threads=2
+rtk bypass cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 --lib -- -D warnings
+rtk bypass cargo fmt --package opencanvas-scene-input --package opencanvas-storage --package opencanvas-server --check
+rtk bypass git diff --check
+```
+
+The shared preparation helper is 96 lines, export source/target helpers 75/137,
+page scene handler 173, viewport composition 201, indexed prerender selection and
+tests 174, and the largest new test module 170. All touched Rust modules remain
+below 250 lines, with one responsibility per module and no size exception. The
+frame-position metadata is included in the existing conservative reservation and
+its estimate; `ScopeIndex::from_nodes` is private, and trusted construction now
+explicitly requires the exact node and note vectors indexed by `ScopeIndex::new`.
+No storage layout, HTTP representation, viewer behavior, production cap, renderer
+budget, deployment, restart or push change is included. Final combined gates and
+latency acceptance remain coordinator work; slices 5–6 are unchanged.

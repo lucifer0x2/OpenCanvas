@@ -63,7 +63,9 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
         let event = json!({"event":"commit","projectId":committed["projectId"],"revision":committed["committedRevision"],"changedIds":committed["changedIds"]});
         let _ = state.events.send(event);
         if let Some(project) = committed["projectId"].as_str().filter(|_| !notes_only) {
-            if let Ok(snapshot) = state.snapshot(project.into()).await {
+            let project = project.to_owned();
+            if let Ok(shared) = state.db(move |store| store.shared_snapshot(&project)).await {
+                let snapshot = &shared.snapshot;
                 // Frames holding changed nodes; token/style-only changes keep the first four.
                 let changed: Vec<&str> = committed["changedIds"]
                     .as_array()
@@ -71,7 +73,9 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
                     .flatten()
                     .filter_map(Value::as_str)
                     .collect();
-                for frame in crate::reads::targets::prerender_frames(&snapshot, &changed, 4) {
+                for frame in crate::reads::targets::prerender_shared(&shared, &changed, 4)
+                    .unwrap_or_default()
+                {
                     let width = frame.props["width"].as_f64().unwrap_or(800.0);
                     let height = frame.props["height"].as_f64().unwrap_or(600.0);
                     let request = SceneRequest {
@@ -83,7 +87,7 @@ pub async fn mutate(state: &AppState, name: &str, args: Value) -> Result<Value> 
                         state: "default".into(),
                         scale: 1.0,
                     };
-                    let _ = state.jobs.prerender(snapshot.clone(), request).await;
+                    let _ = state.jobs.prerender_shared(&shared, request).await;
                 }
             }
         }

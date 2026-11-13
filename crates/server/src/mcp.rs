@@ -104,8 +104,10 @@ pub(crate) async fn scene(
     project: String,
     request: SceneRequest,
 ) -> Result<Value> {
-    let snapshot = state.snapshot(project).await?;
-    state.jobs.enqueue(snapshot, request).await
+    let snapshot = state
+        .db(move |store| store.shared_snapshot(&project))
+        .await?;
+    state.jobs.enqueue_shared(&snapshot, request).await
 }
 pub(crate) async fn render(state: &AppState, mut args: Value) -> Result<Value> {
     let project = args["projectId"]

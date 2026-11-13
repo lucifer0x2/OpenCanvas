@@ -5,11 +5,14 @@ use super::{
     Entry, Jobs, Table,
 };
 use crate::error::Result;
+use opencanvas_storage::SharedSnapshot;
+#[cfg(test)]
 use opencanvas_storage::Snapshot;
 use serde_json::{json, Value};
 
 impl Jobs {
     /// Every frame validates against the same snapshot before any job is admitted.
+    #[cfg(test)]
     pub(crate) async fn enqueue_batch(
         &self,
         snapshot: &Snapshot,
@@ -19,6 +22,22 @@ impl Jobs {
             .into_iter()
             .map(|request| Prepared::new(snapshot, request, &self.config, None))
             .collect::<Result<Vec<_>>>()?;
+        self.admit_batch(prepared).await
+    }
+
+    pub(crate) async fn enqueue_shared_batch(
+        &self,
+        snapshot: &SharedSnapshot,
+        requests: Vec<super::SceneRequest>,
+    ) -> Result<Vec<Value>> {
+        let prepared = requests
+            .into_iter()
+            .map(|request| Prepared::shared(snapshot, request, &self.config, None))
+            .collect::<Result<Vec<_>>>()?;
+        self.admit_batch(prepared).await
+    }
+
+    async fn admit_batch(&self, prepared: Vec<Prepared>) -> Result<Vec<Value>> {
         let mut table = self.table.lock().await;
         let new = prepared
             .iter()

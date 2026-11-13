@@ -47,7 +47,8 @@ impl<'a> ScopedSnapshot<'a> {
 
     /// Explicit trusted boundary for storage adapters with a validated-write invariant.
     /// The caller guarantees the *entire* snapshot already passed full validation
-    /// and that `index` describes this exact immutable node vector in source order.
+    /// and that `index` was built with `ScopeIndex::new` for this exact immutable
+    /// snapshot, including its node and note vectors in source order.
     /// Cache identity alone does not establish either guarantee. This deliberately
     /// does not change standalone resolution/validation APIs.
     pub fn from_validated(snapshot: &'a Snapshot, index: Arc<ScopeIndex>) -> Self {
@@ -69,6 +70,21 @@ impl<'a> ScopedSnapshot<'a> {
     /// ordering at the read layer, exactly as for the full source vector.
     pub fn roots(&self) -> impl Iterator<Item = &'a Node> + '_ {
         self.index.roots.iter().map(|&i| &self.snapshot.nodes[i])
+    }
+
+    /// Authored frames in snapshot source order, including nested frames.
+    pub fn frames(&self) -> impl Iterator<Item = &'a Node> + '_ {
+        self.index.frames.iter().map(|&i| &self.snapshot.nodes[i])
+    }
+
+    /// Immediate authored children in source order, without expanding a page.
+    pub fn children(&self, id: &str) -> impl Iterator<Item = &'a Node> + '_ {
+        self.index
+            .children
+            .get(id)
+            .into_iter()
+            .flatten()
+            .map(|&i| &self.snapshot.nodes[i])
     }
 
     /// Notes anchored to this authored dependency closure, in snapshot note order.

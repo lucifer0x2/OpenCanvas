@@ -100,7 +100,7 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
         let s = &shared.snapshot;
         let (scope, offset) = pagination::scope(s, name, &req)?;
         let computed = if name == "get_design_context" {
-            viewports::compute(state, &s, &req).await?
+            viewports::compute(state, &shared, &req).await?
         } else {
             None
         };

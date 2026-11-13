@@ -1,5 +1,5 @@
 //! Revision-local payload positions and adjacency; never owns node payloads.
-use crate::{node_links, Node, Snapshot};
+use crate::{node_links, Node, NodeKind, Snapshot};
 use std::collections::BTreeMap;
 
 #[derive(Default)]
@@ -8,6 +8,7 @@ pub struct ScopeIndex {
     pub(super) children: BTreeMap<String, Vec<usize>>,
     pub(super) incoming: BTreeMap<String, Vec<usize>>,
     pub(super) roots: Vec<usize>,
+    pub(super) frames: Vec<usize>,
     pub(super) notes: BTreeMap<String, Vec<usize>>,
 }
 
@@ -25,10 +26,13 @@ impl ScopeIndex {
         index
     }
 
-    pub fn from_nodes<'a>(nodes: impl IntoIterator<Item = &'a Node>) -> Self {
+    fn from_nodes<'a>(nodes: impl IntoIterator<Item = &'a Node>) -> Self {
         let mut index = Self::default();
         for (position, node) in nodes.into_iter().enumerate() {
             index.positions.insert(node.id.clone(), position);
+            if node.kind == NodeKind::Frame {
+                index.frames.push(position);
+            }
             if let Some(parent) = &node.parent_id {
                 index
                     .children
@@ -48,7 +52,7 @@ impl ScopeIndex {
     }
 
     pub fn estimated_bytes(&self) -> usize {
-        self.roots.len() * 8
+        (self.roots.len() + self.frames.len()) * 8
             + self.positions.keys().map(|id| 64 + id.len()).sum::<usize>()
             + self
                 .children

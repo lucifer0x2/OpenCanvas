@@ -4,7 +4,7 @@ use crate::{
     jobs::SceneRequest,
     state::AppState,
 };
-use opencanvas_storage::{NodeKind, Snapshot};
+use opencanvas_storage::{read_scope::ReadScope, NodeKind, SharedSnapshot};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashSet};
@@ -27,9 +27,10 @@ pub(super) struct Computed {
 /// Enqueue/read the existing bounded jobs; never wait on Chromium in a context read.
 pub(super) async fn compute(
     state: &AppState,
-    snapshot: &Snapshot,
+    shared: &SharedSnapshot,
     req: &ReadRequest,
 ) -> Result<Option<Computed>> {
+    let snapshot = &shared.snapshot;
     let Some(viewports) = &req.viewports else {
         return Ok(None);
     };
@@ -42,15 +43,26 @@ pub(super) async fn compute(
         .frame_id
         .as_deref()
         .ok_or_else(|| ApiError::invalid("frameId is required"))?;
-    if !snapshot
-        .nodes
-        .iter()
-        .any(|n| n.id == frame && n.kind == NodeKind::Frame)
-    {
+    let scoped = shared.trusted_scoped()?;
+    let valid = if let Some(scoped) = &scoped {
+        scoped
+            .node(frame)
+            .is_some_and(|node| node.kind == NodeKind::Frame)
+    } else {
+        snapshot
+            .nodes
+            .iter()
+            .any(|node| node.id == frame && node.kind == NodeKind::Frame)
+    };
+    if !valid {
         return Err(ApiError::invalid("frameId must identify a frame"));
     }
     validate(viewports)?;
-    let expanded = opencanvas_storage::instances::expand(&snapshot.nodes)?;
+    let expanded = if let Some(scoped) = &scoped {
+        scoped.expand(ReadScope::Target(frame), false)?.expanded
+    } else {
+        opencanvas_storage::instances::expand(&snapshot.nodes)?
+    };
     let ids: HashSet<String> = TreeIndex::new(&expanded)
         .preorder(Some(frame))
         .into_iter()
@@ -73,7 +85,7 @@ pub(super) async fn compute(
             state: "default".into(),
             scale: 1.0,
         };
-        let job = match state.jobs.for_context(snapshot.clone(), request).await {
+        let job = match state.jobs.context_shared(shared, request).await {
             Ok(job) => job,
             Err(e) if e.0.code == "QUEUE_FULL" => {
                 json!({"status":"failed","error":e.value()["error"]})

@@ -1,8 +1,35 @@
 //! Which frames a commit's prerender should warm. The viewer shows top-level frames, so a changed
 //! node maps to the outermost frame that contains it (itself included), found through the index.
 use super::index::TreeIndex;
-use opencanvas_storage::{Node, NodeKind, Snapshot};
+use opencanvas_storage::{Node, NodeKind, SharedSnapshot, Snapshot};
 use std::collections::HashSet;
+
+pub(crate) fn prerender_shared<'a>(
+    shared: &'a SharedSnapshot,
+    changed_ids: &[&str],
+    max: usize,
+) -> crate::error::Result<Vec<&'a Node>> {
+    let Some(scoped) = shared.trusted_scoped()? else {
+        return Ok(prerender_frames(&shared.snapshot, changed_ids, max));
+    };
+    let mut touched = HashSet::new();
+    for id in changed_ids {
+        let mut node = scoped.node(id);
+        let mut frame = None;
+        while let Some(current) = node {
+            if current.kind == NodeKind::Frame {
+                frame = Some(current.id.as_str());
+            }
+            node = current.parent_id.as_deref().and_then(|id| scoped.node(id));
+        }
+        touched.extend(frame);
+    }
+    Ok(scoped
+        .frames()
+        .filter(|frame| touched.is_empty() || touched.contains(frame.id.as_str()))
+        .take(max)
+        .collect())
+}
 
 /// Frames to prerender after a commit, in storage order, at most `max`. Frames containing a
 /// changed node are chosen; when no changed ID resolves to a frame (token/style-only
@@ -113,5 +140,35 @@ mod tests {
         assert_eq!(ids(prerender_frames(&s, &["deleted-node"], 4)), first);
         assert_eq!(ids(prerender_frames(&s, &["page"], 4)), first);
         assert_eq!(ids(prerender_frames(&s, &[], 4)), first);
+    }
+
+    #[test]
+    fn indexed_prerender_selection_retains_source_order_and_legacy_fallback() {
+        let root = tempfile::tempdir().unwrap();
+        let store: opencanvas_storage::Storage =
+            opencanvas_storage::Store::open(root.path()).unwrap().into();
+        let project = store.create_project("targets", "Targets").unwrap();
+        let ops: Vec<_> = six_frames().nodes.into_iter().map(|mut node| {
+            if node.kind == NodeKind::Frame { node.props = serde_json::json!({"width":10,"height":10}); }
+            if node.kind == NodeKind::Text { node.props = serde_json::json!({"text":"copy","fontId":"font_bundled","fontSize":10,"lineHeight":12}); }
+            serde_json::json!({"op":"create_node","id":node.id,"parentId":node.parent_id,"kind":node.kind,"props":node.props})
+        }).collect();
+        project.apply_batch(serde_json::from_value(serde_json::json!({"projectId":project.id(),"expectedRevision":0,"idempotencyKey":"seed","operations":ops})).unwrap()).unwrap();
+        let shared = store.shared_snapshot(project.id()).unwrap();
+        for changed in [
+            vec!["inner-t"],
+            vec!["f6", "f2-g"],
+            vec!["token"],
+            vec!["deleted"],
+            vec!["page"],
+            vec![],
+        ] {
+            for max in [0, 1, 4, 10] {
+                assert_eq!(
+                    ids(prerender_shared(&shared, &changed, max).unwrap()),
+                    ids(prerender_frames(&shared.snapshot, &changed, max))
+                );
+            }
+        }
     }
 }
