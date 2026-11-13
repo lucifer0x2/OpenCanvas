@@ -1150,3 +1150,130 @@ all 508 five-sample summaries, exact counts/body sizes, stderr read errors, all
 80 fixture comparisons and cleanup. Generated evidence/private source is not
 committed. The 496-pass combined default gate above supersedes the earlier
 per-slice pending test/clippy flags.
+
+## Slice 4 hardening — 2026-11-13
+
+Follow-up to an independent slice-4 review (no wrong-output bugs; risks and test
+gaps). No storage layout/schema, production cap or response contract change;
+legacy full-validation paths for custom/untrusted backends are unchanged.
+
+| Commit | Change |
+| --- | --- |
+| `868ab87` | Trust boundary: stored-row panics become validation errors; `ScopeIndex` bound to its snapshot |
+| `94ad9c4` | find: expansion through the revision index, no per-root master closure |
+| `a5ba4fa` | Scoped resources built once per `ScopedSnapshot`; export theme check/page precheck |
+| `e2613ec` | Coverage gaps, tree target error, poisoned scope slot fallback |
+
+**Trust boundary.** Panics reachable from stored node data on the trusted path
+now return `StorageError::validation`: instance/master props (`props`), override
+patches onto non-object virtual props, and `UpdateNode` on a node with scalar
+props (a real commit-path panic found by the new test). Scoped descendants are
+walked iteratively; instance expansion stops past the validated 128-level tree
+depth (`parentId`), so a master parent cycle is an error instead of deep
+recursion. `ScopeIndex` records project ID, revision, node/note counts and checks
+first/last node positions; `from_validated` rebuilds a mismatched index and
+`SharedSnapshot::trusted_scoped` neither uses nor replaces a cached index built
+for another snapshot vector. The debug incremental/full cross-check now fails
+only when the *before* revision is itself fully valid: corrupt rows legitimately
+diverge (the incremental error lacks node context), and that debug panic was the
+other crash the corruption test exposed. Release behavior is unchanged.
+
+Tests write invalid rows with rusqlite into temporary SQLite roots (instance with
+array props, instance with missing master, rectangle with scalar props), reopen
+cold, and assert trusted expansion/resolution/frame preparation, MCP context,
+outline (frame and page), subtree, scoped and global find, `Prepared::shared`
+and a commit each return an error. Unrelated pages still read through the
+bounded path.
+
+**Design note: validator evolution.** The trusted path assumes every stored
+revision passes the *current* validator. `migration.rs` changes schema only, and
+validation rules change between releases, so rows accepted by an older release
+(or written by raw SQL) can violate it. The hardening above turns that into
+errors on the touched scope, but release incremental commits do not revisit
+unaffected rows, so an invalid unrelated row survives later commits and reads
+of other scopes succeed. Options:
+
+1. *Status quo + guards (this change).* Zero cost; detection only when a read or
+   commit touches the bad scope.
+2. *In-process trust chain.* The first cold load of a project per process runs
+   `Candidate::validate()` once; revisions produced by this process's commits
+   from a trusted base inherit trust; anything else uses the legacy/validated
+   path. No layout change. Cost per project per process start at 30× (201,330
+   authored / 599,400 expanded): estimated **~3–10 s release**, not measured
+   here. Lower bound: the global phases already in every commit
+   (`validate.instances` ≈1.0–1.3 s PG, 1.3–1.9 s SQLite); upper bound: pre-slice-1
+   full-validating strict commits ≈12.6 s total. With several writer processes
+   (shared PostgreSQL) every externally produced revision is untrusted and would
+   need full validation, which defeats the purpose.
+3. *Validator-version marker.* Persist `validator_version` per project; trust
+   only when it equals the running version; a cold load with an older marker
+   validates once and upgrades the marker. Same one-off cost per project per
+   validator bump, durable across restarts and processes. Needs a schema column
+   (layout change), so not implemented now.
+4. *Upgrade-time pass.* Releases that tighten validation ship an explicit full
+   validation pass over all projects before deploy. Operational, no code path.
+
+Recommendation: adopt **3** together with the next planned storage-layout change;
+until then keep 1 and require 4 (an explicit full-validation pass) for any release
+that tightens validation rules. Option 2 is a fallback only for single-writer
+deployments.
+
+**find.** `ScopedSnapshot::expand` now resolves masters and children through the
+revision-bound index instead of building HashMaps over the dependency closure
+per call; output is identical because the closure always contains every
+reachable master and its full subtree. New `expand_nodes` skips the master
+closure entirely and serves find (and viewport ID sets). With 8 pages each
+placing one instance of a 10- vs 40-node master, `find.selected_nodes` grows by
+exactly 30 (36 → 66, equal to the authored node count), while the previous
+per-root closure summed 132 → 402. Bytes, `totalMatches`, `scannedNodes`,
+cursors and limits match the legacy reader.
+
+**Resources.** `ScopedSnapshot` lazily builds one `ScopedResources` (resource maps
+plus declared themes from a single `validate_tokens`) and resolves through the
+borrowed `Resolver`; theme checks, node resolution and token values share it.
+Export checks the theme without computing token values and rejects page targets
+before expanding them. Counted builds: one per export source for all its
+targets (previously 1 + one per target), one per prepared frame (was 2), one
+per context read (was 2). Each job preparation still opens its own scoped
+snapshot, so an export request builds 1 + N times (previously 1 + 3N).
+
+**Coverage and small fixes.** Scoped expansion is compared against an
+independent closure reference over the full expansion for page, target, virtual
+target and definitions scopes in scene-input and committed SQLite (no dropped
+virtual descendants). Committed `storage.shared_snapshot()` find is proven to
+take the scoped path (test dispatch hook) and matches legacy bytes. Server
+`tree::read_scoped` context/outline/subtree bytes and processed collection sizes
+are unchanged after adding 8 unrelated pages/160 notes. 5,000 notes on 5,000
+distinct 128-byte anchors are retained within the reservation. A nested frame
+under a themed root frame resolves and renders identically to full. Indexed
+scene frame selection and viewport ID sets match the full scans. A scoped tree
+read without a target returns `INVALID_REQUEST` instead of `expect`. A poisoned
+lazy scope slot returns `Ok(None)` so callers take their existing legacy path
+(it caches only rebuildable metadata; the same path serves custom backends).
+
+Actual checks after `e2613ec` (temporary SQLite roots / disposable PostgreSQL only):
+
+| Check | Result |
+| --- | --- |
+| Combined default gate, scene-input/storage/server | exit 0: **516 passed, 37 ignored, 0 failed** (baseline 496/37) |
+| Disposable PostgreSQL `scoped_reads` (ignored test, via `task19-check.sh`) | 1 passed |
+| Strict clippy, three libraries plus server binary | passed |
+| Package fmt check and `git diff --check` | passed |
+
+```sh
+cargo test --offline --no-fail-fast -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 -- --test-threads=2
+bash scripts/task19-check.sh cargo test --offline -p opencanvas-storage -j2 --test scoped_reads -- --ignored --test-threads=1
+cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 --lib --bin opencanvas-server -- -D warnings
+cargo fmt --package opencanvas-scene-input --package opencanvas-storage --package opencanvas-server --check
+git diff --check
+```
+
+`clippy --tests` still reports pre-existing findings outside this change
+(`scale_tests.rs` constant assertion, unused `wait_job` in server test support);
+it is not part of the gate. The Task24 matrix was not rerun. Touched Rust files
+are 26–237 lines; largest `validate/candidate.rs` 237, then
+`scoped_tree_bounds_tests.rs` 233, `revision_indexes.rs` 232, `tree.rs` 221,
+`tests/scoped.rs` 221, `viewports.rs` 216. None exceeds 250; new modules
+`tree_work.rs` 26, `viewports_tests.rs` 27, `scenes_shared_tests.rs` 60,
+`scoped_reference/mod.rs` 68, `stored_corruption.rs` 89, `scope_tests.rs` 96,
+`find/tests/library.rs` 103, `scoped_trust.rs` 121.
