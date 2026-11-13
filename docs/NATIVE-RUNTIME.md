@@ -181,11 +181,10 @@ viewer, debug `layout-step` and the release server, as in the Dockerfile. It cop
 `PROVENANCE` (commit, ref, build time, tool versions, supported schema versions, render
 backend) and `SHA256SUMS`. There is no Docker step and no patch overlay.
 
-Releases run the experimental Rust render backend by default (see
-[SERVER.md](SERVER.md#experimental-native-render-backend) for its limits): `run-server.sh`
-exports the release's `RENDER_BACKEND`, so PNG/SVG work needs no Chromium or Node worker and
-no browser is copied (about 570 MB less per release). Build a Chromium release with
-`OPENCANVAS_RENDER_BACKEND=chromium` (it copies `.runtime/browsers`). Releases without the
+Releases run Chromium by default (it copies `.runtime/browsers`); `run-server.sh` exports
+the release's `RENDER_BACKEND`. `OPENCANVAS_RENDER_BACKEND=rust` builds the experimental Rust
+backend instead (see [SERVER.md](SERVER.md#experimental-native-render-backend) for its
+limits): no Chromium or Node worker, about 570 MB less per release. Releases without the
 file, such as the overlay releases, keep the server default, Chromium; rolling back to one
 switches the backend back. `status.sh` prints each release's backend. Tests: `scripts/native/tests/{release-smoke,deploy-integration,
 migrate-integration}.sh <release-dir>` use a disposable root, a fresh cluster and free ports.
