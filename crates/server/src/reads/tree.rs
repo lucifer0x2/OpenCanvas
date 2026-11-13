@@ -54,7 +54,8 @@ pub(super) fn read_scoped(
     }
     let context = name == "get_design_context";
     let rows = context && matches!(req.node_format, Some(NodeFormat::Rows));
-    let root = root.expect("scoped reads require a target");
+    // read_shared routes only targeted reads here; direct callers get an error.
+    let root = root.ok_or_else(|| ApiError::invalid("Scoped reads require nodeId or frameId"))?;
     let mut nodes = scoped.expand(ReadScope::Target(root), context)?;
     let expand = context && req.instances.as_deref() == Some("expand");
     let use_expanded = expand || root.contains('/');
@@ -199,6 +200,16 @@ pub(super) fn read_scoped(
             animated::include(&mut response, &ordered, headroom.min(budget / 4))?;
         }
     }
+    #[cfg(test)]
+    super::tree_work::record(super::tree_work::TreeWork {
+        authored: nodes.authored.len(),
+        dependencies: nodes.dependencies.len(),
+        expanded: nodes.expanded.len(),
+        resolved: resolved.len(),
+        notes: scope_notes.len(),
+        ordered: ordered.len(),
+        entries: entries.len(),
+    });
     pagination::page(
         response,
         entries,

@@ -25,6 +25,8 @@ mod tree_legacy;
 mod tree_navigation;
 mod tree_nodes;
 mod tree_resources;
+#[cfg(test)]
+mod tree_work;
 mod viewports;
 use crate::{error::Result, state::AppState};
 use serde::{Deserialize, Serialize};

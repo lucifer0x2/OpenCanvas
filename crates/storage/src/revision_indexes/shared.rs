@@ -43,7 +43,12 @@ impl SharedSnapshot {
         }) {
             return Ok(None);
         }
-        let mut cached = self.indexes.read_scope.lock().map_err(|_| poisoned())?;
+        let Ok(mut cached) = self.indexes.read_scope.lock() else {
+            // The slot only caches rebuildable metadata. A panicked holder must not
+            // fail reads: callers keep their legacy path, as for custom backends.
+            bench_phase::count("reads.scope_index_poisoned", 1);
+            return Ok(None);
+        };
         // Built on the first authoritative *snapshot vector*, not Candidate's
         // BTreeMap order. Commits publish indexes with this lazy slot empty.
         let index = match cached.as_ref() {

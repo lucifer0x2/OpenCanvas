@@ -1,5 +1,6 @@
 #[allow(dead_code)]
 mod incremental_support;
+mod scoped_reference;
 use incremental_support::*;
 use opencanvas_scene_input::{read_scope::*, *};
 use serde_json::json;
@@ -7,6 +8,14 @@ use serde_json::json;
 fn parity(snapshot: &Snapshot, request: ReadScope<'_>, definitions: bool) -> ScopeStats {
     let scoped = ScopedSnapshot::validate(snapshot).unwrap();
     let mut nodes = scoped.expand(request, definitions).unwrap();
+    // Completeness: no dropped authored or virtual node, independent of the scoped path.
+    assert_eq!(
+        nodes.expanded.iter().map(|n| &n.id).collect::<Vec<_>>(),
+        scoped_reference::reference_ids(snapshot, request, definitions)
+            .iter()
+            .collect::<Vec<_>>(),
+        "{request:?} definitions={definitions}"
+    );
     for theme in ["default", "night"] {
         let resolved = scoped.resolve(&mut nodes, theme).unwrap();
         let all = resolved_expanded_nodes(snapshot, theme).unwrap();

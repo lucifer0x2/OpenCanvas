@@ -171,3 +171,7 @@ pub(crate) async fn get(
 #[cfg(test)]
 #[path = "scenes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "scenes_shared_tests.rs"]
+mod shared_tests;

@@ -225,6 +225,8 @@ fn scan(value: &Value, node: &str, refs: &mut BTreeMap<String, BTreeSet<String>>
 #[cfg(test)]
 mod scale_tests;
 #[cfg(test)]
+mod scope_tests;
+#[cfg(test)]
 mod sqlite_tests;
 #[cfg(test)]
 mod tests;

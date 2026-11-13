@@ -100,3 +100,42 @@ fn scoped_render_node_budget_remains_exact_at_2048_and_2049() {
         serde_json::to_value(make_input(&snapshot, &options("frame0")).unwrap_err()).unwrap()
     );
 }
+
+#[test]
+fn nested_frame_target_inherits_its_root_frames_theme_like_full() {
+    let mut snapshot = fixture(2, 0);
+    // frame0 carries theme "night"; the target is a non-root frame below it.
+    snapshot.nodes.extend([
+        node(
+            "inner",
+            NodeKind::Frame,
+            Some("group0"),
+            json!({"width":200,"height":100}),
+        ),
+        node(
+            "inner_text",
+            NodeKind::Text,
+            Some("inner"),
+            json!({"text":"Themed","styleId":"copy"}),
+        ),
+    ]);
+    let scoped = ScopedSnapshot::validate(&snapshot).unwrap();
+    for theme in ["default", "night"] {
+        let mut request = options("inner");
+        request.theme = theme.into();
+        assert_eq!(
+            serde_json::to_vec(&make_input(&snapshot, &request).unwrap()).unwrap(),
+            serde_json::to_vec(&scoped.make_input_with_scale(&request, 1.).unwrap()).unwrap()
+        );
+        let mut nodes = scoped.expand(ReadScope::Target("inner"), false).unwrap();
+        let resolved = scoped.resolve(&mut nodes, theme).unwrap();
+        let full = resolved_expanded_nodes(&snapshot, theme).unwrap();
+        for node in &resolved {
+            let expected = full.iter().find(|n| n.id == node.id).unwrap();
+            assert_eq!(node, expected);
+        }
+        let text = resolved.iter().find(|n| n.id == "inner_text").unwrap();
+        assert_eq!(text.props["effectiveTheme"], "night");
+        assert_eq!(text.props["fontSize"], 30);
+    }
+}

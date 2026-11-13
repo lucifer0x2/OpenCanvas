@@ -5,21 +5,42 @@ use scoped_support::*;
 use serde_json::json;
 use std::sync::Arc;
 
-fn parity(shared: &SharedSnapshot) -> ScopeStats {
+/// Shared with scene-input: the independent full-expansion closure reference.
+#[path = "../../scene-input/tests/scoped_reference/mod.rs"]
+mod scoped_reference;
+
+const SCOPES: [(ReadScope<'static>, bool); 6] = [
+    (ReadScope::Page("p1"), true),
+    (ReadScope::Page("p1"), false),
+    (ReadScope::Target("f1"), false),
+    (ReadScope::Target("instance"), true),
+    (ReadScope::Target("instance/nested/leaf_box"), false),
+    (ReadScope::Page("library"), false),
+];
+
+fn parity(shared: &SharedSnapshot) -> Vec<ScopeStats> {
     let scoped = shared
         .trusted_scoped()
         .unwrap()
         .expect("builtin committed source");
-    let mut nodes = scoped.expand(ReadScope::Page("p1"), true).unwrap();
-    let actual = scoped.resolve(&mut nodes, "night").unwrap();
-    let ids: std::collections::BTreeSet<_> = actual.iter().map(|n| &n.id).collect();
-    let expected: Vec<_> = resolved_expanded_nodes(&shared.snapshot, "night")
-        .unwrap()
+    let all = resolved_expanded_nodes(&shared.snapshot, "night").unwrap();
+    SCOPES
         .into_iter()
-        .filter(|n| ids.contains(&n.id))
-        .collect();
-    assert_eq!(actual, expected);
-    nodes.stats
+        .map(|(scope, definitions)| {
+            let mut nodes = scoped.expand(scope, definitions).unwrap();
+            let actual = scoped.resolve(&mut nodes, "night").unwrap();
+            let ids: Vec<_> = actual.iter().map(|n| n.id.clone()).collect();
+            let reference = scoped_reference::reference_ids(&shared.snapshot, scope, definitions);
+            assert_eq!(ids, reference, "{scope:?} definitions={definitions}");
+            let expected: Vec<_> = all
+                .iter()
+                .filter(|n| ids.contains(&n.id))
+                .cloned()
+                .collect();
+            assert_eq!(actual, expected);
+            nodes.stats
+        })
+        .collect()
 }
 
 fn exercise(storage: &Storage, p: &ProjectHandle) {

@@ -1,6 +1,11 @@
 //! Bounded warm work and computed-metadata parity, independent of runtime jobs.
 use super::{
-    pagination, scoped_tree_fixture::fixture, tree, tree_legacy, viewports::Computed, ReadRequest,
+    pagination,
+    scoped_tree_fixture::fixture,
+    tree, tree_legacy,
+    tree_work::{self, TreeWork},
+    viewports::Computed,
+    ReadRequest,
 };
 use opencanvas_storage::{
     read_scope::{ReadScope, ScopedSnapshot},
@@ -21,11 +26,8 @@ fn counts(s: &Snapshot) -> (usize, usize, usize, usize) {
     )
 }
 
-#[test]
-fn unrelated_pages_and_notes_do_not_grow_tree_expansion_resolution_or_note_work() {
-    let (_dir, storage, id) = fixture();
-    let mut s = storage.snapshot(&id).unwrap();
-    let before = counts(&s);
+/// Eight unrelated pages, 168 authored nodes and 160 notes in sorted note order.
+fn grow(s: &mut Snapshot) {
     for page in 0..8 {
         let parent = format!("extra-page-{page}");
         s.nodes.push(Node {
@@ -63,6 +65,14 @@ fn unrelated_pages_and_notes_do_not_grow_tree_expansion_resolution_or_note_work(
         }
     }
     s.notes.sort_by(|a, b| a.id.cmp(&b.id));
+}
+
+#[test]
+fn unrelated_pages_and_notes_do_not_grow_tree_expansion_resolution_or_note_work() {
+    let (_dir, storage, id) = fixture();
+    let mut s = storage.snapshot(&id).unwrap();
+    let before = counts(&s);
+    grow(&mut s);
     assert_eq!(counts(&s), before);
     assert_eq!(before.3, 4);
     assert!(before.0 < s.nodes.len() / 4);
@@ -71,6 +81,45 @@ fn unrelated_pages_and_notes_do_not_grow_tree_expansion_resolution_or_note_work(
         s.nodes.len(),
         s.notes.len()
     );
+}
+
+/// One server-layer read: response bytes plus the collections it processed.
+fn served(s: &Snapshot, tool: &str, args: serde_json::Value) -> (Vec<u8>, TreeWork) {
+    let req = || serde_json::from_value::<ReadRequest>(args.clone()).unwrap();
+    let (scope, offset) = pagination::scope(s, tool, &req()).unwrap();
+    let scoped = ScopedSnapshot::validate(s).unwrap();
+    let value = tree::read_scoped(&scoped, tool, req(), scope, offset, None).unwrap();
+    (serde_json::to_vec(&value).unwrap(), tree_work::last())
+}
+
+#[test]
+fn unrelated_pages_and_notes_do_not_grow_server_tree_reads() {
+    let (_dir, storage, id) = fixture();
+    let mut s = storage.snapshot(&id).unwrap();
+    let calls = [
+        (
+            "get_design_context",
+            json!({"projectId":id,"frameId":"frame"}),
+        ),
+        (
+            "get_design_context",
+            json!({"projectId":id,"frameId":"frame","instances":"expand","notes":"all"}),
+        ),
+        ("get_outline", json!({"projectId":id,"nodeId":"frame"})),
+        ("get_subtree", json!({"projectId":id,"nodeId":"placed"})),
+    ];
+    let before: Vec<_> = calls
+        .iter()
+        .map(|(t, a)| served(&s, t, a.clone()))
+        .collect();
+    grow(&mut s);
+    for ((tool, args), (bytes, work)) in calls.iter().zip(before) {
+        let (grown, grown_work) = served(&s, tool, args.clone());
+        assert_eq!(grown, bytes, "{tool} {args}");
+        assert_eq!(grown_work, work, "{tool} {args}");
+        assert!(work.dependencies < s.nodes.len() / 4, "{work:?}");
+        eprintln!("{tool} {args}: {work:?}; unrelated growth excluded");
+    }
 }
 
 fn computed(reflow: bool) -> Computed {

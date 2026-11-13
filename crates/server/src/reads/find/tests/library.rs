@@ -1,13 +1,13 @@
 //! Global find over many pages sharing one component library.
-use super::{equivalent, read_scoped, request};
-use opencanvas_storage::{read_scope::*, BatchRequest, Snapshot, Store};
+use super::{super::dispatch, equivalent, legacy, read_scoped, request};
+use opencanvas_storage::{read_scope::*, BatchRequest, Snapshot, Storage, Store};
 use serde_json::{json, Value};
 
 /// `pages` pages each place one instance of a master with `library` children.
-pub(super) fn library_fixture(pages: usize, library: usize) -> (tempfile::TempDir, Snapshot) {
+fn library_fixture(pages: usize, library: usize) -> (tempfile::TempDir, Storage, Snapshot) {
     let root = tempfile::tempdir().unwrap();
-    let store = Store::open(root.path()).unwrap();
-    let project = store.create_project("find-library", "Library").unwrap();
+    let storage: Storage = Store::open(root.path()).unwrap().into();
+    let project = storage.create_project("find-library", "Library").unwrap();
     let node = |id: &str, kind: &str, parent: Option<&str>, props: Value| json!({"op":"create_node","id":id,"kind":kind,"parentId":parent,"props":props});
     let mut ops = vec![
         node("library", "page", None, json!({"name":"Library"})),
@@ -38,7 +38,7 @@ pub(super) fn library_fixture(pages: usize, library: usize) -> (tempfile::TempDi
     let request: BatchRequest = serde_json::from_value(json!({"projectId":project.id(),"expectedRevision":0,"idempotencyKey":"library","operations":ops})).unwrap();
     project.apply_batch(request).unwrap();
     let snapshot = project.snapshot().unwrap();
-    (root, snapshot)
+    (root, storage, snapshot)
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn shared_library_work_grows_with_authored_nodes_not_pages_times_library() {
     let pages = 8;
     let mut selected = Vec::new();
     for library in [10, 40] {
-        let (_root, snapshot) = library_fixture(pages, library);
+        let (_root, _storage, snapshot) = library_fixture(pages, library);
         let scoped = ScopedSnapshot::validate(&snapshot).unwrap();
         for args in [
             json!({"nameContains":"needle","limit":3}),
@@ -80,4 +80,24 @@ fn shared_library_work_grows_with_authored_nodes_not_pages_times_library() {
         selected.push(work.selected);
     }
     assert_eq!(selected[1] - selected[0], 30);
+}
+
+#[test]
+fn committed_sqlite_shared_snapshot_takes_the_scoped_find_path() {
+    let (_root, storage, snapshot) = library_fixture(3, 5);
+    let shared = storage.shared_snapshot(&snapshot.project_id).unwrap();
+    for args in [
+        json!({"nameContains":"needle","limit":2}),
+        json!({"frameId":"frame1","kinds":["rectangle"]}),
+        json!({"ids":["card2/part4","part0"]}),
+    ] {
+        let mut args = args;
+        args["projectId"] = json!(snapshot.project_id);
+        let (value, work) = dispatch(&shared, request(args.clone())).unwrap();
+        let work = work.expect("builtin committed snapshot uses the scoped path");
+        assert!(work.selected > 0 && work.visited > 0, "{work:?}");
+        let reference = legacy::read(&shared.snapshot, request(args.clone())).unwrap();
+        let bytes = |v: &Value| serde_json::to_vec(v).unwrap();
+        assert_eq!(bytes(&value), bytes(&reference), "{args}");
+    }
 }

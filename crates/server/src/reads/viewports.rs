@@ -4,7 +4,10 @@ use crate::{
     jobs::SceneRequest,
     state::AppState,
 };
-use opencanvas_storage::{read_scope::ReadScope, NodeKind, SharedSnapshot};
+use opencanvas_storage::{
+    read_scope::{ReadScope, ScopedSnapshot},
+    NodeKind, SharedSnapshot, Snapshot,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashSet};
@@ -22,6 +25,23 @@ pub(super) struct Computed {
     pub reflow: Option<bool>,
     pub lines: BTreeMap<String, Vec<Value>>,
     pub diagnostics: Vec<Value>,
+}
+
+/// Expanded IDs of the frame subtree: the trusted closure, else the full expansion.
+fn scope_ids(
+    snapshot: &Snapshot,
+    scoped: Option<&ScopedSnapshot<'_>>,
+    frame: &str,
+) -> Result<HashSet<String>> {
+    let expanded = match scoped {
+        Some(scoped) => scoped.expand_nodes(ReadScope::Target(frame))?.0,
+        None => opencanvas_storage::instances::expand(&snapshot.nodes)?,
+    };
+    Ok(TreeIndex::new(&expanded)
+        .preorder(Some(frame))
+        .into_iter()
+        .map(|(n, _)| n.id.clone())
+        .collect())
 }
 
 /// Enqueue/read the existing bounded jobs; never wait on Chromium in a context read.
@@ -58,16 +78,7 @@ pub(super) async fn compute(
         return Err(ApiError::invalid("frameId must identify a frame"));
     }
     validate(viewports)?;
-    let expanded = if let Some(scoped) = &scoped {
-        scoped.expand(ReadScope::Target(frame), false)?.expanded
-    } else {
-        opencanvas_storage::instances::expand(&snapshot.nodes)?
-    };
-    let ids: HashSet<String> = TreeIndex::new(&expanded)
-        .preorder(Some(frame))
-        .into_iter()
-        .map(|(n, _)| n.id.clone())
-        .collect();
+    let ids = scope_ids(snapshot, scoped.as_ref(), frame)?;
     let mut bounds: BTreeMap<_, _> = ids.iter().map(|id| (id.clone(), Vec::new())).collect();
     let mut metadata = Vec::new();
     let mut diagnostics = Vec::new();
@@ -199,3 +210,7 @@ fn scene_bounds(job: &Value, ids: &HashSet<String>) -> Option<BTreeMap<String, V
     }
     (out.len() == ids.len()).then_some(out)
 }
+
+#[cfg(test)]
+#[path = "viewports_tests.rs"]
+mod tests;

@@ -18,9 +18,14 @@ use serde_json::{json, Value};
 const RENAME_BYTES: usize = "matches".len() - "nodes".len();
 
 pub(super) fn read_shared(s: &SharedSnapshot, req: ReadRequest) -> Result<Value> {
+    dispatch(s, req).map(|(value, _)| value)
+}
+
+/// Work is present only when the trusted scoped path served the read.
+fn dispatch(s: &SharedSnapshot, req: ReadRequest) -> Result<(Value, Option<Work>)> {
     match s.trusted_scoped()? {
-        Some(scoped) => read_scoped(&scoped, req).map(|(value, _)| value),
-        None => legacy::read(&s.snapshot, req),
+        Some(scoped) => read_scoped(&scoped, req).map(|(value, work)| (value, Some(work))),
+        None => legacy::read(&s.snapshot, req).map(|value| (value, None)),
     }
 }
 
