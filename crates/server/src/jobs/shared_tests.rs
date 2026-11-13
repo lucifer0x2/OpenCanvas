@@ -168,3 +168,23 @@ fn untrusted_or_replaced_shared_snapshot_keeps_global_validation() {
     let untrusted = SharedSnapshot::untrusted(shared.snapshot.clone(), shared.indexes.clone());
     parity(&untrusted, req);
 }
+
+#[test]
+fn trusted_preparation_over_corrupt_stored_rows_returns_errors() {
+    for (id, props, field) in [
+        (
+            "placed",
+            r#"{"componentId":"missing"}"#,
+            "props.componentId",
+        ),
+        ("outgoing", "5", "props"),
+    ] {
+        let (_root, store, project) = fixture::corrupt(id, props);
+        let shared = store.shared_snapshot(&project).unwrap();
+        assert!(shared.trusted_scoped().unwrap().is_some());
+        let error = Prepared::shared(&shared, request("frame", "default"), &config(), None)
+            .err()
+            .unwrap();
+        assert_eq!(error.value()["error"]["field"], field);
+    }
+}

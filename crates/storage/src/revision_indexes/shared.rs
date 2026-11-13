@@ -46,16 +46,23 @@ impl SharedSnapshot {
         let mut cached = self.indexes.read_scope.lock().map_err(|_| poisoned())?;
         // Built on the first authoritative *snapshot vector*, not Candidate's
         // BTreeMap order. Commits publish indexes with this lazy slot empty.
-        let index = if let Some(index) = cached.as_ref() {
-            index.clone()
-        } else {
-            bench_phase::count("reads.scope_index_builds", 1);
-            let index = Arc::new(ScopeIndex::new(&self.snapshot));
-            // Benchmark-only oversized note graphs are usable but not retained.
-            if index.estimated_bytes() <= self.indexes.read_weight {
-                *cached = Some(index.clone());
+        let index = match cached.as_ref() {
+            Some(index) if index.indexes(&self.snapshot) => index.clone(),
+            Some(_) => {
+                // Same metadata, different vector: never dereference or replace
+                // the other reader's index; build one for this snapshot only.
+                bench_phase::count("reads.scope_index_mismatches", 1);
+                Arc::new(ScopeIndex::new(&self.snapshot))
             }
-            index
+            None => {
+                bench_phase::count("reads.scope_index_builds", 1);
+                let index = Arc::new(ScopeIndex::new(&self.snapshot));
+                // Benchmark-only oversized note graphs are usable but not retained.
+                if index.estimated_bytes() <= self.indexes.read_weight {
+                    *cached = Some(index.clone());
+                }
+                index
+            }
         };
         Ok(Some(ScopedSnapshot::from_validated(&self.snapshot, index)))
     }

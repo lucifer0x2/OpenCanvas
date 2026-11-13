@@ -15,6 +15,8 @@ mod scoped_tree_fixture;
 #[cfg(test)]
 mod scoped_tree_tests;
 mod states;
+#[cfg(test)]
+mod stored_corruption_tests;
 pub(crate) mod targets;
 #[cfg(test)]
 mod traversal_tests;

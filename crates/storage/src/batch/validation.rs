@@ -50,15 +50,17 @@ pub(crate) fn validated_candidate_indexed(
     {
         // Every existing storage validation fixture (including rejected batches)
         // exercises the full reference too, comparing complete public errors.
-        let reference = candidate.validate();
-        assert_eq!(
-            validation
-                .as_ref()
-                .map(|_| ())
-                .map_err(|e| serde_json::to_value(e).unwrap()),
-            reference.map_err(|e| serde_json::to_value(e).unwrap()),
-            "incremental/full candidate validation diverged"
-        );
+        // The incremental contract requires a fully valid `before`; rows written
+        // behind the current validator may legitimately diverge, so only a valid
+        // before turns a divergence into a failure.
+        let public = |result: Result<()>| result.map_err(|e| serde_json::to_value(e).unwrap());
+        let reference = public(candidate.validate());
+        let incremental = public(validation.as_ref().map(|_| ()).map_err(Clone::clone));
+        if incremental != reference && Candidate::from_snapshot(before).validate().is_ok() {
+            panic!(
+                "incremental/full candidate validation diverged\n  left: {incremental:?}\n right: {reference:?}"
+            );
+        }
     }
     let work = validation?;
     bench_phase::count("validation.authored", work.stats.authored_nodes);

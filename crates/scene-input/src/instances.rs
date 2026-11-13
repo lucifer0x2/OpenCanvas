@@ -3,6 +3,13 @@ use crate::{Node, NodeKind, Result, StorageError, MAX_NODES};
 use serde_json::Value;
 use std::collections::HashMap;
 
+const MAX_TREE_DEPTH: usize = 128;
+
+/// Stored rows are trusted on scoped reads; malformed props must fail, never panic.
+fn not_object() -> StorageError {
+    StorageError::validation("props", "Properties must be an object")
+}
+
 pub const OVERRIDE_KEYS: &[&str] = &[
     "text", "fill", "visible", "styleId", "assetId", "name", "stroke", "shadow", "states",
     "opacity", "radius",
@@ -87,8 +94,11 @@ impl Expander<'_> {
         let mut root = node.clone();
         root.kind = NodeKind::Frame;
         root.props = master.props.clone();
-        root.props.as_object_mut().unwrap().remove("component");
-        let mut patch = node.props.as_object().unwrap().clone();
+        root.props
+            .as_object_mut()
+            .ok_or_else(not_object)?
+            .remove("component");
+        let mut patch = node.props.as_object().ok_or_else(not_object)?.clone();
         patch.remove("componentId");
         patch.remove("overrides");
         crate::instance_paint::merge_props(&mut root.props, &patch);
@@ -98,7 +108,7 @@ impl Expander<'_> {
             &node.id,
             &node.id,
             &node.props["overrides"],
-            depth + 1,
+            (depth + 1, 1),
             out,
         )
     }
@@ -109,21 +119,30 @@ impl Expander<'_> {
         parent: &str,
         prefix: &str,
         overrides: &Value,
-        depth: usize,
+        (depth, level): (usize, usize),
         out: &mut Vec<Node>,
     ) -> Result<()> {
+        // A validated master subtree is at most 128 levels deep; deeper walks
+        // can only come from a cycle or corrupt stored rows.
+        if level > MAX_TREE_DEPTH {
+            return Err(StorageError::validation(
+                "parentId",
+                "Tree exceeds maximum depth 128",
+            ));
+        }
         for child in self.children.get(source).into_iter().flatten() {
             let mut virtual_node = (*child).clone();
             virtual_node.id = format!("{prefix}/{}", child.id);
             virtual_node.parent_id = Some(parent.into());
             if let Some(patch) = overrides.get(&child.id).and_then(Value::as_object) {
+                virtual_node.props.as_object().ok_or_else(not_object)?;
                 crate::instance_paint::merge_props(&mut virtual_node.props, patch);
             }
             let id = virtual_node.id.clone();
             let nested = virtual_node.kind == NodeKind::Instance;
             self.node(virtual_node, depth, out)?;
             if !nested {
-                self.descendants(&child.id, &id, prefix, overrides, depth, out)?;
+                self.descendants(&child.id, &id, prefix, overrides, (depth, level + 1), out)?;
             }
         }
         Ok(())

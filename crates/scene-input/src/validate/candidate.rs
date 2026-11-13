@@ -154,7 +154,13 @@ impl Candidate {
                     .nodes
                     .get_mut(key)
                     .ok_or_else(|| StorageError::validation("id", "Node does not exist"))?;
-                n.props.as_object_mut().unwrap().extend(update.clone());
+                // Stored rows from older releases/raw SQL must not panic here.
+                n.props
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        StorageError::validation("props", "Properties must be an object")
+                    })?
+                    .extend(update.clone());
                 self.node(&self.nodes[key])?;
                 changed.insert(key.clone());
             }

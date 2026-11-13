@@ -50,8 +50,14 @@ impl<'a> ScopedSnapshot<'a> {
     /// and that `index` was built with `ScopeIndex::new` for this exact immutable
     /// snapshot, including its node and note vectors in source order.
     /// Cache identity alone does not establish either guarantee. This deliberately
-    /// does not change standalone resolution/validation APIs.
+    /// does not change standalone resolution/validation APIs. An index bound to a
+    /// different snapshot is never dereferenced: it is rebuilt for this one.
     pub fn from_validated(snapshot: &'a Snapshot, index: Arc<ScopeIndex>) -> Self {
+        let index = if index.indexes(snapshot) {
+            index
+        } else {
+            Arc::new(ScopeIndex::new(snapshot))
+        };
         Self { snapshot, index }
     }
 

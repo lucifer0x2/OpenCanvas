@@ -3,26 +3,27 @@ use crate::{node_links, Node, NodeKind, Result, StorageError};
 use std::collections::BTreeSet;
 
 impl<'a> ScopedSnapshot<'a> {
+    /// Iterative: corrupt stored rows can form arbitrarily deep chains.
     fn descendants(&self, id: &str, selected: &mut BTreeSet<usize>) {
-        let Some(&position) = self.index.positions.get(id) else {
-            return;
-        };
-        if !selected.insert(position) {
-            return;
-        }
-        for &child in self.index.children.get(id).into_iter().flatten() {
-            self.descendants(&self.snapshot.nodes[child].id, selected);
+        let mut stack: Vec<usize> = self.index.positions.get(id).copied().into_iter().collect();
+        while let Some(position) = stack.pop() {
+            if !selected.insert(position) {
+                continue;
+            }
+            let id = &self.snapshot.nodes[position].id;
+            stack.extend(self.index.children.get(id).into_iter().flatten());
         }
     }
 
     fn ancestors(&self, position: usize, selected: &mut BTreeSet<usize>) {
-        let mut node = &self.snapshot.nodes[position];
+        let mut position = Some(position);
         for _ in 0..=self.snapshot.nodes.len() {
-            selected.insert(self.index.positions[&node.id]);
-            let Some(parent) = node.parent_id.as_deref().and_then(|id| self.node(id)) else {
-                break;
-            };
-            node = parent;
+            let Some(current) = position else { break };
+            selected.insert(current);
+            position = self.snapshot.nodes[current]
+                .parent_id
+                .as_deref()
+                .and_then(|id| self.index.positions.get(id).copied());
         }
     }
 

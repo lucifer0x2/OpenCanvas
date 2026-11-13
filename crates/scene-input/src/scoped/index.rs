@@ -10,12 +10,23 @@ pub struct ScopeIndex {
     pub(super) roots: Vec<usize>,
     pub(super) frames: Vec<usize>,
     pub(super) notes: BTreeMap<String, Vec<usize>>,
+    bound: Binding,
+}
+
+/// The snapshot an index was built for. Positions are meaningless elsewhere.
+#[derive(Default, PartialEq, Eq)]
+struct Binding {
+    project_id: String,
+    revision: u64,
+    nodes: usize,
+    notes: usize,
 }
 
 impl ScopeIndex {
     /// Build metadata for exactly this immutable snapshot's node vector.
     pub fn new(snapshot: &Snapshot) -> Self {
         let mut index = Self::from_nodes(&snapshot.nodes);
+        index.bound = Binding::of(snapshot);
         for (position, note) in snapshot.notes.iter().enumerate() {
             index
                 .notes
@@ -51,6 +62,20 @@ impl ScopeIndex {
         index
     }
 
+    /// Cheap guard that this index describes `snapshot`: identity, vector lengths
+    /// and the first/last node positions. Mismatches must never be dereferenced.
+    pub fn indexes(&self, snapshot: &Snapshot) -> bool {
+        let edge = |node: Option<&Node>, at: usize| {
+            node.is_none_or(|n| self.positions.get(&n.id) == Some(&at))
+        };
+        self.bound == Binding::of(snapshot)
+            && edge(snapshot.nodes.first(), 0)
+            && edge(
+                snapshot.nodes.last(),
+                snapshot.nodes.len().saturating_sub(1),
+            )
+    }
+
     pub fn estimated_bytes(&self) -> usize {
         (self.roots.len() + self.frames.len()) * 8
             + self.positions.keys().map(|id| 64 + id.len()).sum::<usize>()
@@ -61,5 +86,16 @@ impl ScopeIndex {
                 .chain(&self.notes)
                 .map(|(id, list)| 96 + id.len() + list.len() * 8)
                 .sum::<usize>()
+    }
+}
+
+impl Binding {
+    fn of(snapshot: &Snapshot) -> Self {
+        Self {
+            project_id: snapshot.project_id.clone(),
+            revision: snapshot.revision,
+            nodes: snapshot.nodes.len(),
+            notes: snapshot.notes.len(),
+        }
     }
 }
