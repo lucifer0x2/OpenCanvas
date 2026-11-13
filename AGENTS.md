@@ -38,7 +38,7 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 
 ## Trạng thái hiện tại — 2026-11-13
 
-- Nhánh `feat/incremental-validation`: Task24 `81f883c`, Task25 lát 1–3 tới `a98012d` đã commit; targeted checks đạt, full gates và benchmark chưa xong. Người dùng yêu cầu bàn giao; đọc `docs/checkpoints/2026-11-13-task25-handoff.md`. Chưa bắt đầu 4–6 hoặc nâng cap mặc định.
+- `feat/incremental-validation`: Task25 `a98012d`, gates 463 pass sau rerun; matrix 8/8, latency chưa đạt. Chờ duyệt 4–5, chưa làm 6/caps; xem `docs/TASK25-REPORT.md` và `docs/checkpoints/2026-11-13-task25-next-slices.md`.
 - Main được bảo vệ bằng ruleset 26259563 active: PR, chỉ `lucifer0x2` cập nhật/merge, chặn xóa/force-push với người khác; chủ repo bypass always.
 - 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
 - Task14 P1–P5 đã kiểm độc lập: scoped themes/instance paint, bulk JSON/dry run và MCP-first guide. Debug đồng bộ đã build; chưa restart dịch vụ thật/commit/push. U07 golden/payload chờ design worker; xem `docs/TASK14-REPORT.md`.

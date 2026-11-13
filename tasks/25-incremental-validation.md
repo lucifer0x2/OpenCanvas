@@ -1,8 +1,10 @@
 # Task25 — Incremental validation and page-scoped access, unchanged storage layout
 
-**Status:** slices 1–3 committed 2026-11-13 with targeted checks; full default gates
-and Task24 rerun pending. User requested handoff before those finished. Resume from
-[checkpoint](../docs/checkpoints/2026-11-13-task25-handoff.md). Requested after
+**Status:** slices 1–3 committed and coordinator-verified 2026-11-13; default gates
+completed with a focused fixture/artifact rerun, exact Task24 matrix 8/8 complete.
+Latency targets remain unmet. Stop before large slices 4–5; see
+[report](../docs/TASK25-REPORT.md) and [proposed split](../docs/checkpoints/2026-11-13-task25-next-slices.md).
+Original [checkpoint](../docs/checkpoints/2026-11-13-task25-handoff.md). Requested after
 [Task24](../docs/TASK24-REPORT.md). Workspace:
 `/Users/luis/Workspace/OpenCanvas`; branch `feat/incremental-validation`, from
 Task24 baseline `81f883cf0b8e7d864ce30585d8db14094bdb5425`.
