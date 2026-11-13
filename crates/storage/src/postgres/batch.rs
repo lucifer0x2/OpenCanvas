@@ -49,10 +49,13 @@ pub(super) fn apply_mode(
         return Err(StorageError::conflict(project.meta.revision));
     }
     let identity = (project.generation, project.namespace.clone());
-    let (before, binaries, stored) = snapshot::entities_for_write(&mut db, project)?;
+    let (before, binaries, stored) =
+        crate::bench_phase::time("load", || snapshot::entities_for_write(&mut db, project))?;
     let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
     if let Some(pages) = &pages {
-        check(&mut db, &before, &candidate, &request, pages)?;
+        crate::bench_phase::time("scoped.check", || {
+            check(&mut db, &before, &candidate, &request, pages)
+        })?;
     }
     let result = BatchResult {
         project_id: before.project_id.clone(),
@@ -61,25 +64,31 @@ pub(super) fn apply_mode(
         render_status: "pending".into(),
         replayed: false,
     };
-    let rows = stored.delta(&candidate)?;
-    let history = crate::scoped::envelope(
-        &before,
-        &candidate,
-        value.clone(),
-        value["operations"].clone(),
-    )?;
+    let rows = crate::bench_phase::time("persist.delta", || stored.delta(&candidate))?;
+    let history = crate::bench_phase::time("history.envelope", || {
+        crate::scoped::envelope(
+            &before,
+            &candidate,
+            value.clone(),
+            value["operations"].clone(),
+        )
+    })?;
     drop((stored, candidate));
-    let written = transaction::persist(
-        &mut db,
-        &before,
-        rows,
-        &request.idempotency_key,
-        &hash,
-        &history,
-        &result,
-        None,
-    )?;
-    tx.commit().map_err(sql)?;
+    let written = {
+        let _phase = crate::bench_phase::Span::new("persist");
+        let written = transaction::persist(
+            &mut db,
+            &before,
+            rows,
+            &request.idempotency_key,
+            &hash,
+            &history,
+            &result,
+            None,
+        )?;
+        tx.commit().map_err(sql)?;
+        written
+    };
     let revision = result.committed_revision;
     let committed = Committed::new(before, binaries, written, revision, identity);
     Ok(Outcome::Commit(result, Some(Box::new(committed))))

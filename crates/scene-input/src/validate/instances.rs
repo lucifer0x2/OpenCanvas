@@ -17,7 +17,9 @@ impl Candidate {
         }
         let has_instances = self.nodes.values().any(|n| n.kind == NodeKind::Instance);
         self.instance_graph()?;
-        let expanded = expand(&self.nodes.values().cloned().collect::<Vec<_>>())?;
+        let expanded = crate::bench_phase::time("validate.instances.expand", || {
+            expand(&self.nodes.values().cloned().collect::<Vec<_>>())
+        })?;
         let themes = self.validate_tokens()?;
         let mut placed = self.clone();
         placed.nodes = expanded

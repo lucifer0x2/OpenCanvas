@@ -34,7 +34,7 @@ impl PostgresBackend {
     /// assembling the snapshot never holds a pool worker. Replays carry nothing.
     fn fill(&self, committed: Option<Box<write_through::Committed>>) {
         if let Some(committed) = committed {
-            committed.fill(self.cache.as_ref());
+            crate::bench_phase::time("cache.fill", || committed.fill(self.cache.as_ref()));
         }
     }
 }

@@ -4,6 +4,10 @@ version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 
+[features]
+# Task24 benchmark build only (see crates/scene-input/Cargo.toml).
+large-project-bench = ["opencanvas-storage/large-project-bench"]
+
 [dependencies]
 opencanvas-scene-input = { path = "../scene-input" }
 opencanvas-storage = { path = "../storage" }
@@ -34,3 +38,8 @@ reqwest = { version = "0.12", features = ["json", "stream"] }
 rusqlite = "0.41.0"
 png = "0.18"
 roxmltree = "0.20"
+
+# Task24 benchmark: compiled only when its feature raises the node cap.
+[[test]]
+name = "large_project_benchmark"
+required-features = ["large-project-bench"]

@@ -6,6 +6,7 @@ license.workspace = true
 
 [features]
 fault-injection = []
+large-project-bench = ["opencanvas-scene-input/large-project-bench"]
 
 [dependencies]
 opencanvas-scene-input = { path = "../scene-input", features = ["sqlite-errors"] }

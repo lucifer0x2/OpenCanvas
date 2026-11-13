@@ -1,6 +1,7 @@
 //! Pure authored models, validation, expansion and scene input preparation.
 //! Default features require no database, filesystem, network or async runtime.
 mod animation_catalog;
+pub mod bench_phase;
 mod content_key;
 mod error;
 mod export_settings;

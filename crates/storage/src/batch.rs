@@ -91,7 +91,7 @@ impl Project {
             }
         }
         let time = Instant::now();
-        let before = read_snapshot(&mut conn)?;
+        let before = bench_phase::time("load", || read_snapshot(&mut conn))?;
         metrics.read_us = us(time);
         if pages.is_none() && before.revision != request.expected_revision {
             return Err(StorageError::conflict(before.revision));
@@ -99,6 +99,7 @@ impl Project {
         let time = Instant::now();
         let (candidate, changed_ids) = validated_candidate(&before, &request.operations)?;
         if let Some(pages) = &pages {
+            let _phase = bench_phase::Span::new("scoped.check");
             let commits = {
                 let mut stmt = conn.prepare("SELECT revision,CASE WHEN sum(length(CAST(ops_json AS BLOB))) OVER (ORDER BY revision)<=8388608 THEN ops_json ELSE 'null' END FROM commits WHERE revision>?1 ORDER BY revision LIMIT 1001")?;
                 let rows = stmt.query_map([request.expected_revision as i64], |r| {
@@ -133,12 +134,15 @@ impl Project {
             render_status: "pending".into(),
             replayed: false,
         };
-        let history = scoped::envelope(
-            &before,
-            &candidate,
-            request_value.clone(),
-            request_value["operations"].clone(),
-        )?;
+        let history = bench_phase::time("history.envelope", || {
+            scoped::envelope(
+                &before,
+                &candidate,
+                request_value.clone(),
+                request_value["operations"].clone(),
+            )
+        })?;
+        let _phase = bench_phase::Span::new("persist");
         self.persist(
             &mut conn,
             &before,
@@ -158,12 +162,17 @@ pub(crate) fn validated_candidate(
     before: &Snapshot,
     operations: &[Operation],
 ) -> Result<(Candidate, Vec<String>)> {
-    let mut candidate = Candidate::from_snapshot(before);
+    let mut candidate = bench_phase::time("candidate.from_snapshot", || {
+        Candidate::from_snapshot(before)
+    });
     let mut changed = BTreeSet::new();
-    for (index, op) in operations.iter().enumerate() {
-        candidate.apply(op, &mut changed).map_err(|e| e.at(index))?;
-    }
-    candidate.prune_links(&mut changed);
-    candidate.validate()?;
+    bench_phase::time("candidate.apply", || -> Result<()> {
+        for (index, op) in operations.iter().enumerate() {
+            candidate.apply(op, &mut changed).map_err(|e| e.at(index))?;
+        }
+        candidate.prune_links(&mut changed);
+        Ok(())
+    })?;
+    bench_phase::time("candidate.validate", || candidate.validate())?;
     Ok((candidate, changed.into_iter().collect()))
 }

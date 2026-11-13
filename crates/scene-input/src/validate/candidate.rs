@@ -50,16 +50,23 @@ impl Candidate {
                 "Project exceeds 20000 authored nodes",
             ));
         }
-        self.validate_notes()?;
-        self.validate_navigation()?;
-        let themes = self.validate_tokens()?;
+        use crate::bench_phase::time;
+        time("validate.notes_navigation", || {
+            self.validate_notes()?;
+            self.validate_navigation()
+        })?;
+        let themes = time("validate.tokens", || self.validate_tokens())?;
         for theme in themes {
-            let mut themed = self.clone();
-            themed.theme = theme;
-            themed.validate_content()?;
+            time("validate.theme", || {
+                let mut themed = self.clone();
+                themed.theme = theme;
+                themed.validate_content()
+            })?;
         }
-        self.validate_animation_triggers()?;
-        self.validate_instances()?;
+        time("validate.animation_triggers", || {
+            self.validate_animation_triggers()
+        })?;
+        time("validate.instances", || self.validate_instances())?;
         Ok(())
     }
     fn validate_content(&self) -> Result<()> {

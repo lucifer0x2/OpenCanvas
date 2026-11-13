@@ -286,3 +286,21 @@ Các mục đã đóng Task19/Task20 và vận hành 2026-11-03: [archive](histo
 - Người dùng yêu cầu sửa cả hai. Giao worker mới trong checkout hiện tại (không commit/push, không đụng preview3877/native).
 - Nhận kết quả: `pageInference.ts` suy page từ frame gốc rồi tổ tiên node (kể cả con ảo) khi link thiếu `page`; page tường minh giữ hành vi cũ. `accepted` chỉ bỏ qua khi list đã tải và thiếu project. Thêm test thuần và browser list 503 (đã xác nhận test bắt lỗi cũ). Chi tiết ở [URL navigation](../URL-NAVIGATION.md).
 - Root kiểm lại: repro ba URL đúng pg2/f2/t2 không notice; typecheck, 25 pure, 17 navigation, 2 hooks/cache, Layers smoke, diff --check đạt. Chưa chạy `test:react`/actions đầy đủ, chưa cập nhật preview3877; chưa commit/push.
+
+### Commit/push URL navigation, mở nhánh limit 20k nodes — 2026-11-12
+
+- Theo yêu cầu người dùng: commit `ee894c0` (URL navigation + 2 sửa lỗi), push `codex/react-frontend-optimization` lên origin; preview3877 người dùng tự test. Tạo nhánh `feat/project-node-limit` từ `ee894c0`.
+- Phiên phân tích 20k nodes người dùng nêu không truy cập được từ app. Root khảo sát: 3 lớp cap khác nhau — authored 20k/project (`candidate.rs`), expanded instances 20k/project (`instances.rs`, INSTANCE_LIMIT, gồm cả master), render 2048/frame (`crates/layout`). Mỗi commit và nhiều read expand toàn project. Chưa sửa gì, chờ người dùng chọn hướng.
+- Người dùng muốn project hàng trăm nghìn node, đưa 2 hướng: thư viện dùng chung giữa project và page-scoped. Root viết đề xuất [LARGE-PROJECT-PROPOSAL](../LARGE-PROJECT-PROPOSAL.md): ưu tiên page-scoped (Phase 0 đo, 1 đọc theo page, 2 lưu/validate theo page), thư viện dùng chung làm sau với version ghim. Chưa sửa code, chờ người dùng chốt.
+
+### Task24 — benchmark project lớn (Phase 0) — 2026-11-12
+
+- Người dùng yêu cầu làm Phase 0, dùng data thật trong native rồi nhân page. Root chọn nguồn `axis-training` (≈6.7k node, 19 page, ≈1.7k instance), chỉ GET qua 3857; project nhân bản dựng ở SQLite/PG tạm để không ghi dữ liệu thử vào DB thật. Đóng gói `tasks/24-large-project-benchmark.md`, giao worker mới trên `feat/project-node-limit`, không commit.
+- Nhận Task24: harness feature `large-project-bench` (build mặc định vẫn 20k node/5k notes), nhân `axis-training` 1×/5×/15×/30× (tới 201k authored, 599k expanded) trên SQLite/PG tạm; chỉ GET 3857. Báo cáo [TASK24](../TASK24-REPORT.md). Kết luận: validate toàn project mỗi commit chiếm 83–90% (chủ yếu `validate_instances` theo theme), scoped check là một lượt toàn project thứ hai (PG 30× ≈34 s, vượt timeout 30 s), read theo page/frame vẫn làm việc toàn project; snapshot >16 MiB không vào cache; `MAX_NOTES` 5k là cap thứ hai.
+- Root kiểm: phần sửa sản phẩm chỉ là wrapper phase/cap sau feature; scene-input test mặc định đạt; không còn project ID/đường dẫn riêng trong file mới. Worker báo storage+scene-input 172, server 269 đạt (bỏ 1 test renderer stale), clippy `--all-targets` server fail do cảnh báo có sẵn ở file khác. Chưa commit.
+- Người dùng chọn giải pháp bước 1 (validate phần bị ảnh hưởng, scoped check dùng index, đọc theo page, gzip/API page, cap theo page) và tự giao cho phiên khác; root soạn prompt bàn giao (Task25, branch riêng từ `feat/project-node-limit`). Task24/đề xuất vẫn chưa commit.
+
+### Task25 — incremental validation, giữ storage layout — 2026-11-13
+
+- Bị chặn đầu phiên vì Task24 chưa commit trên `feat/project-node-limit` @ `ee894c0`; người dùng đã cho phép commit benchmark rồi tiếp tục.
+- Giao worker mới chuẩn bị nền: kiểm và commit đúng Task24, tạo `feat/incremental-validation`, đóng gói `tasks/25-incremental-validation.md` trước mọi triển khai. Sau đó giao riêng từng lát 1–3; đánh giá phạm vi 4–5 trước khi bắt đầu. Không push/deploy/ghi runtime thật.
