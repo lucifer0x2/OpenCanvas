@@ -13,6 +13,7 @@ mod instructions;
 mod jobs;
 mod mcp;
 mod node_rows;
+mod ocd;
 mod projects;
 mod props_doc;
 mod public_viewer;
