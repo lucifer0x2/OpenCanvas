@@ -787,3 +787,53 @@ viewport call signature; 4d and 4c each switch their own line when committed.
 Modified/new Rust files remain below 250 lines: scoped tree 209, frozen full tree
 231, compact 189, test modules 114–184 and other helpers 13–164. No live service or
 data access, deployment, restart, cap change or push occurred.
+
+## Slice 4d — bounded find traversal and exact totals
+
+`find_nodes` now consumes 4a's trusted shared snapshot capability and expands one
+top-level authored root/page closure at a time. Stable root/sibling sortKey ties,
+preorder, authored Instance roots, virtual descendants, scope-relative depth,
+ancestor paths, Unicode previews, filters and response bytes retain the full
+reference behavior. Custom or replaced-Arc snapshots use the frozen legacy
+expand-only path, preserving their existing validation/error behavior.
+
+Cold arbitrary matching still visits every scoped node to preserve exact
+`scannedNodes` and `totalMatches`. The existing query/revision-bound match-offset
+cursor is unchanged. Matches before the offset and after the bounded prefix do
+not materialize JSON entries. Retained candidate value bytes are at most the
+response budget, except an oversized first item retained for the existing item
+error; the item limit also bounds retention. Final pagination uses the complete
+counts and exactly the legacy cursor-byte reservation, including final pages.
+
+Five focused unit tests passed, including 18,020 byte-budget/offset/limit
+comparisons against the original paginator. Full-reference serialized-byte
+comparisons cover first/middle/last/empty pages, all criteria, combined filters,
+reversed source order with sort ties, cross-page/nested masters and overrides,
+authored/virtual scopes, virtual frame scopes, deep paths, Unicode, properties,
+budget failures, malformed/out-of-range/stale cursors, revision and error priority.
+An invalid untrusted snapshot proves the legacy fallback does not introduce full
+Candidate validation. Five existing actual MCP `find_nodes` tests also passed
+with shared dispatch and temporary SQLite/loopback fixtures. The initial sandbox
+attempt failed to bind those fixture sockets; the outside-sandbox rerun passed.
+
+The twelve-page fixture visits **188** expanded nodes with **31** as the maximum
+simultaneously expanded closure. A one-match limit materializes/retains **1/1**
+entries; a 1,024-byte response budget materializes/retains **2/1**. Benchmark-only
+counts expose `find.visited_nodes`, `find.max_expanded_nodes`,
+`find.materialized_matches` and `find.retained_matches`. These observations exclude
+SQL snapshot loading, cold revision-index construction and allocator overhead;
+they are bounded-work correctness evidence, not latency/RSS acceptance or a claim
+that global cold queries are independent of project size.
+
+```sh
+rtk bypass cargo test --offline -p opencanvas-server -j2 --lib reads::find -- --nocapture --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-server -j2 --test find_nodes -- --test-threads=2
+```
+
+The five-unit and five-MCP passes precede concurrent 4c integration; combined
+library clippy and the final integrated gate remain pending. Owned Rust modules
+pass targeted rustfmt/diff whitespace checks and remain below 250 lines: find
+117, criteria 76, entry/preview 65, frozen legacy 194, bounded paginator 100,
+pagination differential 46, read differential tests 173 and fixture 81. The
+`reads.rs` integration changes only find dispatch. No storage format, production
+cap, live service, native data, deployment or push was changed.

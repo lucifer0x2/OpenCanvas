@@ -95,7 +95,7 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
             })
             .await?;
         if name == "find_nodes" {
-            return find::read(&shared.snapshot, req);
+            return find::read_shared(&shared, req);
         }
         let s = &shared.snapshot;
         let (scope, offset) = pagination::scope(s, name, &req)?;
