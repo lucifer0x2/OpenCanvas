@@ -12,8 +12,10 @@ Usage: build-release.sh <git-ref> <output-dir>
 
 Resolves <git-ref> to a full commit, archives that exact tree into a private source
 directory and builds natively: scene WASM, renderer bundle, viewer, release server and
-layout-step. Copies Node and the Playwright browser, then writes REVISION, PROVENANCE
-and SHA256SUMS. <output-dir> must not exist; it appears only after a complete build.
+layout-step. Copies Node (for verify-runtime.mjs), then writes RENDER_BACKEND, REVISION,
+PROVENANCE and SHA256SUMS. The release runs the Rust render backend: run-server.sh exports
+its RENDER_BACKEND, and no Chromium is copied. <output-dir> must not exist; it appears only
+after a complete build.
 
 Environment (optional):
   CARGO_TARGET_DIR     Cargo cache (default <repo>/.runtime/native/target)
@@ -21,7 +23,9 @@ Environment (optional):
   WASM_BINDGEN         wasm-bindgen matching Cargo.lock (default: .runtime/native/tools,
                        target/scene-wasm/tools, then PATH)
   OPENCANVAS_NODE      Node binary matching the Dockerfile pin (default nvm Node)
-  OPENCANVAS_BROWSERS  Playwright browser directory (default <repo>/.runtime/browsers)
+  OPENCANVAS_RENDER_BACKEND
+                       rust (default) or chromium. chromium also copies the Playwright
+                       browser from OPENCANVAS_BROWSERS (default <repo>/.runtime/browsers).
 Builds run offline (cargo --offline, npm ci --offline); dependencies must be cached.
 EOF
 }
@@ -35,6 +39,8 @@ output=$2
 parent=$(dirname "$output")
 [[ -d "$parent" ]] || die "Output parent directory does not exist: $parent"
 sha=$(git -C "$NATIVE_REPO" rev-parse --verify --quiet "$ref^{commit}") || die "Unknown git ref: $ref"
+backend=${OPENCANVAS_RENDER_BACKEND:-rust}
+[[ "$backend" == rust || "$backend" == chromium ]] || die "OPENCANVAS_RENDER_BACKEND must be rust or chromium"
 cache="$NATIVE_REPO/.runtime/native"
 export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$cache/target}
 export CARGO_NET_OFFLINE=true
@@ -95,7 +101,7 @@ cargo build --offline --locked --release --manifest-path "$src/Cargo.toml" -p op
 
 chromium_revision=$(node -p 'require(process.argv[1]).browsers.find((b) => b.name === "chromium-headless-shell").revision' \
   "$src/node_modules/playwright-core/browsers.json")
-[[ -d "$browsers/chromium_headless_shell-$chromium_revision" ]] ||
+[[ "$backend" == rust || -d "$browsers/chromium_headless_shell-$chromium_revision" ]] ||
   die "Playwright browser chromium_headless_shell-$chromium_revision not found under $browsers"
 db_schema=$(parse_db_schema < "$src/$DB_SCHEMA_SOURCE")
 scene_schema=$(parse_scene_schema < "$src/$SCENE_SCHEMA_SOURCE")
@@ -112,11 +118,14 @@ cp -R "$src/renderer/dist" "$src/renderer/fonts" "$staging/renderer/"
 cp -R "$src/web/dist" "$staging/web/dist"
 cp -R "$src/node_modules/playwright" "$src/node_modules/playwright-core" "$staging/node_modules/"
 cp "$src/package.json" "$src/package-lock.json" "$src/Cargo.lock" "$staging/"
-# APFS clones keep per-release browser copies cheap; fall back to a plain copy elsewhere.
-cp -cR "$browsers" "$staging/.runtime/browsers" 2>/dev/null || {
-  rm -rf "$staging/.runtime/browsers"
-  cp -R "$browsers" "$staging/.runtime/browsers"
-}
+printf '%s\n' "$backend" > "$staging/RENDER_BACKEND"
+if [[ "$backend" == chromium ]]; then
+  # APFS clones keep per-release browser copies cheap; fall back to a plain copy elsewhere.
+  cp -cR "$browsers" "$staging/.runtime/browsers" 2>/dev/null || {
+    rm -rf "$staging/.runtime/browsers"
+    cp -R "$browsers" "$staging/.runtime/browsers"
+  }
+fi
 printf '%s\n' "$sha" > "$staging/REVISION"
 {
   printf 'commit=%s\nref=%s\nbuilt_utc=%s\nbuild_seconds=%s\n' "$sha" "$ref" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$((SECONDS - started))"
@@ -126,9 +135,9 @@ printf '%s\n' "$sha" > "$staging/REVISION"
   printf 'node=%s\nnpm=%s\nwasm_bindgen=%s\n' "$(node --version)" "$(npm --version)" "$bindgen_pin"
   printf 'playwright=%s\nchromium_headless_shell_revision=%s\n' \
     "$(node -p 'require(process.argv[1]).version' "$src/node_modules/playwright/package.json")" "$chromium_revision"
-  printf 'layout_step_profile=debug\nserver_profile=release\n'
+  printf 'layout_step_profile=debug\nserver_profile=release\nrender_backend=%s\n' "$backend"
 } > "$staging/PROVENANCE"
-(cd "$staging" && find bin worker renderer web node_modules package.json package-lock.json Cargo.lock -type f -print0 |
+(cd "$staging" && find bin worker renderer web node_modules package.json package-lock.json Cargo.lock RENDER_BACKEND -type f -print0 |
   LC_ALL=C sort -z | xargs -0 shasum -a 256 > SHA256SUMS)
 mv "$staging" "$output"
 staging=''

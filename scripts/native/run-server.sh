@@ -13,6 +13,12 @@ OPENCANVAS_RELEASE=$(cd "$OPENCANVAS_RELEASE" && pwd -P)
 export PATH="$OPENCANVAS_RELEASE/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export PLAYWRIGHT_BROWSERS_PATH="$OPENCANVAS_RELEASE/.runtime/browsers"
 export OPENCANVAS_LAYOUT_BIN="$OPENCANVAS_RELEASE/bin/layout-step"
+# The release selects its render backend (build-release.sh writes rust by default); older
+# releases without the file keep the server default (chromium) or server.env.
+if [[ -f "$OPENCANVAS_RELEASE/RENDER_BACKEND" ]]; then
+  RENDER_BACKEND=$(head -n 1 "$OPENCANVAS_RELEASE/RENDER_BACKEND")
+  export RENDER_BACKEND
+fi
 # Wait on the configured database port (default 2703); the URL itself is never printed.
 pg_port=${DATABASE_URL##*@}
 pg_port=${pg_port%%/*}

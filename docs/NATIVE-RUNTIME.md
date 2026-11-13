@@ -177,9 +177,17 @@ and read `logs/server.log`.
 `.runtime/native/source/<sha>` and builds natively and offline (cached Cargo and npm
 dependencies): scene WASM with the `Cargo.lock` wasm-bindgen, the renderer bundle, the
 viewer, debug `layout-step` and the release server, as in the Dockerfile. It copies Node
-24.21.0 and `.runtime/browsers`, and writes `REVISION`, `PROVENANCE` (commit, ref, build
-time, tool versions, supported schema versions) and `SHA256SUMS`. There is no Docker step
-and no patch overlay. Tests: `scripts/native/tests/{release-smoke,deploy-integration,
+24.21.0 (used by `verify-runtime.mjs`), and writes `RENDER_BACKEND`, `REVISION`,
+`PROVENANCE` (commit, ref, build time, tool versions, supported schema versions, render
+backend) and `SHA256SUMS`. There is no Docker step and no patch overlay.
+
+Releases run the experimental Rust render backend by default (see
+[SERVER.md](SERVER.md#experimental-native-render-backend) for its limits): `run-server.sh`
+exports the release's `RENDER_BACKEND`, so PNG/SVG work needs no Chromium or Node worker and
+no browser is copied (about 570 MB less per release). Build a Chromium release with
+`OPENCANVAS_RENDER_BACKEND=chromium` (it copies `.runtime/browsers`). Releases without the
+file, such as the overlay releases, keep the server default, Chromium; rolling back to one
+switches the backend back. `status.sh` prints each release's backend. Tests: `scripts/native/tests/{release-smoke,deploy-integration,
 migrate-integration}.sh <release-dir>` use a disposable root, a fresh cluster and free ports.
 
 ## Cutover and rollback
