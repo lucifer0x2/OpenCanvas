@@ -32,6 +32,12 @@ fixture_seed "$commit"
   "$FIXTURE_TMP/verify" | tee "$FIXTURE_TMP/verify.log"
 grep -q '"ok":true' "$FIXTURE_TMP/verify.log" || fail "verify-runtime did not report ok"
 pass "verify-runtime.mjs: snapshots, MCP, PNG render and scene WASM"
+if [[ "$(head -n 1 "$TEST_RELEASE/RENDER_BACKEND" 2>/dev/null)" == rust ]]; then
+  [[ ! -e "$TEST_RELEASE/.runtime/browsers" ]] || fail "a rust release must not ship a browser"
+  ! pgrep -f "$FIXTURE_TMP.*(headless_shell|[Cc]hrom|worker/cli.mjs)" >/dev/null ||
+    fail "the rust release started a browser or the Node worker"
+  pass "rust render backend: no browser shipped or started"
+fi
 
 kill -TERM "${FIXTURE_PIDS[1]}"
 wait "${FIXTURE_PIDS[1]}" || true

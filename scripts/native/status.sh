@@ -27,8 +27,9 @@ healthy=true
 describe() {
   local name=$1
   if [[ -z "$name" ]]; then printf 'none\n'; return; fi
-  printf '%s (built %s, schema v%s)\n' "$name" "$(release_meta "$name" built_utc || printf 'legacy release')" \
-    "$(release_meta "$name" database_schema_version || printf '?')"
+  printf '%s (built %s, schema v%s, render %s)\n' "$name" "$(release_meta "$name" built_utc || printf 'legacy release')" \
+    "$(release_meta "$name" database_schema_version || printf '?')" \
+    "$(head -n 1 "$RELEASES/$name/RENDER_BACKEND" 2>/dev/null || printf 'chromium')"
 }
 
 say "OpenCanvas runtime: $ROOT"
