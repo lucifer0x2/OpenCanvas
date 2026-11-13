@@ -36,9 +36,9 @@ Nhật ký đang dùng ở `docs/agents/LOG.md`; lịch sử ở `docs/agents/hi
 - Khi `LOG.md` vượt ~300 dòng: chuyển các mục đã đóng sang `docs/agents/history/<ngày>.md`, giữ một dòng con trỏ trong `LOG.md`.
 - Memory ngoài repo (thư mục memory của Claude Code, `~/.codex/memories`, file CLAUDE.md/AGENTS.md chung) chỉ lưu con trỏ hoặc sự thật cần dùng xuyên phiên, không chép nhật ký repo.
 
-## Trạng thái hiện tại — 2026-11-12
+## Trạng thái hiện tại — 2026-11-13
 
-- Nhánh `codex/react-frontend-optimization`: React/SWR `72a4499` đã commit, chưa push; URL selection project/page/frame, node optional đã kiểm, chưa commit. FE thử3877 đã cập nhật, proxy native3857 → PG2703. Báo cáo: `docs/REACT-FRONTEND-OPTIMIZATION.md`, `docs/URL-NAVIGATION.md`.
+- Nhánh `feat/incremental-validation`: Task24 `81f883c`, Task25 lát 1–3 tới `a98012d` đã commit; targeted checks đạt, full gates và benchmark chưa xong. Người dùng yêu cầu bàn giao; đọc `docs/checkpoints/2026-11-13-task25-handoff.md`. Chưa bắt đầu 4–6 hoặc nâng cap mặc định.
 - Main được bảo vệ bằng ruleset 26259563 active: PR, chỉ `lucifer0x2` cập nhật/merge, chặn xóa/force-push với người khác; chủ repo bypass always.
 - 5 nhóm thuộc tính đã nghiệm thu trên bản tổng hợp chưa phát hành `scene-3`/`web-4`, build debug đồng bộ: xem `docs/DESIGN-PROPERTIES-IMPLEMENTATION.md` và các report TEXT/PAINT/FONT-FACE/DESIGN-DISCOVERY. Review PR #1 (R1/R2) đã sửa.
 - Task14 P1–P5 đã kiểm độc lập: scoped themes/instance paint, bulk JSON/dry run và MCP-first guide. Debug đồng bộ đã build; chưa restart dịch vụ thật/commit/push. U07 golden/payload chờ design worker; xem `docs/TASK14-REPORT.md`.

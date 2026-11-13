@@ -1,10 +1,15 @@
 # Task25 — incremental validation and page-scoped access
 
-Status: slices 1–3 implemented and checked 2026-11-13 on
+Status: slices 1–3 implemented with targeted checks 2026-11-13 on
 `feat/incremental-validation`, from bootstrap `7cc36e0` / Task24 baseline
 `81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 4–6 remain open.
 No deployment or production-limit change. The slice commit is the commit adding
 this report; later slices must record their own HEAD and evidence.
+
+Handoff requested by the user after source commit `a98012d`. The combined default
+test command was stopped during compilation (exit 143), before any test result;
+it has not passed or failed acceptance. The exact Task24 matrix has not started.
+See [handoff checkpoint](checkpoints/2026-11-13-task25-handoff.md) for the next steps.
 
 ## Slice 1 behavior and invariant
 

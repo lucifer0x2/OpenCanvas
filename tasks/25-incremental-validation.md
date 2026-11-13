@@ -1,7 +1,9 @@
 # Task25 — Incremental validation and page-scoped access, unchanged storage layout
 
-**Status:** packaged 2026-11-13; product implementation not started. Requested by
-the user after [Task24](../docs/TASK24-REPORT.md). Workspace:
+**Status:** slices 1–3 committed 2026-11-13 with targeted checks; full default gates
+and Task24 rerun pending. User requested handoff before those finished. Resume from
+[checkpoint](../docs/checkpoints/2026-11-13-task25-handoff.md). Requested after
+[Task24](../docs/TASK24-REPORT.md). Workspace:
 `/Users/luis/Workspace/OpenCanvas`; branch `feat/incremental-validation`, from
 Task24 baseline `81f883cf0b8e7d864ce30585d8db14094bdb5425`.
 
