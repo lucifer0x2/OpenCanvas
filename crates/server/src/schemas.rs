@@ -15,9 +15,10 @@ fn catalog() -> &'static (Vec<Tool>, HashMap<String, Value>) {
         let schemas = tools
             .iter()
             .map(|t| {
-                // render_frame publishes a flat object; its arguments are checked in strict form.
+                // render_frame and apply_batch publish flat objects; arguments are checked in strict form.
                 let schema = match t.name.as_ref() {
                     "render_frame" => render::validation(),
+                    "apply_batch" => batch::inline_validation(),
                     _ => Value::Object((*t.input_schema).clone()),
                 };
                 (t.name.to_string(), schema)
@@ -32,6 +33,10 @@ pub fn validate(name: &str, args: &Value) -> crate::error::Result<()> {
         .get(name)
         .ok_or_else(|| crate::ApiError::new("UNKNOWN_TOOL", "Tool is not available"))?;
     validation::validate(schema, args)
+}
+/// Index of the first `apply_batch` operation that fails the published operation schema.
+pub fn invalid_operation(operations: &[Value]) -> Option<usize> {
+    batch::invalid_operation(operations)
 }
 pub fn tools() -> Vec<Tool> {
     catalog().0.clone()
