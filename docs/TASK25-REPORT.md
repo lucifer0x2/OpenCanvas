@@ -730,3 +730,60 @@ Clippy's map-key iteration warning was fixed and the gate rerun. New modules are
 18–117 lines; modified revision-index module 230, its tests 141, largest existing
 touched adapter 237. The largest new test is 212 lines; no touched Rust file
 exceeds 250. No live service/data access, deploy, restart or push occurred.
+
+## Slice 4b — scoped MCP tree reads (2026-11-13)
+
+`get_outline`, `get_subtree` and `get_design_context` now acquire one shared
+immutable snapshot and use 4a's explicit committed authority for target-scoped
+expansion/resolution. The original full tree implementation is retained as
+`reads/tree_legacy.rs`: custom/untrusted backends, swapped authority Arcs and
+project-wide outlines keep that path and its existing validation/error behavior.
+No standalone resolver or custom backend silently gains trusted status.
+
+Tree assembly separates node entries, resource entries and shallow navigation.
+Definitions include transitive masters resolved under their own authored ancestry;
+placed instances retain their placed ancestry and overrides. Compact font collection
+reuses bounded expansion instead of the compatibility helper's full expansion.
+Context resources serialize only the typed resource arrays, preserving full arrays
+by default without serializing the project node vector. Notes and text intent use
+4a's indexed dependency-note subset; `Intent::with_nodes_and_notes` preserves the
+existing constructors while accepting bounded iterators. Navigation merges indexed
+incoming sources, source-screen ancestors and outgoing target names in original
+source order, independently of the returned node scope.
+
+Actual checks before concurrent 4c integration:
+
+| Check | Result |
+| --- | --- |
+| New full-reference tree bytes/cursors, computed rows/null/reflow, cold/warm/old-new revision isolation, custom and swapped-Arc fallback, bounded nodes/notes | 5 passed |
+| Existing MCP context/compact/rows/notes/navigation/states/instance resources/animation budget/custom backend contracts | 25 passed |
+| Positive fragmentation diagnostic and indexed ancestor-intent parity test added afterward | pending combined gate |
+| Post-integration library clippy | pending combined gate |
+
+The differential fixtures cover original and reversed source order with sibling
+sort ties, cross-page nested masters, virtual/missing targets, root/theme error
+precedence, properties/depth, default/compact/rows, states, notes and pagination.
+The bounded-work test adds eight unrelated pages, 176 authored nodes and 160
+notes, asserting unchanged closure/expanded/resolved/indexed-note counts. This
+excludes cold SQL loading and index construction. Full default resource arrays,
+project-wide outlines and a virtual target's outer-instance closure retain their
+documented costs; viewports/render/inspect/export are integrated by 4c.
+
+The last attempted rerun after adding the positive diagnostic test reached
+concurrent 4c compilation errors (its new Intent overflow method was not installed
+yet and its test referenced private `RevisionIndexes::new`); no tests ran in that
+attempt. The checkpoint therefore records only the five and 25 actual passes.
+The earlier fixture failures were invalid navigation trigger combinations and
+were corrected without changing product validation.
+
+```sh
+rtk bypass cargo test --offline -p opencanvas-server -j2 --lib reads::scoped_tree -- --nocapture --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-server -j2 --test context --test compact_context --test node_rows_context --test notes --test navigation_context --test states_context --test instances_resources --test animation_context_budget --test storage_backend -- --test-threads=2
+```
+
+The integration command used temporary loopback servers and SQLite roots.
+For independently compiling commits, 4b keeps legacy find dispatch and the existing
+viewport call signature; 4d and 4c each switch their own line when committed.
+Modified/new Rust files remain below 250 lines: scoped tree 209, frozen full tree
+231, compact 189, test modules 114–184 and other helpers 13–164. No live service or
+data access, deployment, restart, cap change or push occurred.

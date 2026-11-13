@@ -8,11 +8,21 @@ mod instances;
 mod navigation;
 mod notes;
 pub(crate) mod pagination;
+#[cfg(test)]
+mod scoped_tree_bounds_tests;
+#[cfg(test)]
+mod scoped_tree_fixture;
+#[cfg(test)]
+mod scoped_tree_tests;
 mod states;
 pub(crate) mod targets;
 #[cfg(test)]
 mod traversal_tests;
 mod tree;
+mod tree_legacy;
+mod tree_navigation;
+mod tree_nodes;
+mod tree_resources;
 mod viewports;
 use crate::{error::Result, state::AppState};
 use serde::{Deserialize, Serialize};
@@ -74,19 +84,30 @@ pub async fn read(state: &AppState, name: &str, args: Value) -> Result<Value> {
     req.notes = req.notes.filter(|f| *f != notes::Filter::Open);
     req.instances = req.instances.filter(|mode| mode != "reference");
     req.states_mode = req.states_mode.filter(|mode| mode != "none");
-    let s = state.snapshot(req.project_id.clone()).await?;
-    if name == "find_nodes" {
-        return find::read(&s, req);
-    }
-    let (scope, offset) = pagination::scope(&s, name, &req)?;
-    if matches!(name, "get_outline" | "get_subtree" | "get_design_context") {
+    if matches!(
+        name,
+        "get_outline" | "get_subtree" | "get_design_context" | "find_nodes"
+    ) {
+        let shared = state
+            .db({
+                let id = req.project_id.clone();
+                move |store| store.shared_snapshot(&id)
+            })
+            .await?;
+        if name == "find_nodes" {
+            return find::read(&shared.snapshot, req);
+        }
+        let s = &shared.snapshot;
+        let (scope, offset) = pagination::scope(s, name, &req)?;
         let computed = if name == "get_design_context" {
             viewports::compute(state, &s, &req).await?
         } else {
             None
         };
-        return tree::read(&s, name, req, scope, offset, computed);
+        return tree::read_shared(&shared, name, req, scope, offset, computed);
     }
+    let s = state.snapshot(req.project_id.clone()).await?;
+    let (scope, offset) = pagination::scope(&s, name, &req)?;
     let mut value = serde_json::to_value(&s)?;
     if name == "list_fonts" {
         value["fonts"] = Value::Array(

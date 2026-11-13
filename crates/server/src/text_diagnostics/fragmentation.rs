@@ -1,11 +1,27 @@
 //! Conservative multi-signal heuristic for likely captured paragraph characters.
 use super::intent;
-use opencanvas_storage::{Node, NodeKind, Snapshot};
+use opencanvas_storage::{Node, NodeKind, Note, Snapshot};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 pub(crate) fn authored(snapshot: &Snapshot, nodes: &[Node], frame: &str) -> Vec<Value> {
-    let intent = intent::Intent::new(snapshot);
+    authored_with_intent(intent::Intent::new(snapshot), nodes, frame)
+}
+
+pub(crate) fn authored_scoped(
+    authored: &[&Node],
+    notes: &[&Note],
+    nodes: &[Node],
+    frame: &str,
+) -> Vec<Value> {
+    authored_with_intent(
+        intent::Intent::with_nodes_and_notes(authored.iter().copied(), notes.iter().copied()),
+        nodes,
+        frame,
+    )
+}
+
+fn authored_with_intent(intent: intent::Intent<'_>, nodes: &[Node], frame: &str) -> Vec<Value> {
     let by_id: HashMap<_, _> = nodes.iter().map(|n| (n.id.as_str(), n)).collect();
     let mut children: BTreeMap<&str, Vec<&Node>> = BTreeMap::new();
     let mut edges: HashMap<&str, Vec<&str>> = HashMap::new();

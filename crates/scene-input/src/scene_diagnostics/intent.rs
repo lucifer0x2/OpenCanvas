@@ -1,5 +1,5 @@
 //! Explicit note markers carry intent without adding unsupported authored properties.
-use crate::{Node, Snapshot};
+use crate::{Node, Note, Snapshot};
 use std::collections::{HashMap, HashSet};
 
 pub struct Intent<'a> {
@@ -8,16 +8,28 @@ pub struct Intent<'a> {
 }
 impl<'a> Intent<'a> {
     pub fn new(snapshot: &'a Snapshot) -> Self {
+        Self::with_nodes(snapshot, snapshot.nodes.iter())
+    }
+
+    /// Reuse a bounded authored dependency closure instead of scanning all nodes.
+    pub fn with_nodes(snapshot: &'a Snapshot, nodes: impl IntoIterator<Item = &'a Node>) -> Self {
+        Self::with_nodes_and_notes(nodes, &snapshot.notes)
+    }
+
+    /// Both iterators can come from revision-local indexes; no project scan.
+    pub fn with_nodes_and_notes(
+        nodes: impl IntoIterator<Item = &'a Node>,
+        note_sources: impl IntoIterator<Item = &'a Note>,
+    ) -> Self {
         let mut notes: HashMap<&str, (bool, bool)> = HashMap::new();
-        for note in &snapshot.notes {
+        for note in note_sources {
             let flags = notes.entry(&note.node_id).or_default();
             let text = note.text.to_ascii_lowercase();
             flags.0 |= text.contains("intentional lettering:");
             flags.1 |= text.contains("intentional overflow:");
         }
-        let masters = snapshot
-            .nodes
-            .iter()
+        let masters = nodes
+            .into_iter()
             .filter_map(|n| Some((n.id.as_str(), n.props["componentId"].as_str()?)))
             .collect();
         Self { notes, masters }

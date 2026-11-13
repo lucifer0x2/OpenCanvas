@@ -6,6 +6,13 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 /// Definitions remain self-contained even when every instance overrides a resource.
 pub(super) fn definition_nodes<'a>(s: &'a Snapshot, scope: &[(&Node, usize)]) -> Vec<&'a Node> {
+    definition_nodes_indexed(&TreeIndex::new(&s.nodes), scope)
+}
+
+pub(super) fn definition_nodes_indexed<'a>(
+    index: &TreeIndex<'a>,
+    scope: &[(&Node, usize)],
+) -> Vec<&'a Node> {
     let mut needed = BTreeSet::new();
     let mut nodes = BTreeMap::new();
     let mut pending: Vec<_> = scope
@@ -15,7 +22,6 @@ pub(super) fn definition_nodes<'a>(s: &'a Snapshot, scope: &[(&Node, usize)]) ->
     if pending.is_empty() {
         return Vec::new();
     }
-    let index = TreeIndex::new(&s.nodes);
     while let Some(id) = pending.pop() {
         if !needed.insert(id) {
             continue;
@@ -38,11 +44,20 @@ pub(super) fn definitions(
     compact: bool,
     states: bool,
 ) -> Value {
-    let definitions = definition_nodes(s, scope);
+    definitions_indexed(&TreeIndex::new(&s.nodes), scope, resolved, compact, states)
+}
+
+pub(super) fn definitions_indexed(
+    index: &TreeIndex,
+    scope: &[(&Node, usize)],
+    resolved: &HashMap<&str, &Node>,
+    compact: bool,
+    states: bool,
+) -> Value {
+    let definitions = definition_nodes_indexed(index, scope);
     if definitions.is_empty() {
         return json!({});
     }
-    let index = TreeIndex::new(&s.nodes);
     let mut components = BTreeMap::new();
     for root in definitions
         .iter()

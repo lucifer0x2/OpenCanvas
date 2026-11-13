@@ -35,6 +35,34 @@ impl Referenced {
         scope: impl IntoIterator<Item = &'a Node>,
         themes: impl IntoIterator<Item = &'a str>,
     ) -> opencanvas_storage::Result<Self> {
+        Self::collect_with_fonts(s, scope, themes, |nodes| {
+            opencanvas_storage::referenced_font_ids(s, nodes)
+        })
+    }
+
+    pub fn collect_scoped<'a>(
+        s: &Snapshot,
+        scope: impl IntoIterator<Item = &'a Node>,
+        themes: impl IntoIterator<Item = &'a str>,
+        expanded: &[Node],
+    ) -> opencanvas_storage::Result<Self> {
+        let expanded = expanded
+            .iter()
+            .cloned()
+            .map(|n| (n.id.clone(), n))
+            .collect();
+        Self::collect_with_fonts(s, scope, themes, |nodes| {
+            opencanvas_storage::validate::FontReferences::from_snapshot(s, &expanded)?
+                .for_nodes(nodes)
+        })
+    }
+
+    fn collect_with_fonts<'a>(
+        s: &Snapshot,
+        scope: impl IntoIterator<Item = &'a Node>,
+        themes: impl IntoIterator<Item = &'a str>,
+        fonts: impl FnOnce(&[&Node]) -> opencanvas_storage::Result<BTreeSet<String>>,
+    ) -> opencanvas_storage::Result<Self> {
         let mut refs = Self::default();
         let nodes: Vec<_> = scope.into_iter().collect();
         for node in &nodes {
@@ -61,8 +89,7 @@ impl Referenced {
                 }
             }
         }
-        refs.fonts
-            .extend(opencanvas_storage::referenced_font_ids(s, &nodes)?);
+        refs.fonts.extend(fonts(&nodes)?);
         // Storage rejects style-to-style aliases, so one pass over the styles is complete.
         let styles: HashMap<&str, &Value> =
             s.styles.iter().map(|x| (x.id.as_str(), &x.value)).collect();

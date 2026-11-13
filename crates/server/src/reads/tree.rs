@@ -1,21 +1,46 @@
 use super::{
-    animated, compact, diagnostics, index::TreeIndex, instances, navigation, notes, pagination,
-    sanitize_asset, viewports::Computed, NodeFormat, ReadRequest,
+    animated, compact, diagnostics, index::TreeIndex, instances, notes, pagination, tree_resources,
+    viewports::Computed, NodeFormat, ReadRequest,
 };
 use crate::error::{ApiError, Result};
 use crate::node_rows;
-use opencanvas_storage::{resolved_expanded_nodes, resolved_tokens_for_theme, NodeKind, Snapshot};
+use opencanvas_storage::{
+    read_scope::{ReadScope, ScopedSnapshot},
+    NodeKind, SharedSnapshot,
+};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-pub(super) fn read(
-    s: &Snapshot,
+// Frozen full implementation: custom backend compatibility and differential tests.
+// A project-wide outline intentionally remains a full read.
+#[cfg(test)]
+pub(super) use super::tree_legacy::read;
+
+pub(super) fn read_shared(
+    shared: &SharedSnapshot,
     name: &str,
     req: ReadRequest,
     scope: String,
     offset: usize,
     computed: Option<Computed>,
 ) -> Result<Value> {
+    if let Some(scoped) = shared.trusted_scoped()? {
+        if name != "get_outline" || req.node_id.is_some() || req.frame_id.is_some() {
+            return read_scoped(&scoped, name, req, scope, offset, computed);
+        }
+    }
+    super::tree_legacy::read(&shared.snapshot, name, req, scope, offset, computed)
+}
+
+pub(super) fn read_scoped(
+    scoped: &ScopedSnapshot<'_>,
+    name: &str,
+    req: ReadRequest,
+    scope: String,
+    offset: usize,
+    computed: Option<Computed>,
+) -> Result<Value> {
+    let s = scoped.snapshot();
     let root = req.node_id.as_ref().or(req.frame_id.as_ref());
     if (name == "get_subtree" && req.node_id.is_none())
         || (name == "get_design_context" && req.frame_id.is_none())
@@ -29,109 +54,77 @@ pub(super) fn read(
     }
     let context = name == "get_design_context";
     let rows = context && matches!(req.node_format, Some(NodeFormat::Rows));
-    let expanded = if s.nodes.iter().any(|n| n.kind == NodeKind::Instance) {
-        std::borrow::Cow::Owned(opencanvas_storage::instances::expand(&s.nodes)?)
-    } else {
-        std::borrow::Cow::Borrowed(s.nodes.as_slice())
-    };
-    let expanded_index = TreeIndex::new(&expanded);
+    let root = root.expect("scoped reads require a target");
+    let mut nodes = scoped.expand(ReadScope::Target(root), context)?;
     let expand = context && req.instances.as_deref() == Some("expand");
-    let use_expanded = expand || root.is_some_and(|id| id.contains('/'));
-    let index = TreeIndex::new(if use_expanded { &expanded } else { &s.nodes });
-    if let Some(id) = root {
-        let node = index
-            .get(id)
-            .ok_or_else(|| ApiError::invalid("Scope node does not exist"))?;
-        if name == "get_design_context" && node.kind != NodeKind::Frame {
-            return Err(ApiError::invalid("frameId must identify a frame"));
-        }
+    let use_expanded = expand || root.contains('/');
+    let root_node = if use_expanded {
+        nodes.expanded.iter().find(|n| n.id == *root)
+    } else {
+        nodes.authored.iter().copied().find(|n| n.id == *root)
+    }
+    .ok_or_else(|| ApiError::invalid("Scope node does not exist"))?;
+    if context && root_node.kind != NodeKind::Frame {
+        return Err(ApiError::invalid("frameId must identify a frame"));
     }
     let theme = req.theme.as_deref().unwrap_or("default");
     let resolved = if context {
-        resolved_expanded_nodes(s, theme)?
+        scoped.resolve(&mut nodes, theme)?
     } else {
         Vec::new()
     };
+    let expanded = &nodes.expanded;
+    let authored_index = TreeIndex::from_nodes(nodes.authored.iter().copied());
+    let expanded_index = TreeIndex::new(expanded);
+    let index = if use_expanded {
+        &expanded_index
+    } else {
+        &authored_index
+    };
+    let root = Some(root);
     let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
     let ordered = index.preorder(root.map(String::as_str));
     let expanded_ordered =
-        (context && !use_expanded && matches!(&expanded, std::borrow::Cow::Owned(_)))
-            .then(|| expanded_index.preorder(root.map(String::as_str)));
+        (context && !use_expanded).then(|| expanded_index.preorder(root.map(String::as_str)));
     let full_scope = expanded_ordered.as_deref().unwrap_or(&ordered);
+    let scope_notes = context
+        .then(|| scoped.notes_for_nodes(nodes.dependencies.iter().map(|n| n.id.as_str())))
+        .unwrap_or_default();
     let compact = (context && req.compact == Some(true))
         .then(|| {
-            compact::Referenced::collect(
+            compact::Referenced::collect_scoped(
                 s,
                 full_scope
                     .iter()
                     .map(|(n, _)| *n)
-                    .chain(instances::definition_nodes(s, &ordered)),
+                    .chain(instances::definition_nodes_indexed(
+                        &authored_index,
+                        &ordered,
+                    )),
                 full_scope
                     .iter()
                     .filter_map(|(n, _)| by_id.get(n.id.as_str()))
                     .filter_map(|n| n.props["effectiveTheme"].as_str())
                     .chain(std::iter::once(theme)),
+                expanded,
             )
         })
         .transpose()?;
-    let mut entries = Vec::new();
-    // depth filters from the scope root (depth 0); omitted, it lists the whole scope.
-    for (node, d) in ordered
-        .iter()
-        .filter(|(_, d)| req.depth.is_none_or(|max| *d <= max))
-    {
-        let mut value = if name == "get_outline" {
-            json!({"id":node.id,"parentId":node.parent_id,"kind":node.kind,"name":node.props["name"],"sortKey":node.sort_key})
-        } else {
-            let mut authored = (*node).clone();
-            if let Some(props) = &req.properties {
-                authored
-                    .props
-                    .as_object_mut()
-                    .unwrap()
-                    .retain(|k, _| props.contains(k));
-            }
-            let mut value = json!(authored);
-            if context {
-                let mut props = by_id[node.id.as_str()].props.clone();
-                value["effectiveTheme"] = props
-                    .as_object_mut()
-                    .unwrap()
-                    .remove("effectiveTheme")
-                    .unwrap();
-                if super::states::requested(&req) {
-                    if let Some(states) = super::states::differing(&props, &node.kind) {
-                        value["resolvedStates"] = states;
-                    }
-                }
-                if let Some(filter) = &req.properties {
-                    props
-                        .as_object_mut()
-                        .unwrap()
-                        .retain(|k, _| filter.contains(k));
-                }
-                value["resolvedProps"] =
-                    compact::resolved_props(compact.is_some(), &authored.props, props);
-                if let Some(computed) = &computed {
-                    value["computedBounds"] = json!(computed.bounds.get(&node.id));
-                }
-            }
-            value
-        };
-        if !expand {
-            instances::reference(node, &mut value, &expanded_index, computed.as_ref());
-        }
-        let omitted = index.child_count(&node.id);
-        if req.depth == Some(*d) && omitted > 0 {
-            value["omittedChildren"] = json!(omitted);
-        }
-        if rows {
-            value = node_rows::pack(value);
-        }
-        entries.push(("nodes".into(), value));
+    let mut entries = super::tree_nodes::Source {
+        index,
+        expanded: &expanded_index,
+        resolved: &by_id,
+        computed: computed.as_ref(),
     }
+    .entries(name, &req, &ordered, compact.is_some());
     if let (true, Some(frame)) = (context, root) {
-        entries.extend(notes::entries(s, &index, frame, &ordered, req.notes));
+        entries.extend(notes::entries_indexed(
+            scope_notes.iter().copied(),
+            index,
+            frame,
+            &ordered,
+            req.notes,
+        ));
     }
     let mut response = json!({"schemaVersion":1,"projectId":s.project_id,"revision":s.revision,"scope":root,"nodes":[],"limits":{"depth":req.depth,"nodes":req.limit.unwrap_or(200),"bytes":req.budget.unwrap_or(65536)}});
     if rows {
@@ -140,8 +133,8 @@ pub(super) fn read(
     }
     if context {
         if !expand && offset == 0 {
-            let definitions = instances::definitions(
-                s,
+            let definitions = instances::definitions_indexed(
+                &authored_index,
                 &ordered,
                 &by_id,
                 compact.is_some(),
@@ -155,13 +148,17 @@ pub(super) fn read(
         compact::mark(&mut response, compact.as_ref());
         response["viewport"] = json!(req.viewport);
         response["diagnostics"] = diagnostics::for_scope(full_scope);
-        let text_diagnostics = crate::text_diagnostics::authored(s, &resolved, root.unwrap());
+        let text_diagnostics = crate::text_diagnostics::authored_scoped(
+            &nodes.dependencies,
+            &scope_notes,
+            &resolved,
+            root.unwrap(),
+        );
         // Navigation is frame metadata: on the first page only, absent when the frame has none.
-        if let Some(nav) = root
-            .filter(|_| offset == 0)
-            .and_then(|f| navigation::summary(&index, f))
-        {
-            response["navigation"] = nav;
+        if let Some(frame) = root.filter(|_| offset == 0) {
+            if let Some(nav) = super::tree_navigation::summary(scoped, &nodes, frame) {
+                response["navigation"] = nav;
+            }
         }
         if let Some(computed) = computed {
             let measured_diagnostics = computed.diagnostics;
@@ -181,21 +178,14 @@ pub(super) fn read(
             .as_array_mut()
             .unwrap()
             .extend(text_diagnostics);
-        let tokens = resolved_tokens_for_theme(s, theme)?;
-        let value = serde_json::to_value(s)?;
         for field in ["tokens", "styles", "assets", "fonts"] {
             response[field] = json!([]);
-            for item in compact::kept(&value[field], field, compact.as_ref()) {
-                let mut item = sanitize_asset(item.clone());
-                if field == "tokens" {
-                    item["resolvedValue"] = tokens[item["id"].as_str().unwrap()].clone();
-                }
-                if field == "styles" {
-                    item["resolvedValue"] = resolve_style(&item["value"], &tokens);
-                }
-                entries.push((field.into(), item));
-            }
         }
+        entries.extend(tree_resources::entries(
+            s,
+            &scoped.resolved_tokens(theme)?,
+            compact.as_ref(),
+        )?);
         if animated::has_tracks(&ordered) {
             let budget = req.budget.unwrap_or(65536);
             let headroom = pagination::metadata_headroom(
@@ -216,16 +206,4 @@ pub(super) fn read(
         req.budget.unwrap_or(65536),
         &scope,
     )
-}
-fn resolve_style(value: &Value, tokens: &std::collections::BTreeMap<String, Value>) -> Value {
-    if let Some(id) = value["tokenId"].as_str() {
-        return tokens.get(id).cloned().unwrap_or(Value::Null);
-    }
-    match value {
-        Value::Object(fields) => fields
-            .iter()
-            .map(|(k, v)| (k.clone(), resolve_style(v, tokens)))
-            .collect(),
-        _ => value.clone(),
-    }
 }
