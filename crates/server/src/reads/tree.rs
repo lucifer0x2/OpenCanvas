@@ -81,15 +81,16 @@ pub(super) fn read_scoped(
     } else {
         &authored_index
     };
-    let root = Some(root);
     let by_id: HashMap<_, _> = resolved.iter().map(|n| (n.id.as_str(), n)).collect();
-    let ordered = index.preorder(root.map(String::as_str));
+    let ordered = index.preorder(Some(root.as_str()));
     let expanded_ordered =
-        (context && !use_expanded).then(|| expanded_index.preorder(root.map(String::as_str)));
+        (context && !use_expanded).then(|| expanded_index.preorder(Some(root.as_str())));
     let full_scope = expanded_ordered.as_deref().unwrap_or(&ordered);
-    let scope_notes = context
-        .then(|| scoped.notes_for_nodes(nodes.dependencies.iter().map(|n| n.id.as_str())))
-        .unwrap_or_default();
+    let scope_notes = if context {
+        scoped.notes_for_nodes(nodes.dependencies.iter().map(|n| n.id.as_str()))
+    } else {
+        Vec::new()
+    };
     let compact = (context && req.compact == Some(true))
         .then(|| {
             compact::Referenced::collect_scoped(
@@ -117,11 +118,11 @@ pub(super) fn read_scoped(
         computed: computed.as_ref(),
     }
     .entries(name, &req, &ordered, compact.is_some());
-    if let (true, Some(frame)) = (context, root) {
+    if context {
         entries.extend(notes::entries_indexed(
             scope_notes.iter().copied(),
             index,
-            frame,
+            root,
             &ordered,
             req.notes,
         ));
@@ -152,11 +153,11 @@ pub(super) fn read_scoped(
             &nodes.dependencies,
             &scope_notes,
             &resolved,
-            root.unwrap(),
+            root,
         );
         // Navigation is frame metadata: on the first page only, absent when the frame has none.
-        if let Some(frame) = root.filter(|_| offset == 0) {
-            if let Some(nav) = super::tree_navigation::summary(scoped, &nodes, frame) {
+        if offset == 0 {
+            if let Some(nav) = super::tree_navigation::summary(scoped, &nodes, root) {
                 response["navigation"] = nav;
             }
         }
