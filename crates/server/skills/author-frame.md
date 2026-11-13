@@ -89,6 +89,9 @@ pretend that memory has been read, initialized or saved.
 
 ## Structured JSON examples
 
+Prefer `apply_batch` `source` (OCD, `skill://opencanvas/ocd.md`): it compiles
+to these same operations. JSON `operations` stay supported; send one of the two.
+
 These are ordered `tools/call` parameter objects for a fresh project whose
 `create_project` response supplied revision 0. Replace `PROJECT_ID` with its ID;
 sample IDs/colors/text are illustrative, not new confirmed design requirements.

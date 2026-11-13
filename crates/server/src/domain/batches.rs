@@ -20,6 +20,21 @@ pub(super) async fn run(state: &AppState, name: &str, mut args: Value) -> Result
         // Validate original JSON, before deserializing optional operation fields.
         crate::schemas::validate("apply_batch", &args)?;
     }
+    // OCD source compiles to the same operations, then follows the inline path unchanged;
+    // storage errors naming an operation also get its source line and column.
+    let mut positions = None;
+    if let Some(source) = args.as_object_mut().unwrap().remove("source") {
+        let source = source.as_str().unwrap_or_default();
+        positions = Some(crate::ocd::compile_into(
+            &mut args,
+            source,
+            page_ids.as_ref(),
+        )?);
+    }
+    let locate = |error: crate::ApiError| match &positions {
+        Some(positions) => crate::ocd::Positions::locate(positions, error),
+        None => error,
+    };
     let notes_only = opencanvas_storage::is_note_batch(&args["operations"]);
     if let Some(pages) = &page_ids {
         args["pageIds"] = pages.clone();
@@ -39,7 +54,8 @@ pub(super) async fn run(state: &AppState, name: &str, mut args: Value) -> Result
                     serde_json::to_value(p.apply_scoped_batch(request)?).map_err(Into::into)
                 }
             })
-            .await;
+            .await
+            .map_err(locate);
         let mut result = conflict::checked(state, &project, expected, result).await?;
         let revision = if dry_run {
             result["baseRevision"].clone()
@@ -60,7 +76,8 @@ pub(super) async fn run(state: &AppState, name: &str, mut args: Value) -> Result
                 serde_json::to_value(p.apply_batch(request)?).map_err(Into::into)
             }
         })
-        .await;
+        .await
+        .map_err(locate);
     Ok((
         conflict::checked(state, &project, expected, result).await?,
         notes_only,

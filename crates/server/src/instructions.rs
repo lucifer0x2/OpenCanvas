@@ -35,8 +35,9 @@ children), call find_nodes; use get_outline when you need structure: depth count
 root, so nodeId <page> with depth 1 lists that page's root frames in one call. totalMatches 0 means nothing matched, not an error. Position ('the card on \
 the right') is not searchable: read bounds with get_design_context viewports or inspect_layout nodeIds.
 
-Authoring and editing designs: inspect tools/list inputSchema and send structured JSON operations \
-through MCP apply_batch (1–500 operations, atomic). Do not substitute a JS, shell or HTTP mutation \
+Authoring and editing designs: inspect tools/list inputSchema and write through MCP apply_batch \
+(atomic). Prefer its source input (OCD line DSL, skill://opencanvas/ocd.md), compiled server-side \
+to the same operations; structured JSON operations (1–500) stay supported. Do not substitute a JS, shell or HTTP mutation \
 client for available design tools. This client guidance does not restrict app implementation, \
 tests or authorized project-memory filesystem access, and cannot enforce a client's system prompt \
 or external programs. Repeated valid operations are permitted. Read scoped context/get_outline \
