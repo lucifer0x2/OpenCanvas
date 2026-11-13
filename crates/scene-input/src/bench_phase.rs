@@ -6,6 +6,27 @@
 
 #[cfg(feature = "large-project-bench")]
 static PHASES: std::sync::Mutex<Vec<(&'static str, u64)>> = std::sync::Mutex::new(Vec::new());
+#[cfg(feature = "large-project-bench")]
+static COUNTS: std::sync::Mutex<Vec<(&'static str, usize)>> = std::sync::Mutex::new(Vec::new());
+
+/// Benchmark-only work counts, separate from durations to preserve phase units.
+#[inline(always)]
+pub fn count(name: &'static str, value: usize) {
+    #[cfg(feature = "large-project-bench")]
+    if let Ok(mut counts) = COUNTS.lock() {
+        counts.push((name, value));
+    }
+    #[cfg(not(feature = "large-project-bench"))]
+    let _ = (name, value);
+}
+
+#[cfg(feature = "large-project-bench")]
+pub fn take_counts() -> Vec<(&'static str, usize)> {
+    COUNTS
+        .lock()
+        .map(|mut counts| std::mem::take(&mut *counts))
+        .unwrap_or_default()
+}
 
 /// Runs `f`, recording its duration under `name` only in the benchmark build.
 #[inline(always)]

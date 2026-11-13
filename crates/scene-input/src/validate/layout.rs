@@ -1,4 +1,4 @@
-use super::{breakpoints, layout_rule::validate_layout_rule, values::number, Candidate};
+use super::{breakpoints, layout_rule::validate_layout_rule, scope::Resolver, values::number};
 use crate::{error::*, model::*};
 use opencanvas_layout::percentage;
 use serde_json::{Map, Value};
@@ -17,7 +17,7 @@ fn fill_in_hug(key: &str, parent: &Value) -> StorageError {
     StorageError::validation(key, &message)
 }
 
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn layout_properties(&self, n: &Node, p: &Map<String, Value>) -> Result<()> {
         for key in ["width", "height"] {
             if let Some(v) = p.get(key) {
@@ -40,7 +40,7 @@ impl Candidate {
                 }
                 if v == "fill" && n.props.get("component").is_none() {
                     if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
-                        let props = self.resolve_props(parent)?;
+                        let props = self.resolve_scoped_props(parent)?;
                         if props.get(key).is_none() || props.get(key).is_some_and(|v| v == "hug") {
                             return Err(fill_in_hug(key, &props));
                         }
@@ -93,7 +93,7 @@ impl Candidate {
             }
         }
         if let Some(parent) = n.parent_id.as_ref().and_then(|id| self.nodes.get(id)) {
-            let parent = self.resolve_props(parent)?;
+            let parent = self.resolve_scoped_props(parent)?;
             if breakpoints::wraps(&parent["layout"])
                 && p.get("width").is_some_and(|v| v == "fill")
                 && p.get("minWidth")
@@ -117,7 +117,7 @@ impl Candidate {
     ) -> Result<bool> {
         // Node validation checks cycles before calling property validation.
         for node in nodes {
-            let props = self.resolve_props(node)?;
+            let props = self.resolve_scoped_props(node)?;
             let size = &props[key];
             if let Some(size) = size.as_f64() {
                 return Ok(!positive || size > 0.);

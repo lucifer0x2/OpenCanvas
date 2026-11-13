@@ -1,7 +1,7 @@
 //! Fixture loading into disposable storage only. The project is created through the
 //! product API; its rows are then written directly so a 200k-node project does not
-//! take hundreds of whole-project validations to seed. The first measured strict
-//! commit validates the complete seeded project.
+//! take hundreds of whole-project validations to seed. Full fixture validation is
+//! explicit and precedes all timed operations (incremental commits require it).
 use opencanvas_storage::{PostgresBackend, Snapshot, Storage, Store};
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -21,6 +21,7 @@ pub fn sqlite(
     scaled: &Snapshot,
     bins: &BTreeMap<String, Vec<u8>>,
 ) -> String {
+    super::parity::validate_fixture(scaled);
     let id = {
         let storage = Storage::from(Store::open(root).unwrap());
         let handle = storage.create_project(slug, NAME).unwrap();
@@ -116,6 +117,7 @@ pub fn postgres(
     scaled: &Snapshot,
     bins: &BTreeMap<String, Vec<u8>>,
 ) -> String {
+    super::parity::validate_fixture(scaled);
     let id = {
         let storage = Storage::new(PostgresBackend::connect(url).unwrap());
         let handle = storage.create_project(slug, NAME).unwrap();

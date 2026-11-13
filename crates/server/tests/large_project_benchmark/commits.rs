@@ -18,6 +18,7 @@ pub fn measure(
     for mode in ["strict", "scoped"] {
         let mut totals = Vec::new();
         let mut phases: BTreeMap<&'static str, Vec<f64>> = BTreeMap::new();
+        let mut counts: BTreeMap<&'static str, Vec<f64>> = BTreeMap::new();
         for index in 0..plan.total() {
             let operations = vec![Operation::UpdateNode {
                 id: text_id.into(),
@@ -25,6 +26,7 @@ pub fn measure(
             }];
             let key = format!("task24-{mode}-{index}");
             bench_phase::take();
+            bench_phase::take_counts();
             let start = Instant::now();
             let result = if mode == "strict" {
                 handle.apply_batch(BatchRequest {
@@ -47,6 +49,7 @@ pub fn measure(
             assert_eq!(result.committed_revision, *revision + 1);
             *revision += 1;
             let recorded = bench_phase::take();
+            let recorded_counts = bench_phase::take_counts();
             if plan.measured(index) {
                 totals.push(elapsed);
                 let mut sums: BTreeMap<&'static str, f64> = BTreeMap::new();
@@ -56,13 +59,28 @@ pub fn measure(
                 for (name, value) in sums {
                     phases.entry(name).or_default().push(value);
                 }
+                for (name, value) in recorded_counts {
+                    counts.entry(name).or_default().push(value as f64);
+                }
             }
         }
         let mut breakdown = Map::new();
         for (name, values) in phases {
             breakdown.insert(name.into(), summary(&values));
         }
-        out[mode] = json!({"total": summary(&totals), "phases": breakdown});
+        let counts: BTreeMap<_, _> = counts
+            .into_iter()
+            .map(|(name, values)| {
+                let mut result = summary(&values);
+                result["unit"] = json!("nodes");
+                if name == "validation.full_fallback" {
+                    result["unit"] = json!("boolean");
+                }
+                (name, result)
+            })
+            .collect();
+        out[mode] =
+            json!({"total": summary(&totals), "phases": breakdown, "validationCounts": counts});
     }
     out
 }

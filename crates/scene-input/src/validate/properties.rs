@@ -2,13 +2,13 @@ use super::{
     animations::check_animations,
     links::check_links,
     prop_keys::{check_keys, check_required},
+    scope::Resolver,
     stroke::validate_stroke,
     values::*,
-    Candidate,
 };
 use crate::{error::*, model::*};
 use serde_json::Value;
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn properties(&self, n: &Node) -> Result<()> {
         if let Some(authored) = n.props.as_object() {
             check_keys(&n.kind, authored)?;
@@ -30,7 +30,7 @@ impl Candidate {
             crate::instance_paint::merge_props(&mut placed.props, &patch);
             return self.properties(&placed);
         }
-        let props = self.resolve_props(n)?;
+        let props = self.resolve_scoped_props(n)?;
         let p = props.as_object().unwrap();
         check_keys(&n.kind, p)?;
         self.layout_properties(n, p)?;
@@ -58,7 +58,7 @@ impl Candidate {
                 "links" => check_links(v)?,
                 "flowStart" => self.check_flow_start(n, v)?,
                 "animations" => check_animations(v)?,
-                "states" => self.resolver().check_states(&n.kind, v)?,
+                "states" => self.check_states(&n.kind, v)?,
                 "clip" | "visible" => {
                     if !v.is_boolean() {
                         return Err(StorageError::validation(k, "Clip must be a boolean"));

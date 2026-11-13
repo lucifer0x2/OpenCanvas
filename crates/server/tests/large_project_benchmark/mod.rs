@@ -1,6 +1,7 @@
 pub mod cell;
 pub mod commits;
 pub mod mcp;
+mod parity;
 pub mod scale;
 pub mod seed;
 pub mod snapshots;

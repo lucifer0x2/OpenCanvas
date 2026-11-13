@@ -6,6 +6,8 @@ mod breakpoints;
 mod candidate;
 mod easing;
 mod font_face;
+mod incremental;
+mod index;
 mod instance_graph;
 mod instances;
 mod keyframes;
@@ -29,6 +31,8 @@ mod token_graph;
 mod tokens;
 mod values;
 pub use candidate::Candidate;
+pub use incremental::{ValidationStats, ValidationWork};
+pub use index::NodeIndex;
 pub use refs::{
     referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
     resolved_tokens_for_theme,

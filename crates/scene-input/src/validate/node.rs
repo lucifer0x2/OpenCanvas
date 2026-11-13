@@ -1,4 +1,4 @@
-use super::{values::*, Candidate};
+use super::{scope::Resolver, values::*, Candidate};
 use crate::{error::*, model::*};
 use std::collections::BTreeSet;
 impl Candidate {
@@ -9,7 +9,8 @@ impl Candidate {
         })
         .take(128)
     }
-
+}
+impl Resolver<'_> {
     pub(super) fn style(&self, style: &Style) -> Result<()> {
         id(&style.id)?;
         if style.name.len() > 256 {

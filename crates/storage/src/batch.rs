@@ -31,7 +31,7 @@ impl Project {
         }
     }
     /// Preview checks existing key collisions without reserving a key. Revision and
-    /// full candidate validation still run under the same project writer lock.
+    /// candidate validation still run under the same project writer lock.
     pub fn dry_run_batch(&self, request: BatchRequest) -> Result<DryRunResult> {
         match self.run_batch(request, true, None)? {
             (Outcome::Preview(result), _) => Ok(result),
@@ -173,6 +173,36 @@ pub(crate) fn validated_candidate(
         candidate.prune_links(&mut changed);
         Ok(())
     })?;
-    bench_phase::time("candidate.validate", || candidate.validate())?;
+    // Stored revisions are validated at every write boundary. Raw imports and
+    // bundles retain full validation; benchmark seeders must validate before use.
+    let validation = bench_phase::time("candidate.validate", || {
+        candidate.validate_after(before, operations, &changed)
+    });
+    #[cfg(debug_assertions)]
+    {
+        // Every existing storage validation fixture (including rejected batches)
+        // exercises the full reference too, comparing complete public errors.
+        let reference = candidate.validate();
+        assert_eq!(
+            validation
+                .as_ref()
+                .map(|_| ())
+                .map_err(|e| serde_json::to_value(e).unwrap()),
+            reference.map_err(|e| serde_json::to_value(e).unwrap()),
+            "incremental/full candidate validation diverged"
+        );
+    }
+    let work = validation?;
+    bench_phase::count("validation.authored", work.stats.authored_nodes);
+    bench_phase::count("validation.affected", work.stats.affected_nodes);
+    bench_phase::count("validation.expanded", work.stats.expanded_nodes);
+    bench_phase::count(
+        "validation.virtual_affected",
+        work.stats.affected_virtual_nodes,
+    );
+    bench_phase::count(
+        "validation.full_fallback",
+        usize::from(work.stats.full_fallback),
+    );
     Ok((candidate, changed.into_iter().collect()))
 }

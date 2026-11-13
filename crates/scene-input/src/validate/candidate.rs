@@ -56,26 +56,28 @@ impl Candidate {
             self.validate_navigation()
         })?;
         let themes = time("validate.tokens", || self.validate_tokens())?;
-        for theme in themes {
-            time("validate.theme", || {
-                let mut themed = self.clone();
-                themed.theme = theme;
-                themed.validate_content()
+        for theme in &themes {
+            time("validate.theme", || -> Result<()> {
+                let context = super::scope::Resolver {
+                    candidate: self,
+                    nodes: &self.nodes,
+                    theme,
+                };
+                for style in self.styles.values() {
+                    context.style(style)?;
+                }
+                for node in self.nodes.values() {
+                    context.node(node)?;
+                }
+                Ok(())
             })?;
         }
         time("validate.animation_triggers", || {
             self.validate_animation_triggers()
         })?;
-        time("validate.instances", || self.validate_instances())?;
-        Ok(())
-    }
-    fn validate_content(&self) -> Result<()> {
-        for style in self.styles.values() {
-            self.style(style)?;
-        }
-        for node in self.nodes.values() {
-            self.node(node)?;
-        }
+        time("validate.instances", || {
+            self.validate_instances(None, &themes)
+        })?;
         Ok(())
     }
     fn place(
