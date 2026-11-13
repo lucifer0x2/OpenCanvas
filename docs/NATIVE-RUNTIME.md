@@ -121,6 +121,67 @@ When reloading the server, wait up to20seconds after bootout for the job entry,
 old process and both listeners to disappear before bootstrap. A graceful stop
 can outlive the bootout command; immediate bootstrap can fail with launchd error5.
 
+## Deploy and rollback
+
+The user runs these commands from a checkout of this repository; agents never deploy.
+After a one-time cutover, the single LaunchAgent `org.opencanvas.compose` (RunAtLoad,
+KeepAlive) runs process-compose headless. It supervises `postgres` and `server` with the
+same wrappers and SIGINT graceful stops as before, a `pg_isready` and an HTTP readiness
+probe, `server` waiting for a healthy `postgres`, restart on failure after 5 seconds and
+ordered shutdown (server first). Its API listens only on the private socket
+`run/process-compose.sock`. New files under the root: `process-compose.yaml` (generated),
+`runtime/current` (symlink to `releases/<sha>`), append-only `runtime/deploy-history.log`
+(UTC time, action, from, to, result, detail) and `logs/{postgres,server,process-compose}.log`.
+`config/server.env` selects `OPENCANVAS_RELEASE=<root>/runtime/current`, so switching a
+release never edits private configuration. The backup LaunchAgent is unchanged.
+
+Install process-compose first. homebrew-core has no formula (2026-11-13); the upstream
+Homebrew tap provides it: `brew install f1bonacc1/tap/process-compose`.
+
+```sh
+cd /path/to/OpenCanvas                                        # a checkout with these scripts
+bash scripts/native/migrate-to-process-compose.sh --dry-run   # plan only
+bash scripts/native/migrate-to-process-compose.sh             # cutover, asks for "yes"
+bash scripts/native/status.sh
+bash scripts/native/deploy.sh <git-ref> --dry-run
+bash scripts/native/deploy.sh <git-ref>                       # optional: --keep 5
+bash scripts/native/rollback.sh --dry-run
+bash scripts/native/rollback.sh                               # or: rollback.sh <release>
+bash scripts/native/migrate-to-process-compose.sh --revert    # back to the two agents
+```
+
+Cutover backs up `server.env`, both plists and `runtime/scripts` to
+`backups/pc-migration-<UTC>/` (with `MANIFEST.sha256`) and takes a verified database
+backup. It stops the server agent, then PostgreSQL, moves both plists out of
+`~/Library/LaunchAgents`, installs the wrappers and the compose agent, points `current` at
+the release live now, starts and runs `verify-runtime.mjs`. A failed start or verification
+reverts automatically. `--revert` stops the compose agent, restores those files byte for
+byte, starts PostgreSQL then the server and verifies the original release; it refuses when
+the database schema is newer than that release supports (`--force` overrides). `deploy.sh
+--keep` never prunes the release that `--revert` restores.
+
+`deploy.sh` resolves the ref to a full commit (fetch it first), takes the deploy lock, builds
+`runtime/releases/<sha>` with `build-release.sh` or reuses an existing one whose
+`SHA256SUMS` verify, runs `backup-tools/backup.sh`, switches `current` atomically, restarts
+only `server`, waits for readiness and verifies. Any failure switches back, restarts and
+verifies the previous release, records `failed` and exits non-zero. `rollback.sh` defaults
+to the release that was current before the current one and uses the same path. It refuses
+when the database schema registry or a project schema is newer than the target supports
+(read from `PROVENANCE`, or from the release's `REVISION` commit in this repository): restore
+the pre-deploy backup instead, see [native backups](NATIVE-BACKUP.md). On the live root every
+changing command asks for `yes` unless `--yes`; Ctrl-C during the switch is deferred until it
+completes or switches back. If a command reports that restoring also failed, run `status.sh`
+and read `logs/server.log`.
+
+`build-release.sh <git-ref> <output-dir>` archives the exact commit into
+`.runtime/native/source/<sha>` and builds natively and offline (cached Cargo and npm
+dependencies): scene WASM with the `Cargo.lock` wasm-bindgen, the renderer bundle, the
+viewer, debug `layout-step` and the release server, as in the Dockerfile. It copies Node
+24.21.0 and `.runtime/browsers`, and writes `REVISION`, `PROVENANCE` (commit, ref, build
+time, tool versions, supported schema versions) and `SHA256SUMS`. There is no Docker step
+and no patch overlay. Tests: `scripts/native/tests/{release-smoke,deploy-integration,
+migrate-integration}.sh <release-dir>` use a disposable root, a fresh cluster and free ports.
+
 ## Cutover and rollback
 
 Do this only after the independent rehearsal review has passed. Keep Funnel
