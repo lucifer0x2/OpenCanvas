@@ -304,3 +304,5 @@ Các mục đã đóng Task19/Task20 và vận hành 2026-11-03: [archive](histo
 
 - Bị chặn đầu phiên vì Task24 chưa commit trên `feat/project-node-limit` @ `ee894c0`; người dùng đã cho phép commit benchmark rồi tiếp tục.
 - Giao worker mới chuẩn bị nền: kiểm và commit đúng Task24, tạo `feat/incremental-validation`, đóng gói `tasks/25-incremental-validation.md` trước mọi triển khai. Sau đó giao riêng từng lát 1–3; đánh giá phạm vi 4–5 trước khi bắt đầu. Không push/deploy/ghi runtime thật.
+- Nhận bootstrap: Task24 baseline `81f883c` đã commit đúng 29 path source/tests/docs; không có private snapshot hoặc generated evidence. `bash -n`, diff whitespace và scene-input default-cap test 1/1 đạt; không chạy lại benchmark cũ.
+- Điểm dừng bootstrap: tạo `feat/incremental-validation` từ baseline, đóng gói [Task25](../../tasks/25-incremental-validation.md) theo sáu lát; chưa sửa sản phẩm. Handoff yêu cầu full-validate fixture raw-seed trước timing và differential parity từ before hợp lệ; lát 1 phải giao worker mới. Không push/deploy hoặc truy cập runtime thật.
