@@ -1,3 +1,4 @@
+mod library;
 mod support;
 use super::*;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};

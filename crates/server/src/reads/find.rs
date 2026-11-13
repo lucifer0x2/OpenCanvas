@@ -27,6 +27,8 @@ pub(super) fn read_shared(s: &SharedSnapshot, req: ReadRequest) -> Result<Value>
 /// Work counts exclude SQL loading and cold revision-index construction.
 #[derive(Debug, Default)]
 struct Work {
+    /// Authored nodes selected across roots; master libraries are not re-walked.
+    selected: usize,
     visited: usize,
     max_expanded: usize,
     materialized_matches: usize,
@@ -66,6 +68,7 @@ fn read_scoped(scoped: &ScopedSnapshot<'_>, req: ReadRequest) -> Result<(Value, 
     work.materialized_matches = matches.materialized;
     work.retained_matches = matches.retained();
     for (name, value) in [
+        ("find.selected_nodes", work.selected),
         ("find.visited_nodes", work.visited),
         ("find.max_expanded_nodes", work.max_expanded),
         ("find.materialized_matches", work.materialized_matches),
@@ -89,10 +92,11 @@ fn visit(
     matches: &mut page::Matches,
     work: &mut Work,
 ) -> Result<()> {
-    let mut nodes = scoped.expand(ReadScope::Target(id), false)?;
-    work.max_expanded = work.max_expanded.max(nodes.expanded.len());
+    let (mut expanded, stats) = scoped.expand_nodes(ReadScope::Target(id))?;
+    work.selected += stats.closure_nodes;
+    work.max_expanded = work.max_expanded.max(expanded.len());
     // Authored instances retain their searchable kind/props; virtual children do not.
-    for node in &mut nodes.expanded {
+    for node in &mut expanded {
         if let Some(authored) = scoped
             .node(&node.id)
             .filter(|n| n.kind == NodeKind::Instance)
@@ -100,7 +104,7 @@ fn visit(
             *node = authored.clone();
         }
     }
-    let index = TreeIndex::new(&nodes.expanded);
+    let index = TreeIndex::new(&expanded);
     let target = index
         .get(id)
         .ok_or_else(|| ApiError::invalid("Scope node does not exist"))?;
