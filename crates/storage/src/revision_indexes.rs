@@ -6,6 +6,8 @@ use crate::{
 use moka::sync::Cache;
 
 const DEPENDENCY_BUDGET: usize = 4 * 1024 * 1024;
+// Default MAX_NOTES=5000, anchors <=128 bytes: <=1,160,000 proxy bytes.
+const READ_NOTES_BUDGET: usize = 2 * 1024 * 1024;
 const CACHE_BUDGET: u64 = 256 * 1024 * 1024;
 
 pub struct RevisionIndexes {
@@ -14,6 +16,8 @@ pub struct RevisionIndexes {
     /// Inverse authored reference usage, including nested overrides.
     pub(crate) references: BTreeMap<String, BTreeSet<String>>,
     dependencies: Mutex<Option<Arc<DependencyIndex>>>,
+    pub(crate) read_scope: Mutex<Option<Arc<opencanvas_scene_input::read_scope::ScopeIndex>>>,
+    pub(crate) read_weight: usize,
 }
 
 impl RevisionIndexes {
@@ -34,14 +38,28 @@ impl RevisionIndexes {
         pages: Arc<PageIndex>,
     ) -> Self {
         let mut references = BTreeMap::new();
+        let mut read_weight = READ_NOTES_BUDGET;
         for node in nodes {
             scan(&node.props, &node.id, &mut references);
+            // Reserve lazy read metadata before admission. Child-map overhead is
+            // conservatively charged once per child, not once per unique parent.
+            read_weight += 72 + node.id.len();
+            if let Some(parent) = &node.parent_id {
+                read_weight += 104 + parent.len();
+            }
+            for link in opencanvas_scene_input::node_links(&node.props) {
+                if let Some(target) = link.to {
+                    read_weight += 104 + target.len();
+                }
+            }
         }
         Self {
             topology,
             pages,
             references,
             dependencies: Mutex::new(None),
+            read_scope: Mutex::new(None),
+            read_weight,
         }
     }
 
@@ -120,6 +138,7 @@ impl RevisionIndexes {
             .map(|id| 64 + id.len())
             .sum::<usize>();
         (DEPENDENCY_BUDGET
+            + self.read_weight
             + 1024
             + self.topology.estimated_bytes()
             + pages
@@ -168,15 +187,8 @@ impl IndexCache {
 }
 
 /// The immutable snapshot and indexes from one authoritative read.
-pub struct SharedSnapshot {
-    pub snapshot: Arc<Snapshot>,
-    pub indexes: Arc<RevisionIndexes>,
-}
-impl SharedSnapshot {
-    pub fn edit_context(&self, pages: Vec<String>) -> Result<Value> {
-        crate::scoped::edit_context_indexed(&self.snapshot, &self.indexes, pages)
-    }
-}
+mod shared;
+pub use shared::SharedSnapshot;
 
 fn scan(value: &Value, node: &str, refs: &mut BTreeMap<String, BTreeSet<String>>) {
     match value {

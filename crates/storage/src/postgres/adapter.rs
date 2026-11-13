@@ -165,7 +165,7 @@ impl StorageBackend for PostgresBackend {
     fn shared_snapshot(&self, project: &str) -> Result<crate::SharedSnapshot> {
         let (snapshot, identity) = self.snapshot_with_cache_identity(project)?;
         let indexes = self.indexes.for_snapshot(&snapshot, identity);
-        Ok(crate::SharedSnapshot { snapshot, indexes })
+        Ok(crate::SharedSnapshot::committed(snapshot, indexes))
     }
 
     fn apply_batch(&self, project: &str, request: BatchRequest) -> Result<BatchResult> {

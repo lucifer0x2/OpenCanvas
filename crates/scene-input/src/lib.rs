@@ -13,6 +13,8 @@ mod links;
 mod model;
 mod props_catalog;
 mod props_suggest;
+#[path = "scoped/mod.rs"]
+pub mod read_scope;
 pub mod scene_diagnostics;
 pub mod validate;
 mod viewport;

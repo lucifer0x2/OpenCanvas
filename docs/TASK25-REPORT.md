@@ -644,3 +644,89 @@ Extra benchmark phase counts expose `indexes.topology_builds`,
 The coordinator gate/matrix results are recorded above. Final Rust size audit
 against Task24 baseline found no modified file above 250 lines; largest 237.
 Slices 4–6 remain pending; stop before starting the larger work.
+
+## Slice 4a — scoped expansion and resolution (2026-11-13)
+
+The user approved slice 4 after checkpoint `c0ac08c`. This part introduces the
+pure scene-input boundary and matching storage accessor; server MCP/render/find
+integration belongs to separate 4b/4c/4d commits. No storage layout, response,
+production cap, render-node or pixel budget changes.
+
+`read_scope::ScopedSnapshot` provides indexed authored lookup/root iteration,
+`expand(ReadScope::Page|Target, definitions)`, closure-only `resolve`, resource-only
+`resolved_tokens`, shallow navigation metadata and indexed `notes_for_nodes`.
+Expansion includes placed ancestor chains and transitive external/nested masters.
+With `definitions=true`, authored definitions are also expanded/resolved for MCP
+reference metadata; otherwise masters are lookup dependencies only. `ScopedNodes`
+keeps authored output, dependency references and expanded nodes distinct. Source
+vector order, stable virtual IDs, placed themes, overrides, font selection,
+visibility/opacity and serialized error fields match the full reference fixtures.
+`ResolvedNodes::from_nodes` and scoped `make_input_with_scale` reuse existing
+frame preparation, exact 2,048-node limit and viewport/scale checks.
+
+Trust is explicit: ordinary `ScopedSnapshot::validate` fully validates the entire
+snapshot, and existing standalone resolve/input APIs are unchanged. The separate
+`from_validated` constructor documents its complete validated-revision/index
+preconditions. Only builtin SQLite/PostgreSQL adapters construct storage's private
+committed authority binding. `SharedSnapshot::trusted_scoped` returns `Some` only
+while both public snapshot/index Arcs still match that original pair; replacing
+either Arc or using a custom backend loses authority. `.scoped()` then fully
+validates; read layers needing legacy unvalidated behavior can use `None` to retain
+their old path. Supplying a cache identity from a custom backend grants no trust.
+
+The revision metadata cache lazily builds `ScopeIndex` from the actual authoritative
+snapshot vector, never Candidate's BTreeMap order. Warm reads reuse it; a new
+candidate/revision starts with an empty slot. The index retains IDs/positions,
+children, navigation sources and note positions, without node/note payloads.
+Admission reserves conservative node/link metadata plus 2 MiB for note positions
+before materialization; default 5,000 notes with 128-byte anchors fit within
+1,160,000 proxy bytes. An index exceeding its reservation is returned without
+retention. The 256 MiB metadata cache and existing payload-cache limits are
+unchanged. Cold snapshot SQL/loading and one index build still scale with the
+project; trusted scoped reads do not full-validate or clone a whole Candidate.
+
+Validated component subtrees cannot contain links/flowStart/animations, and
+instance/override schemas cannot add links. Negative tests establish this guard,
+so shallow authored incoming navigation metadata also serves expanded contexts;
+inventing inherited virtual navigation would violate the existing invariant.
+Cross-page targets, source screen ancestry and source order are retained.
+
+Actual focused checks (temporary roots/disposable PostgreSQL only):
+
+| Check | Result |
+| --- | --- |
+| Pure scope/scene/navigation parity, invalid/untrusted cases and render boundaries | 12 passed |
+| SQLite warm/commit/cold order, old readers, Arc swaps and custom identity fallback | 2 passed, 1 PG ignored |
+| Lazy metadata reuse and 5,000-note reservation unit test | 1 passed |
+| Fresh disposable PostgreSQL scope identity/order/old-reader/Arc swap parity | 1 passed |
+| Scene-input/storage library clippy, package fmt and raw diff whitespace | passed |
+
+The bounded-work fixture grows from one page to 25 pages with 50 extra authored
+nodes per page. The unchanged target's closure/expanded/resolved counts remain
+**8 / 11 / 11** in both cases; leaf-target counts also match. Counts exclude full
+reference validation and cold index construction. These are deterministic work
+counts, not release latency medians or the final context acceptance measurement.
+Virtual target preparation currently expands its outer authored instance closure,
+then filters the requested virtual subtree for scene input. A wide outer instance
+can therefore expand sibling branches; it never requires the entire containing
+page/project. Resource arrays are intentionally still available in full.
+
+```sh
+cargo test --offline -p opencanvas-scene-input -j2 --test scoped --test scoped_input --test scoped_navigation -- --test-threads=2
+cargo test --offline -p opencanvas-storage -j2 --test scoped_reads --test scoped_backend -- --test-threads=2
+cargo test --offline -p opencanvas-storage -j2 --lib lazy_scope_index -- --test-threads=2
+bash scripts/task19-check.sh cargo test --offline -p opencanvas-storage -j2 --test scoped_reads -- --ignored --test-threads=1
+rtk bypass cargo test --offline -p opencanvas-scene-input -j2 --test scoped scoped_expansion_and_resolution_work -- --test-threads=1 --nocapture
+cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -j2 --lib -- -D warnings
+cargo fmt --package opencanvas-scene-input --package opencanvas-storage --check
+git diff --check
+```
+
+The first new navigation fixture correctly failed because it put links in a
+component subtree; it became a negative invariant test. The first SQLite cold
+fixture attempted a second owner of one live data root and hit `DATA_ROOT_LOCKED`;
+dropping the first owner before reopening fixed the intended cold-read test.
+Clippy's map-key iteration warning was fixed and the gate rerun. New modules are
+18–117 lines; modified revision-index module 230, its tests 141, largest existing
+touched adapter 237. The largest new test is 212 lines; no touched Rust file
+exceeds 250. No live service/data access, deploy, restart or push occurred.

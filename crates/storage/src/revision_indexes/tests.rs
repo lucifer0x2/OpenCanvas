@@ -108,3 +108,34 @@ fn eviction_and_expiry_rebuild_without_invalidating_reader() {
     assert!(!Arc::ptr_eq(&old, &next));
     assert_eq!(old.page("page"), Some("page"));
 }
+
+#[test]
+fn lazy_scope_index_is_reused_and_its_full_metadata_fits_admission_reservation() {
+    let mut snapshot = snapshot();
+    snapshot.notes = (0..5000)
+        .map(|i| Note {
+            id: format!("note{i}"),
+            node_id: "page".into(),
+            text: "Intent".into(),
+            author: None,
+            resolved: false,
+            replies: vec![],
+        })
+        .collect();
+    let snapshot = Arc::new(snapshot);
+    let indexes = Arc::new(RevisionIndexes::new(&snapshot.nodes));
+    let shared = SharedSnapshot::committed(snapshot.clone(), indexes.clone());
+    shared.trusted_scoped().unwrap().unwrap();
+    let first = indexes.read_scope.lock().unwrap().as_ref().unwrap().clone();
+    let again = SharedSnapshot::committed(snapshot, indexes.clone());
+    again.trusted_scoped().unwrap().unwrap();
+    assert!(Arc::ptr_eq(
+        &first,
+        indexes.read_scope.lock().unwrap().as_ref().unwrap()
+    ));
+    assert!(first.estimated_bytes() <= indexes.read_weight);
+    assert_eq!(
+        again.scoped().unwrap().notes_for_nodes(["page"]).len(),
+        5000
+    );
+}

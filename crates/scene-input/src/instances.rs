@@ -33,16 +33,23 @@ pub fn expand(nodes: &[Node]) -> Result<Vec<Node>> {
     if !nodes.iter().any(|n| n.kind == NodeKind::Instance) {
         return Ok(nodes.to_vec());
     }
-    let by_id = nodes.iter().map(|n| (n.id.as_str(), n)).collect();
+    let nodes: Vec<_> = nodes.iter().collect();
+    expand_selected(&nodes, &nodes)
+}
+
+/// Expand selected authored nodes using an already bounded dependency closure.
+/// Both slices retain source order; masters are lookup-only unless selected.
+pub(crate) fn expand_selected(nodes: &[&Node], selected: &[&Node]) -> Result<Vec<Node>> {
+    let by_id = nodes.iter().map(|&n| (n.id.as_str(), n)).collect();
     let mut children: HashMap<&str, Vec<&Node>> = HashMap::new();
-    for node in nodes {
+    for &node in nodes {
         if let Some(parent) = node.parent_id.as_deref() {
             children.entry(parent).or_default().push(node);
         }
     }
     let mut out = Vec::new();
     let expander = Expander { by_id, children };
-    for node in nodes {
+    for &node in selected {
         expander.node(node.clone(), 0, &mut out)?;
     }
     Ok(out)

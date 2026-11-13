@@ -132,3 +132,23 @@ reopens pinned writers after device/inode replacement. Backends without a
 reliable identity build fresh indexes. Cold dependency construction remains
 project-wide; page-scoped expansion is pending. See the slice 3 evidence and
 limits in [TASK25-REPORT](TASK25-REPORT.md).
+
+Task25 slice 4a adds a separate lazy read `ScopeIndex` to each matching revision's
+metadata: source-vector positions, children, navigation sources and note positions.
+It is built from an authoritative read vector rather than Candidate's ID order,
+so sort-key changes and cold/warm snapshots retain identical expansion ordering.
+The existing metadata weight now reserves node/link metadata and 2 MiB for notes
+before this index materializes. It retains no node properties or note text. The
+default 5,000-note cap fits that note reservation; a larger benchmark-only index
+above the charged reservation is used without retention. Payload admission limits
+are unchanged.
+
+Only builtin adapters attach a private committed authority binding to
+`SharedSnapshot`; `trusted_scoped()` checks the exact snapshot/index Arc pair.
+Custom backends (even with a cache identity), or replacing either public Arc,
+lose that binding and can retain their legacy read path. The conservative
+`scoped()` fallback fully validates. Trusted scoped expansion/resolution skips
+full validation and whole-Candidate cloning; cold snapshot loading/index building
+and the existing edit-context dependency graph costs remain project-wide until
+their respective consumers change. See the 4a API/limits and checks in
+[TASK25-REPORT](TASK25-REPORT.md).

@@ -26,6 +26,11 @@ pub struct ResolvedNodes {
 impl ResolvedNodes {
     pub fn new(snapshot: &Snapshot, theme: &str) -> Result<Self> {
         let all = resolved_expanded_nodes(snapshot, theme)?;
+        Ok(Self::from_nodes(all))
+    }
+
+    /// Index an already resolved scoped closure, retaining stable input order.
+    pub fn from_nodes(all: Vec<Node>) -> Self {
         let mut first = HashMap::new();
         let mut children: HashMap<String, Vec<usize>> = HashMap::new();
         for (index, node) in all.iter().enumerate() {
@@ -38,11 +43,11 @@ impl ResolvedNodes {
         for list in children.values_mut() {
             list.sort_by_key(|&index| all[index].sort_key);
         }
-        Ok(Self {
+        Self {
             all,
             first,
             children,
-        })
+        }
     }
 
     fn collect(&self, id: &str, out: &mut Vec<Node>) {

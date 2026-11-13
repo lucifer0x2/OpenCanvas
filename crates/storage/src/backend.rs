@@ -84,7 +84,7 @@ pub trait StorageBackend: Send + Sync {
     fn shared_snapshot(&self, project: &str) -> Result<crate::SharedSnapshot> {
         let (snapshot, _) = self.snapshot_with_cache_identity(project)?;
         let indexes = Arc::new(crate::RevisionIndexes::new(&snapshot.nodes));
-        Ok(crate::SharedSnapshot { snapshot, indexes })
+        Ok(crate::SharedSnapshot::untrusted(snapshot, indexes))
     }
     /// Authoritative lookup by ID or slug. A source error must propagate.
     /// Backends that cannot provide a cheap, reliable probe return None.
