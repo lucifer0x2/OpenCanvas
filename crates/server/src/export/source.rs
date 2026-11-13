@@ -6,7 +6,7 @@ use crate::{
 };
 use opencanvas_storage::{
     read_scope::{ReadScope, ScopedSnapshot},
-    Node, SharedSnapshot,
+    Node, NodeKind, SharedSnapshot,
 };
 use serde_json::Value;
 
@@ -20,8 +20,9 @@ impl<'a> Source<'a> {
     pub fn new(shared: &'a SharedSnapshot, theme: &str) -> Result<Self> {
         let scoped = shared.trusted_scoped()?;
         let legacy = if let Some(scoped) = &scoped {
-            // Keep the old global theme error before per-node missing-target errors.
-            scoped.resolved_tokens(theme)?;
+            // Keep the old global theme error before per-node missing-target errors;
+            // a theme check needs no token values or node resolution.
+            scoped.check_theme(theme)?;
             None
         } else {
             let resolved = opencanvas_storage::resolved_expanded_nodes(&shared.snapshot, theme)?;
@@ -42,6 +43,11 @@ impl<'a> Source<'a> {
         settings: Option<&Value>,
     ) -> Result<(SceneRequest, ExportSpec)> {
         if let Some(scoped) = &self.scoped {
+            // A page is always unsupported; expanding it first would only add
+            // page-sized work (and could surface an expansion error instead).
+            if scoped.node(id).is_some_and(|n| n.kind == NodeKind::Page) {
+                return Err(target::page_unsupported());
+            }
             let mut nodes = scoped.expand(ReadScope::Target(id), false).map_err(|e| {
                 if e.code == "INVALID_REQUEST" {
                     ApiError::new("NODE_NOT_FOUND", "Node does not exist at this revision")

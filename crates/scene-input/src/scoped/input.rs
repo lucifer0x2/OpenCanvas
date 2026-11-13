@@ -18,7 +18,7 @@ impl<'a> ScopedSnapshot<'a> {
     ) -> Result<(Value, ScopedNodes<'a>)> {
         check_viewport(options.width, options.height, scale)?;
         // Requested theme errors precede frame lookup, as on the full path.
-        crate::validate::check_scoped_theme(self.snapshot, &options.theme)?;
+        self.check_theme(&options.theme)?;
         let mut nodes = self
             .expand(ReadScope::Target(&options.frame_id), false)
             .map_err(|error| {

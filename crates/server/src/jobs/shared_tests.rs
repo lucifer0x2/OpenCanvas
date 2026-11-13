@@ -78,9 +78,13 @@ fn scoped_prepared_input_keys_resources_and_errors_match_full_reference() {
         req.state = state.into();
         parity(&shared, req);
     }
+    let builds = opencanvas_storage::read_scope::resource_builds;
+    let before = builds();
     let input = Prepared::shared(&shared, request("frame", "default"), &config(), None)
         .unwrap()
         .input;
+    // The theme check and node resolution share one resource build.
+    assert_eq!(builds() - before, 1);
     assert!(input["fonts"]
         .as_array()
         .unwrap()

@@ -72,3 +72,19 @@ fn export_untrusted_snapshot_retains_unrelated_global_validation_failure() {
     let new = Source::new(&shared, "default").err().unwrap();
     assert_eq!(serde_json::to_value(old).unwrap(), new.value()["error"]);
 }
+
+#[test]
+fn one_scoped_source_checks_the_theme_and_builds_resources_once() {
+    let (_root, store, id) = fixture::fixture();
+    let shared = store.shared_snapshot(&id).unwrap();
+    let builds = opencanvas_storage::read_scope::resource_builds;
+    let before = builds();
+    let source = Source::new(&shared, "night").unwrap();
+    for id in ["frame", "placed", "placed/nested/copy", "master", "page"] {
+        let _ = source.resolve(id, "night", None);
+    }
+    // Previously: token values once, then one build per resolved target.
+    assert_eq!(builds() - before, 1);
+    let error = source.resolve("page", "night", None).err().unwrap();
+    assert_eq!(error.value()["error"]["code"], "EXPORT_UNSUPPORTED");
+}

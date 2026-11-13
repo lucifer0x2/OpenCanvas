@@ -40,6 +40,7 @@ pub use index::NodeIndex;
 pub use refs::{
     resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
 };
-pub(crate) use scoped::{check_scoped_theme, resolve_scoped, resolve_scoped_tokens};
+pub use scoped::resource_builds;
+pub(crate) use scoped::ScopedResources;
 pub use topology::NodeTopology;
 pub use values::{valid_id, validate_slug};

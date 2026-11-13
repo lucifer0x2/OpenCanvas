@@ -118,12 +118,7 @@ impl Candidate {
 
     pub(super) fn select_theme(&mut self, theme: &str) -> Result<()> {
         if !self.validate_tokens()?.contains(theme) {
-            let mut error = StorageError::new(
-                "UNSUPPORTED_THEME",
-                "Requested design theme is not declared by any token",
-            );
-            error.field = Some("theme".into());
-            return Err(error);
+            return Err(unsupported_theme());
         }
         self.theme = theme.into();
         Ok(())
@@ -160,4 +155,13 @@ impl Candidate {
             "Token alias depth exceeds 32",
         ))
     }
+}
+
+pub(super) fn unsupported_theme() -> StorageError {
+    let mut error = StorageError::new(
+        "UNSUPPORTED_THEME",
+        "Requested design theme is not declared by any token",
+    );
+    error.field = Some("theme".into());
+    error
 }

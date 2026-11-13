@@ -73,9 +73,7 @@ pub fn resolve(
 /// The page's child that contains the node, which must be a frame.
 fn root_frame<'a>(nodes: &Nodes<'a>, node: &'a Node) -> Result<&'a Node> {
     if node.kind == NodeKind::Page {
-        return Err(unsupported(
-            "Pages cannot be exported; export a frame or a node inside one",
-        ));
+        return Err(page_unsupported());
     }
     let mut current = node;
     for _ in 0..=nodes.authored.len() {
@@ -130,6 +128,10 @@ fn file_stem(node: &Node) -> String {
         stem.push(c);
     }
     stem
+}
+
+pub fn page_unsupported() -> ApiError {
+    unsupported("Pages cannot be exported; export a frame or a node inside one")
 }
 
 fn unsupported(message: &str) -> ApiError {

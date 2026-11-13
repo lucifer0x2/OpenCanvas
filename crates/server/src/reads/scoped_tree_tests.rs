@@ -169,3 +169,19 @@ fn untrusted_backend_keeps_legacy_validation_and_missing_target_behavior() {
         );
     }
 }
+
+#[test]
+fn one_design_context_read_builds_scoped_resources_once() {
+    let (_dir, storage, id) = fixture();
+    let s = storage.snapshot(&id).unwrap();
+    let builds = opencanvas_storage::read_scope::resource_builds;
+    let before = builds();
+    // Resolution plus the default full token resource entries.
+    one(
+        &s,
+        "get_design_context",
+        &json!({"projectId":id,"frameId":"frame"}),
+        true,
+    );
+    assert_eq!(builds() - before, 1);
+}

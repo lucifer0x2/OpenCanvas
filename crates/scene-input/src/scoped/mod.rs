@@ -4,9 +4,16 @@ mod index;
 mod input;
 mod navigation;
 
-use crate::{validate::Candidate, Node, Note, Result, Snapshot};
+pub use crate::validate::resource_builds;
+use crate::{
+    validate::{Candidate, ScopedResources},
+    Node, Note, Result, Snapshot,
+};
 pub use index::ScopeIndex;
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    sync::{Arc, OnceLock},
+};
 
 #[derive(Clone, Copy, Debug)]
 pub enum ReadScope<'a> {
@@ -18,6 +25,8 @@ pub enum ReadScope<'a> {
 pub struct ScopedSnapshot<'a> {
     snapshot: &'a Snapshot,
     index: Arc<ScopeIndex>,
+    /// Resource maps/themes, built on first use and shared by every resolve.
+    resources: OnceLock<Result<ScopedResources>>,
 }
 
 /// Source-order authored/expanded vectors, with ancestors needed for placed themes.
@@ -58,7 +67,11 @@ impl<'a> ScopedSnapshot<'a> {
         } else {
             Arc::new(ScopeIndex::new(snapshot))
         };
-        Self { snapshot, index }
+        Self {
+            snapshot,
+            index,
+            resources: OnceLock::new(),
+        }
     }
 
     pub fn snapshot(&self) -> &'a Snapshot {
@@ -106,16 +119,29 @@ impl<'a> ScopedSnapshot<'a> {
             .collect()
     }
 
+    fn resources(&self) -> Result<&ScopedResources> {
+        self.resources
+            .get_or_init(|| ScopedResources::new(self.snapshot))
+            .as_ref()
+            .map_err(Clone::clone)
+    }
+
+    /// Requested-theme validity, with the same error as resolution, without
+    /// resolving any node or token value.
+    pub fn check_theme(&self, theme: &str) -> Result<()> {
+        self.resources()?.check_theme(theme)
+    }
+
     /// Resolve only these expanded nodes, reusing full immutable resource metadata.
     /// The vector retains expansion order, IDs, visibility and placed-theme semantics.
     pub fn resolve(&self, nodes: &mut ScopedNodes<'_>, theme: &str) -> Result<Vec<Node>> {
-        let result = crate::validate::resolve_scoped(self.snapshot, &nodes.expanded, theme)?;
+        let result = self.resources()?.resolve(&nodes.expanded, theme)?;
         nodes.stats.resolved_nodes = result.len();
         Ok(result)
     }
 
     /// Full token resource responses retain their existing contract without node work.
     pub fn resolved_tokens(&self, theme: &str) -> Result<BTreeMap<String, serde_json::Value>> {
-        crate::validate::resolve_scoped_tokens(self.snapshot, theme)
+        self.resources()?.tokens(theme)
     }
 }
