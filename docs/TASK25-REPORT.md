@@ -1,8 +1,8 @@
 # Task25 — incremental validation and page-scoped access
 
-Status: slice 1 implemented and checked 2026-11-13 on
+Status: slices 1–2 implemented and checked 2026-11-13 on
 `feat/incremental-validation`, from bootstrap `7cc36e0` / Task24 baseline
-`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 2–6 remain open.
+`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 3–6 remain open.
 No deployment or production-limit change. The slice commit is the commit adding
 this report; later slices must record their own HEAD and evidence.
 
@@ -48,9 +48,8 @@ slice 3, not this slice.
 
 `ValidationWork` owns `affected_ids`, optional expanded node map and
 `ValidationStats` (authored, affected, expanded, affected-virtual counts and
-full-fallback flag). The storage seam currently consumes only the statistics;
-slice 2 can carry this artifact into scoped/history work to reuse candidate
-expansion. Full fallback currently returns no expansion; its expanded count is
+full-fallback flag). Slice 2 now carries this artifact into scoped work to reuse
+candidate expansion. Full fallback returns no expansion; its expanded count is
 zero/unknown, and its affected count is the whole authored candidate. Do not
 interpret that zero as an empty scene.
 
@@ -130,7 +129,7 @@ updates. Changed master descendants reached 3/31/61 virtual nodes respectively.
 
 ## Task24 comparison and remaining work
 
-| Real-source metric | Task24 PG 30× median | After slice 1 |
+| Real-source metric | Task24 PG 30× median | After slices 1–2 |
 | --- | --- | --- |
 | Strict small edit | 12,639 ms | not measured yet |
 | Scoped small edit | 34,121.9 ms | not measured yet |
@@ -143,14 +142,14 @@ samples and full median/p95/RSS/phase/count comparisons:
 TASK24_COPIES_LIST="1 15 30" bash scripts/task24-bench.sh
 ```
 
-Remaining: scoped guards/history still repeat full dependency work (slice 2),
-revision-matched derived ownership/cache (3), page closure reads (4), compression
-and page fetching (5), production caps/bundle alignment (6). No full server suite,
-new disposable PostgreSQL matrix or exact-source Task24 cells were run in this
-slice. Existing ignored PostgreSQL tests remain unclaimed. No native runtime,
-production PostgreSQL or preview mutation; no push/deploy.
+Remaining: revision-matched derived ownership/cache (3), page closure reads (4),
+compression and page fetching (5), production caps/bundle alignment (6). Slice 2
+removes repeated per-page expansion, but builds revision-local indexes per
+operation until slice 3. No full server suite or exact-source Task24 cells were
+run in slices 1–2. Disposable PostgreSQL checks for slice 2 are recorded below.
+No native runtime, production PostgreSQL or preview mutation; no push/deploy.
 
-## Modules and sizes
+## Slice 1 modules and sizes
 
 New validation modules: `validate/index.rs` 80 lines (borrowed graph indexes),
 `validate/incremental.rs` 177 (classifier/closure/pipeline/stats). Context remains
@@ -159,3 +158,111 @@ storage batch seam 208. New tests are 215/67/143 lines; Task24 parity helper 93,
 commit metrics 86, seed 174. All modified/new handwritten code files are below
 250 lines; no size exception required. Public APIs stay limited to one borrowed
 index and the candidate validation work/result types.
+
+## Slice 2: indexed guards and sparse history
+
+Based on slice 1 `6c4a156`; the slice 2 commit is the commit adding this section.
+`PageIndex` derives authored node→page, page→nodes and ordered root lists with
+one traversal. `BatchScope` shares before/after topology through `Arc`, computes
+the effective footprint once and reuses it for guard coverage and durable
+history. JSON byte comparison remains in place, including `-0.0`. Changed IDs
+include apply cascades, deletion and incoming-link pruning; old/new page keys
+are retained for moves. Resource import callers keep the conservative full-diff
+`envelope(before, candidate, ...)` entry point. The persisted envelope, seal,
+hash, coverage validation, public operation arrays and restore scrubbing stay
+unchanged.
+
+`DependencyIndex` owns expanded nodes, expanded page membership and forward
+adjacency for page/token/style/font references. It scans authored and expanded
+properties once, retaining references hidden by overrides. Closure visits only
+guarded/transitively referenced component or navigation pages; it does not scan
+all expanded nodes or walk every ancestor again per page. All token branches,
+styles, selected font families and backing assets retain the old dependency
+keys. Font selection uses one `FontReferences` context against the existing
+expansion and every token theme; snapshot callers clone only resource maps,
+candidate callers borrow them. No per-page Candidate clone or font re-expansion.
+
+For a stale scoped batch with an incremental instance expansion, guards now
+perform **one before expansion and zero extra candidate/font expansions**.
+The candidate map is moved from `ValidationWork`. Full-validation fallback or
+instance-free validation may return `expanded=None`; that case explicitly
+expands the candidate once. At the current revision dependency intersection is
+skipped after page IDs, operation restrictions, source/destination, effective
+footprint coverage and page-structure checks. Revision/history-gap, size limits,
+replay and strict/global behavior remain unchanged. Navigation compares indexed
+roots on affected pages while preserving the global wildcard for page/flow
+changes, root reorder/deletion and first-root creation; safe root append keeps
+the old relative-order prefix rule.
+
+## Slice 2 parity and actual checks
+
+Four new storage tests compare indexed closure keys with the retained old
+closure, sparse footprints with frozen pre-index history/navigation algorithms,
+and complete sealed envelopes byte-for-byte. Cases cover aliases/themes, hidden
+authored refs, nested masters/instances, navigation targets, signed zero/no-op,
+old/new page reparenting, deleted IDs, pruned links, notes/cascades, page/root
+append/delete/reorder and old/new font-family/backing-asset metadata. The
+current-revision shortcut is compared with the stale path over **32**
+operation/page-guard pairs, including full serialized error parity. Both absent
+expansion cases are exercised. A separate scene test compares both borrowed
+font contexts with the former full-Candidate/theme-loop helper, including
+font-family sibling selection and placed style overrides.
+
+Existing SQLite and disposable PostgreSQL contracts add ABA, replay/reconnect,
+rollback, shared resources/master conflicts, new dependencies, font byte
+replacement, legacy/corrupt/gapped history, restore and bundle scrubbing.
+Initial storage lib checks hit two sandbox listener-bind failures; the exact
+targeted command passed with temporary loopback listeners allowed. A filtered
+probe ran zero integration cases; only the corrected unfiltered run is counted.
+
+| Final check | Actual result |
+| --- | --- |
+| Targeted storage lib/scoped/bundle/notes/assets | 46 passed, 1 existing ignored PG test |
+| Scene lib + incremental integration | 13 passed (includes new legacy-font parity test) |
+| SQLite scoped MCP/file contract | 2 passed, 1 existing ignored PG test |
+| Disposable PG storage scoped/domain/transactions/resources/fidelity | 11 passed |
+| Disposable PG scoped MCP | 1 passed |
+| Clippy scene-input/storage touched libs, warnings denied | passed |
+| Package fmt + raw diff whitespace | passed |
+
+All tests used `-j2`, at most two test threads; PostgreSQL used one test thread
+and a fresh container on a random loopback port, cleaned up by the wrapper.
+Generated logs remain in OS temp. Rerun commands:
+
+```sh
+cargo test --offline -p opencanvas-storage -j2 --lib --test scoped_concurrency --test scoped_navigation --test scoped_history --test scoped_bundle --test bundle_roundtrip --test bundle_database --test bundle_archive --test notes --test assets -- --test-threads=2
+cargo test --offline -p opencanvas-scene-input -j2 --lib --test incremental -- --test-threads=2
+cargo test --offline -p opencanvas-server -j2 --test scoped_concurrency -- --test-threads=2
+bash scripts/task19-check.sh bash -c 'cargo test --offline -p opencanvas-storage -j2 --test scoped_concurrency --test postgres_domain --test postgres_transactions --test postgres_resources --test postgres_fidelity -- --ignored --test-threads=1 && cargo test --offline -p opencanvas-server -j2 --test scoped_concurrency -- --ignored --test-threads=1'
+cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -j2 --lib -- -D warnings
+cargo fmt --package opencanvas-scene-input --package opencanvas-storage --check
+git diff --check
+```
+
+## Slice 3 handoff and slice 2 module sizes
+
+`batch::validated_candidate` returns `(Candidate, Vec<String>, ValidationWork)`.
+`BatchScope` owns shared before/after `Arc<PageIndex>` plus the already-computed
+footprint. `DependencyIndex::with_snapshot_tree(snapshot, Arc<PageIndex>)` reuses
+topology; `from_candidate(candidate, expanded, Arc<PageIndex>)` consumes the
+validation expansion. `closure(pages, &FontReferences)` is read-only. Adjacency
+is forward page/resource→references, not inverse componentId→instance users;
+the existing `NodeIndex` from slice 1 still has borrowed component-user indexing.
+Internal module visibility can be widened when slice 3 consumes these types.
+
+No revision cache is introduced here. Index construction and reference scanning
+are still project-wide once per operation; before expansion and the remaining
+global validation phases still scale with project size. Slice 3 must bind shared
+indexes to project/generation/namespace/revision and budget any retained expanded
+map, including snapshots too large for current JSON cache admission. Added
+phase/count keys: `scoped.expand.before`, `scoped.expand.fallback`,
+`scoped.expansion_reused`, `scoped.closure_nodes`, `scoped.closure_keys`,
+`history.compared_ids`. No performance target or production node limit is
+claimed before the post-slice-3 Task24 measurements.
+
+New production modules: `scoped/index.rs` 100 lines, `dependency_index.rs` 188,
+`font_references.rs` 97. Existing touched modules: scoped 193, history 193,
+navigation 46, SQLite batch 211, PostgreSQL batch 193, scene refs 193. New
+parity/reference test modules are 197/61/100/78 lines; the 131-line old closure
+is now test-only. All touched handwritten code files remain below 250 lines;
+no size exception. No slice 3 work, push, deploy or live-service mutation.

@@ -2,11 +2,20 @@
 use crate::*;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
 mod dependencies;
+mod dependency_index;
 mod history;
+mod index;
 mod navigation;
+#[cfg(test)]
+mod parity;
+#[cfg(test)]
+mod reference_history;
 pub(crate) use history::coverage;
+pub(crate) use history::envelope_with_scopes;
 pub(crate) use history::{envelope, operations, request_value, scrub};
+pub(crate) use index::BatchScope;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -33,7 +42,11 @@ impl ScopedBatchRequest {
 
 /// A snapshot and its guard always come from the same storage read.
 pub fn edit_context(snapshot: Snapshot, page_ids: Vec<String>) -> Result<Value> {
-    let dependencies = dependencies::closure(&snapshot, &page_ids)?;
+    index::PageIndex::validate_page_ids(&page_ids)?;
+    let index = dependency_index::DependencyIndex::from_snapshot(&snapshot)?;
+    index.tree.validate_pages(&page_ids)?;
+    let fonts = validate::FontReferences::from_snapshot(&snapshot, &index.expanded)?;
+    let dependencies = index.closure(&page_ids, &fonts)?;
     Ok(
         json!({"projectId":snapshot.project_id,"expectedRevision":snapshot.revision,
         "pageIds":page_ids,"dependencyCount":dependencies.len(),
@@ -48,15 +61,13 @@ pub(crate) fn check(
     request: &BatchRequest,
     pages: &[String],
     commits: Vec<(u64, Value)>,
+    scope: &BatchScope,
+    work: &mut validate::ValidationWork,
 ) -> Result<()> {
     if request.expected_revision > before.revision || commits.len() > 1000 {
         return Err(StorageError::conflict(before.revision));
     }
-    let mut guard = dependencies::closure(before, pages)?;
-    // New references also need protection; a client cannot attach a stale resource
-    // that was not part of its page at read time.
-    let after = history::snapshot(before, candidate);
-    let old = Candidate::from_snapshot(before);
+    scope.before.validate_pages(pages)?;
     for op in &request.operations {
         match op {
             Operation::CreateNode { kind, parent_id: Some(_), .. } if *kind != NodeKind::Page => {},
@@ -80,48 +91,30 @@ pub(crate) fn check(
         if props.is_some_and(|p| p.get("flowStart").is_some()) {
             return Err(unsupported("Global flowStart changes require strict mode"));
         }
-        for (nodes, target) in [(&old.nodes, id.as_str()), (&candidate.nodes, id.as_str())]
+        for (index, target) in [(&scope.before, id.as_str()), (&scope.after, id.as_str())]
             .into_iter()
-            .chain(parent.map(|p| (&candidate.nodes, p)))
+            .chain(parent.map(|p| (&scope.after, p)))
         {
-            if let Some(page) = dependencies::page(nodes, target) {
-                if !pages.contains(&page) {
+            if let Some(page) = index.page(target) {
+                if !pages.iter().any(|p| p == page) {
                     return Err(unsupported(
                         "Operation source and destination pages must be guarded",
                     ));
                 }
             }
         }
-        let root_frame = |node: &Node, nodes: &BTreeMap<String, Node>| {
-            node.kind == NodeKind::Frame
-                && node
-                    .parent_id
-                    .as_ref()
-                    .and_then(|id| nodes.get(id))
-                    .is_some_and(|n| n.kind == NodeKind::Page)
-        };
         match op {
-            CreateNode { index, .. }
-                if candidate
-                    .nodes
-                    .get(id)
-                    .is_some_and(|n| root_frame(n, &candidate.nodes)) =>
-            {
+            CreateNode { index, .. } if scope.after.root_ids.contains(id) => {
                 if index.is_some()
-                    || !old
-                        .nodes
-                        .values()
-                        .any(|n| n.parent_id.as_deref() == parent && root_frame(n, &old.nodes))
+                    || parent
+                        .and_then(|p| scope.before.roots.get(p))
+                        .is_none_or(Vec::is_empty)
                 {
                     return Err(unsupported("Only appending a root frame after existing roots is supported; first-frame creation requires strict mode"));
                 }
             }
             DeleteSubtree { .. } | ReparentNode { .. } | ReorderNode { .. }
-                if old.nodes.get(id).is_some_and(|n| root_frame(n, &old.nodes))
-                    || candidate
-                        .nodes
-                        .get(id)
-                        .is_some_and(|n| root_frame(n, &candidate.nodes)) =>
+                if scope.before.root_ids.contains(id) || scope.after.root_ids.contains(id) =>
             {
                 return Err(unsupported(
                     "Root-frame deletion, reparent or reorder requires strict mode",
@@ -130,8 +123,7 @@ pub(crate) fn check(
             _ => {}
         }
     }
-    let footprint = history::footprint(before, candidate)?;
-    for key in &footprint {
+    for key in &scope.footprint {
         if let Some(page) = key.strip_prefix("page:") {
             if !pages.iter().any(|p| p == page) {
                 return Err(unsupported("Every affected page, including link cleanup and source/destination pages, must be guarded"));
@@ -143,19 +135,41 @@ pub(crate) fn check(
         }
     }
     // A page reorder/delete is project structure even when its own key is covered.
-    let page_map = |nodes: &[Node]| {
-        nodes
-            .iter()
-            .filter(|n| n.kind == NodeKind::Page)
-            .map(|n| (n.id.clone(), n.clone()))
-            .collect::<BTreeMap<_, _>>()
-    };
-    if page_map(&before.nodes) != page_map(&after.nodes) {
+    let old_pages: BTreeMap<_, _> = before
+        .nodes
+        .iter()
+        .filter(|n| n.kind == NodeKind::Page)
+        .map(|n| (n.id.as_str(), n))
+        .collect();
+    let new_pages: BTreeMap<_, _> = candidate
+        .nodes
+        .values()
+        .filter(|n| n.kind == NodeKind::Page)
+        .map(|n| (n.id.as_str(), n))
+        .collect();
+    if old_pages != new_pages {
         return Err(unsupported(
             "Page creation, deletion, reorder or property edits require strict mode",
         ));
     }
-    guard.extend(dependencies::closure(&after, pages)?);
+    // At the current revision there is no concurrent history to intersect. All
+    // page/restriction/effective-coverage checks above still run in the same order.
+    let mut guard = BTreeSet::new();
+    if request.expected_revision != before.revision {
+        let old =
+            dependency_index::DependencyIndex::with_snapshot_tree(before, scope.before.clone())?;
+        let old_fonts = validate::FontReferences::from_snapshot(before, &old.expanded)?;
+        guard = old.closure(pages, &old_fonts)?;
+        let new = dependency_index::DependencyIndex::from_candidate(
+            candidate,
+            work.expanded.take(),
+            scope.after.clone(),
+        )?;
+        let new_fonts = validate::FontReferences::from_candidate(candidate, &new.expanded)?;
+        // New references need protection too; a client cannot attach a resource
+        // changed since its read even if the old page did not reference it.
+        guard.extend(new.closure(pages, &new_fonts)?);
+    }
     let mut expected = request.expected_revision + 1;
     for (revision, value) in commits {
         if revision != expected || value["scopeVersion"] != 1 {

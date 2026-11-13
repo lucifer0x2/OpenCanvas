@@ -1,5 +1,5 @@
 //! Versioned private history; public readers continue returning operation arrays.
-use super::dependencies::page;
+use super::index::PageIndex;
 use crate::*;
 
 pub(crate) fn request_value(request: &BatchRequest, pages: Option<&[String]>) -> Result<Value> {
@@ -18,33 +18,42 @@ pub(crate) fn operations(value: Value) -> Value {
     }
 }
 
-pub(crate) fn snapshot(before: &Snapshot, after: &Candidate) -> Snapshot {
-    let mut snapshot = before.clone();
-    snapshot.nodes = after.nodes.values().cloned().collect();
-    snapshot.tokens = after.tokens.values().cloned().collect();
-    snapshot.styles = after.styles.values().cloned().collect();
-    snapshot.assets = after.assets.values().cloned().collect();
-    snapshot.fonts = after.fonts.values().cloned().collect();
-    snapshot.notes = after.notes.values().cloned().collect();
-    snapshot
+pub(crate) fn footprint(before: &Snapshot, after: &Candidate) -> Result<BTreeSet<String>> {
+    footprint_indexed(
+        before,
+        after,
+        None,
+        &PageIndex::new(&before.nodes),
+        &PageIndex::new(after.nodes.values()),
+    )
 }
 
-pub(crate) fn footprint(before: &Snapshot, after: &Candidate) -> Result<BTreeSet<String>> {
-    let old = Candidate::from_snapshot(before);
+pub(super) fn footprint_indexed(
+    before: &Snapshot,
+    after: &Candidate,
+    changed: Option<&[String]>,
+    old_pages: &PageIndex,
+    new_pages: &PageIndex,
+) -> Result<BTreeSet<String>> {
+    let old_nodes: BTreeMap<_, _> = before.nodes.iter().map(|n| (n.id.as_str(), n)).collect();
+    let ids: BTreeSet<_> = match changed {
+        Some(ids) => ids.iter().map(String::as_str).collect(),
+        None => old_nodes
+            .keys()
+            .copied()
+            .chain(after.nodes.keys().map(String::as_str))
+            .collect(),
+    };
     let mut keys = BTreeSet::new();
-    if super::navigation::changed(&old, after) {
+    bench_phase::count("history.compared_ids", ids.len());
+    if super::navigation::changed(&old_nodes, after, &ids, old_pages, new_pages) {
         keys.insert("*".into());
     }
-    for id in old
-        .nodes
-        .keys()
-        .chain(after.nodes.keys())
-        .collect::<BTreeSet<_>>()
-    {
-        if !same(old.nodes.get(id), after.nodes.get(id))? {
+    for id in &ids {
+        if !same(old_nodes.get(id).copied(), after.nodes.get(*id))? {
             keys.insert(format!("node:{id}"));
-            for nodes in [&old.nodes, &after.nodes] {
-                if let Some(page) = page(nodes, id) {
+            for pages in [old_pages, new_pages] {
+                if let Some(page) = pages.page(id) {
                     keys.insert(format!("page:{page}"));
                 }
             }
@@ -52,13 +61,17 @@ pub(crate) fn footprint(before: &Snapshot, after: &Candidate) -> Result<BTreeSet
     }
     macro_rules! diff {
         ($field:ident, $kind:literal) => {
-            for id in old
-                .$field
-                .keys()
-                .chain(after.$field.keys())
-                .collect::<BTreeSet<_>>()
-            {
-                if !same(old.$field.get(id), after.$field.get(id))? {
+            let old: BTreeMap<_, _> = before.$field.iter().map(|v| (v.id.as_str(), v)).collect();
+            let resource_ids: BTreeSet<_> = match changed {
+                Some(_) => ids.clone(),
+                None => old
+                    .keys()
+                    .copied()
+                    .chain(after.$field.keys().map(String::as_str))
+                    .collect(),
+            };
+            for id in resource_ids {
+                if !same(old.get(id).copied(), after.$field.get(id))? {
                     keys.insert(format!(concat!($kind, ":{}"), id));
                 }
             }
@@ -69,8 +82,15 @@ pub(crate) fn footprint(before: &Snapshot, after: &Candidate) -> Result<BTreeSet
     diff!(assets, "asset");
     diff!(fonts, "font");
     diff!(notes, "note");
-    for font in old.fonts.values().chain(after.fonts.values()) {
-        if !same(old.fonts.get(&font.id), after.fonts.get(&font.id))? {
+    let old_fonts: BTreeMap<_, _> = before.fonts.iter().map(|f| (f.id.as_str(), f)).collect();
+    for font in before.fonts.iter().chain(after.fonts.values()) {
+        if changed.is_some() && !ids.contains(font.id.as_str()) {
+            continue;
+        }
+        if !same(
+            old_fonts.get(font.id.as_str()).copied(),
+            after.fonts.get(&font.id),
+        )? {
             keys.insert(format!("font-family:{}", font.family));
         }
     }
@@ -88,8 +108,16 @@ pub(crate) fn envelope(
     request: Value,
     operations: Value,
 ) -> Result<Value> {
+    envelope_with_scopes(footprint(before, after)?, request, operations)
+}
+
+pub(crate) fn envelope_with_scopes(
+    scopes: BTreeSet<String>,
+    request: Value,
+    operations: Value,
+) -> Result<Value> {
     let mut value = json!({"scopeVersion":1,"request":request,"operations":operations,
-        "scopes":footprint(before, after)?});
+        "scopes":scopes});
     seal(&mut value)?;
     Ok(value)
 }

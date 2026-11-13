@@ -97,7 +97,8 @@ impl Project {
             return Err(StorageError::conflict(before.revision));
         }
         let time = Instant::now();
-        let (candidate, changed_ids) = validated_candidate(&before, &request.operations)?;
+        let (candidate, changed_ids, mut work) = validated_candidate(&before, &request.operations)?;
+        let scope = scoped::BatchScope::new(&before, &candidate, &changed_ids)?;
         if let Some(pages) = &pages {
             let _phase = bench_phase::Span::new("scoped.check");
             let commits = {
@@ -111,8 +112,11 @@ impl Project {
                 })
                 .collect::<Result<Vec<_>>>()?
             };
-            scoped::check(&before, &candidate, &request, pages, commits)?;
+            scoped::check(
+                &before, &candidate, &request, pages, commits, &scope, &mut work,
+            )?;
         }
+        drop(work);
         metrics.validate_us = us(time);
         if dry_run {
             metrics.total_us = us(total);
@@ -135,9 +139,8 @@ impl Project {
             replayed: false,
         };
         let history = bench_phase::time("history.envelope", || {
-            scoped::envelope(
-                &before,
-                &candidate,
+            scoped::envelope_with_scopes(
+                scope.footprint,
                 request_value.clone(),
                 request_value["operations"].clone(),
             )
@@ -161,7 +164,7 @@ impl Project {
 pub(crate) fn validated_candidate(
     before: &Snapshot,
     operations: &[Operation],
-) -> Result<(Candidate, Vec<String>)> {
+) -> Result<(Candidate, Vec<String>, validate::ValidationWork)> {
     let mut candidate = bench_phase::time("candidate.from_snapshot", || {
         Candidate::from_snapshot(before)
     });
@@ -204,5 +207,5 @@ pub(crate) fn validated_candidate(
         "validation.full_fallback",
         usize::from(work.stats.full_fallback),
     );
-    Ok((candidate, changed.into_iter().collect()))
+    Ok((candidate, changed.into_iter().collect(), work))
 }

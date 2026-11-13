@@ -1,51 +1,46 @@
 //! Global navigation defaults depend on page/root ordering and flow starts.
+use super::index::PageIndex;
 use crate::*;
 
-pub(super) fn changed(before: &Candidate, after: &Candidate) -> bool {
-    let pages = |candidate: &Candidate| {
-        candidate
-            .nodes
-            .values()
-            .filter(|n| n.kind == NodeKind::Page)
-            .cloned()
-            .collect::<Vec<_>>()
-    };
-    if pages(before) != pages(after) {
+pub(super) fn changed(
+    before: &BTreeMap<&str, &Node>,
+    after: &Candidate,
+    ids: &BTreeSet<&str>,
+    old: &PageIndex,
+    new: &PageIndex,
+) -> bool {
+    if !old
+        .page_nodes
+        .keys()
+        .filter_map(|id| before.get(id.as_str()).copied())
+        .eq(new.page_nodes.keys().filter_map(|id| after.nodes.get(id)))
+    {
         return true;
     }
-    for id in before
-        .nodes
-        .keys()
-        .chain(after.nodes.keys())
-        .collect::<BTreeSet<_>>()
-    {
-        let old = before.nodes.get(id);
-        let new = after.nodes.get(id);
-        if old.and_then(|n| n.props.get("flowStart")) != new.and_then(|n| n.props.get("flowStart"))
+    let mut affected_pages = BTreeSet::new();
+    for id in ids {
+        let old_node = before.get(id).copied();
+        let new_node = after.nodes.get(*id);
+        if old_node.and_then(|n| n.props.get("flowStart"))
+            != new_node.and_then(|n| n.props.get("flowStart"))
         {
             return true;
         }
+        for index in [old, new] {
+            if let Some(page) = index.page(id) {
+                affected_pages.insert(page);
+            }
+        }
     }
-    for page in before.nodes.values().filter(|n| n.kind == NodeKind::Page) {
-        let old = roots(before, &page.id);
-        let new = roots(after, &page.id);
+    for page in affected_pages {
+        let old = old.roots.get(page).map(Vec::as_slice).unwrap_or_default();
+        let new = new.roots.get(page).map(Vec::as_slice).unwrap_or_default();
         // Relative order matters; Candidate::place may compact harmless gaps.
         // Existing roots must remain a prefix, and an empty page's first root
         // can change the project-wide default selection.
-        if !new.starts_with(&old) || (old.is_empty() && !new.is_empty()) {
+        if !new.starts_with(old) || (old.is_empty() && !new.is_empty()) {
             return true;
         }
     }
     false
-}
-
-fn roots(candidate: &Candidate, page: &str) -> Vec<String> {
-    let mut nodes: Vec<_> = candidate
-        .nodes
-        .values()
-        .filter(|n| n.kind == NodeKind::Frame && n.parent_id.as_deref() == Some(page))
-        .map(|n| (n.sort_key, n.id.clone()))
-        .collect();
-    nodes.sort();
-    nodes.into_iter().map(|(_, id)| id).collect()
 }

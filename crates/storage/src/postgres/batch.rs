@@ -51,12 +51,17 @@ pub(super) fn apply_mode(
     let identity = (project.generation, project.namespace.clone());
     let (before, binaries, stored) =
         crate::bench_phase::time("load", || snapshot::entities_for_write(&mut db, project))?;
-    let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    let (candidate, changed_ids, mut work) =
+        crate::batch::validated_candidate(&before, &request.operations)?;
+    let scope = crate::scoped::BatchScope::new(&before, &candidate, &changed_ids)?;
     if let Some(pages) = &pages {
         crate::bench_phase::time("scoped.check", || {
-            check(&mut db, &before, &candidate, &request, pages)
+            check(
+                &mut db, &before, &candidate, &request, pages, &scope, &mut work,
+            )
         })?;
     }
+    drop(work);
     let result = BatchResult {
         project_id: before.project_id.clone(),
         committed_revision: before.revision + 1,
@@ -66,9 +71,8 @@ pub(super) fn apply_mode(
     };
     let rows = crate::bench_phase::time("persist.delta", || stored.delta(&candidate))?;
     let history = crate::bench_phase::time("history.envelope", || {
-        crate::scoped::envelope(
-            &before,
-            &candidate,
+        crate::scoped::envelope_with_scopes(
+            scope.footprint,
             value.clone(),
             value["operations"].clone(),
         )
@@ -118,9 +122,13 @@ fn preview(
         return Err(StorageError::conflict(project.meta.revision));
     }
     let (before, _) = snapshot::entities_with_binaries(&mut db, project)?;
-    let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    let (candidate, changed_ids, mut work) =
+        crate::batch::validated_candidate(&before, &request.operations)?;
     if let Some(pages) = &pages {
-        check(&mut db, &before, &candidate, &request, pages)?;
+        let scope = crate::scoped::BatchScope::new(&before, &candidate, &changed_ids)?;
+        check(
+            &mut db, &before, &candidate, &request, pages, &scope, &mut work,
+        )?;
     }
     Ok(DryRunResult {
         project_id: before.project_id,
@@ -167,6 +175,8 @@ fn check<C: ::postgres::GenericClient>(
     candidate: &crate::validate::Candidate,
     request: &BatchRequest,
     pages: &[String],
+    scope: &crate::scoped::BatchScope,
+    work: &mut crate::validate::ValidationWork,
 ) -> Result<()> {
     let rows = db.query("SELECT revision,CASE WHEN sum(octet_length(operations)) OVER (ORDER BY revision)<=8388608 THEN operations ELSE 'null' END FROM commits WHERE project_id=$1 AND revision>$2 ORDER BY revision LIMIT 1001",
         &[&before.project_id, &(request.expected_revision as i64)])?;
@@ -179,5 +189,5 @@ fn check<C: ::postgres::GenericClient>(
             ))
         })
         .collect::<Result<Vec<_>>>()?;
-    crate::scoped::check(before, candidate, request, pages, commits)
+    crate::scoped::check(before, candidate, request, pages, commits, scope, work)
 }

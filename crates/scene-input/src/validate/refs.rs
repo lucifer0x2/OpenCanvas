@@ -191,30 +191,3 @@ pub fn resolved_tokens_for_theme(
         .map(|id| Ok((id.clone(), c.token_value(id, theme)?)))
         .collect()
 }
-
-/// Fonts needed to resolve a compact scope under every authored theme.
-/// Scope nodes may be expanded instances and component definitions.
-pub fn referenced_font_ids(
-    snapshot: &Snapshot,
-    nodes: &[&Node],
-) -> Result<std::collections::BTreeSet<String>> {
-    let mut candidate = Candidate::from_snapshot(snapshot);
-    let expanded = crate::instances::expand(&snapshot.nodes)?;
-    candidate.nodes = expanded.into_iter().map(|n| (n.id.clone(), n)).collect();
-    let mut ids = std::collections::BTreeSet::new();
-    for theme in candidate.validate_tokens()? {
-        candidate.theme = theme;
-        for node in nodes {
-            if node.kind == NodeKind::Text {
-                if let Some(id) = candidate
-                    .resolve_props(node)?
-                    .get("fontId")
-                    .and_then(Value::as_str)
-                {
-                    ids.insert(id.into());
-                }
-            }
-        }
-    }
-    Ok(ids)
-}

@@ -6,6 +6,7 @@ mod breakpoints;
 mod candidate;
 mod easing;
 mod font_face;
+mod font_references;
 mod incremental;
 mod index;
 mod instance_graph;
@@ -31,10 +32,10 @@ mod token_graph;
 mod tokens;
 mod values;
 pub use candidate::Candidate;
+pub use font_references::{referenced_font_ids, FontReferences};
 pub use incremental::{ValidationStats, ValidationWork};
 pub use index::NodeIndex;
 pub use refs::{
-    referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
-    resolved_tokens_for_theme,
+    resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
 };
 pub use values::{valid_id, validate_slug};
