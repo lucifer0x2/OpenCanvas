@@ -116,11 +116,19 @@ pub(super) fn reordered(snapshot: &Snapshot) -> Snapshot {
 /// The committed fixture with one node row rewritten behind the validator, then
 /// reopened cold. Temporary root only; mirrors rows from older releases/raw SQL.
 pub(super) fn corrupt(id: &str, props: &str) -> (tempfile::TempDir, Storage, String) {
+    rewrite("UPDATE nodes SET props_json=?1 WHERE id=?2", props, id)
+}
+
+/// As `corrupt`, but re-parents `id` under `parent`, e.g. into a parent cycle.
+pub(super) fn corrupt_parent(id: &str, parent: &str) -> (tempfile::TempDir, Storage, String) {
+    rewrite("UPDATE nodes SET parent_id=?1 WHERE id=?2", parent, id)
+}
+
+fn rewrite(sql: &str, value: &str, id: &str) -> (tempfile::TempDir, Storage, String) {
     let (dir, storage, project) = fixture();
     drop(storage);
     let db = rusqlite::Connection::open(dir.path().join("scoped-tree/db.sql")).unwrap();
-    let sql = "UPDATE nodes SET props_json=?1 WHERE id=?2";
-    assert_eq!(db.execute(sql, [props, id]).unwrap(), 1);
+    assert_eq!(db.execute(sql, [value, id]).unwrap(), 1);
     drop(db);
     let storage = Store::open(dir.path()).unwrap().into();
     (dir, storage, project)

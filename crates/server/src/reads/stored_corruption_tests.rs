@@ -1,5 +1,9 @@
 //! Trusted scoped MCP reads over rows that bypassed the current validator.
-use super::{find, pagination, scoped_tree_fixture::corrupt, tree, ReadRequest};
+use super::{
+    find, pagination,
+    scoped_tree_fixture::{corrupt, corrupt_parent},
+    targets, tree, ReadRequest,
+};
 use crate::error::Result;
 use opencanvas_storage::SharedSnapshot;
 use serde_json::{json, Value};
@@ -53,4 +57,26 @@ fn scalar_authored_props_fail_resolution_and_never_panic_elsewhere() {
     for (tool, args) in calls().into_iter().skip(1) {
         let _ = read(&shared, tool, args);
     }
+}
+
+#[test]
+fn prerender_selection_terminates_on_a_stored_parent_cycle() {
+    // frame -> placed -> frame: a cycle the commit validator would reject.
+    let (_dir, storage, id) = corrupt_parent("frame", "placed");
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let shared = storage.shared_snapshot(&id).unwrap();
+        assert!(shared.trusted_scoped().unwrap().is_some());
+        let ids = |frames: Vec<&opencanvas_storage::Node>| -> Vec<String> {
+            frames.into_iter().map(|n| n.id.clone()).collect()
+        };
+        let scoped = targets::prerender_shared(&shared, &["outgoing", "frame"], 4).unwrap();
+        let legacy = targets::prerender_frames(&shared.snapshot, &["outgoing"], 4);
+        tx.send((ids(scoped), ids(legacy))).unwrap();
+    });
+    let (scoped, legacy) = rx
+        .recv_timeout(std::time::Duration::from_secs(30))
+        .expect("prerender walk did not terminate on a parent cycle");
+    assert_eq!(scoped, ["frame"]);
+    assert_eq!(legacy, ["frame"]);
 }

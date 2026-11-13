@@ -1,7 +1,7 @@
 //! Which frames a commit's prerender should warm. The viewer shows top-level frames, so a changed
 //! node maps to the outermost frame that contains it (itself included), found through the index.
 use super::index::TreeIndex;
-use opencanvas_storage::{Node, NodeKind, SharedSnapshot, Snapshot};
+use opencanvas_storage::{read_scope::ScopedSnapshot, Node, NodeKind, SharedSnapshot, Snapshot};
 use std::collections::HashSet;
 
 pub(crate) fn prerender_shared<'a>(
@@ -12,23 +12,31 @@ pub(crate) fn prerender_shared<'a>(
     let Some(scoped) = shared.trusted_scoped()? else {
         return Ok(prerender_frames(&shared.snapshot, changed_ids, max));
     };
-    let mut touched = HashSet::new();
-    for id in changed_ids {
-        let mut node = scoped.node(id);
-        let mut frame = None;
-        while let Some(current) = node {
-            if current.kind == NodeKind::Frame {
-                frame = Some(current.id.as_str());
-            }
-            node = current.parent_id.as_deref().and_then(|id| scoped.node(id));
-        }
-        touched.extend(frame);
-    }
+    let touched: HashSet<&str> = changed_ids
+        .iter()
+        .filter_map(|id| outermost_frame(&scoped, id))
+        .collect();
     Ok(scoped
         .frames()
         .filter(|frame| touched.is_empty() || touched.contains(frame.id.as_str()))
         .take(max)
         .collect())
+}
+
+/// The outermost frame on `id`'s parent chain, itself included. Storage rejects cycles, but rows
+/// written behind the validator may hold one: the walk stops after one step per snapshot node,
+/// like `TreeIndex::ancestors`, keeping the frames seen so far (best-effort warm-up selection).
+fn outermost_frame<'a>(scoped: &ScopedSnapshot<'a>, id: &str) -> Option<&'a str> {
+    let mut node = scoped.node(id);
+    let mut frame = None;
+    for _ in 0..=scoped.snapshot().nodes.len() {
+        let Some(current) = node else { break };
+        if current.kind == NodeKind::Frame {
+            frame = Some(current.id.as_str());
+        }
+        node = current.parent_id.as_deref().and_then(|id| scoped.node(id));
+    }
+    frame
 }
 
 /// Frames to prerender after a commit, in storage order, at most `max`. Frames containing a
