@@ -6,7 +6,7 @@ use crate::{
 use serde_json::Value;
 use std::sync::Arc;
 
-mod identity;
+pub(crate) mod identity;
 mod viewer_auth;
 
 /// Default adapter. All domain writes and validation use the existing SQLite
@@ -84,6 +84,12 @@ impl StorageBackend for SqliteBackend {
         self.pins
             .read(&self.store, project, identity::probe)
             .map(|(_, identity)| identity)
+    }
+
+    fn shared_snapshot(&self, project: &str) -> Result<crate::SharedSnapshot> {
+        let (snapshot, identity) = self.snapshot_with_cache_identity(project)?;
+        let indexes = self.store.root.indexes.for_snapshot(&snapshot, identity);
+        Ok(crate::SharedSnapshot { snapshot, indexes })
     }
 
     fn snapshot_with_cache_identity(

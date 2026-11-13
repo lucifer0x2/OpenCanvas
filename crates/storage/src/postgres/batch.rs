@@ -17,8 +17,9 @@ pub(super) fn apply(
     key: &str,
     request: BatchRequest,
     dry: bool,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<Outcome> {
-    apply_mode(session, key, request, dry, None)
+    apply_mode(session, key, request, dry, None, indexes)
 }
 
 pub(super) fn apply_mode(
@@ -27,9 +28,10 @@ pub(super) fn apply_mode(
     request: BatchRequest,
     dry: bool,
     pages: Option<Vec<String>>,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<Outcome> {
     if dry {
-        return preview(session, key, request, pages).map(Outcome::Preview);
+        return preview(session, key, request, pages, indexes).map(Outcome::Preview);
     }
     let mut tx = session.client.transaction().map_err(sql)?;
     let mut db = Db::new(&mut tx, &mut session.statements);
@@ -51,9 +53,27 @@ pub(super) fn apply_mode(
     let identity = (project.generation, project.namespace.clone());
     let (before, binaries, stored) =
         crate::bench_phase::time("load", || snapshot::entities_for_write(&mut db, project))?;
-    let (candidate, changed_ids, mut work) =
-        crate::batch::validated_candidate(&before, &request.operations)?;
-    let scope = crate::scoped::BatchScope::new(&before, &candidate, &changed_ids)?;
+    let cache_identity = adapter::identity(
+        before.project_id.clone(),
+        before.schema_version,
+        before.revision,
+        identity.0,
+        &identity.1,
+    );
+    let old_indexes = indexes.for_snapshot(&before, Some(cache_identity.clone()));
+    let (candidate, changed_ids, mut work, next_indexes) =
+        crate::batch::validated_candidate_indexed(
+            &before,
+            &request.operations,
+            old_indexes.clone(),
+        )?;
+    let scope = crate::scoped::BatchScope::indexed(
+        &before,
+        &candidate,
+        &changed_ids,
+        old_indexes,
+        next_indexes.clone(),
+    )?;
     if let Some(pages) = &pages {
         crate::bench_phase::time("scoped.check", || {
             check(
@@ -94,6 +114,9 @@ pub(super) fn apply_mode(
         written
     };
     let revision = result.committed_revision;
+    let mut next_identity = cache_identity;
+    next_identity.revision = revision;
+    indexes.publish(next_identity, next_indexes);
     let committed = Committed::new(before, binaries, written, revision, identity);
     Ok(Outcome::Commit(result, Some(Box::new(committed))))
 }
@@ -107,6 +130,7 @@ fn preview(
     key: &str,
     request: BatchRequest,
     pages: Option<Vec<String>>,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<DryRunResult> {
     let (mut tx, statements) = session.read_only()?;
     let mut db = Db::new(&mut tx, statements);
@@ -121,11 +145,29 @@ fn preview(
     if pages.is_none() && project.meta.revision != request.expected_revision {
         return Err(StorageError::conflict(project.meta.revision));
     }
+    let identity = adapter::identity(
+        project.meta.project_id.clone(),
+        project.meta.schema_version,
+        project.meta.revision,
+        project.generation,
+        &project.namespace,
+    );
     let (before, _) = snapshot::entities_with_binaries(&mut db, project)?;
-    let (candidate, changed_ids, mut work) =
-        crate::batch::validated_candidate(&before, &request.operations)?;
+    let old_indexes = indexes.for_snapshot(&before, Some(identity));
+    let (candidate, changed_ids, mut work, next_indexes) =
+        crate::batch::validated_candidate_indexed(
+            &before,
+            &request.operations,
+            old_indexes.clone(),
+        )?;
     if let Some(pages) = &pages {
-        let scope = crate::scoped::BatchScope::new(&before, &candidate, &changed_ids)?;
+        let scope = crate::scoped::BatchScope::indexed(
+            &before,
+            &candidate,
+            &changed_ids,
+            old_indexes,
+            next_indexes,
+        )?;
         check(
             &mut db, &before, &candidate, &request, pages, &scope, &mut work,
         )?;

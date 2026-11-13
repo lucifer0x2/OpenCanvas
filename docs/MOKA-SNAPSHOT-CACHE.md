@@ -108,3 +108,27 @@ admission, with a 64 MiB weighted capacity and a 16 MiB admission limit per
 entry. The weight includes the body, tag, identity and a fixed overhead
 allowance. Older entries can remain until eviction or expiration. Oversized
 responses still serve normally.
+
+## Revision metadata cache
+
+SQLite data roots and PostgreSQL backends also own a separate in-process derived
+index cache. `Storage::shared_snapshot` binds an immutable snapshot Arc to its
+matching index Arc using that read's complete `SnapshotCacheIdentity`. Commit
+validation, page guards/history and MCP `get_edit_context` share these indexes.
+This does not admit oversized snapshots into either payload cache or change
+their 16 MiB admission / 64 MiB capacity.
+
+Metadata entries use a 1-hour insertion TTL and 256 MiB weighted capacity,
+including a reserved 4 MiB per entry for lazy dependency adjacency/font-ID sets.
+Larger dependency graphs are used without retention; topology can still cache.
+Expanded node payloads are temporary and are dropped after graph construction.
+Weights count index strings/container allowances, without serializing snapshots;
+they do not bound process RSS, concurrent builds or reader-held Arcs.
+
+Exact identity keys isolate older/newer readers and late fills. Only durable
+commits publish candidate indexes. PostgreSQL uses the authoritative namespace,
+generation, schema and revision. SQLite checks file incarnation/readiness and
+reopens pinned writers after device/inode replacement. Backends without a
+reliable identity build fresh indexes. Cold dependency construction remains
+project-wide; page-scoped expansion is pending. See the slice 3 evidence and
+limits in [TASK25-REPORT](TASK25-REPORT.md).

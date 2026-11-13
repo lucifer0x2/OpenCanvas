@@ -35,6 +35,20 @@ async fn independent_backend_serves_http_mcp_mutation_history_and_resource_bytes
     assert_eq!(snapshot["projectId"], id);
     assert_eq!(snapshot["revision"], 1);
     assert_eq!(snapshot["nodes"][0]["props"]["name"], "Memory only");
+    let storage = opencanvas_storage::Storage::from_shared(backend.clone());
+    let first = storage.shared_snapshot(id).unwrap();
+    let second = storage.shared_snapshot(id).unwrap();
+    assert!(
+        !Arc::ptr_eq(&first.indexes, &second.indexes),
+        "custom backend without identity must not cache indexes"
+    );
+    let guard = server
+        .call(
+            "get_edit_context",
+            json!({"projectId":id,"pageIds":["page"]}),
+        )
+        .await;
+    assert_eq!(guard["expectedRevision"], 1, "{guard}");
     let changes = server
         .call(
             "get_changes",

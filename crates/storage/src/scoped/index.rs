@@ -13,7 +13,16 @@ pub(crate) struct PageIndex {
 impl PageIndex {
     pub fn new<'a>(nodes: impl IntoIterator<Item = &'a Node>) -> Self {
         let nodes: Vec<_> = nodes.into_iter().collect();
-        let tree = NodeIndex::new(nodes.iter().copied());
+        let topology = Arc::new(validate::NodeTopology::new(nodes.iter().copied()));
+        Self::with_topology(nodes, topology)
+    }
+
+    pub fn with_topology<'a>(
+        nodes: impl IntoIterator<Item = &'a Node>,
+        topology: Arc<validate::NodeTopology>,
+    ) -> Self {
+        let nodes: Vec<_> = nodes.into_iter().collect();
+        let tree = NodeIndex::with_topology(nodes.iter().copied(), topology);
         let mut index = Self::default();
         for page in nodes.iter().filter(|n| n.kind == NodeKind::Page) {
             let mut pending = vec![page.id.as_str()];
@@ -83,18 +92,38 @@ pub(crate) struct BatchScope {
     pub before: Arc<PageIndex>,
     pub after: Arc<PageIndex>,
     pub footprint: BTreeSet<String>,
+    pub old_indexes: Arc<crate::RevisionIndexes>,
+    pub new_indexes: Arc<crate::RevisionIndexes>,
 }
 
 impl BatchScope {
+    #[cfg(test)]
     pub fn new(before: &Snapshot, after: &Candidate, changed: &[String]) -> Result<Self> {
-        let old = PageIndex::new(&before.nodes);
-        let new = PageIndex::new(after.nodes.values());
+        Self::indexed(
+            before,
+            after,
+            changed,
+            Arc::new(crate::RevisionIndexes::new(&before.nodes)),
+            Arc::new(crate::RevisionIndexes::new(after.nodes.values())),
+        )
+    }
+    pub fn indexed(
+        before: &Snapshot,
+        after: &Candidate,
+        changed: &[String],
+        old_indexes: Arc<crate::RevisionIndexes>,
+        new_indexes: Arc<crate::RevisionIndexes>,
+    ) -> Result<Self> {
+        let old = old_indexes.pages.clone();
+        let new = new_indexes.pages.clone();
         let footprint =
             super::history::footprint_indexed(before, after, Some(changed), &old, &new)?;
         Ok(Self {
-            before: Arc::new(old),
-            after: Arc::new(new),
+            before: old,
+            after: new,
             footprint,
+            old_indexes,
+            new_indexes,
         })
     }
 }

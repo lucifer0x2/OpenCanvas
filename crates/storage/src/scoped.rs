@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 mod dependencies;
-mod dependency_index;
+pub(crate) mod dependency_index;
 mod history;
-mod index;
+pub(crate) mod index;
 mod navigation;
 #[cfg(test)]
 mod parity;
@@ -42,11 +42,25 @@ impl ScopedBatchRequest {
 
 /// A snapshot and its guard always come from the same storage read.
 pub fn edit_context(snapshot: Snapshot, page_ids: Vec<String>) -> Result<Value> {
+    let indexes = RevisionIndexes::new(&snapshot.nodes);
+    edit_context_indexed(&snapshot, &indexes, page_ids)
+}
+
+pub(crate) fn edit_context_indexed(
+    snapshot: &Snapshot,
+    indexes: &RevisionIndexes,
+    page_ids: Vec<String>,
+) -> Result<Value> {
     index::PageIndex::validate_page_ids(&page_ids)?;
-    let index = dependency_index::DependencyIndex::from_snapshot(&snapshot)?;
+    let index = indexes.dependencies(|| {
+        dependency_index::DependencyIndex::with_snapshot_tree(
+            snapshot,
+            indexes.pages.clone(),
+            Some(&indexes.references),
+        )
+    })?;
     index.tree.validate_pages(&page_ids)?;
-    let fonts = validate::FontReferences::from_snapshot(&snapshot, &index.expanded)?;
-    let dependencies = index.closure(&page_ids, &fonts)?;
+    let dependencies = index.closure(&page_ids)?;
     Ok(
         json!({"projectId":snapshot.project_id,"expectedRevision":snapshot.revision,
         "pageIds":page_ids,"dependencyCount":dependencies.len(),
@@ -156,19 +170,25 @@ pub(crate) fn check(
     // page/restriction/effective-coverage checks above still run in the same order.
     let mut guard = BTreeSet::new();
     if request.expected_revision != before.revision {
-        let old =
-            dependency_index::DependencyIndex::with_snapshot_tree(before, scope.before.clone())?;
-        let old_fonts = validate::FontReferences::from_snapshot(before, &old.expanded)?;
-        guard = old.closure(pages, &old_fonts)?;
-        let new = dependency_index::DependencyIndex::from_candidate(
-            candidate,
-            work.expanded.take(),
-            scope.after.clone(),
-        )?;
-        let new_fonts = validate::FontReferences::from_candidate(candidate, &new.expanded)?;
+        let old = scope.old_indexes.dependencies(|| {
+            dependency_index::DependencyIndex::with_snapshot_tree(
+                before,
+                scope.before.clone(),
+                Some(&scope.old_indexes.references),
+            )
+        })?;
+        guard = old.closure(pages)?;
+        let new = scope.new_indexes.dependencies(|| {
+            dependency_index::DependencyIndex::from_candidate(
+                candidate,
+                work.expanded.take(),
+                scope.after.clone(),
+                Some(&scope.new_indexes.references),
+            )
+        })?;
         // New references need protection too; a client cannot attach a resource
         // changed since its read even if the old page did not reference it.
-        guard.extend(new.closure(pages, &new_fonts)?);
+        guard.extend(new.closure(pages)?);
     }
     let mut expected = request.expected_revision + 1;
     for (revision, value) in commits {

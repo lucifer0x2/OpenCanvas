@@ -1,33 +1,33 @@
 //! Borrowed authored-tree and component usage indexes. No resource/scene cloning.
-use crate::{Node, NodeKind};
+use super::NodeTopology;
+use crate::Node;
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 /// Index over exactly one immutable authored node set. Rebuild after mutation.
 pub struct NodeIndex<'a> {
     nodes: BTreeMap<&'a str, &'a Node>,
-    children: BTreeMap<&'a str, Vec<&'a str>>,
-    users: BTreeMap<&'a str, Vec<&'a str>>,
+    topology: Arc<NodeTopology>,
 }
 
 impl<'a> NodeIndex<'a> {
     pub fn new(nodes: impl IntoIterator<Item = &'a Node>) -> Self {
-        let mut index = Self {
-            nodes: BTreeMap::new(),
-            children: BTreeMap::new(),
-            users: BTreeMap::new(),
-        };
-        for node in nodes {
-            index.nodes.insert(&node.id, node);
-            if let Some(parent) = node.parent_id.as_deref() {
-                index.children.entry(parent).or_default().push(&node.id);
-            }
-            if node.kind == NodeKind::Instance {
-                if let Some(master) = node.props["componentId"].as_str() {
-                    index.users.entry(master).or_default().push(&node.id);
-                }
-            }
+        let nodes: Vec<_> = nodes.into_iter().collect();
+        let topology = Arc::new(NodeTopology::new(nodes.iter().copied()));
+        Self::with_topology(nodes, topology)
+    }
+
+    pub fn with_topology(
+        nodes: impl IntoIterator<Item = &'a Node>,
+        topology: Arc<NodeTopology>,
+    ) -> Self {
+        Self {
+            nodes: nodes
+                .into_iter()
+                .map(|node| (node.id.as_str(), node))
+                .collect(),
+            topology,
         }
-        index
     }
 
     pub fn node(&self, id: &str) -> Option<&'a Node> {
@@ -35,11 +35,15 @@ impl<'a> NodeIndex<'a> {
     }
 
     pub fn children(&self, id: &str) -> impl Iterator<Item = &'a str> + '_ {
-        self.children.get(id).into_iter().flatten().copied()
+        self.topology
+            .children(id)
+            .filter_map(|id| self.nodes.get(id).map(|node| node.id.as_str()))
     }
 
     pub fn component_users(&self, id: &str) -> impl Iterator<Item = &'a str> + '_ {
-        self.users.get(id).into_iter().flatten().copied()
+        self.topology
+            .component_users(id)
+            .filter_map(|id| self.nodes.get(id).map(|node| node.id.as_str()))
     }
 
     /// Component ancestors, including `id` itself when it is a master. Bounded

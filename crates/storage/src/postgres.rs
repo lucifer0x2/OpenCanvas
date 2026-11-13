@@ -32,6 +32,7 @@ pub struct PostgresBackend {
     pool: Arc<pool::Pool>,
     namespace: Arc<str>,
     cache: Option<SnapshotCache>,
+    indexes: crate::revision_indexes::IndexCache,
 }
 
 impl PostgresBackend {
@@ -46,6 +47,7 @@ impl PostgresBackend {
             pool,
             namespace: namespace.into(),
             cache: None,
+            indexes: Default::default(),
         })
     }
 

@@ -45,7 +45,6 @@ fn snapshot(before: &Snapshot, candidate: &Candidate) -> Snapshot {
 }
 
 fn closures(snapshot: &Snapshot, index: &DependencyIndex) {
-    let fonts = validate::FontReferences::from_snapshot(snapshot, &index.expanded).unwrap();
     for pages in [
         vec![],
         vec!["missing".into()],
@@ -56,7 +55,7 @@ fn closures(snapshot: &Snapshot, index: &DependencyIndex) {
         vec!["p1".into(), "p2".into()],
     ] {
         let result = index
-            .closure(&pages, &fonts)
+            .closure(&pages)
             .map_err(|e| serde_json::to_value(e).unwrap());
         let reference = super::dependencies::closure(snapshot, &pages)
             .map_err(|e| serde_json::to_value(e).unwrap());
@@ -85,7 +84,7 @@ fn step(before: &Snapshot, operations: Vec<Operation>) -> (Snapshot, BTreeSet<St
     );
     let after = snapshot(before, &candidate);
     let index =
-        DependencyIndex::from_candidate(&candidate, validation.expanded.take(), scope.after)
+        DependencyIndex::from_candidate(&candidate, validation.expanded.take(), scope.after, None)
             .unwrap();
     closures(&after, &index);
     (after, scope.footprint)
@@ -165,9 +164,8 @@ fn resource_import_full_fallback_preserves_old_and_new_font_families_and_assets(
     let after = snapshot(&before, &candidate);
     closures(&after, &DependencyIndex::from_snapshot(&after).unwrap());
     let index = DependencyIndex::from_snapshot(&after).unwrap();
-    let fonts = validate::FontReferences::from_snapshot(&after, &index.expanded).unwrap();
     assert!(index
-        .closure(&["p1".into()], &fonts)
+        .closure(&["p1".into()])
         .unwrap()
         .contains("asset:font-after"));
 }

@@ -5,37 +5,52 @@ use validate::FontReferences;
 
 pub(crate) struct DependencyIndex {
     pub tree: Arc<PageIndex>,
-    pub expanded: BTreeMap<String, Node>,
-    expanded_pages: PageIndex,
     references: BTreeMap<String, BTreeSet<String>>,
+    page_fonts: BTreeMap<String, BTreeSet<String>>,
+}
+
+struct Authored<'a> {
+    nodes: Vec<&'a Node>,
+    references: Option<&'a BTreeMap<String, BTreeSet<String>>>,
 }
 
 impl DependencyIndex {
+    #[cfg(test)]
     pub fn from_snapshot(snapshot: &Snapshot) -> Result<Self> {
-        Self::with_snapshot_tree(snapshot, Arc::new(PageIndex::new(&snapshot.nodes)))
+        Self::with_snapshot_tree(snapshot, Arc::new(PageIndex::new(&snapshot.nodes)), None)
     }
 
-    pub fn with_snapshot_tree(snapshot: &Snapshot, tree: Arc<PageIndex>) -> Result<Self> {
+    pub fn with_snapshot_tree(
+        snapshot: &Snapshot,
+        tree: Arc<PageIndex>,
+        references: Option<&BTreeMap<String, BTreeSet<String>>>,
+    ) -> Result<Self> {
         let expanded = bench_phase::time("scoped.expand.before", || {
             crate::instances::expand(&snapshot.nodes)
         })?
         .into_iter()
         .map(|n| (n.id.clone(), n))
         .collect();
-        Ok(Self::build(
-            &snapshot.nodes,
+        let fonts = FontReferences::from_snapshot(snapshot, &expanded)?;
+        Self::build(
+            Authored {
+                nodes: snapshot.nodes.iter().collect(),
+                references,
+            },
             tree,
-            expanded,
+            &expanded,
             &snapshot.tokens,
             &snapshot.styles,
             &snapshot.fonts,
-        ))
+            &fonts,
+        )
     }
 
     pub fn from_candidate(
         candidate: &Candidate,
         expanded: Option<BTreeMap<String, Node>>,
         tree: Arc<PageIndex>,
+        references: Option<&BTreeMap<String, BTreeSet<String>>>,
     ) -> Result<Self> {
         // Full-validation fallback and instance-free incremental validation may
         // supply no expansion. Absence never means an empty scene.
@@ -49,30 +64,49 @@ impl DependencyIndex {
             .map(|n| (n.id.clone(), n))
             .collect(),
         };
-        Ok(Self::build(
-            candidate.nodes.values(),
+        let fonts = FontReferences::from_candidate(candidate, &expanded)?;
+        Self::build(
+            Authored {
+                nodes: candidate.nodes.values().collect(),
+                references,
+            },
             tree,
-            expanded,
+            &expanded,
             candidate.tokens.values(),
             candidate.styles.values(),
             candidate.fonts.values(),
-        ))
+            &fonts,
+        )
     }
 
     fn build<'a>(
-        nodes: impl IntoIterator<Item = &'a Node>,
+        authored: Authored<'_>,
         tree: Arc<PageIndex>,
-        expanded: BTreeMap<String, Node>,
+        expanded: &BTreeMap<String, Node>,
         tokens: impl IntoIterator<Item = &'a Token>,
         styles: impl IntoIterator<Item = &'a Style>,
         fonts: impl IntoIterator<Item = &'a Font>,
-    ) -> Self {
-        let nodes: Vec<_> = nodes.into_iter().collect();
+        font_refs: &FontReferences<'_>,
+    ) -> Result<Self> {
         let expanded_pages = PageIndex::new(expanded.values());
         let mut references = BTreeMap::new();
+        if let Some(usage) = authored.references {
+            for (key, users) in usage {
+                for user in users {
+                    if let Some(page) = tree.page(user) {
+                        references
+                            .entry(format!("page:{page}"))
+                            .or_insert_with(BTreeSet::new)
+                            .insert(key.clone());
+                    }
+                }
+            }
+        }
         // Both representations matter: overrides can hide authored references.
-        for (node, pages) in nodes
+        for (node, pages) in authored
+            .nodes
             .into_iter()
+            .filter(|_| authored.references.is_none())
             .map(|n| (n, tree.as_ref()))
             .chain(expanded.values().map(|n| (n, &expanded_pages)))
         {
@@ -102,19 +136,19 @@ impl DependencyIndex {
                 refs.insert(format!("asset:{asset}"));
             }
         }
-        Self {
-            tree,
-            expanded,
-            expanded_pages,
-            references,
+        let mut page_fonts = BTreeMap::new();
+        for (page, members) in &expanded_pages.page_nodes {
+            let nodes: Vec<_> = members.iter().filter_map(|id| expanded.get(id)).collect();
+            page_fonts.insert(page.clone(), font_refs.for_nodes(&nodes)?);
         }
+        Ok(Self {
+            tree,
+            references,
+            page_fonts,
+        })
     }
 
-    pub fn closure(
-        &self,
-        pages: &[String],
-        fonts: &FontReferences<'_>,
-    ) -> Result<BTreeSet<String>> {
+    pub fn closure(&self, pages: &[String]) -> Result<BTreeSet<String>> {
         self.tree.validate_pages(pages)?;
         let mut keys = BTreeSet::new();
         let mut queue: Vec<_> = pages.iter().map(|p| format!("page:{p}")).collect();
@@ -128,19 +162,11 @@ impl DependencyIndex {
             let (kind, id) = key.split_once(':').unwrap();
             match kind {
                 "page" => {
-                    let nodes: Vec<_> = self
-                        .expanded_pages
-                        .page_nodes
-                        .get(id)
-                        .into_iter()
-                        .flatten()
-                        .filter_map(|id| self.expanded.get(id))
-                        .collect();
-                    bench_phase::count("scoped.closure_nodes", nodes.len());
                     queue.extend(
-                        fonts
-                            .for_nodes(&nodes)?
+                        self.page_fonts
+                            .get(id)
                             .into_iter()
+                            .flatten()
                             .map(|id| format!("font:{id}")),
                     );
                 }
@@ -154,6 +180,14 @@ impl DependencyIndex {
         }
         bench_phase::count("scoped.closure_keys", keys.len());
         Ok(keys)
+    }
+
+    pub(crate) fn estimated_bytes(&self) -> usize {
+        self.references
+            .iter()
+            .chain(&self.page_fonts)
+            .map(|(key, refs)| 96 + key.len() + refs.iter().map(|id| 64 + id.len()).sum::<usize>())
+            .sum()
     }
 }
 

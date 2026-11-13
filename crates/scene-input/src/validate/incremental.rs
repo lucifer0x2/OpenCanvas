@@ -1,10 +1,11 @@
 //! Commit validation from a fully valid before snapshot; pure reads/imports use
 //! `Candidate::validate` and never rely on this write-side precondition.
-use super::{scope::Resolver, Candidate, NodeIndex};
+use super::{scope::Resolver, Candidate, NodeIndex, NodeTopology};
 use crate::{
     bench_phase::time, Node, NodeKind, Operation, Result, Snapshot, StorageError, MAX_NODES,
 };
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 /// Derived work for this candidate only. Reuse expansion downstream instead of
 /// expanding the same candidate again. No persisted/public response contract.
@@ -35,9 +36,29 @@ impl Candidate {
         operations: &[Operation],
         changed: &BTreeSet<String>,
     ) -> Result<ValidationWork> {
-        let old = time("validate.index.before", || NodeIndex::new(&before.nodes));
+        self.validate_after_indexed(
+            before,
+            operations,
+            changed,
+            Arc::new(NodeTopology::new(&before.nodes)),
+            Arc::new(NodeTopology::new(self.nodes.values())),
+        )
+    }
+
+    /// Both topologies must describe the supplied immutable node sets exactly.
+    pub fn validate_after_indexed(
+        &self,
+        before: &Snapshot,
+        operations: &[Operation],
+        changed: &BTreeSet<String>,
+        old: Arc<NodeTopology>,
+        new: Arc<NodeTopology>,
+    ) -> Result<ValidationWork> {
+        let old = time("validate.index.before", || {
+            NodeIndex::with_topology(&before.nodes, old)
+        });
         let new = time("validate.index.after", || {
-            NodeIndex::new(self.nodes.values())
+            NodeIndex::with_topology(self.nodes.values(), new)
         });
         if needs_full(operations, &old, &new) || resources_changed(self, before) {
             self.validate()?;

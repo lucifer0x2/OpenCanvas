@@ -1,8 +1,8 @@
 # Task25 — incremental validation and page-scoped access
 
-Status: slices 1–2 implemented and checked 2026-11-13 on
+Status: slices 1–3 implemented and checked 2026-11-13 on
 `feat/incremental-validation`, from bootstrap `7cc36e0` / Task24 baseline
-`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 3–6 remain open.
+`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 4–6 remain open.
 No deployment or production-limit change. The slice commit is the commit adding
 this report; later slices must record their own HEAD and evidence.
 
@@ -265,4 +265,145 @@ New production modules: `scoped/index.rs` 100 lines, `dependency_index.rs` 188,
 navigation 46, SQLite batch 211, PostgreSQL batch 193, scene refs 193. New
 parity/reference test modules are 197/61/100/78 lines; the 131-line old closure
 is now test-only. All touched handwritten code files remain below 250 lines;
-no size exception. No slice 3 work, push, deploy or live-service mutation.
+no size exception. This was the slice 2 checkpoint; slice 3 follows below.
+
+## Slice 3 — immutable revision indexes shared by commits and reads
+
+Implemented on top of slice 2 `b1622cb` and coordinator log archive `1bd675a`.
+The slice commit is the commit adding this section. No storage layout, migration,
+production cap, HTTP representation, viewer or runtime deployment changed.
+
+`validate::NodeTopology` owns authored children and componentId→instance IDs.
+`NodeIndex::with_topology` borrows node payloads while sharing this adjacency;
+`Candidate::validate_after_indexed` accepts matching before/after topologies.
+The existing `validate_after`, owned snapshot and `edit_context` APIs remain.
+The node lookup views are still assembled per validation call; this slice avoids
+rebuilding the owned topology, page map and reference indexes for the old revision.
+
+Storage owns `RevisionIndexes`: topology, node→page/page→members/root topology,
+inverse authored reference usage (tokens/styles, nested overrides and the other
+existing dependency kinds), and a lazy dependency graph. Sparse property updates
+reuse the old topology and page-map Arcs. Structural/component identity edits
+build the candidate topology once. Candidate reference usage is built once, then
+the same candidate index Arc is used by validation, scoped coverage/history and
+the post-commit cache. Scoped dependency construction consumes the inverse usage
+index to derive authored page adjacency instead of rescanning authored props.
+
+`StorageBackend::shared_snapshot` and `Storage::shared_snapshot` return one
+`SharedSnapshot { snapshot: Arc<Snapshot>, indexes: Arc<RevisionIndexes> }`.
+SQLite and PostgreSQL attach matching cached indexes. The MCP `get_edit_context`
+consumer uses this pair on a blocking worker, reusing its lazy dependency graph.
+Other full scene/read APIs retain their previous validation/expansion behavior;
+page-scoped reads belong to slice 4. A custom backend's default implementation
+builds fresh indexes per read and never caches an identity it cannot establish.
+
+Identity and publication:
+
+- The cache key is the complete `SnapshotCacheIdentity`: canonical project,
+  schema, revision, incarnation and readiness. PostgreSQL incarnation includes
+  the durable namespace and project generation from its authoritative SQL read
+  or locked transaction. SQLite brackets its read with database-file stamps and
+  includes current resource readiness without changing persisted resource rows.
+- SQLite's pinned project additionally checks device/inode before using its
+  writer. Replacement at the same ID/revision rejects the old direct handle;
+  the adapter forgets it and reopens the new database. This prevents old writer
+  rows from being labelled with the replacement file's identity.
+- Failed/previewed candidates are never published under the next revision.
+  Replays return before candidate construction. New indexes publish only after
+  SQLite persistence/PostgreSQL transaction commit, with no fallible I/O in the
+  fill. Snapshot and index pairing always uses the identity of that snapshot's
+  read; no separately probed newer revision is attached to old data.
+- Full immutable keys keep late old fills separate from newer revisions. Old
+  readers retain their Arcs across commit, expiry and eviction. Resource imports
+  advance revision normally and build the corresponding indexes lazily on the
+  next consumer; resource/page/note validation keeps its full fallback. Restore,
+  recreated files/projects, namespace rotation and restart cannot reuse a prior
+  generation's indexes. Raw SQL corruption within an unchanged identity remains
+  outside the validated-write invariant; no full-project digest was added.
+
+### Cache and cold-work limits
+
+The derived-index cache is **separate** from the typed/HTTP snapshot caches.
+It uses Moka, a 1-hour insertion TTL and **256 MiB weighted capacity** per SQLite
+data-root/PostgreSQL backend (clones share it). The existing snapshot 16 MiB
+admission and 64 MiB payload capacity remain unchanged. Index keys and weights
+never serialize/hash snapshot JSON. Independent backend construction starts an
+independent empty metadata cache.
+
+Each index weight accounts for topology/page/reference ID strings and container
+allowances, plus a reserved **4 MiB** for lazy dependency metadata. The reservation
+is charged before materialization; a dependency graph above 4 MiB is returned to
+the current caller but not retained. Full expanded node payloads are **never**
+retained in the dependency cache: construction scans authored/expanded references
+and computes font-ID sets by page, then drops expansion and resolution context.
+This is a conservative allocation proxy, not a hard RSS limit: Moka bookkeeping,
+temporary builds, expanded candidates, SQL snapshots and reader-held Arcs remain
+additional live allocations; eviction does not revoke those readers.
+
+Strict and current-revision scoped commits do not materialize dependency graphs.
+A cold stale guard or first `get_edit_context` still performs a project-wide
+expansion and font resolution across all pages once for that revision. Warm
+consumers traverse cached page adjacency and font-ID sets. This cold cost is
+explicitly retained here; bounding it by requested closure requires the page
+expansion/read work in slice 4. This slice does not claim the final Task24 latency
+targets or default-build support for 200k nodes.
+
+### Slice 3 actual checks
+
+All mutation fixtures used temporary roots or fresh disposable PostgreSQL 16
+containers with random loopback ports and automatic cleanup. No native service,
+native database, preview or user data root was accessed.
+
+| Targeted check | Result |
+| --- | --- |
+| Revision cache unit + actual SQLite reuse/identity tests | 7 passed |
+| Metadata-only 200,020 authored admission probe, above 16 MiB payload | 1 passed |
+| SQLite revision/scoped/history/bundle/navigation/backend integration | 12 passed, 3 PG cases ignored |
+| Scoped closure/guard/history parity against the slice 2 references | 4 passed |
+| Scene incremental/full differential fixtures | 7 passed |
+| Fresh PG revision identity/reuse/scoped/cache/namespace/fidelity | 10 passed |
+| SQLite HTTP/MCP/structured/custom-backend compatibility | 9 passed, 1 PG case ignored |
+| Fresh PG actual MCP scoped/get_edit_context compatibility | 1 passed |
+| Clippy scene-input/storage/server libraries, `-D warnings` | passed |
+| Three-package fmt, raw diff whitespace, AGENTS budget | passed |
+
+Pointer assertions prove repeated authoritative reads share one index Arc;
+actual sparse commits reuse that read's topology/page Arcs; lazy dependency
+builders are not called again on warm reads; reference/component edits advance
+their usage indexes while old readers remain unchanged. Tests cover preview,
+failure and replay publication, same ID/revision with another file/generation,
+namespace/schema/readiness isolation, out-of-order fills, expiry/eviction/restart,
+custom backends without identity and a 17 MiB single-node payload. The separate
+200k metadata probe exercises admission without serializing that payload or
+changing production caps; it is not a validation or commit benchmark.
+Its single debug-build sample retained a 40,570,678-byte index weight (including
+the 4,194,304-byte dependency reservation): cold build 831.344 ms, warm lookup
+9.083 µs. These are metadata proxy/admission observations, not RSS measurements,
+release medians or evidence for the final latency targets.
+
+The initial file-replacement fixture put a displaced project inside the data
+root under a different valid slug and correctly hit `PROJECT_INVALID`; moving
+that fixture outside the root made the intended same-ID replacement check pass.
+
+```sh
+cargo test --offline -p opencanvas-storage -j2 --lib revision_indexes -- --test-threads=2
+rtk bypass cargo test --offline -p opencanvas-storage -j2 --lib two_hundred_thousand_nodes -- --ignored --nocapture --test-threads=1
+cargo test --offline -p opencanvas-storage -j2 --lib scoped:: -- --test-threads=2
+cargo test --offline -p opencanvas-scene-input -j2 --test incremental -- --test-threads=2
+cargo test --offline -p opencanvas-storage -j2 --test revision_indexes --test scoped_concurrency --test scoped_history --test scoped_bundle --test scoped_navigation --test backend_contract -- --test-threads=2
+bash scripts/task19-check.sh cargo test --offline -p opencanvas-storage -j2 --test revision_indexes --test scoped_concurrency --test postgres_cache --test postgres_namespace --test postgres_fidelity -- --ignored --test-threads=1
+cargo test --offline -p opencanvas-server -j2 --test snapshot_http --test scoped_concurrency --test structured_batch --test storage_backend -- --test-threads=2
+bash scripts/task19-check.sh cargo test --offline -p opencanvas-server -j2 --test scoped_concurrency -- --ignored --test-threads=1
+cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 --lib -- -D warnings
+cargo fmt --package opencanvas-scene-input --package opencanvas-storage --package opencanvas-server --check
+rtk bypass git diff --check
+```
+
+New/reworked modules remain below 250 lines: revision indexes ~220,
+dependency adjacency 222, SQLite batch 190 plus validation 76, PG batch 235,
+PG adapter 237, page topology 129 and scene topology 64. The three unit-test
+modules and integration fixture are each below 200 lines. No file-size exception.
+Extra benchmark phase counts expose `indexes.topology_builds`,
+`indexes.topology_reused`, `indexes.cache_hits` and `indexes.dependency_builds`.
+The coordinator will run the exact Task24 1/15/30 matrix and default crate gates
+after this commit. Slices 4–6 remain pending; stop before starting them.

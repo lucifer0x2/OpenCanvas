@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 mod handle;
 mod pins;
-mod sqlite;
+pub(crate) mod sqlite;
 pub use handle::{ProjectHandle, Storage};
 pub use sqlite::SqliteBackend;
 
@@ -80,6 +80,12 @@ pub trait StorageBackend: Send + Sync {
         ))
     }
     fn snapshot(&self, project: &str) -> Result<Snapshot>;
+    /// Custom backends without authoritative identity never share derived state.
+    fn shared_snapshot(&self, project: &str) -> Result<crate::SharedSnapshot> {
+        let (snapshot, _) = self.snapshot_with_cache_identity(project)?;
+        let indexes = Arc::new(crate::RevisionIndexes::new(&snapshot.nodes));
+        Ok(crate::SharedSnapshot { snapshot, indexes })
+    }
     /// Authoritative lookup by ID or slug. A source error must propagate.
     /// Backends that cannot provide a cheap, reliable probe return None.
     fn snapshot_cache_identity(&self, _project: &str) -> Result<Option<SnapshotCacheIdentity>> {

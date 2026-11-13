@@ -30,6 +30,7 @@ mod stroke;
 mod text_props;
 mod token_graph;
 mod tokens;
+mod topology;
 mod values;
 pub use candidate::Candidate;
 pub use font_references::{referenced_font_ids, FontReferences};
@@ -38,4 +39,5 @@ pub use index::NodeIndex;
 pub use refs::{
     resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
 };
+pub use topology::NodeTopology;
 pub use values::{valid_id, validate_slug};
