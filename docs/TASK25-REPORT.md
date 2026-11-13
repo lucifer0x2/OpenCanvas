@@ -1,17 +1,46 @@
 # Task25 — incremental validation and page-scoped access
 
-Status: slices 1–3 implemented and coordinator-verified 2026-11-13 on
+Status: slices 1–4 implemented and coordinator-verified 2026-11-13 on
 `feat/incremental-validation`, from bootstrap `7cc36e0` / Task24 baseline
-`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 4–6 remain open.
-Default gates and the exact Task24 matrix are recorded below; latency targets
-remain unmet. No deployment or production-limit change. Later slices must record
-their own HEAD and evidence.
+`81f883cf0b8e7d864ce30585d8db14094bdb5425`. Slices 5–6 remain open.
+Slice 4 source is `16b3cedbe5a57353820cef01ef1f4458394b9d75`; its default gate
+passes below. The post-slice-4 matrix completed 8/8: PG30 context 403 ms meets
+the measured ≤1 s budget; strict/scoped 2.44/2.27 s still miss ~1.5 s. Global
+find regressions and baseline limitations are recorded below. No deployment or
+production-limit change.
 
 Resumed from docs checkpoint `b9652e947d7bd03455068f0bcf2e2e4292fce8f7`, product
 source `a98012d33b14738c115414dd029df9240bc017bc`. The earlier interrupted run
-(exit 143) is superseded by the coordinator verification below. Slices 4–6
-and production caps remain pending; see the original
+(exit 143) is superseded by the coordinator verification below. Slice 4 is now
+implemented; slices 5–6 and production caps remain pending.
+See the original
 [handoff checkpoint](checkpoints/2026-11-13-task25-handoff.md).
+
+## Coordinator default gates after slice 4 — 2026-11-13
+
+At source `16b3cedbe5a57353820cef01ef1f4458394b9d75`, the exact combined default
+command exited **0**: **496 passed, 37 ignored, 0 failed** across 155 result groups.
+This includes the native/Chromium geometry parity and the added 4b fragmentation
+case, resolving the earlier per-slice pending checks. Ignored PostgreSQL cases
+were not run by this default gate; 4a's disposable-PG proof is recorded separately.
+Clippy passed all three libraries and the server binary with warnings denied.
+Three-package fmt and raw diff whitespace passed. Global fmt still exits 1 only
+for the unchanged render `path_scan.rs`, `shadow.rs`, `stroke.rs`; they were kept.
+No modified Rust file from the slice-3 checkpoint exceeds 250 lines (largest 237).
+Web source is unchanged, so no additional React/web gate was run in this slice.
+
+```sh
+cargo test --offline --no-fail-fast -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 -- --test-threads=2
+cargo clippy --offline -p opencanvas-scene-input -p opencanvas-storage -p opencanvas-server -j2 --lib --bin opencanvas-server -- -D warnings
+cargo fmt --package opencanvas-scene-input --package opencanvas-storage --package opencanvas-server --check
+cargo fmt --all --check
+git diff --check
+```
+
+Temporary logs: `/tmp/opencanvas-task25-slice4-default-gates.log`,
+`/tmp/opencanvas-task25-slice4-clippy.log`, `/tmp/opencanvas-task25-slice4-fmt.log`,
+`/tmp/opencanvas-task25-slice4-global-fmt.log`. Tests used temporary storage and
+listeners; no native/preview service or user data root was changed.
 
 ## Coordinator default gates after slice 3 — 2026-11-13
 
@@ -929,3 +958,195 @@ explicitly requires the exact node and note vectors indexed by `ScopeIndex::new`
 No storage layout, HTTP representation, viewer behavior, production cap, renderer
 budget, deployment, restart or push change is included. Final combined gates and
 latency acceptance remain coordinator work; slices 5–6 are unchanged.
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+
+## Task24 rerun after slice 4 — 2026-11-13
+
+**Context budget met in this protocol; write budgets remain unmet.** The exact
+1/15/30 + default shared-15 matrix exited 0 at product source
+`16b3cedbe5a57353820cef01ef1f4458394b9d75`. Eight cells used one warmup and
+five measured samples; 508 summaries each retain n=5 and five values. Every
+fixture full-validates before timing and passed ten untimed full/incremental
+operation comparisons (80 total). No heavy tests/builds overlapped measurements.
+
+Release Rust/Cargo 1.99.1, Node 24.21.0, Apple M5/10 cores/24 GiB, Darwin arm64;
+OrbStack PostgreSQL 16.15, disposable container 2 CPUs/2 GiB, pool 4 and benchmark
+timeouts 600 s. HEAD stayed fixed; dirty files were progress documents/external
+Task26 work, and coordinator source diff checks were empty. The private fetched
+source/response bodies were removed; disposable PostgreSQL was cleaned up.
+
+The workload counts, HTTP object/rows body sizes and payload admission exactly
+match the preceding eight-cell matrix. This still means 201,330 authored /
+599,400 expanded nodes at 30×, 570 pages and 14,610 notes, enabled only by the
+benchmark feature. Production caps and the 16 MiB payload admission are unchanged.
+
+### Context and page outline
+
+All latency pairs below are **median / p95 ms** (nearest-rank p95 over five
+samples is the maximum). Original Task24 and post-slice-3 results remain separate
+baselines; no matched counterfactual rerun established source-only causality.
+
+
+| Scale | Engine | Task24 context | After 3 context | After 4 context | After 4 page outline |
+| --- | --- | --- | --- | --- | --- |
+| 1× own | postgres | 765 / 787.2 | 1,786.2 / 2,164.2 | 3.823 / 4.016 | 2.916 / 3.443 |
+| 1× own | sqlite | 788.8 / 876.2 | 1,313.2 / 1,590.5 | 11.3 / 11.5 | 9.985 / 10.1 |
+| 15× own | postgres | 13,368.1 / 13,552.9 | 12,586.2 / 15,362.7 | 311.1 / 329.5 | 209.5 / 220.5 |
+| 15× own | sqlite | 14,132.2 / 21,383 | 18,110.3 / 21,460.5 | 107.4 / 108.3 | 104.1 / 104.9 |
+| 30× own | postgres | 30,426.1 / 34,675.8 | 33,981.2 / 38,668.9 | 403.1 / 410.2 | 417.8 / 467.8 |
+| 30× own | sqlite | 42,608.6 / 46,357.8 | 38,098.2 / 44,011.2 | 212.4 / 216.4 | 249.2 / 268.3 |
+| 15× shared | postgres | 12,463.4 / 15,387.9 | 8,918.2 / 9,109.6 | 2.641 / 2.907 | 2.15 / 2.335 |
+| 15× shared | sqlite | 12,290.1 / 22,192.1 | 21,258.3 / 21,923.1 | 85.2 / 91.5 | 70 / 72 |
+
+
+PG 30× context is **403.052 / 410.176 ms**, versus 33,981.187 / 38,668.877 ms
+after slice 3 (84.3× median improvement) and Task24's 30,426.1 / 34,675.8 ms
+(75.5×). SQLite 30× is 212.413 / 216.424 ms. These calls have no viewports. The
+MCP session runs find before outline/context, so revision metadata is warm; large
+snapshots still miss payload admission and load all rows. Cold SQL/index work
+remains O(project), not O(closure). No cold-context, concurrent-project/cache
+contention or 200k actual-render latency claim follows from this matrix.
+
+All reads returned without tool errors. Find totals/scanned counts equal the
+previous matrix exactly. Outline wire size remains 71,998 bytes and context is
+92,476 bytes. Some prior slow context wire counts were 3/6 bytes larger: this
+matches one/two 15-second SSE keepalives, whose locked rmcp 3.4.0/sse-stream 0.2.6
+implementation sends `:\n\n` (3 bytes). This is a transport-based explanation,
+not a hash comparison against discarded historical private bodies. Structured
+JSON byte/cursor parity is proved by the deterministic full-reference tests.
+
+### Find: exact totals and bounded retention
+
+Each entry shows after-3 → after-4 median / p95 ms. Cold global search still
+visits the full scope to preserve exact totals; only expanded-page and result
+retention are bounded. Do not describe this as early termination of counting.
+
+
+| Scale | Engine | Name many: before → after | Name absent: before → after | Text: before → after |
+| --- | --- | --- | --- | --- |
+| 1× own | postgres | 132.2 / 202 → 39.8 / 42 | 54.1 / 57.3 → 48.7 / 52.6 | 64.8 / 67.1 → 47.6 / 48.6 |
+| 1× own | sqlite | 143.7 / 166.2 → 38.1 / 38.3 | 84.6 / 97.9 → 37.6 / 42.7 | 121.1 / 150.9 → 36.9 / 37.8 |
+| 15× own | postgres | 1,626.6 / 3,426.2 → 735.5 / 773.9 | 1,021.4 / 1,111.2 → 675.3 / 743.5 | 1,467.8 / 2,389.7 → 645.9 / 711.6 |
+| 15× own | sqlite | 1,940 / 3,891.6 → 613.4 / 715.5 | 1,783.4 / 2,546.3 → 612.3 / 735.3 | 1,936.5 / 2,362.6 → 586.7 / 596 |
+| 30× own | postgres | 2,258.9 / 3,469.8 → 1,552.7 / 1,927.3 | 1,550.4 / 1,782.7 → 2,175.3 / 2,781.4 | 1,895.8 / 2,039 → 1,649.6 / 1,745.1 |
+| 30× own | sqlite | 2,910 / 7,919 → 1,193.1 / 1,364.5 | 1,634.6 / 1,806.2 → 1,422.2 / 1,712.8 | 1,691.5 / 1,921.5 → 1,576.7 / 1,726.2 |
+| 15× shared | postgres | 812.1 / 862.2 → 467.5 / 553.4 | 375.7 / 411.6 → 452.7 / 508.9 | 434.5 / 449.3 → 378 / 380.7 |
+| 15× shared | sqlite | 1,134.2 / 2,182 → 434.7 / 456.1 | 543.3 / 720.3 → 548.6 / 633.4 | 1,069.6 / 1,692.1 → 480.7 / 535.5 |
+
+
+**Observed regressions are retained.** PG 30× absent-name search rises from
+1,550.373 to 2,175.345 ms (+40.3%); PG shared-15 rises from 375.688 to 452.694 ms
+(+20.5%). PG 30× is also +53.6% versus original Task24's 1,416.1 ms. There is no
+matched experiment proving how much comes from page-wise traversal, allocation,
+SQL or host conditions. These are not dismissed as demonstrated noise.
+
+### Strict/scoped writes and remaining phases
+
+
+| Scale | Engine | After 3 strict | After 4 strict | After 3 scoped | After 4 scoped |
+| --- | --- | --- | --- | --- | --- |
+| 1× own | postgres | 128.1 / 150.8 | 98.2 / 129 | 197.8 / 255.5 | 131 / 142.3 |
+| 1× own | sqlite | 131.5 / 141.9 | 63.5 / 65.7 | 159.3 / 172.3 | 73.8 / 111.6 |
+| 15× own | postgres | 1,085.9 / 1,370.7 | 1,088.6 / 2,225.8 | 1,617.4 / 1,716.1 | 949.8 / 957.5 |
+| 15× own | sqlite | 1,560.9 / 1,655.6 | 890.4 / 1,018.9 | 1,518.9 / 1,536.6 | 1,171.1 / 1,230.9 |
+| 30× own | postgres | 2,673.4 / 2,858.8 | 2,444.4 / 2,789.7 | 3,527.9 / 4,514.8 | 2,269.4 / 2,646.1 |
+| 30× own | sqlite | 4,776.2 / 5,326.6 | 2,030.6 / 3,547.4 | 2,626.3 / 3,907.4 | 1,880.9 / 3,403 |
+| 15× shared | postgres | 961.6 / 1,391.4 | 819.6 / 965.1 | 719.6 / 784.9 | 787.5 / 821.7 |
+| 15× shared | sqlite | 1,578.8 / 2,371 | 1,530.4 / 1,662.8 | 1,983.6 / 2,615.8 | 741.9 / 878 |
+
+
+PG 30× strict/scoped medians **2,444.376 / 2,269.435 ms** miss ~1.5 s by
+1.63× / 1.51×. They are 5.17× / 15.04× faster than original Task24, but slice 4
+does not implement a new write validator. The harness runs reads before commits;
+changed read allocation/retained heap can affect later write timings. Host and
+allocator variation also remain, including SQLite 30× p95 near 3.5 s. Do not
+attribute all cross-run write changes to a new write algorithm.
+
+PG 30× phases, median / p95 ms (instances/expansion are nested in validation,
+not additive; phase medians need not sum to the total):
+
+
+| Phase | Strict | Scoped |
+| --- | --- | --- |
+| load | 436.6 / 620.9 | 378.4 / 509.5 |
+| candidate.from_snapshot | 136.3 / 215.6 | 123.4 / 174.9 |
+| candidate.validate | 1,196.5 / 1,287 | 1,061.4 / 1,334.1 |
+| validate.instances | 1,119.4 / 1,205.6 | 986.6 / 1,245.9 |
+| validate.instances.expand | 753.7 / 855.9 | 679.7 / 834.9 |
+| validate.notes_navigation | 39.7 / 44.3 | 38.2 / 46.8 |
+| scoped.check | – | 2.418 / 3.999 |
+| history.envelope | 0.241 / 0.27 | 0.282 / 0.367 |
+| persist | 14.2 / 20.2 | 13.5 / 21.9 |
+| persist.delta | 115.4 / 131.4 | 110.2 / 121.2 |
+| cache.fill | 97.8 / 123.6 | 104.3 / 117.5 |
+
+
+Every measured commit still expands the project. Across all cells/samples, affected
+authored=1, affected virtual=0, compared history IDs=1, index hit=1, topology
+reuse=1, full fallback=0; authored/expanded totals equal the workload table. Index
+hit/reuse are events, despite the harness's legacy generic unit:"nodes" label.
+Dependency graphs are not requested by these current-revision scoped commits.
+Validation, full row loads/candidate construction and reference/index/allocation
+work remain the write follow-up; reducing history/SQL alone cannot meet the target.
+
+### Storage/HTTP and RSS limits
+
+These retain the old full-snapshot protocol; no compression/page HTTP/viewer work
+from slice 5 is included. Pairs are median / p95 ms.
+
+
+| Scale | Engine | Storage cold | Moka warm | Encode objects | GET objects cold ; repeat | GET rows cold ; repeat |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1× own | postgres | 16.1 / 16.9 | 3.725 / 5.551 | 14 / 17.1 | 16.8 / 18 ; 2.11 / 2.609 | 17.9 / 19 ; 1.678 / 2.429 |
+| 1× own | sqlite | 9.648 / 10.7 | – | 10.9 / 12.8 | 31.7 / 41.1 ; 2.629 / 2.865 | 23.4 / 26.4 ; 2.112 / 2.215 |
+| 15× own | postgres | 161.8 / 172.1 | 194.8 / 202.1 | 140.5 / 151.8 | 385.4 / 400.2 ; 392.1 / 414.3 | 441.5 / 826.5 ; 481.5 / 617.6 |
+| 15× own | sqlite | 130.5 / 159.8 | – | 135.4 / 154.2 | 297.5 / 425.5 ; 261.6 / 393.3 | 270.2 / 276.7 ; 271.1 / 297.1 |
+| 30× own | postgres | 428.3 / 464.9 | 391 / 458 | 228.4 / 257.6 | 755.9 / 932.2 ; 772.1 / 875.7 | 836.5 / 1,737.4 ; 805.4 / 1,284.2 |
+| 30× own | sqlite | 210.1 / 261.3 | – | 301.2 / 319.1 | 639.9 / 669 ; 546.6 / 685.8 | 642.7 / 697.4 ; 669.3 / 754.9 |
+| 15× shared | postgres | 92.7 / 98.8 | 23.3 / 27.7 | 67.2 / 71.8 | 109.5 / 116.9 ; 5.187 / 5.516 | 152 / 271.2 ; 4.378 / 5.089 |
+| 15× shared | sqlite | 52.9 / 60.9 | – | 59.5 / 74.5 | 212.8 / 228.5 ; 5.205 / 6.171 | 165.6 / 180.3 ; 6.277 / 6.807 |
+
+
+Additional >20% median regressions versus the slice-3 run: PG shared-15 cold rows
+GET 121.214 → 151.991 ms (+25.4%); SQLite 30× object encode 238.007 → 301.221 ms
+(+26.6%). Those code paths are unchanged by slice 4. A controlled no-1×-regression
+claim versus original Task24 is still not established: for example PG 1× cold
+load is 16.070 ms versus 9.2 ms, repeated object GET 2.110 ms versus 0.9 ms, and
+absent-name find 48.671 ms versus 40.3 ms. Original Task24 used Docker Desktop;
+these later matrices used OrbStack. Single fixed-order laptop runs cannot isolate
+that difference or prove host/allocator causality.
+
+
+| Scale | Engine | Peak MiB after 3 | Peak MiB after 4 | Seed RSS MiB after 4 |
+| --- | --- | --- | --- | --- |
+| 1× own | postgres | 357.6 | 269.3 | 150.6 |
+| 1× own | sqlite | 320.1 | 217.3 | 148.4 |
+| 15× own | postgres | 3,578.6 | 2,500.9 | 1,823.8 |
+| 15× own | sqlite | 3,535.2 | 2,381 | 1,783.5 |
+| 30× own | postgres | 5,491.8 | 4,006.5 | 3,463.2 |
+| 30× own | sqlite | 4,515.1 | 3,835.8 | 3,539.7 |
+| 15× shared | postgres | 3,556.9 | 2,449.7 | 1,228.8 |
+| 15× shared | sqlite | 2,723.8 | 1,413.5 | 1,206 |
+
+
+RSS includes the harness, raw seeding and untimed full/parity work. It is neither
+server-only steady-state memory nor a bound on concurrent readers/cache Arcs. The
+30× seed floor alone remains about 3.4–3.5 GiB. No 1M production cap or default
+200k support is justified here. Payload snapshots still exceed 16 MiB at own
+15×/30×; HTTP/viewer full-read costs, backup/bundle/notes caps and write latency
+remain open. Slice 5 requires its separate authorization; slice 6 follows evidence.
+
+Reproduce:
+
+```sh
+TASK24_COPIES_LIST="1 15 30" bash scripts/task24-bench.sh
+node spikes/large-project/summarize.mjs <output-dir>
+```
+
+Numeric evidence (unversioned):
+`/var/folders/pw/yxvtwnf517qchxqynh2w7pz80000gn/T/opencanvas-task24.lROfnJ`.
+Wrapper log: `/tmp/opencanvas-task25-slice4-matrix.log`. The coordinator audited
+all 508 five-sample summaries, exact counts/body sizes, stderr read errors, all
+80 fixture comparisons and cleanup. Generated evidence/private source is not
+committed. The 496-pass combined default gate above supersedes the earlier
+per-slice pending test/clippy flags.

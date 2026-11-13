@@ -1,8 +1,10 @@
 # Task25 — Incremental validation and page-scoped access, unchanged storage layout
 
-**Status:** slices 1–3 committed and coordinator-verified 2026-11-13; default gates
-completed with a focused fixture/artifact rerun, exact Task24 matrix 8/8 complete.
-Latency targets remain unmet. Stop before large slices 4–5; see
+**Status:** slices 1–4 committed and coordinator-verified 2026-11-13; latest source
+`16b3ced`, combined default gate 496 passed / 37 ignored, strict clippy and package
+fmt passed. Post-slice-4 Task24 matrix completed 8/8: PG30 context 403 ms meets
+the measured ≤1 s budget; strict/scoped 2.44/2.27 s miss ~1.5 s, with global-find
+regressions retained. Slices 5–6/caps remain pending; see
 [report](../docs/TASK25-REPORT.md) and [proposed split](../docs/checkpoints/2026-11-13-task25-next-slices.md).
 Original [checkpoint](../docs/checkpoints/2026-11-13-task25-handoff.md). Requested after
 [Task24](../docs/TASK24-REPORT.md). Workspace:

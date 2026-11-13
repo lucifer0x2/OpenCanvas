@@ -1,8 +1,10 @@
 # Task25 — proposed split for slices 4–5
 
-Assessment only, on `feat/incremental-validation`, source `a98012d`.
-No slice 4–6 product implementation is authorized by this document. Task25 requires
-stopping after the slice 1–3 checkpoint when 4 or 5 is large; both are large.
+Original assessment on `feat/incremental-validation`, source `a98012d`.
+The user subsequently authorized slice 4 on 2026-11-13. Parts 4a–4d are committed
+through `16b3ced`; the combined default gate passes (496 passed, 37 ignored).
+Slice 5 remains a proposal and slice 6/caps remain pending. Task25 required
+stopping after the slice 1–3 checkpoint when 4 or 5 was large; both were large.
 The coordinator verification and matrix results belong in [TASK25-REPORT](../TASK25-REPORT.md).
 Product requirements remain [Task25](../../tasks/25-incremental-validation.md).
 
@@ -10,7 +12,8 @@ The checkpoint is now measured: 463 enabled tests passed across the combined gat
 and fixture/artifact rerun (36 default-ignored), clippy/package fmt passed, matrix
 8/8 completed with five samples each. PG 30× strict/scoped/context medians are
 2.673 / 3.528 / 33.981 seconds, missing 1.5 / 1.5 / 1 seconds. A no-regression
-claim at 1× is not justified. All scope below remains a proposal, with no product changes.
+claim at 1× was not justified at that checkpoint. The table below records the
+approved slice-4 split and the still-proposed slice-5 work; new evidence is in the report.
 
 ## Why separate handoffs are needed
 
@@ -78,9 +81,9 @@ or reuse agents, change storage layout, push, deploy or mutate live services.
 ## Checkpoint and authorization boundary
 
 Gates and the exact Task24 matrix are finished and target misses/regressions are
-reported. Ask the user to approve the proposed smaller
-sequence because Task25's **Sequence and authorization** explicitly requires this
-stop for large scope. No worker has started any of the parts above.
+reported. The user approved the smaller slice-4 sequence; it is now implemented.
+Do not start slice 5 from that authorization. Its proposed sequence still needs
+user approval under Task25's **Sequence and authorization** boundary.
 
 Slice 6 remains a later task after correctness/performance evidence. Keep
 production node/note/bundle limits and the 2,048/frame renderer budget unchanged
