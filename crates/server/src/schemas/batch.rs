@@ -1,9 +1,9 @@
-//! `apply_batch` takes exactly one of `operations` (JSON) or `source` (OCD, compiled to the
-//! same operations). Like `render_frame`, clients see a flat object because MCP and the
-//! Anthropic API reject top-level combinators; the server validates the strict one-of form.
+//! `apply_batch` takes `operations` (JSON), `source` (OCD, compiled to the same operations), or
+//! both (source first, one batch). Like `render_frame`, clients see a flat object because MCP
+//! and the Anthropic API reject top-level combinators; the server validates the strict form.
 use super::*;
 
-pub(super) const INLINE_DESCRIPTION: &str = "Atomically apply 1–500 ordered JSON operations (2 MiB). Or send source instead of operations: OCD line DSL (skill://opencanvas/ocd.md) compiled to the same operations; parse errors return SOURCE_PARSE_FAILED with line/column. For edits inside existing pages, supply pageIds plus expectedRevision from the actual authored read: storage guards those pages and transitive shared dependencies while allowing unrelated commits. Omitting pageIds keeps strict project revision matching. Notes need their anchor pages; new pages are appended with their ID in pageIds. Scoped mode rejects shared-resource/flowStart writes, page delete/reorder/edits, root delete/reparent/reorder and a new project-first page or root; use strict mode after rereading. Replay identical key/body after lost responses; changed bodies need new keys. REVISION_CONFLICT requires reread/rebase. dryRun:true validates without writes; scoped success returns editGuard.";
+pub(super) const INLINE_DESCRIPTION: &str = "Atomically apply 1–500 ordered JSON operations (2 MiB). update_node merge:true: props are a JSON merge patch (null deletes). Or send source: OCD line DSL (skill://opencanvas/ocd.md) compiled to the same operations, ahead of any operations; parse errors return SOURCE_PARSE_FAILED with line/column. For edits inside existing pages, supply pageIds plus expectedRevision from the actual authored read: storage guards those pages and their shared dependencies, allowing unrelated commits. Omitting pageIds keeps strict project revision matching. Notes need their anchor pages; new pages are appended with their ID in pageIds. Scoped mode rejects shared-resource/flowStart writes, page delete/reorder/edits, root delete/reparent/reorder and a new project-first page or root; use strict mode after rereading. Replay identical key/body after lost responses; changed bodies need new keys. REVISION_CONFLICT requires reread/rebase. dryRun:true validates without writes; scoped success returns editGuard.";
 pub(super) const FILE_DESCRIPTION: &str = "Apply one pure JSON operation array from the project's inbox, with apply_batch validation, revision and idempotency. Optional pageIds enables existing-page concurrency using expectedRevision from the actual authored read; storage derives dependencies. path is inbox-relative or absolute inside that inbox; traversal and symlinks forbidden. Max 2 MiB, 1–500 operations; no code execution or automatic chunking. Hash uses canonical content, not filename. Replay exact key/body after lost responses; changed bodies need new keys. dryRun:true previews without writes.";
 const REQUIRED: [&str; 3] = ["projectId", "expectedRevision", "idempotencyKey"];
 /// OCD source shares the 2 MiB cap of an inline batch. JSON Schema counts characters; the
@@ -32,16 +32,20 @@ pub(super) fn inline() -> Value {
     properties["source"] = text(SOURCE_MAX);
     object(properties, &REQUIRED)
 }
-/// What `validate` enforces: exactly one of `operations` or `source`.
+/// What `validate` enforces: `operations`, `source` or both (the combined count is checked
+/// after compiling).
 pub(super) fn inline_validation() -> Value {
     let mut with_operations = common();
     with_operations["operations"] = operations();
     let mut with_source = common();
     with_source["source"] = text(SOURCE_MAX);
-    let required = |input| [REQUIRED.as_slice(), &[input]].concat();
+    let mut with_both = with_operations.clone();
+    with_both["source"] = text(SOURCE_MAX);
+    let required = |inputs: &[&'static str]| [REQUIRED.as_slice(), inputs].concat();
     json!({"oneOf":[
-        object(with_operations, &required("operations")),
-        object(with_source, &required("source")),
+        object(with_operations, &required(&["operations"])),
+        object(with_source, &required(&["source"])),
+        object(with_both, &required(&["source", "operations"])),
     ]})
 }
 pub(super) fn file() -> Value {

@@ -49,6 +49,7 @@ fn multihop_themes_preserve_authored_readback_and_revision_replay() {
     ];
     operations.extend(initial());
     operations.push(Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: json!({"fill":{"styleId":"surface"}}),
     });
@@ -186,7 +187,7 @@ fn theme_fallback_and_node_specific_ranges_are_validated_before_commit() {
         ),
     ];
     operations.extend(initial());
-    operations.push(Operation::UpdateNode {id:"text".into(),props:json!({"fontSize":{"tokenId":"size"},"lineHeight":{"tokenId":"height"},"opacity":{"tokenId":"opacity"}})});
+    operations.push(Operation::UpdateNode {id:"text".into(),props:json!({"fontSize":{"tokenId":"size"},"lineHeight":{"tokenId":"height"},"opacity":{"tokenId":"opacity"}}),merge:false});
     p.apply_batch(request(&p, 0, "dimensions", operations))
         .unwrap();
     let before = p.snapshot().unwrap();

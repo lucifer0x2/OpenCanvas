@@ -146,7 +146,11 @@ impl Candidate {
                 self.place(key, parent_id.clone(), *index, changed)?;
                 changed.insert(key.clone());
             }
-            Operation::UpdateNode { id: key, props } => {
+            Operation::UpdateNode {
+                id: key,
+                props,
+                merge,
+            } => {
                 let update = props.as_object().ok_or_else(|| {
                     StorageError::validation("props", "Update properties must be an object")
                 })?;
@@ -155,12 +159,13 @@ impl Candidate {
                     .get_mut(key)
                     .ok_or_else(|| StorageError::validation("id", "Node does not exist"))?;
                 // Stored rows from older releases/raw SQL must not panic here.
-                n.props
-                    .as_object_mut()
-                    .ok_or_else(|| {
-                        StorageError::validation("props", "Properties must be an object")
-                    })?
-                    .extend(update.clone());
+                let stored = n.props.as_object_mut().ok_or_else(|| {
+                    StorageError::validation("props", "Properties must be an object")
+                })?;
+                match merge {
+                    true => crate::merge_props(stored, update),
+                    false => stored.extend(update.clone()),
+                }
                 self.node(&self.nodes[key])?;
                 changed.insert(key.clone());
             }

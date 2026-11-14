@@ -28,6 +28,7 @@ fn actual_sqlite_commit_reuses_topology_and_lazy_read_dependencies() {
     request.expected_revision = 1;
     request.idempotency_key = "sparse".into();
     request.operations = vec![Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: json!({"width":11}),
     }];

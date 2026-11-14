@@ -203,7 +203,7 @@ children whose cross size is unset; numbers, percentages and `hug` keep their si
 `space-between`, `gap` is the minimum spacing. Centered content wider than its
 stack overflows both sides (clipped by frames); use start when it may not fit.
 `update_node` replaces the whole layout object: resend `mode` and every other
-layout key with the one you change.
+layout key with the one you change, or send `merge:true` to patch it.
 
 For an authored mobile stack, set a numeric size on the root frame and declare
 the base and narrow layout together.

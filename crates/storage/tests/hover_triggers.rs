@@ -123,6 +123,7 @@ fn reparenting_validates_the_final_binding_and_rolls_back_an_invalid_batch() {
         index: None,
     };
     let bind = |source: &str| Operation::UpdateNode {
+        merge: false,
         id: "target".into(),
         props: json!({"animations":[hover(json!(source))]}),
     };

@@ -160,7 +160,7 @@ fn needs_full(operations: &[Operation], old: &NodeIndex<'_>, new: &NodeIndex<'_>
                 }
                 id
             }
-            Operation::UpdateNode { id, props } => {
+            Operation::UpdateNode { id, props, .. } => {
                 if props.get("theme").is_some() {
                     return true;
                 }

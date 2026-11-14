@@ -1,11 +1,11 @@
 //! Directive lines: shared resources (`@token`, `@style`), edits of existing nodes (`@set`,
-//! `@del`, `@move`) and intent notes (`@note`). `@in` only changes nesting (see `expand`).
+//! `@del`, `@move`, `@order`) and notes (`notes`). `@in` only changes nesting (see `expand`).
 use super::error::Result;
 use super::keys;
 use super::lexer::Token;
 use super::parser::{DirectiveStmt, Part};
 use super::props::{self, Target};
-use super::{set, value};
+use super::{notes, set, value};
 use serde_json::{json, Map, Value};
 
 /// Keys a text style may hold (a style with only `fill` is a fill style).
@@ -24,12 +24,13 @@ const STYLE_KEYS: [&str; 12] = [
     "textTransform",
 ];
 
-pub fn operations(d: DirectiveStmt) -> Result<Value> {
+/// The operations of one directive: one each, except `@set` (see `set`).
+pub fn operations(d: DirectiveStmt) -> Result<Vec<Value>> {
     let p = &d.positional;
-    Ok(match d.name.text.as_str() {
+    Ok(vec![match d.name.text.as_str() {
         "token" => token(&d)?,
         "style" => style(&d)?,
-        "set" => set::update(&d)?,
+        "set" => return set::update(&d),
         "del" => {
             only_positional(&d)?;
             json!({"op":"delete_subtree","id":value::id(&p[0])?})
@@ -43,9 +44,13 @@ pub fn operations(d: DirectiveStmt) -> Result<Value> {
             }
             op
         }
-        "note" => note(&d)?,
+        "order" => {
+            only_positional(&d)?;
+            json!({"op":"reorder_node","id":value::id(&p[0])?,"index":value::index(&p[1])?})
+        }
+        "note" | "reply" | "note-set" | "resolve" | "note-del" => notes::operation(&d)?,
         other => unreachable!("expand handles @{other}"),
-    })
+    }])
 }
 
 fn token(d: &DirectiveStmt) -> Result<Value> {
@@ -125,37 +130,6 @@ fn style(d: &DirectiveStmt) -> Result<Value> {
         _ => ("text", Value::Object(value)),
     };
     Ok(json!({"op":"upsert_style","style":{"id":id,"name":name,"kind":kind,"value":value}}))
-}
-
-fn note(d: &DirectiveStmt) -> Result<Value> {
-    let node = value::id(&d.positional[0])?;
-    let (mut text, mut id) = (None, None);
-    for part in &d.parts {
-        match part {
-            Part::Text(t) => text = Some(value::scalar(t)?),
-            Part::Attr(k, v) if k.text == "id" => id = Some(value::id(v)?),
-            other => return Err(token_of(other).error("@note takes nodeId [id=noteId] \"text\"")),
-        }
-    }
-    let text = text.ok_or_else(|| d.name.error("@note needs a quoted text"))?;
-    let id = match id {
-        Some(id) => id,
-        None => note_id(&node, text.as_str().unwrap_or_default()),
-    };
-    Ok(json!({"op":"create_note","id":id,"nodeId":node,"text":text}))
-}
-
-/// `note-<nodeId>-<hash of nodeId and text>`: the same note gets the same ID in any batch,
-/// different notes on one node differ, and a long node ID is cut so the ID fits 128 chars.
-pub fn note_id(node: &str, text: &str) -> String {
-    // FNV-1a 64: stable across builds and platforms, unlike `DefaultHasher`.
-    let mut hash = 0xcbf2_9ce4_8422_2325u64;
-    for byte in node.bytes().chain([0]).chain(text.bytes()) {
-        hash = (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3);
-    }
-    // `node` passed `value::id`, so it is ASCII and any byte index is a char boundary.
-    let node = &node[..node.len().min(128 - "note--".len() - 12)];
-    format!("note-{node}-{:012x}", hash >> 16)
 }
 
 pub fn only_positional(d: &DirectiveStmt) -> Result<()> {

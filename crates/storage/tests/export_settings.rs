@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 
 fn update(id: &str, settings: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props: json!({ "exportSettings": settings }),
     }

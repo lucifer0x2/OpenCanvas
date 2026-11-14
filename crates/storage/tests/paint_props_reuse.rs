@@ -15,6 +15,7 @@ fn state_paint_is_validated_and_state_shadow_says_where_to_put_it() {
             1,
             "state-grad",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props: bad,
             }],
@@ -31,6 +32,7 @@ fn state_paint_is_validated_and_state_shadow_says_where_to_put_it() {
             1,
             "state-shadow",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props: json!({"states":{"hover":{"shadow":[{"color":"#000"}]}}}),
             }],
@@ -49,6 +51,7 @@ fn state_paint_is_validated_and_state_shadow_says_where_to_put_it() {
         1,
         "state-ok",
         vec![Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: ok,
         }],
@@ -99,6 +102,7 @@ fn instance_gradient_overrides_resolve_per_theme_and_bundle_roundtrips_paint() {
             1,
             "bad-override",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "one".into(),
                 props: bad,
             }],
@@ -114,6 +118,7 @@ fn instance_gradient_overrides_resolve_per_theme_and_bundle_roundtrips_paint() {
         1,
         "shadow-override",
         vec![Operation::UpdateNode {
+            merge: false,
             id: "one".into(),
             props: json!({"overrides":{"chip":{"fill":grad,"shadow":[]}}}),
         }],

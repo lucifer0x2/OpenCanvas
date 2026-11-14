@@ -14,6 +14,10 @@ pub enum Operation {
     UpdateNode {
         id: String,
         props: Value,
+        /// `true` merges `props` as a JSON merge patch (`merge_patch`); otherwise each
+        /// top-level key replaces the stored value.
+        #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+        merge: bool,
     },
     ReparentNode {
         id: String,

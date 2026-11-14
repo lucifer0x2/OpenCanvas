@@ -43,6 +43,17 @@ async fn guide_sample_dry_runs_commits_and_edits_like_its_golden_operations() {
     let mut dry = args(&p, 0, "login", ("operations", golden.clone()));
     dry["dryRun"] = json!(true);
     let from_json = s.call("apply_batch", dry).await;
+    // The source result also lists its generated IDs by line.
+    let mut from_source = from_source;
+    let auto_ids = from_source
+        .as_object_mut()
+        .unwrap()
+        .remove("autoIds")
+        .unwrap();
+    assert_eq!(
+        auto_ids,
+        json!({"14":"card-text-8e5db610","18":"btn-text-ddd3d128"})
+    );
     assert_eq!(from_source, from_json);
 
     let committed = s
@@ -63,14 +74,20 @@ async fn guide_sample_dry_runs_commits_and_edits_like_its_golden_operations() {
         .call("get_subtree", json!({"projectId":p,"nodeId":"card"}))
         .await;
     let nodes = card["nodes"].as_array().unwrap();
-    let title = nodes.iter().find(|n| n["id"] == "card-1").unwrap();
+    let title = nodes.iter().find(|n| n["id"] == "title").unwrap();
     assert_eq!(title["props"]["text"], "Chào mừng trở lại");
     assert_eq!(title["props"]["fontSize"], 28);
+    // `@set card gap=24` merged into the stored layout.
+    let card = nodes.iter().find(|n| n["id"] == "card").unwrap();
+    assert_eq!(
+        card["props"]["layout"],
+        json!({"mode":"column","padding":32,"gap":24,"align":"stretch"})
+    );
     assert!(nodes.iter().all(|n| n["id"] != "pass"));
 }
 
 #[tokio::test]
-async fn source_errors_and_the_one_of_input_rule() {
+async fn source_errors_and_the_input_rules() {
     let s = Server::start().await;
     let p = s.project().await;
     let parse = s
@@ -114,11 +131,7 @@ async fn source_errors_and_the_one_of_input_rule() {
         )
         .await;
     assert_eq!(storage["error"]["code"], "VALIDATION_FAILED", "{storage}");
-    let ops = json!([{"op":"create_node","id":"p","kind":"page","parentId":null,"props":{}}]);
-    let mut both = args(&p, 0, "bad", ("source", json!("page#p")));
-    both["operations"] = ops;
     for invalid in [
-        both,
         args(&p, 0, "bad", ("dryRun", json!(true))),
         args(&p, 0, "bad", ("source", json!(""))),
         args(&p, 0, "bad", ("source", json!(7))),
@@ -131,7 +144,7 @@ async fn source_errors_and_the_one_of_input_rule() {
 }
 
 #[tokio::test]
-async fn set_rejects_a_partial_layout_and_dry_runs_a_full_one() {
+async fn set_merges_a_partial_layout_and_replaces_a_full_one() {
     let s = Server::start().await;
     let p = s.project().await;
     let create = json!("page#p\n  frame#card 200x100 col p=32 gap=16");
@@ -139,24 +152,32 @@ async fn set_rejects_a_partial_layout_and_dry_runs_a_full_one() {
         .call("apply_batch", args(&p, 0, "create", ("source", create)))
         .await;
     assert_eq!(created["committedRevision"], 1, "{created}");
-    let partial = s
+    async fn layout(s: &Server, p: &str) -> Value {
+        let read = s
+            .call("get_subtree", json!({"projectId":p,"nodeId":"card"}))
+            .await;
+        read["nodes"][0]["props"]["layout"].clone()
+    }
+    let mut partial = args(
+        &p,
+        1,
+        "gap",
+        ("source", json!("@set card gap=8 align=center")),
+    );
+    partial["pageIds"] = json!(["p"]);
+    let merged = s.call("apply_batch", partial).await;
+    assert_eq!(merged["committedRevision"], 2, "{merged}");
+    let expected = json!({"mode":"column","padding":32,"gap":8,"align":"center"});
+    assert_eq!(layout(&s, &p).await, expected);
+    let full = r#"@set card layout={"mode":"row","gap":4}"#;
+    let replaced = s
         .call(
             "apply_batch",
-            args(&p, 1, "gap", ("source", json!("@set card gap=8"))),
+            args(&p, 2, "layout", ("source", json!(full))),
         )
         .await;
-    let error = &partial["error"];
-    assert_eq!(error["code"], "SOURCE_PARSE_FAILED", "{partial}");
-    assert_eq!((&error["line"], &error["column"]), (&json!(1), &json!(11)));
-    let message = error["message"].as_str().unwrap();
-    assert!(message.contains(r#"layout={"mode":"column","padding":32,"gap":8}"#));
-    let full = r#"@set card layout={"mode":"column","padding":32,"gap":8}"#;
-    let mut dry = args(&p, 1, "layout", ("source", json!(full)));
-    dry["dryRun"] = json!(true);
-    dry["pageIds"] = json!(["p"]);
-    let dry = s.call("apply_batch", dry).await;
-    assert_eq!(dry["dryRun"], true, "{dry}");
-    assert_eq!(dry["changedIds"], json!(["card"]), "{dry}");
+    assert_eq!(replaced["committedRevision"], 3, "{replaced}");
+    assert_eq!(layout(&s, &p).await, json!({"mode":"row","gap":4}));
 }
 
 #[tokio::test]

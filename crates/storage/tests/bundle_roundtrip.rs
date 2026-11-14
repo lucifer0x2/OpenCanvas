@@ -69,6 +69,7 @@ fn import_and_restore_preserve_authored_resources_and_define_replay_identity() {
         0,
         "authored",
         vec![Operation::UpdateNode {
+            merge: false,
             id: "text".into(),
             props: json!({"text":"copy"}),
         }],
@@ -127,6 +128,7 @@ fn writer_exports_and_owned_render_snapshots_keep_their_resource_revision() {
                     revision + 1,
                     &format!("text_{i}"),
                     vec![Operation::UpdateNode {
+                        merge: false,
                         id: "text".into(),
                         props: json!({"text":format!("version {i}")}),
                     }],

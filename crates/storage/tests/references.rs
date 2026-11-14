@@ -26,6 +26,7 @@ fn typed_refs_resolve_and_upsert_invalidates_literal() {
     ];
     ops.extend(initial());
     ops.push(Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: json!({"fill":{"styleId":"surface"}}),
     });
@@ -101,6 +102,7 @@ fn reject_bad_schema_forward_refs_and_unsupported_layout() {
             1,
             &format!("bad-{i}"),
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props,
             }],

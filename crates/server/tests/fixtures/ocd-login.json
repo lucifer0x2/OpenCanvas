@@ -10,11 +10,11 @@
   {"id":"ph","kind":"text","op":"create_node","parentId":"input","props":{"height":"hug","styleId":"body","text":"Placeholder","width":"hug"}},
   {"id":"screen","kind":"frame","op":"create_node","parentId":"login","props":{"fill":"#F3F4F6","height":800,"layout":{"align":"center","justify":"center","mode":"column"},"width":1280}},
   {"id":"card","kind":"frame","op":"create_node","parentId":"screen","props":{"fill":"#FFFFFF","height":"hug","layout":{"align":"stretch","gap":16,"mode":"column","padding":32},"radius":16,"stroke":{"color":"#E5E7EB"},"width":400}},
-  {"id":"card-1","kind":"text","op":"create_node","parentId":"card","props":{"height":"hug","styleId":"h1","text":"Đăng nhập"}},
-  {"id":"card-2","kind":"text","op":"create_node","parentId":"card","props":{"height":"hug","styleId":"body","text":"Nhập email và mật khẩu để tiếp tục."}},
+  {"id":"title","kind":"text","op":"create_node","parentId":"card","props":{"height":"hug","styleId":"h1","text":"Đăng nhập"}},
+  {"id":"card-text-8e5db610","kind":"text","op":"create_node","parentId":"card","props":{"height":"hug","styleId":"body","text":"Nhập email và mật khẩu."}},
   {"id":"email","kind":"instance","op":"create_node","parentId":"card","props":{"componentId":"input","overrides":{"ph":{"text":"email@example.com"}}}},
   {"id":"pass","kind":"instance","op":"create_node","parentId":"card","props":{"componentId":"input","overrides":{"ph":{"text":"Mật khẩu"}}}},
   {"id":"btn","kind":"frame","op":"create_node","parentId":"card","props":{"fill":{"tokenId":"pri"},"height":44,"layout":{"align":"center","justify":"center","mode":"row"},"radius":8}},
-  {"id":"btn-1","kind":"text","op":"create_node","parentId":"btn","props":{"fill":"#FFFFFF","height":"hug","styleId":"body","text":"Tiếp tục","width":"hug"}},
-  {"id":"note-card-3dc4b3ae4c6f","nodeId":"card","op":"create_note","text":"Mẫu demo: card đăng nhập dựng bằng stack column."}
+  {"id":"btn-text-ddd3d128","kind":"text","op":"create_node","parentId":"btn","props":{"fill":"#FFFFFF","height":"hug","styleId":"body","text":"Tiếp tục","width":"hug"}},
+  {"author":"demo","id":"note-card-5682618fcac4","nodeId":"card","op":"create_note","text":"Card đăng nhập: stack column."}
 ]

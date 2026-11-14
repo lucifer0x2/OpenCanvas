@@ -21,6 +21,7 @@ pub fn measure(
         let mut counts: BTreeMap<&'static str, Vec<f64>> = BTreeMap::new();
         for index in 0..plan.total() {
             let operations = vec![Operation::UpdateNode {
+                merge: false,
                 id: text_id.into(),
                 props: json!({"text": format!("Task24 {mode} edit {index}")}),
             }];

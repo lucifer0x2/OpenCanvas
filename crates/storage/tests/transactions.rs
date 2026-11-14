@@ -15,6 +15,7 @@ fn atomic_batch_replay_conflict_and_restart() {
     assert_eq!(retry.committed_revision, 1);
     let mut changed = req.clone();
     changed.operations.push(Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: json!({"width":200}),
     });
@@ -30,6 +31,7 @@ fn atomic_batch_replay_conflict_and_restart() {
         "invalid",
         vec![
             Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props: json!({"width":999}),
             },
@@ -132,10 +134,12 @@ fn one_writer_wins_same_revision_and_reads_never_see_half_batch() {
                     &format!("writer-{i}"),
                     vec![
                         Operation::UpdateNode {
+                            merge: false,
                             id: "rect".into(),
                             props: json!({"width":200+i}),
                         },
                         Operation::UpdateNode {
+                            merge: false,
                             id: "text".into(),
                             props: json!({"name":format!("writer-{i}")}),
                         },

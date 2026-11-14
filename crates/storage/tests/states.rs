@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 
 fn update(states: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: json!({"states":states}),
     }
@@ -138,6 +139,7 @@ fn states_reject_unknown_names_keys_values_and_refs_atomically() {
                 1,
                 "scope",
                 vec![Operation::UpdateNode {
+                    merge: false,
                     id: id.into(),
                     props: json!({"states":states}),
                 }],

@@ -111,6 +111,7 @@ fn invalid_text_values_and_late_token_branches_rollback_atomically() {
     ] {
         for operation in [
             Operation::UpdateNode {
+                merge: false,
                 id: "text".into(),
                 props: extra.clone(),
             },
@@ -122,6 +123,7 @@ fn invalid_text_values_and_late_token_branches_rollback_atomically() {
                 "invalid",
                 vec![
                     Operation::UpdateNode {
+                        merge: false,
                         id: "rect".into(),
                         props: json!({"name":"must rollback"}),
                     },
@@ -144,6 +146,7 @@ fn invalid_text_values_and_late_token_branches_rollback_atomically() {
     assert!(result.is_err());
     assert_eq!(p.snapshot().unwrap(), before);
     let bad_state = Operation::UpdateNode {
+        merge: false,
         id: "text".into(),
         props: json!({"states":{"hover":{"letterSpacing":1}}}),
     };

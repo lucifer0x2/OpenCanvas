@@ -67,13 +67,23 @@ pub enum Stmt {
 }
 
 /// Positional arguments each directive takes (min, max) before its parts, and its usage.
-const DIRECTIVES: [(&str, usize, usize, &str); 7] = [
+const DIRECTIVES: [(&str, usize, usize, &str); 12] = [
     ("token", 2, 2, "@token id value, e.g. @token ink #111827"),
     ("style", 1, 1, "@style id key=value…"),
     ("set", 1, 1, "@set id key=value…"),
     ("del", 1, 1, "@del id"),
     ("move", 2, 3, "@move id parentId [index]"),
-    ("note", 1, 1, "@note nodeId \"text\""),
+    ("order", 2, 2, "@order id index"),
+    ("note", 1, 1, "@note nodeId \"text\" [id=] [author=]"),
+    ("reply", 1, 1, "@reply noteId \"text\""),
+    (
+        "note-set",
+        1,
+        1,
+        "@note-set noteId [\"text\"] [resolved=] [node=]",
+    ),
+    ("resolve", 1, 1, "@resolve noteId"),
+    ("note-del", 1, 1, "@note-del noteId"),
     ("in", 1, 1, "@in parentId"),
 ];
 
@@ -83,7 +93,7 @@ pub fn statement(line: Line) -> Result<Stmt> {
     if let Some(name) = head.text.strip_prefix('@') {
         let Some(&(_, min, max, usage)) = DIRECTIVES.iter().find(|d| d.0 == name) else {
             return Err(head.error(format!(
-                "Unknown directive `{}`; use @token, @style, @set, @del, @move, @note or @in",
+                "Unknown directive `{}`; use @token, @style, @set, @del, @move, @order, @in or a note directive (@note, @reply, @note-set, @resolve, @note-del)",
                 head.text
             )));
         };
@@ -104,7 +114,7 @@ pub fn statement(line: Line) -> Result<Stmt> {
             return Err(at.error(format!("@{name} needs {min} argument(s): {usage}")));
         }
         let positional = rest[..count].to_vec();
-        let parts = parts(rest[count..].to_vec())?;
+        let parts = parts(rest[count..].to_vec(), true)?;
         return Ok(Stmt::Directive(DirectiveStmt {
             name: head.slice(1, None),
             positional,
@@ -119,7 +129,7 @@ pub fn statement(line: Line) -> Result<Stmt> {
     } else {
         None
     };
-    let mut parts = parts(tokens.collect())?;
+    let mut parts = parts(tokens.collect(), false)?;
     if let Some(style) = style {
         parts.insert(0, Part::Style(style));
     }
@@ -158,7 +168,8 @@ fn split_head(head: &Token) -> Result<(Kind, Option<Token>, Option<Token>)> {
     Ok((kind, id, style))
 }
 
-fn parts(tokens: Vec<Token>) -> Result<Vec<Part>> {
+/// `text_anywhere`: a directive's quoted text may sit among its attributes; a node's is last.
+fn parts(tokens: Vec<Token>, text_anywhere: bool) -> Result<Vec<Part>> {
     let last = tokens.len().saturating_sub(1);
     let mut out = Vec::new();
     for (index, token) in tokens.into_iter().enumerate() {
@@ -171,7 +182,7 @@ fn parts(tokens: Vec<Token>) -> Result<Vec<Part>> {
         } else if dotted {
             Part::Style(token)
         } else if text.starts_with('"') {
-            if index != last {
+            if index != last && !text_anywhere {
                 return Err(token.error("A quoted text must be the last item on its line"));
             }
             Part::Text(token)

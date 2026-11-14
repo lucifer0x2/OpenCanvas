@@ -104,7 +104,7 @@ pub(crate) fn check(
                 props,
                 ..
             } => (id, parent_id.as_deref(), Some(props)),
-            UpdateNode { id, props } => (id, None, Some(props)),
+            UpdateNode { id, props, .. } => (id, None, Some(props)),
             ReparentNode { id, parent_id, .. } => (id, Some(parent_id.as_str()), None),
             ReorderNode { id, .. } | DeleteSubtree { id } => (id, None, None),
             CreateNote { .. } | ReplyNote { .. } | UpdateNote { .. } | DeleteNote { .. } => {

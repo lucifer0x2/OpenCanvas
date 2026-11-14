@@ -88,6 +88,7 @@ fn dry_run_keeps_request_and_idempotency_checks() {
         "VALIDATION_FAILED"
     );
     let invalid = vec![Operation::UpdateNode {
+        merge: false,
         id: "absent".into(),
         props: json!({"name": "x"}),
     }];

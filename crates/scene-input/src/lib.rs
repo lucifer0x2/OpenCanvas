@@ -10,6 +10,7 @@ mod input;
 mod instance_paint;
 pub mod instances;
 mod links;
+mod merge_patch;
 mod model;
 mod props_catalog;
 mod props_suggest;
@@ -30,11 +31,12 @@ pub use input::{frame_input, make_input, make_input_with_scale, ResolvedNodes, S
 pub use links::{
     flow_start, node_links, Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME,
 };
+pub use merge_patch::{merge_props, merges};
 pub use model::*;
 pub use props_catalog::{
     allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,
 };
-pub use props_suggest::suggest_prop;
+pub use props_suggest::{suggest_among, suggest_prop};
 pub use validate::{
     referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
     resolved_tokens_for_theme, validate_slug,
