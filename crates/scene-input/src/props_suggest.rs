@@ -12,21 +12,29 @@ pub(crate) fn suggest_from<I>(key: &str, table: I) -> Option<&'static str>
 where
     I: Iterator<Item = (&'static str, &'static [&'static str])> + Clone,
 {
-    let lower = key.to_ascii_lowercase();
     if let Some((found, _)) = table.clone().find(|(candidate, aliases)| {
         candidate.eq_ignore_ascii_case(key)
             || aliases.iter().any(|alias| alias.eq_ignore_ascii_case(key))
     }) {
         return Some(found);
     }
+    suggest_among(key, table.map(|(candidate, _)| candidate))
+}
+
+/// The closest of `candidates` (keys or node IDs) to `key`, ignoring case, within the edit
+/// tolerance of a key.
+pub fn suggest_among<'a>(
+    key: &str,
+    candidates: impl IntoIterator<Item = &'a str>,
+) -> Option<&'a str> {
+    let lower = key.to_ascii_lowercase();
     // Short keys tolerate one edit so "id" does not turn into "x".
     let tolerance = (lower.len() / 3).clamp(1, 2);
-    table
-        .map(|(candidate, _)| {
-            (
-                edit_distance(&lower, &candidate.to_ascii_lowercase()),
-                candidate,
-            )
+    candidates
+        .into_iter()
+        .map(|candidate| {
+            let distance = edit_distance(&lower, &candidate.to_ascii_lowercase());
+            (distance, candidate)
         })
         .filter(|(distance, _)| *distance <= tolerance)
         .min_by_key(|(distance, _)| *distance)

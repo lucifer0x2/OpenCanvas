@@ -11,7 +11,11 @@ use serde_json::{Map, Value};
 pub(super) fn check_keys(kind: &NodeKind, props: &Map<String, Value>) -> Result<()> {
     for key in props.keys() {
         if *kind == NodeKind::Instance && !allowed_props(kind).contains(&key.as_str()) {
-            return Err(key_error(kind, key, "Instances accept only their explicit instance properties; override a descendant through overrides"));
+            let mut e = key_error(kind, key, "Instances accept only their explicit instance properties; override a descendant through overrides");
+            let allowed = allowed_props(kind);
+            e.node_context().suggestion =
+                crate::suggest_among(key, allowed.iter().copied()).map(Into::into);
+            return Err(e);
         }
         match prop_spec(key) {
             None => {

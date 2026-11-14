@@ -34,7 +34,7 @@ pub use model::*;
 pub use props_catalog::{
     allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,
 };
-pub use props_suggest::suggest_prop;
+pub use props_suggest::{suggest_among, suggest_prop};
 pub use validate::{
     referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
     resolved_tokens_for_theme, validate_slug,

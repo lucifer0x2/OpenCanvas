@@ -54,7 +54,12 @@ impl Candidate {
                     .keys()
                 {
                     if !INSTANCE_KEYS.contains(&key.as_str()) {
-                        return Err(key_error(&format!("props.{key}"), INSTANCE_KEYS));
+                        return Err(key_error(
+                            &node.id,
+                            key,
+                            &format!("props.{key}"),
+                            INSTANCE_KEYS,
+                        ));
                     }
                 }
                 let master = node.props["componentId"]
@@ -74,10 +79,7 @@ impl Candidate {
                                 .ancestors(target)
                                 .any(|ancestor| ancestor.id == master.id)
                         {
-                            return Err(StorageError::validation(
-                                &format!("props.overrides.{target}"),
-                                "Override target must be a master descendant",
-                            ));
+                            return Err(self.not_descendant(&node.id, target, &master.id));
                         }
                         let patch = patch.as_object().ok_or_else(|| {
                             StorageError::validation(
@@ -88,6 +90,8 @@ impl Candidate {
                         for key in patch.keys() {
                             if !OVERRIDE_KEYS.contains(&key.as_str()) {
                                 return Err(key_error(
+                                    &node.id,
+                                    key,
                                     &format!("props.overrides.{target}.{key}"),
                                     OVERRIDE_KEYS,
                                 ));
@@ -154,6 +158,24 @@ impl Candidate {
         Ok(Some(placed))
     }
 
+    /// A non-descendant override target, most likely a mistyped descendant ID or instance key.
+    fn not_descendant(&self, node: &str, target: &str, master: &str) -> StorageError {
+        let descendants = self
+            .nodes
+            .values()
+            .filter(|n| self.ancestors(&n.id).any(|a| a.id == master))
+            .map(|n| n.id.as_str());
+        let mut error = StorageError::validation(
+            &format!("props.overrides.{target}"),
+            "Override target must be a master descendant",
+        );
+        let near = crate::suggest_among(target, descendants.chain(INSTANCE_KEYS.iter().copied()));
+        let context = error.node_context();
+        context.node_id = Some(node.into());
+        context.suggestion = near.map(Into::into);
+        error
+    }
+
     fn in_component(&self, id: &str) -> bool {
         let mut current = self.nodes.get(id);
         for _ in 0..128 {
@@ -217,8 +239,11 @@ impl Candidate {
         Ok(())
     }
 }
-fn key_error(field: &str, allowed: &[&str]) -> StorageError {
+fn key_error(node: &str, key: &str, field: &str, allowed: &[&str]) -> StorageError {
     let mut error = StorageError::validation(field, "Unsupported instance override or property");
-    error.node_context().allowed_keys = Some(allowed.iter().map(|s| (*s).into()).collect());
+    let context = error.node_context();
+    context.node_id = Some(node.into());
+    context.allowed_keys = Some(allowed.iter().map(|s| (*s).into()).collect());
+    context.suggestion = crate::suggest_among(key, allowed.iter().copied()).map(Into::into);
     error
 }
