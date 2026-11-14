@@ -156,8 +156,8 @@ master/token/style reuse, not from changing JS transport to MCP. The U07
 
 ## Stack template
 
-Under an existing page, create a root frame with numeric `width` and `height`,
-for example `{"width":960,"height":720,"layout":{"mode":"column","padding":24,"gap":16}}`.
+Under an existing page, create a root frame with numeric `width` and a numeric
+or `"hug"` (long page) `height`, for example `{"width":960,"height":720,"layout":{"mode":"column","padding":24,"gap":16}}`.
 Use a child group with `width:"fill",height:"hug"` for a content section, and a
 `row` or `column` layout for its children. Choose widths deliberately: fixed for
 an icon, fill for the flexible content area, hug for content-driven dimensions.
@@ -240,7 +240,7 @@ of each breakpoint.
 - Use `height:"hug"` for wrapping text and content groups that should grow.
   Do not put fill on an axis whose parent's hug size depends on that fill child;
   the engine rejects ambiguous sizing cycles; for equal-width items in a hug
-  column use the parent's `align:"stretch"` instead. Root frames require fixed numbers.
+  column use the parent's `align:"stretch"` instead. Root width is a number.
 - Fade a whole control (disabled button, keycap) with `opacity` on its group or
   frame: like CSS, the group renders as one image and then fades, so overlapping
   layers inside do not show through. Do not pre-mix colors layer by layer.

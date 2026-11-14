@@ -111,7 +111,7 @@ pub const PROPS: &[PropSpec] = &[
     prop("x", Any, false, "number -100000..100000, or {\"tokenId\"} of a number token; used by a free parent", &["left"]),
     prop("y", Any, false, "number -100000..100000, or {\"tokenId\"} of a number token; used by a free parent", &["top"]),
     prop("width", Any, false, "number 0..100000, \"fill\", \"hug\", a literal decimal percentage \"0%\" through \"100%\", or {\"tokenId\"} of a dimension token; root frames need a number; percentage requires a definite parent width (number or fill/percentage chain to a number); fill inside a hug parent axis is rejected", &["w"]),
-    prop("height", Any, false, "number 0..100000, \"fill\", \"hug\", a literal decimal percentage \"0%\" through \"100%\", or {\"tokenId\"} of a dimension token; root frames: number, or hug over row/column layout; percentage requires a definite parent height (number or fill/percentage chain to a number); fill inside a hug parent axis is rejected", &["h"]),
+    prop("height", Any, false, "number 0..100000, \"fill\", \"hug\", a literal decimal percentage \"0%\" through \"100%\", or {\"tokenId\"} of a dimension token; root frames: number, or hug (row/column layout; content height, not the viewport's); percentage requires a definite parent height (number or fill/percentage chain to a number); fill inside a hug parent axis is rejected", &["h"]),
     prop("minWidth", Any, false, "number 0..100000 or dimension token; must not exceed maxWidth", &["min-width"]),
     prop("maxWidth", Any, false, "number 0..100000 or dimension token", &["max-width"]),
     prop("minHeight", Any, false, "number 0..100000 or dimension token; must not exceed maxHeight", &["min-height"]),
