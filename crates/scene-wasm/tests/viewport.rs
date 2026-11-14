@@ -74,3 +74,30 @@ fn discovery_and_compute_accept_exact_scale_one_boundaries() {
         );
     }
 }
+
+#[test]
+fn a_hug_root_reports_its_content_height_at_any_requested_height() {
+    let engine = SceneEngine::new();
+    let mut snapshot = serde_json::to_value(snapshot()).unwrap();
+    snapshot["nodes"][1]["props"] =
+        json!({"width":100,"height":"hug","layout":{"mode":"column","padding":10}});
+    snapshot["nodes"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"id":"box","parentId":"frame",
+        "sortKey":0,"kind":"rectangle","props":{"width":20,"height":30}}));
+    let json = snapshot.to_string();
+    for height in [1.0, 844.0] {
+        let scene: serde_json::Value = serde_json::from_str(
+            &engine
+                .compute_json(&json, "frame", 100.0, height, "default")
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            scene["provenance"]["viewport"],
+            json!({"width":100.0,"height":50.0})
+        );
+        assert_eq!(scene["nodes"][0]["bounds"]["height"], 50.0);
+    }
+}

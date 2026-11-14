@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ALL_FRAMES, frameForNode } from "../src/frameScope.ts";
+import {
+  ALL_FRAMES,
+  frameDimensions,
+  frameForNode,
+  shownHeight,
+} from "../src/frameScope.ts";
 import { children, reconcileSelection } from "../src/state.ts";
 import type { Selection, Snapshot } from "../src/types.ts";
 import { nodeIndex } from "../src/nodeIndex.ts";
@@ -116,4 +121,16 @@ test("reconciliation retains only an unchanged selection identity", () => {
     const invalid = { ...selection, ...patch };
     assert.notEqual(reconcileSelection(snapshot, invalid), invalid);
   }
+});
+
+test("a hug-height frame keeps a placeholder until its scene reports the height", () => {
+  const frame = { ...snapshot.nodes[1], props: { width: 390, height: "hug" } };
+  const size = frameDimensions(frame);
+  assert.deepEqual(size, { width: 390, height: 600, hugHeight: true });
+  const scene = { provenance: { viewport: { height: 1480 } } };
+  assert.equal(shownHeight(size, undefined), 600);
+  assert.equal(shownHeight(size, scene), 1480);
+  const fixed = frameDimensions({ ...frame, props: { width: 390, height: 844 } });
+  assert.equal(fixed.hugHeight, false);
+  assert.equal(shownHeight(fixed, scene), 844);
 });

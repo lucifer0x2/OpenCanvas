@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DesignNode, Snapshot } from "../types";
-import { frameDimensions } from "../frameScope";
+import { frameDimensions, shownHeight } from "../frameScope";
 import { diagnosticLabel } from "../diagnostics";
 import { nodeName } from "../state";
 import { wasmSceneEnabled } from "../scene/flag";
@@ -11,6 +11,7 @@ import {
   pageView,
   reuseFrame,
   seedFrames,
+  type FrameTarget,
 } from "../scene/staleFrames";
 import { publishScheduler } from "../scene/publishScheduler";
 import { sceneWorker } from "../scene/workerClient";
@@ -43,7 +44,8 @@ export function usePageScenes(
       frames.map((frame) => ({
         id: frame.id,
         name: nodeName(frame),
-        ...(width ? { width, height } : frameDimensions(frame)),
+        ...frameDimensions(frame),
+        ...(width ? { width, height } : {}),
       })),
     [frames, width, height],
   );
@@ -120,6 +122,7 @@ export function usePageScenes(
           frameId: frame.id,
           width: frame.width,
           height: frame.height,
+          hugHeight: frame.hugHeight,
         })),
         pageId,
         snapshot,
@@ -161,6 +164,7 @@ export function usePageScenes(
             frameSignal.throwIfAborted();
             entries[index] = {
               ...targets[index],
+              height: shownHeight(targets[index], scene),
               scene,
               resources: loaded,
               revision: result.request.revision,
@@ -211,7 +215,7 @@ function transition(
   loaded: Loaded,
   scope: string,
   retryKey: number,
-  targets: { id: string; name: string; width: number; height: number }[],
+  targets: FrameTarget[],
 ): SceneView {
   const keep =
     loaded.scope === scope &&

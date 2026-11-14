@@ -114,6 +114,7 @@ fn stroke_on_image_is_accepted() {
 fn stroke_on_text_names_the_key_and_says_to_wrap() {
     let (_temp, _store, p) = project();
     let op = Operation::UpdateNode {
+        merge: false,
         id: "text".into(),
         props: json!({"stroke":{"color":"#000"}}),
     };

@@ -64,6 +64,7 @@ fn explicit_instance_theme_wins_master_root_and_nearest_nested_scope() {
     let (_temp, _store, p) = setup();
     let mut ops = schemes::fixture();
     ops.push(Operation::UpdateNode {
+        merge: false,
         id: "master".into(),
         props: json!({"theme":"default"}),
     });
@@ -124,10 +125,12 @@ fn invalid_themes_and_full_merged_paint_fail_atomically_with_override_paths() {
                 &format!("bad{i}"),
                 vec![
                     Operation::UpdateNode {
+                        merge: false,
                         id: "label".into(),
                         props: json!({"text":"must rollback"}),
                     },
                     Operation::UpdateNode {
+                        merge: false,
                         id: "one".into(),
                         props: patch,
                     },

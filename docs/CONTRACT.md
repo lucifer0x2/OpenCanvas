@@ -87,7 +87,9 @@ Layers ordered by `sortKey` within parent. Page/frame selection derives from aut
 Child `width` and `height` accept literal decimal strings from `"0%"` to
 `"100%"`. The corresponding parent axis must be numeric or follow a fill or
 percentage chain to a numeric size. The selected frame uses the render viewport
-as its root size. Percentages use the parent's content box in a stack and its
+as its root size, except that a `height:"hug"` root (row/column layout only)
+takes its content height; the scene viewport reports it and children cannot
+fill or take a percentage of it. Percentages use the parent's content box in a stack and its
 padding box under free positioning. Pixel min/max bounds still apply.
 
 Containers may set `layout.breakpoints` to up to eight `{maxWidth, layout}`
@@ -169,7 +171,7 @@ The mode is part of cursor identity. Compact resources include dependencies of b
 master definitions and placed overrides. Outline/subtree expose reference leaves
 with `componentId` and expanded `childCount`; virtual IDs can be read directly.
 `find_nodes` retains authored instance kinds and searches effective child text.
-Cycles, nesting beyond 8 levels and an expanded project above 20,000 nodes fail
+Cycles, nesting beyond 8 levels and an expanded project above 200,000 nodes fail
 before commit. `COMPONENT_IN_USE` returns `count` and at most 20 `instanceIds`;
 virtual mutations return `INSTANCE_CHILD_READONLY`. Component subtrees cannot use
 links, flow starts or animations. Master updates invalidate scenes at the new revision.

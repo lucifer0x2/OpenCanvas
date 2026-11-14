@@ -27,6 +27,7 @@ fn zero_operations(value: Value) -> Vec<Operation> {
             },
         },
         Operation::UpdateNode {
+            merge: false,
             id: "box".into(),
             props: json!({"shadow":[{"x":value,"color":"#000000"}]}),
         },

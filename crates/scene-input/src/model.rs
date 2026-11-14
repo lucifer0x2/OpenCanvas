@@ -8,7 +8,7 @@ pub const MAX_BATCH_BYTES: usize = 2 * 1024 * 1024;
 pub const MAX_ASSET_BYTES: usize = 10 * 1024 * 1024;
 /// Authored and expanded nodes per project. Only the Task24 benchmark feature raises it.
 #[cfg(not(feature = "large-project-bench"))]
-pub const MAX_NODES: usize = 20_000;
+pub const MAX_NODES: usize = 200_000;
 #[cfg(feature = "large-project-bench")]
 pub const MAX_NODES: usize = 2_000_000;
 

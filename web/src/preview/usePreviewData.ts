@@ -61,6 +61,7 @@ export function usePreviewScenes(
       frameId: frame.id,
       width,
       height,
+      hugHeight: size?.hugHeight,
     };
     setView(LOADING);
     const names = declaredStates(snapshot.nodes, frame.id);

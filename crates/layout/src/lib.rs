@@ -7,6 +7,8 @@ mod paint_tests;
 mod responsive;
 #[cfg(test)]
 mod responsive_tests;
+#[cfg(test)]
+mod root_hug_tests;
 mod scene_builder;
 mod stack;
 #[cfg(test)]
@@ -27,6 +29,7 @@ pub use engine::{compute, compute_with_measurer};
 pub use measurement::TextMeasurer;
 pub use model::*;
 pub use responsive::{MAX_BREAKPOINTS, percentage, valid_breakpoint_width};
+pub use util::root_hugs_height;
 pub const SCENE_VERSION: &str = "scene-3";
 pub const RENDERER_VERSION: &str = "web-4";
 pub const MAX_PASSES: usize = 6;

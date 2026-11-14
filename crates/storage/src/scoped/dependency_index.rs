@@ -11,6 +11,7 @@ pub(crate) struct DependencyIndex {
 
 struct Authored<'a> {
     nodes: Vec<&'a Node>,
+    notes: Vec<&'a Note>,
     references: Option<&'a BTreeMap<String, BTreeSet<String>>>,
 }
 
@@ -35,6 +36,7 @@ impl DependencyIndex {
         Self::build(
             Authored {
                 nodes: snapshot.nodes.iter().collect(),
+                notes: snapshot.notes.iter().collect(),
                 references,
             },
             tree,
@@ -68,6 +70,7 @@ impl DependencyIndex {
         Self::build(
             Authored {
                 nodes: candidate.nodes.values().collect(),
+                notes: candidate.notes.values().collect(),
                 references,
             },
             tree,
@@ -100,6 +103,15 @@ impl DependencyIndex {
                             .insert(key.clone());
                     }
                 }
+            }
+        }
+        // A page guard covers the notes anchored on it.
+        for note in &authored.notes {
+            if let Some(page) = tree.page(&note.node_id) {
+                references
+                    .entry(format!("page:{page}"))
+                    .or_insert_with(BTreeSet::new)
+                    .insert(format!("note:{}", note.id));
             }
         }
         // Both representations matter: overrides can hide authored references.

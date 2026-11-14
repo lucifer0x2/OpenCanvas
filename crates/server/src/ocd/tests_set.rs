@@ -1,104 +1,143 @@
-//! `@set` rejects shorthands that would write part of an object prop (`update_node` replaces
-//! object props whole); full objects and scalar edits compile as before.
+//! `@set`: whole values replace as before; partial writes of an object prop (layout keys and
+//! flags, `<prop>.<field>=`, descendant overrides, a partial `stroke`) compile to a merging
+//! `update_node`, after a replacing one when the statement also writes object values.
 use super::tests::ops;
 use super::{compile, OcdError};
-use serde_json::json;
+use serde_json::{json, Value};
 
-const LAYOUT_HINT: &str = r#"layout={"mode":"column","padding":32,"gap":8}"#;
-const OVERRIDES_HINT: &str = r#"overrides={"ph":{"text":"x","fill":{"tokenId":"pri"}}}"#;
-const STROKE_HINT: &str = "stroke=#E5E7EB,1,inside or stroke={";
-const PREFIX: &str = "@set card fill=#fff ";
+const LAYOUT: &str = r#"layout={"mode":"column","padding":32,"gap":8}"#;
+const OVERRIDES: &str = r#"overrides={"ph":{"text":"x","fill":{"tokenId":"pri"}}}"#;
 
-/// Compiles `@set card fill=#fff <part>` on line 2 and returns the error it must raise.
-fn rejected(part: &str) -> OcdError {
-    let source = format!("@set a fill=#fff\n{PREFIX}{part}\n");
-    let e = compile(&source).expect_err(&source);
-    let column = PREFIX.chars().count() + 1;
-    assert_eq!((e.line, e.column), (2, column), "{part}: {}", e.message);
-    e
+fn merged(props: Value) -> Vec<Value> {
+    vec![json!({"op":"update_node","id":"card","props":props,"merge":true})]
 }
 
-fn assert_says(e: &OcdError, texts: &[&str]) {
-    for text in texts {
-        assert!(e.message.contains(text), "{text}: {}", e.message);
-    }
+fn replaced(props: Value) -> Value {
+    json!({"op":"update_node","id":"card","props":props})
 }
 
-fn assert_replaced(e: &OcdError, object: &str, hint: &str) {
-    let what = format!("would write part of `{object}`");
-    assert_says(e, &[&what, "replaces the whole object", hint]);
+fn error(source: &str) -> OcdError {
+    compile(source).expect_err(source)
 }
 
 #[test]
-fn layout_keys_and_flags_are_rejected_with_the_full_layout_hint() {
-    for part in [
-        "gap=8",
-        "gap=$g",
-        "p=32",
-        "p=0,12",
-        "align=center",
-        "justify=between",
-        "row",
-        "col",
-        "free",
-        "wrap",
-        "padding=32",
-    ] {
-        assert_replaced(&rejected(part), "layout", LAYOUT_HINT);
-    }
-    // A dotted catalog key would be read as a descendant override; it names its object.
-    assert_replaced(&rejected("layout.gap=8"), "layout", LAYOUT_HINT);
-    assert_replaced(&rejected("stroke.width=2"), "stroke", STROKE_HINT);
-}
-
-#[test]
-fn a_partial_stroke_is_rejected_and_a_full_one_compiles() {
-    for part in ["stroke=#000", "stroke=$line", "stroke=#000,2"] {
-        assert_replaced(&rejected(part), "stroke", STROKE_HINT);
+fn layout_keys_flags_and_fields_merge_into_the_stored_layout() {
+    let cases = [
+        ("gap=8", json!({"gap":8})),
+        ("gap=$g", json!({"gap":{"tokenId":"g"}})),
+        ("p=0,12", json!({"padding":[0,12]})),
+        ("justify=between", json!({"justify":"space-between"})),
+        (
+            "col wrap align=center",
+            json!({"mode":"column","wrap":true,"align":"center"}),
+        ),
+        ("layout.gap=8", json!({"gap":8})),
+        (
+            "layout.padding=8,16 free",
+            json!({"padding":[8,16],"mode":"free"}),
+        ),
+    ];
+    for (part, layout) in cases {
+        assert_eq!(
+            ops(&format!("@set card {part}")),
+            merged(json!({"layout":layout})),
+            "{part}"
+        );
     }
     assert_eq!(
-        ops("@set a stroke=$line,2,center")[0]["props"],
-        json!({"stroke":{"color":{"tokenId":"line"},"width":2,"align":"center"}})
-    );
-    assert_eq!(
-        ops(r##"@set a stroke={"color":"#000"}"##)[0]["props"],
-        json!({"stroke":{"color":"#000"}})
+        ops("@set card stroke.width=2 stroke.color=$line"),
+        merged(json!({"stroke":{"width":2,"color":{"tokenId":"line"}}}))
     );
 }
 
 #[test]
-fn descendant_overrides_are_rejected_with_the_full_overrides_hint() {
-    for part in ["ph.fill=$pri", "ph.text=Hi", "label.visible=false"] {
-        assert_replaced(&rejected(part), "overrides", OVERRIDES_HINT);
-    }
-    for part in [r#"ph="x""#, r#"ph={"text":"x"}"#] {
-        let e = rejected(part);
-        assert!(e.message.starts_with("Unknown key `ph`"), "{}", e.message);
-        assert_says(&e, &["replaces all overrides", OVERRIDES_HINT]);
-    }
+fn a_partial_stroke_merges_and_a_full_one_replaces() {
+    assert_eq!(
+        ops("@set card stroke=#000"),
+        merged(json!({"stroke":{"color":"#000"}}))
+    );
+    assert_eq!(
+        ops("@set card stroke=$line,2"),
+        merged(json!({"stroke":{"color":{"tokenId":"line"},"width":2}}))
+    );
+    assert_eq!(
+        ops("@set card stroke=$line,2,center"),
+        vec![replaced(
+            json!({"stroke":{"color":{"tokenId":"line"},"width":2,"align":"center"}})
+        )]
+    );
+    assert_eq!(
+        ops(r##"@set card stroke={"color":"#000"}"##),
+        vec![replaced(json!({"stroke":{"color":"#000"}}))]
+    );
 }
 
 #[test]
-fn full_objects_compile_to_update_node() {
+fn descendant_keys_merge_one_override_and_bare_ones_fail() {
     assert_eq!(
-        ops(&format!("@set card {LAYOUT_HINT}")),
-        vec![json!({"op":"update_node","id":"card",
-            "props":{"layout":{"mode":"column","padding":32,"gap":8}}})]
+        ops("@set card ph.fill=$pri ph.text=Hi label.visible=false"),
+        merged(
+            json!({"overrides":{"ph":{"fill":{"tokenId":"pri"},"text":"Hi"},
+            "label":{"visible":false}}})
+        )
+    );
+    for part in [r#"ph="x""#, r#"ph={"text":"x"}"#, "opacty=4"] {
+        let e = error(&format!("@set card {part}"));
+        assert_eq!((e.line, e.column), (1, 11), "{part}");
+        assert!(e.message.starts_with("Unknown key"), "{}", e.message);
+        assert!(e.message.contains("<descendantId>.text="), "{}", e.message);
+    }
+    assert_eq!(
+        error("@set card opacty=4").suggestion.as_deref(),
+        Some("opacity")
+    );
+    let e = error("@set card layout.=4");
+    assert_eq!((e.line, e.column), (1, 18), "{}", e.message);
+}
+
+#[test]
+fn mixed_statements_replace_objects_then_merge_the_rest() {
+    // Scalars and references replace in a merge patch too: one merging update.
+    assert_eq!(
+        ops("@set card fill=$ink r=8 gap=8"),
+        merged(json!({"fill":{"tokenId":"ink"},"radius":8,"layout":{"gap":8}}))
+    );
+    // A whole object replaces first; the partial writes merge after it.
+    assert_eq!(
+        ops("@set card stroke=#000,1,inside opacity=0.5 gap=8"),
+        vec![
+            replaced(json!({"stroke":{"color":"#000","width":1,"align":"inside"}})),
+            json!({"op":"update_node","id":"card","merge":true,
+                "props":{"opacity":0.5,"layout":{"gap":8}}}),
+        ]
+    );
+    // Partial writes of a prop also written whole complete that object.
+    assert_eq!(
+        ops(r#"@set card gap=8 layout={"mode":"row"}"#),
+        vec![replaced(json!({"layout":{"mode":"row","gap":8}}))]
+    );
+    let compiled = compile("@set card stroke=#000,1,inside gap=8").unwrap();
+    assert_eq!(compiled.positions, [(1, 1), (1, 1)]);
+}
+
+#[test]
+fn full_objects_and_scalars_compile_to_one_replacing_update() {
+    assert_eq!(
+        ops(&format!("@set card {LAYOUT}")),
+        vec![replaced(
+            json!({"layout":{"mode":"column","padding":32,"gap":8}})
+        )]
     );
     assert_eq!(
-        ops(&format!("@set email {OVERRIDES_HINT}")),
-        vec![json!({"op":"update_node","id":"email",
-            "props":{"overrides":{"ph":{"text":"x","fill":{"tokenId":"pri"}}}}})]
+        ops(&format!("@set card {OVERRIDES}")),
+        vec![replaced(
+            json!({"overrides":{"ph":{"text":"x","fill":{"tokenId":"pri"}}}})
+        )]
     );
     assert_eq!(
         ops(r#"@set card props={"layout":{"mode":"row"},"opacity":0.5}"#),
-        vec![json!({"op":"update_node","id":"card",
-            "props":{"layout":{"mode":"row"},"opacity":0.5}})]
+        vec![replaced(json!({"layout":{"mode":"row"},"opacity":0.5}))]
     );
-}
-
-#[test]
-fn scalar_edits_are_unchanged() {
     let source = "@set t text=\"Hi\" size=28/32 fill=$ink r=8 w=fill h=hug stroke=#E5E7EB,2,inside";
     let expected = json!({"op":"update_node","id":"t","props":{"text":"Hi","fontSize":28,
         "lineHeight":32,"fill":{"tokenId":"ink"},"radius":8,"width":"fill","height":"hug",

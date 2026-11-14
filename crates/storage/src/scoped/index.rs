@@ -8,6 +8,8 @@ pub(crate) struct PageIndex {
     pub page_nodes: BTreeMap<String, Vec<String>>,
     pub roots: BTreeMap<String, Vec<String>>,
     pub root_ids: BTreeSet<String>,
+    /// Page IDs in display order, as the viewer lists them.
+    pub order: Vec<String>,
 }
 
 impl PageIndex {
@@ -24,6 +26,13 @@ impl PageIndex {
         let nodes: Vec<_> = nodes.into_iter().collect();
         let tree = NodeIndex::with_topology(nodes.iter().copied(), topology);
         let mut index = Self::default();
+        let mut order: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == NodeKind::Page)
+            .map(|n| (n.sort_key, n.id.clone()))
+            .collect();
+        order.sort();
+        index.order = order.into_iter().map(|(_, id)| id).collect();
         for page in nodes.iter().filter(|n| n.kind == NodeKind::Page) {
             let mut pending = vec![page.id.as_str()];
             let mut members = Vec::new();

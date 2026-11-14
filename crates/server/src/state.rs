@@ -17,6 +17,8 @@ pub struct Config {
     pub render_backend: RenderBackend,
     pub job_timeout: std::time::Duration,
     pub pipeline_identity: String,
+    /// Lifetime and byte budget of export download files.
+    pub export_files: crate::jobs::ExportRetention,
 }
 impl Config {
     pub fn new(workspace: PathBuf, port: u16) -> Self {
@@ -39,6 +41,7 @@ impl Config {
             render_backend,
             job_timeout: std::time::Duration::from_secs(45),
             pipeline_identity,
+            export_files: Default::default(),
         }
     }
 }

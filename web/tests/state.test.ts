@@ -137,6 +137,13 @@ test("late jobs, mislabeled scene provenance, viewport races and wrong job IDs a
   assert.equal(acceptsJob(wrongKey, request), false);
 });
 
+test("a hug-height frame accepts its scene's computed height, never another width", () => {
+  const hug = { ...request, height: 1, hugHeight: true };
+  assert.equal(acceptsJob(job(), { ...request, height: 1 }), false);
+  assert.equal(acceptsJob(job(), hug), true);
+  assert.equal(acceptsJob(job(), { ...hug, width: 390 }), false);
+});
+
 const ref = (projectId: string, slug: string, revision = 0): ProjectRef => ({
   projectId,
   slug,

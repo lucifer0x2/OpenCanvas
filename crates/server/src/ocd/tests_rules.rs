@@ -1,6 +1,6 @@
 //! Review findings on Task26: linear lists, `@in`, generated IDs, descendant shorthands,
 //! `@style` keys and parser edges.
-use super::directives::note_id;
+use super::notes::note_id;
 use super::tests::ops;
 use super::{compile, OcdError};
 use serde_json::json;

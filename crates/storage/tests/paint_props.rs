@@ -35,6 +35,7 @@ fn accepts_tokens_styles_shorthand_gradients_shadows_preserving_authored() {
     });
     let authored = json!({"radius":[{"tokenId":"r"},0],"fill":{"styleId":"g"},"stroke":{"width":[1,0],"color":[{"tokenId":"ink"},"#0000"]},"shadow":[{"y":{"tokenId":"offset"},"blur":{"tokenId":"r"},"color":{"tokenId":"ink"}}],"states":{"hover":{"radius":[1,2,3],"fill":{"type":"radial","stops":[[0,"#fff"],[1,"#000"]]}}}});
     ops.push(Operation::UpdateNode {
+        merge: false,
         id: "rect".into(),
         props: authored.clone(),
     });
@@ -103,6 +104,7 @@ fn invalid_paints_are_atomic_with_useful_paths() {
                 1,
                 "bad",
                 vec![Operation::UpdateNode {
+                    merge: false,
                     id: "rect".into(),
                     props,
                 }],
@@ -121,6 +123,7 @@ fn invalid_paints_are_atomic_with_useful_paths() {
                 1,
                 "text",
                 vec![Operation::UpdateNode {
+                    merge: false,
                     id: "text".into(),
                     props,
                 }],
@@ -139,6 +142,7 @@ fn a_valid_op_before_an_invalid_paint_never_commits() {
     let before = p.snapshot().unwrap();
     let ops = vec![
         Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"radius":[4,8],"fill":{"type":"linear","stops":[[0,"#fff"],[1,"#000"]]}}),
         },
@@ -149,6 +153,7 @@ fn a_valid_op_before_an_invalid_paint_never_commits() {
             json!({"width":10,"height":10,"shadow":[{"y":2,"color":"#0004"}]}),
         ),
         Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"shadow":[{"y":1,"color":"#0004"},{"spread":2,"color":"blue"}]}),
         },
@@ -164,6 +169,7 @@ fn a_valid_op_before_an_invalid_paint_never_commits() {
             1,
             "nine",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props: json!({"shadow":nine}),
             }],
@@ -179,6 +185,7 @@ fn a_valid_op_before_an_invalid_paint_never_commits() {
             1,
             "stops",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "rect".into(),
                 props: json!({"fill":{"type":"linear","stops":seventeen}}),
             }],

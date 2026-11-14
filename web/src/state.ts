@@ -128,7 +128,7 @@ export function acceptsJob(
     provenance.revision === request.revision &&
     provenance.frameId === request.frameId &&
     provenance.viewport.width === request.width &&
-    provenance.viewport.height === request.height &&
+    (request.hugHeight || provenance.viewport.height === request.height) &&
     provenance.theme === "default" &&
     provenance.state === state &&
     (!job.sceneKey || job.sceneKey === provenance.sourceSceneKey)

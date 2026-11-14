@@ -39,6 +39,7 @@ impl Jobs {
 
     async fn admit_batch(&self, prepared: Vec<Prepared>) -> Result<Vec<Value>> {
         let mut table = self.table.lock().await;
+        table.expire_exports();
         let new = prepared
             .iter()
             .filter(|p| table.cached(&p.key, true).is_none())

@@ -27,22 +27,51 @@ fn guide_sample_compiles_to_the_golden_operations() {
 }
 
 #[test]
-fn guide_edit_compiles_to_updates_and_a_delete() {
+fn guide_edit_compiles_to_a_replace_a_merge_and_a_delete() {
     assert_eq!(
         ops(sample("ocd-edit")),
         vec![
-            json!({"op":"update_node","id":"card-1","props":{"text":"Chào mừng trở lại","fontSize":28}}),
-            json!({"op":"update_node","id":"btn","props":{"fill":{"tokenId":"ink"}}}),
+            json!({"op":"update_node","id":"title","props":{"text":"Chào mừng trở lại","fontSize":28}}),
+            json!({"op":"update_node","id":"card","props":{"layout":{"gap":24}},"merge":true}),
             json!({"op":"delete_subtree","id":"pass"}),
         ]
     );
 }
 
 #[test]
-fn auto_ids_count_every_sibling_and_comments_are_ignored() {
-    let source = "// header\npage#pg\n  frame#a 10x10\n\n  frame 10x10 // second\n    rect\n";
-    let ids: Vec<_> = ops(source).iter().map(|op| op["id"].clone()).collect();
-    assert_eq!(ids, ["pg", "a", "pg-2", "pg-2-1"]);
+fn auto_ids_are_anchored_hashed_reported_and_comments_are_ignored() {
+    let source = "// header\npage#pg\n  frame#a 10x10\n\n  frame 10x10 // second\n    rect\n    text \"Hi\"\n";
+    let compiled = compile(source).unwrap();
+    let ids: Vec<_> = compiled
+        .operations
+        .iter()
+        .map(|op| op["id"].as_str().unwrap())
+        .collect();
+    let (frame, rect, text) = (ids[2], ids[3], ids[4]);
+    assert!(
+        frame.starts_with("pg-frame-") && frame.len() == "pg-frame-".len() + 8,
+        "{frame}"
+    );
+    // Below a generated ID the anchor stays the nearest written `#id`.
+    assert!(
+        rect.starts_with("pg-rect-") && text.starts_with("pg-text-"),
+        "{ids:?}"
+    );
+    assert_eq!(compiled.operations[3]["parentId"], frame);
+    let lines: Vec<_> = compiled
+        .auto_ids
+        .iter()
+        .map(|(line, id)| (*line, id.as_str()))
+        .collect();
+    assert_eq!(lines, [(5, frame), (6, rect), (7, text)]);
+    // The same source compiles to the same IDs; a sibling added before moves none.
+    assert_eq!(compile(source).unwrap().operations, compiled.operations);
+    let moved = source.replace("    rect\n", "    image\n    rect\n");
+    let again = ops(&moved);
+    assert_eq!(
+        (again[4]["id"].as_str(), again[5]["id"].as_str()),
+        (Some(rect), Some(text))
+    );
 }
 
 #[test]

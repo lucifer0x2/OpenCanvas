@@ -9,7 +9,7 @@ pub fn schema() -> Value {
         variants.push(object(props, &required));
     };
     let props = json!({"type":"object","maxProperties":50});
-    let index = json!({"type":"integer","minimum":0,"maximum":20000});
+    let index = json!({"type":"integer","minimum":0,"maximum":opencanvas_storage::MAX_NODES});
     add(
         "create_node",
         json!({"id":node_id(),"kind":{"enum":["page","frame","group","rectangle","text","image","instance"]},"parentId":{"type":["string","null"],"maxLength":1160},"props":props,"index":index}),
@@ -17,7 +17,7 @@ pub fn schema() -> Value {
     );
     add(
         "update_node",
-        json!({"id":node_id(),"props":props}),
+        json!({"id":node_id(),"props":props,"merge":{"type":"boolean"}}),
         &["id", "props"],
     );
     add(

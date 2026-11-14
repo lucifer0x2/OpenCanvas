@@ -1,5 +1,5 @@
 use crate::model::*;
-use crate::util::{err, finite, is_fill};
+use crate::util::{err, finite, is_fill, is_hug};
 use crate::{MAX_NODES, MAX_PIXELS, percentage};
 use std::collections::{HashMap, HashSet};
 mod layout;
@@ -123,16 +123,19 @@ pub(crate) fn validate(input: &LayoutInput) -> Result<(), LayoutError> {
             if !["page", "frame", "group"].contains(&parent.kind.as_str()) {
                 return Err(err("Leaf cannot parent nodes"));
             }
-            if parent.id != input.frame_id {
-                for (child, parent) in [
-                    (&n.props.width, &parent.props.width),
-                    (&n.props.height, &parent.props.height),
-                ] {
-                    if is_fill(child)
-                        && (parent.is_none() || matches!(parent,Some(Sizing::Rule(r)) if r=="hug"))
-                    {
-                        return Err(err("Fill inside hug axis is ambiguous"));
-                    }
+            // The scene root's axes come from the viewport, except a hug root height.
+            let root = parent.id == input.frame_id;
+            for (child, size, height) in [
+                (&n.props.width, &parent.props.width, false),
+                (&n.props.height, &parent.props.height, true),
+            ] {
+                let hug = if root {
+                    height && is_hug(size)
+                } else {
+                    size.is_none() || is_hug(size)
+                };
+                if is_fill(child) && hug {
+                    return Err(err("Fill inside hug axis is ambiguous"));
                 }
             }
         }

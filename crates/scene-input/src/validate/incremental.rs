@@ -94,7 +94,7 @@ impl Candidate {
         if self.nodes.len() > MAX_NODES {
             return Err(StorageError::validation(
                 "nodes",
-                "Project exceeds 20000 authored nodes",
+                &format!("Project exceeds {MAX_NODES} authored nodes"),
             ));
         }
         time("validate.notes_navigation", || {
@@ -160,7 +160,7 @@ fn needs_full(operations: &[Operation], old: &NodeIndex<'_>, new: &NodeIndex<'_>
                 }
                 id
             }
-            Operation::UpdateNode { id, props } => {
+            Operation::UpdateNode { id, props, .. } => {
                 if props.get("theme").is_some() {
                     return true;
                 }

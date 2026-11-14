@@ -77,7 +77,7 @@ fn master_parent_cycle_and_deep_chains_are_bounded_errors() {
 
     let mut snapshot = fixture(1, 0);
     let mut parent = "frame0".to_string();
-    for i in 0..60_000 {
+    for i in 0..MAX_NODES + 1 {
         let id = format!("deep{i}");
         snapshot
             .nodes

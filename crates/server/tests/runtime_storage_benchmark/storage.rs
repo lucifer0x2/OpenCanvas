@@ -24,6 +24,7 @@ pub fn measure(project: Project) -> Measured {
     for index in 0..WARMUP + SAMPLES {
         let operations = (2..5)
             .map(|id| Operation::UpdateNode {
+                merge: false,
                 id: format!("node-{id:05}"),
                 props: json!({"x":1000+index}),
             })

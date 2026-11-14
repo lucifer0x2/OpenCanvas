@@ -147,6 +147,15 @@ test("a seeded frame keeps its last revision but is never current until revalida
   assert.equal(currentScene(reused, undefined), undefined);
 });
 
+test("a seeded hug-height frame keeps its scene's computed height", () => {
+  const scene = sceneFor({ ...request(4, "a"), height: 1480 });
+  const hug = { ...target("a"), hugHeight: true };
+  const [stale] = seedFrames([hug], [{ ...hug, scene, resources: {}, revision: 4 }]);
+  assert.equal(stale.height, 1480);
+  assert.equal(seedFrames([hug], [])[0].height, 600, "placeholder until a scene");
+  assert.equal(seedFrames([target("a")], [{ ...stale }])[0].height, 600);
+});
+
 test("a fresh view of an unchanged frame at a later revision is served from memory", async () => {
   const { computed, loaded, render } = page({
     1: { a: d("5"), b: d("6") },

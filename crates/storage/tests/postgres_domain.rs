@@ -86,6 +86,7 @@ fn domain_failures_preserve_sqlite_code_field_index_and_full_rollback() {
         let op: Operation = serde_json::from_value(value.clone()).unwrap();
         let ops = vec![
             Operation::UpdateNode {
+                merge: false,
                 id: "label".into(),
                 props: json!({"text":"Must rollback"}),
             },

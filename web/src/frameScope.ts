@@ -30,5 +30,16 @@ export function frameDimensions(node: DesignNode) {
   return {
     width: dimension(node.props.width, 800),
     height: dimension(node.props.height, 600),
+    hugHeight: node.props.height === "hug",
   };
+}
+
+/** A hug-height frame takes its scene's computed height once one is shown. */
+export function shownHeight(
+  target: { height: number; hugHeight?: boolean },
+  scene?: { provenance: { viewport: { height: number } } },
+) {
+  return target.hugHeight && scene
+    ? scene.provenance.viewport.height
+    : target.height;
 }

@@ -74,6 +74,7 @@ fn instances_override_readonly_inuse_and_atomic_errors() {
     let cases = [
         (
             Operation::UpdateNode {
+                merge: false,
                 id: "one/label".into(),
                 props: json!({"text":"bad"}),
             },
@@ -89,6 +90,7 @@ fn instances_override_readonly_inuse_and_atomic_errors() {
         ),
         (
             Operation::UpdateNode {
+                merge: false,
                 id: "one".into(),
                 props: json!({"overrides":{"label":{"layout":{}}}}),
             },
@@ -97,6 +99,7 @@ fn instances_override_readonly_inuse_and_atomic_errors() {
         ),
         (
             Operation::UpdateNode {
+                merge: false,
                 id: "one".into(),
                 props: json!({"overrides":{"missing":{"text":"bad"}}}),
             },
@@ -110,6 +113,7 @@ fn instances_override_readonly_inuse_and_atomic_errors() {
         ),
         (
             Operation::UpdateNode {
+                merge: false,
                 id: "label".into(),
                 props: json!({"links":[{"action":"back"}]}),
             },
@@ -136,6 +140,7 @@ fn instances_override_readonly_inuse_and_atomic_errors() {
             1,
             "whitelist",
             vec![Operation::UpdateNode {
+                merge: false,
                 id: "one".into(),
                 props: json!({"overrides":{"label":{"width":42}}}),
             }],
@@ -166,6 +171,7 @@ fn instances_cycles_depth_placements_and_dependency_deletion() {
         "INSTANCE_CYCLE"
     );
     let invalid = Operation::UpdateNode {
+        merge: false,
         id: "frame".into(),
         props: json!({"width":"hug"}),
     };

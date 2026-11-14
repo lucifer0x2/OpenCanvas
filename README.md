@@ -68,7 +68,7 @@ Optional PostgreSQL limits (positive integers; unset keeps the default; an inval
 | `DATABASE_LOCK_TIMEOUT_MS` | 3000 | 1–2147483647 ms |
 | `DATABASE_OPERATION_TIMEOUT_MS` | 30000 (pool wait per operation; also idle-in-transaction and TCP user timeouts) | 1–2147483647 ms |
 
-`npm run dev` accepts the same environment variables. PostgreSQL uses an in-process snapshot cache with a one-hour TTL and ignores the SQLite data root. Changing providers selects a different store. SQLite projects stay in the data root and require a separate migration to appear in PostgreSQL. See the [PostgreSQL adapter](docs/POSTGRES-BACKEND.md) for database permissions and transport details.
+`npm run dev` accepts the same environment variables. PostgreSQL uses an in-process snapshot cache with a one-hour TTL; it reads only `import_asset` files from `<data-root>/<slug>/inbox` and stores nothing in the data root. Changing providers selects a different store. SQLite projects stay in the data root and require a separate migration to appear in PostgreSQL. See the [PostgreSQL adapter](docs/POSTGRES-BACKEND.md) for database permissions and transport details.
 
 For optional frontend hot reload, keep the backend running and run `npm --prefix web run dev` separately. Its `/api` proxy defaults to port 3847; set `OPENCANVAS_API_URL` for another backend URL. See [viewer behavior](docs/VIEWER.md) and the [HTTP contract](docs/CONTRACT.md).
 
@@ -94,7 +94,7 @@ Configure an MCP client with **Streamable HTTP** and URL `http://127.0.0.1:3847/
 
 The surrounding configuration format depends on the client. The client initializes a session and retains the negotiated MCP session/protocol headers. The checked transport negotiates protocol `2025-11-25`.
 
-Use `list_projects`/`create_project`, then `get_outline` before scoped `get_subtree` or `get_design_context`. Resource metadata is available through `list_tokens`, `list_styles`, `list_assets` and `list_fonts`. `import_asset` accepts bounded base64 bytes, never filesystem paths. `apply_batch` takes a `projectId`, `expectedRevision`, stable `idempotencyKey` and ordered operations. Reuse the exact body/key after a lost response; read back after a revision conflict.
+Use `list_projects`/`create_project`, then `get_outline` before scoped `get_subtree` or `get_design_context`. Resource metadata is available through `list_tokens`, `list_styles`, `list_assets` and `list_fonts`. `import_asset` takes one asset (10 MiB) from a file in the project's `inbox/`, bounded base64, or another project's asset or font (`sourceProjectId` with `assetId` or `fontId`); it never fetches URLs. `apply_batch` takes a `projectId`, `expectedRevision`, stable `idempotencyKey` and ordered operations. Reuse the exact body/key after a lost response; read back after a revision conflict.
 
 Create a page, then a frame, then its descendants. Text must declare a valid font (the bundled font is `font_bundled`), size and line height, or obtain them from a valid text style. `render_frame` returns a job; poll it by `jobId`, inspect its exact revision/provenance and obtain the PNG through `imageUrl`. The response omits the computed scene unless you pass `includeScene: true`; `inspect_layout` reads the bounds and text lines for that job's scene key. Available tools expose their schemas through `tools/list`.
 

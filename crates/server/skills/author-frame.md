@@ -61,12 +61,10 @@ pretend that memory has been read, initialized or saved.
    concurrently. `get_edit_context` reports guard/dependency metadata; never use
    a newer guard to relabel an older design read. After scoped success, reuse
    `editGuard` for the next batch; after a valid preview it remains provisional.
-   Cross-page moves require both pages. Omit `pageIds` for strict revision mode
-   when writing shared tokens/styles/fonts/assets, notes, page structure or
-   `flowStart`, creating the first root frame, or deleting/reparenting/reordering
-   root frames. A later root frame may be appended without an explicit index.
-   Scoped deletion that cascades notes is rejected. Read again before switching
-   a rejected scoped batch to strict mode; never just raise its revision.
+   Cross-page moves need both pages, notes their anchor pages. Append pages (ID
+   in `pageIds`) and root frames (no `index`) freely; other page/root structure,
+   shared resources and `flowStart` need strict mode (omit `pageIds`) after a
+   fresh read; never just raise the revision.
    After a lost response replay that body; never change a replay body under the
    same key.
 5. On explicit `REVISION_CONFLICT`, inspect `error.changedSince` (`fromRevision`,
@@ -148,16 +146,16 @@ Commit by setting `dryRun:false`. Keep file contents, revision and key stable
 after a lost response; replay uses canonical operation contents, not just path.
 File calls share validation/atomicity and the 500-op limit, plus a 2 MiB byte cap;
 they do not auto-chunk. Split larger input into explicit atomic batches, each
-using the last successful revision and its own key. Paths outside the inbox,
-traversal and symlink escapes fail. Without authorized filesystem access, use
-inline batches; never claim a file was written. Payload savings come from
-master/token/style reuse, not from changing JS transport to MCP. The U07
-~4 KB/instance estimate and golden-image rebuild remain to be measured separately.
+using the last successful revision and its own key. Without authorized
+filesystem access, use inline batches; never claim a file was written.
+
+Import images and fonts the same way (`import_asset` `path` + `mediaType`, no
+base64), or copy another project's via `sourceProjectId` + `fontId`/`assetId`.
 
 ## Stack template
 
-Under an existing page, create a root frame with numeric `width` and `height`,
-for example `{"width":960,"height":720,"layout":{"mode":"column","padding":24,"gap":16}}`.
+Under an existing page, create a root frame with numeric `width` and a numeric
+or `"hug"` (long page) `height`, for example `{"width":960,"height":720,"layout":{"mode":"column","padding":24,"gap":16}}`.
 Use a child group with `width:"fill",height:"hug"` for a content section, and a
 `row` or `column` layout for its children. Choose widths deliberately: fixed for
 an icon, fill for the flexible content area, hug for content-driven dimensions.
@@ -202,7 +200,7 @@ children whose cross size is unset; numbers, percentages and `hug` keep their si
 `space-between`, `gap` is the minimum spacing. Centered content wider than its
 stack overflows both sides (clipped by frames); use start when it may not fit.
 `update_node` replaces the whole layout object: resend `mode` and every other
-layout key with the one you change.
+layout key with the one you change, or send `merge:true` to patch it.
 
 For an authored mobile stack, set a numeric size on the root frame and declare
 the base and narrow layout together.
@@ -240,7 +238,7 @@ of each breakpoint.
 - Use `height:"hug"` for wrapping text and content groups that should grow.
   Do not put fill on an axis whose parent's hug size depends on that fill child;
   the engine rejects ambiguous sizing cycles; for equal-width items in a hug
-  column use the parent's `align:"stretch"` instead. Root frames require fixed numbers.
+  column use the parent's `align:"stretch"` instead. Root width is a number.
 - Fade a whole control (disabled button, keycap) with `opacity` on its group or
   frame: like CSS, the group renders as one image and then fades, so overlapping
   layers inside do not show through. Do not pre-mix colors layer by layer.

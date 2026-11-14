@@ -32,7 +32,9 @@ export interface FrameSceneView {
   id: string;
   name: string;
   width: number;
+  /** Authored or requested; a hug-height frame shows its scene's computed height. */
   height: number;
+  hugHeight?: boolean;
   scene?: Scene;
   resources?: Resources;
   /**
@@ -74,10 +76,14 @@ export function useScene(
 ) {
   const wasm = wasmSceneEnabled();
   const enabled = request !== null;
-  const { projectId, revision, frameId, width, height } = request ?? EMPTY_REQUEST;
+  const { projectId, revision, frameId, width, height, hugHeight } =
+    request ?? EMPTY_REQUEST;
   const desired = useMemo(
-    () => enabled ? { projectId, revision, frameId, width, height } : null,
-    [enabled, projectId, revision, frameId, width, height],
+    () =>
+      enabled
+        ? { projectId, revision, frameId, width, height, hugHeight }
+        : null,
+    [enabled, projectId, revision, frameId, width, height, hugHeight],
   );
   const key = desired ? JSON.stringify([desired, wasm]) : "";
   const scope = desired

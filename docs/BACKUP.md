@@ -49,7 +49,7 @@ SQLite sidecars are excluded. Restored resource binaries reside in `assets/`;
 the built-in font also remains available from the bundled runtime.
 
 Bounds: 128 MiB archive, 64 MiB standalone DB, 10 MiB per asset/font, 2 MiB
-manifest, 4,096 non-manifest files. DB preflight caps nodes/styles at 20,000 each,
+manifest, 4,096 non-manifest files. DB preflight caps nodes/styles at 200,000 each,
 tokens at 4,096, asset rows at 4,093 and font rows at 4,096 before snapshot loading.
 File bytes reserve 2 MiB for manifest overhead; headers/final TAR must also fit
 the archive limit.

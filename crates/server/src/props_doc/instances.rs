@@ -18,7 +18,7 @@ pub(super) fn section() -> &'static str {
      `assetId`; token references use `{tokenId: \"...\"}`. The target cannot be the master \
      root. Layout, sizing, structure and component references cannot be overridden. \
      Master root/child states are inherited by the corresponding expanded nodes. \
-     `update_node` replaces the complete `overrides` object, so resend entries to retain.\n\n\
+     `update_node` replaces the complete `overrides` object (`merge:true` patches entries).\n\n\
      Frames and instances accept `theme: \"night\"`: the name must occur in a token's \
      themes (or be `default`), otherwise `UNKNOWN_THEME`. The nearest scope wins; \
      render/export theme is the global fallback. Expanded instances inherit scopes at \

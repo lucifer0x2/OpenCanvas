@@ -98,6 +98,7 @@ fn instances_virtual_parent_is_readonly_and_override_refs_are_validated_for_ever
         "INSTANCE_CHILD_READONLY"
     );
     let invalid = Operation::UpdateNode {
+        merge: false,
         id: "instance".into(),
         props: json!({"overrides":{"label":{"fill":{"tokenId":"missing"}}}}),
     };
@@ -135,25 +136,28 @@ fn instances_expanded_node_budget_and_component_error_cap_are_atomic() {
             json!({"width":1,"height":1}),
         ));
     }
-    for i in 0..98 {
-        ops.push(create(
+    // 203 authored nodes, then instances of 201 expanded nodes each up to the cap.
+    let count = (MAX_NODES - 203) / 201;
+    let instance = |i: usize| {
+        create(
             &format!("instance{i}"),
             NodeKind::Instance,
             Some("frame"),
             json!({"componentId":"master"}),
-        ));
-    }
+        )
+    };
     p.apply_batch(request(&p, 0, "under-budget", ops)).unwrap();
+    let mut revision = 1;
+    for start in (0..count).step_by(500) {
+        let ops = (start..count.min(start + 500)).map(instance).collect();
+        p.apply_batch(request(&p, revision, &format!("under-{start}"), ops))
+            .unwrap();
+        revision += 1;
+    }
     let before = p.snapshot().unwrap();
     assert!(instances::expand(&before.nodes).unwrap().len() < MAX_NODES);
-    let extra = create(
-        "instance98",
-        NodeKind::Instance,
-        Some("frame"),
-        json!({"componentId":"master"}),
-    );
     assert_eq!(
-        p.apply_batch(request(&p, 1, "over-budget", vec![extra]))
+        p.apply_batch(request(&p, revision, "over-budget", vec![instance(count)]))
             .unwrap_err()
             .code,
         "INSTANCE_LIMIT"
@@ -161,7 +165,7 @@ fn instances_expanded_node_budget_and_component_error_cap_are_atomic() {
     let error = p
         .apply_batch(request(
             &p,
-            1,
+            revision,
             "delete-master",
             vec![Operation::DeleteSubtree {
                 id: "master".into(),
@@ -170,7 +174,7 @@ fn instances_expanded_node_budget_and_component_error_cap_are_atomic() {
         .unwrap_err();
     assert_eq!(error.code, "COMPONENT_IN_USE");
     let context = error.node.unwrap();
-    assert_eq!(context.count, Some(98));
+    assert_eq!(context.count, Some(count));
     assert_eq!(context.instance_ids.unwrap().len(), 20);
     assert_eq!(p.snapshot().unwrap(), before);
 }

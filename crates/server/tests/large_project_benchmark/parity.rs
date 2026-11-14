@@ -25,6 +25,7 @@ pub fn validate_fixture(snapshot: &Snapshot) {
         })
         .unwrap();
     let update = |id: &str, props| Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props,
     };

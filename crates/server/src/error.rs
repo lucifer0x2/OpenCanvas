@@ -62,6 +62,7 @@ impl IntoResponse for ApiError {
             }
             "INTERNAL_ERROR" | "STORAGE_FAILED" | "STORAGE_IO" => StatusCode::INTERNAL_SERVER_ERROR,
             "IMAGE_NOT_READY" => StatusCode::CONFLICT,
+            "EXPORT_EXPIRED" => StatusCode::GONE,
             _ => StatusCode::BAD_REQUEST,
         };
         let body = self.value();

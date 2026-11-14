@@ -46,6 +46,7 @@ fn file_commit_content_replay_inline_equivalence_and_restart() {
     write(
         &path,
         &[Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"width":999}),
         }],
@@ -89,10 +90,12 @@ fn dry_run_full_validation_rollback_and_key_is_never_reserved() {
     assert_eq!(p.apply_batch(req).unwrap().changed_ids, preview.changed_ids);
     let late_invalid = vec![
         Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"width":999}),
         },
         Operation::UpdateNode {
+            merge: false,
             id: "text".into(),
             props: json!({"styleId":"missing"}),
         },
@@ -121,6 +124,7 @@ fn preview_restart_has_no_reserved_key_and_accepts_500_repeated_operations() {
     p.apply_batch(request(&p, 0, "seed", initial())).unwrap();
     let operations = vec![
         Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"width":123}),
         };
@@ -141,6 +145,7 @@ fn preview_restart_has_no_reserved_key_and_accepts_500_repeated_operations() {
         1,
         "bytes",
         vec![Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"name":"x".repeat(MAX_BATCH_BYTES)}),
         }],
@@ -165,6 +170,7 @@ fn preview_restart_has_no_reserved_key_and_accepts_500_repeated_operations() {
         2,
         "preview-only",
         vec![Operation::UpdateNode {
+            merge: false,
             id: "rect".into(),
             props: json!({"width":456}),
         }],
