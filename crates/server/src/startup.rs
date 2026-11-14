@@ -12,7 +12,8 @@ pub const HELP: &str =
 [--render-backend chromium|rust]
 RENDER_BACKEND defaults to chromium. --render-backend overrides RENDER_BACKEND.
 DATABASE_PROVIDER defaults to sqlite. Use postgresql with DATABASE_URL to enable PostgreSQL
-with an in-process snapshot cache (1 hour TTL). PostgreSQL ignores the data root.
+with an in-process snapshot cache (1 hour TTL). PostgreSQL uses the data root only to read
+import_asset files from <data-root>/<slug>/inbox; it creates nothing there.
 Optional PostgreSQL limits: DATABASE_POOL_SIZE (1-32, default 4) and, in milliseconds,
 DATABASE_CONNECT_TIMEOUT_MS (3000), DATABASE_STATEMENT_TIMEOUT_MS (15000),
 DATABASE_LOCK_TIMEOUT_MS (3000), DATABASE_OPERATION_TIMEOUT_MS (30000).
@@ -141,11 +142,14 @@ impl Startup {
 
 pub enum StorageOptions {
     Sqlite(PathBuf),
-    Postgres(PostgresConfig),
+    /// The optional root holds only filesystem inboxes for `import_asset` paths.
+    Postgres(PostgresConfig, Option<PathBuf>),
 }
 
 impl StorageOptions {
     fn from_env(data_root: Option<PathBuf>) -> Result<Self, Box<dyn Error>> {
+        let data_root = data_root
+            .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".opencanvas")));
         let provider = env::var_os("DATABASE_PROVIDER");
         match provider.as_deref() {
             Some(value) if value == "postgresql" => {
@@ -153,29 +157,29 @@ impl StorageOptions {
                     .ok()
                     .filter(|url| !url.trim().is_empty())
                     .ok_or("DATABASE_URL must be set to a nonempty value for PostgreSQL")?;
-                Ok(Self::Postgres(postgres_env::config(url, |name| {
-                    env::var_os(name)
-                })?))
+                let config = postgres_env::config(url, |name| env::var_os(name))?;
+                Ok(Self::Postgres(config, data_root))
             }
             Some(value) if value != "sqlite" => {
                 Err("DATABASE_PROVIDER must be sqlite or postgresql".into())
             }
-            _ => Ok(data_root
-                .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".opencanvas")))
-                .map(Self::Sqlite)
-                .ok_or("Data root is required")?),
+            _ => Ok(data_root.map(Self::Sqlite).ok_or("Data root is required")?),
         }
     }
 
     pub fn open(self) -> Result<Storage, Box<dyn Error>> {
         match self {
             Self::Sqlite(root) => Ok(Store::open(root)?.into()),
-            Self::Postgres(config) => {
+            Self::Postgres(config, inbox_root) => {
                 let backend = PostgresBackend::with_config(config).map_err(|_| {
                     "PostgreSQL startup failed. Check DATABASE_URL and database access"
                 })?;
                 let cache = SnapshotCache::new(backend.cache_namespace());
-                Ok(Storage::new(backend.with_cache(cache)?))
+                let storage = Storage::new(backend.with_cache(cache)?);
+                Ok(match inbox_root {
+                    Some(root) => storage.with_inbox_root(root),
+                    None => storage,
+                })
             }
         }
     }

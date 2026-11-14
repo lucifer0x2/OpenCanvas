@@ -68,7 +68,7 @@ Optional PostgreSQL limits (positive integers; unset keeps the default; an inval
 | `DATABASE_LOCK_TIMEOUT_MS` | 3000 | 1–2147483647 ms |
 | `DATABASE_OPERATION_TIMEOUT_MS` | 30000 (pool wait per operation; also idle-in-transaction and TCP user timeouts) | 1–2147483647 ms |
 
-`npm run dev` accepts the same environment variables. PostgreSQL uses an in-process snapshot cache with a one-hour TTL and ignores the SQLite data root. Changing providers selects a different store. SQLite projects stay in the data root and require a separate migration to appear in PostgreSQL. See the [PostgreSQL adapter](docs/POSTGRES-BACKEND.md) for database permissions and transport details.
+`npm run dev` accepts the same environment variables. PostgreSQL uses an in-process snapshot cache with a one-hour TTL; it reads only `import_asset` files from `<data-root>/<slug>/inbox` and stores nothing in the data root. Changing providers selects a different store. SQLite projects stay in the data root and require a separate migration to appear in PostgreSQL. See the [PostgreSQL adapter](docs/POSTGRES-BACKEND.md) for database permissions and transport details.
 
 For optional frontend hot reload, keep the backend running and run `npm --prefix web run dev` separately. Its `/api` proxy defaults to port 3847; set `OPENCANVAS_API_URL` for another backend URL. See [viewer behavior](docs/VIEWER.md) and the [HTTP contract](docs/CONTRACT.md).
 

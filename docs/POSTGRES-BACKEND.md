@@ -8,7 +8,9 @@ Set `DATABASE_PROVIDER=postgresql` and supply a nonempty `DATABASE_URL` in the
 environment before launching the server. The database role needs permission to
 initialize and use the runtime schema. The server connects during startup,
 enables an in-process snapshot cache and exits on initialization failure.
-PostgreSQL mode ignores the SQLite data root.
+PostgreSQL mode stores nothing in the data root; it only reads `import_asset`
+`path` files from `<data-root>/<slug>/inbox` (default `~/.opencanvas`) and
+creates no directory there.
 
 For an embedded server, inject the adapter at the composition root:
 
@@ -78,8 +80,8 @@ project names are UTF-8 `BYTEA`. This preserves existing NUL and JSON-number
 semantics that PostgreSQL `JSONB`/literal text would otherwise reject. Assets are
 project-scoped `BYTEA`, verified against their manifests; oversized resource
 payloads are rejected before download. The pinned bundled font is seeded only
-by explicit project creation. Filesystem inbox staging returns
-`STAGING_UNSUPPORTED`.
+by explicit project creation. `apply_batch_file` inbox staging returns
+`STAGING_UNSUPPORTED`; `import_asset` paths use the local inbox above.
 
 Validation loads the full authored candidate and uses the existing product
 validators. Moka is optional for snapshot reads. Every hit requires a

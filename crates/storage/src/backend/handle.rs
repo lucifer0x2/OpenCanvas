@@ -4,12 +4,15 @@ use crate::{
     ImportAssetRequest, ImportAssetResult, PrivacyStatus, ProjectMeta, Result, Snapshot, Store,
 };
 use serde_json::Value;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
+mod inbox;
 
 /// Cloneable application handle. Choose the implementation at the composition root.
 #[derive(Clone)]
 pub struct Storage {
     backend: Arc<dyn StorageBackend>,
+    /// Local directory holding `<slug>/inbox`; see `with_inbox_root`.
+    inbox_root: Option<Arc<PathBuf>>,
 }
 
 impl Storage {
@@ -18,7 +21,10 @@ impl Storage {
     }
 
     pub fn from_shared(backend: Arc<dyn StorageBackend>) -> Self {
-        Self { backend }
+        Self {
+            backend,
+            inbox_root: None,
+        }
     }
 
     pub fn list_projects(&self) -> Result<Vec<ProjectMeta>> {
@@ -79,7 +85,8 @@ impl Storage {
 
 impl From<Store> for Storage {
     fn from(store: Store) -> Self {
-        Self::new(super::SqliteBackend::new(store))
+        let root = store.root.path.clone();
+        Self::new(super::SqliteBackend::new(store)).with_inbox_root(root)
     }
 }
 

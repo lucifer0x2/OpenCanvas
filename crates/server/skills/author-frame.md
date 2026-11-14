@@ -154,6 +154,13 @@ inline batches; never claim a file was written. Payload savings come from
 master/token/style reuse, not from changing JS transport to MCP. The U07
 ~4 KB/instance estimate and golden-image rebuild remain to be measured separately.
 
+Import images and fonts the same way: copy the file into that inbox (for example
+`inbox/logo.png`) and call `import_asset` with `path:"logo.png"` and its
+`mediaType`; never print, `cat` or paste base64 into the conversation. Send
+`base64` instead of `path` only without filesystem access. The bytes must match
+`mediaType` (max 10 MiB). Replay uses the bytes, so keep the file until the
+call succeeds; changed bytes need a new key.
+
 ## Stack template
 
 Under an existing page, create a root frame with numeric `width` and `height`,
