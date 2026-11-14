@@ -146,11 +146,13 @@ Commit by setting `dryRun:false`. Keep file contents, revision and key stable
 after a lost response; replay uses canonical operation contents, not just path.
 File calls share validation/atomicity and the 500-op limit, plus a 2 MiB byte cap;
 they do not auto-chunk. Split larger input into explicit atomic batches, each
-using the last successful revision and its own key. Paths outside the inbox,
-traversal and symlink escapes fail. Without authorized filesystem access, use
-inline batches; never claim a file was written. Payload savings come from
-master/token/style reuse, not from changing JS transport to MCP. The U07
-~4 KB/instance estimate and golden-image rebuild remain to be measured separately.
+using the last successful revision and its own key. Without authorized
+filesystem access, use inline batches; never claim a file was written.
+
+Import images and fonts the same way: save the file in that inbox and call
+`import_asset` with `path` and `mediaType`, never pasting base64. Reuse another
+project's font (with its registration) or image via `sourceProjectId` plus
+`fontId` or `assetId`.
 
 ## Stack template
 

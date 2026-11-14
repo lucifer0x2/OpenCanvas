@@ -66,7 +66,9 @@ baseRevision/changedIds/diagnostics are provisional, with no commit or key consu
 by omitting dryRun or setting false. apply_batch_file is an opt-in MCP fallback when authorized \
 filesystem access exists: write a pure JSON operation array in the selected project's inbox, \
 then call the tool with its relative path. It evaluates no code, applies the same 500-op limit \
-and does not auto-chunk. See tested examples in skill://opencanvas/author-frame.md.
+and does not auto-chunk. import_asset takes an image or font the same way (path in that \
+inbox; never paste base64) or copies one from another project (sourceProjectId). See tested \
+examples in skill://opencanvas/author-frame.md.
 
 Keep paragraph/label source strings and spaces semantic; measured characters/lines are comparison \
 output. Intentional lettering/motion is valid: record intent in a note and never auto-merge layers. \

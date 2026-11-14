@@ -19,6 +19,7 @@ mod bundle_validation;
 mod db;
 mod fonts;
 mod hot_cache;
+mod inbox;
 mod revision_indexes;
 pub use hot_cache::SnapshotCache;
 pub use revision_indexes::{RevisionIndexes, SharedSnapshot};

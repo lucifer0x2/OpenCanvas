@@ -67,9 +67,13 @@ project assets, never client filesystem paths. Loopback Host/Origin checks apply
 only resource GET permits the renderer's random loopback origin. Mutations
 require the configured origin when an Origin header is supplied.
 
-For MCP, use `import_asset` with `font` registration; `list_fonts` now provides
-the download URLs. No additional duplicate import tool is needed. For another
-project/machine, download each font and import the same bytes there, or use the
+For MCP, use `import_asset` with `font` registration, taking the file from the
+project inbox (`path`) rather than base64; `list_fonts` provides the download URLs.
+To reuse a font from another project on the same server, call `import_asset`
+with `sourceProjectId` and `fontId` (one face per call): the server copies the
+verified bytes and the registration (family, weight, style, license) under the
+same font ID, content-addressed and replayable like any import. For another
+machine, download each font and import the same bytes there, or use the
 existing project bundle export/import, which includes uploaded and bundled
 font bytes and the bundled OFL license. Copying `db.sql` alone is insufficient:
 uploaded font bytes live under the project's `assets/`. Keep applicable licenses
