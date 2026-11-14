@@ -1,154 +1,92 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { readNavigation } from "../deepLink";
 import {
-  clearActivity,
-  commitAction,
-  EMPTY_SELECTION,
-  followTarget,
-  markActivity,
-  pickProject,
-  readSelection,
-  reconcileSelection,
-  saveSelection,
-} from "../state";
-import type { Selection, Snapshot } from "../types";
-import { useFollowAgent } from "./useFollowAgent";
-import { useProjectList } from "./useProjectList";
-import { useProjectStream } from "./useProjectStream";
-import { useSnapshot } from "./useSnapshot";
+  projectSelection,
+  type ProjectSelectionAction,
+} from "../projectSelection";
+import { EMPTY_SELECTION } from "../state";
+import type { ProjectRef, Selection, Snapshot } from "../types";
+import { useNavigationUrl, writeNavigation } from "./useNavigationUrl";
 
-const TRANSIENT = ["Catching up", "Refreshing after"];
-
-/** Project list, selection, snapshot and the tab's one live stream, composed for `App`. */
-export function useProject() {
-  const [selection, setSelection] = useState<Selection>(readSelection);
-  const [notice, setNotice] = useState("");
-  const [reload, setReload] = useState(0);
-  const [activity, setActivity] = useState<string[]>([]);
-  const [follow, setFollow] = useFollowAgent();
-  const retry = useCallback(() => setReload((value) => value + 1), []);
-  const list = useProjectList(reload);
-  const selectedIsVisible =
-    !list.loaded ||
-    list.projects.some((entry) => entry.projectId === selection.projectId);
-  const visibleSelection = selectedIsVisible ? selection : EMPTY_SELECTION;
-  const projectId = visibleSelection.projectId;
-
-  const accepted = useCallback((next: Snapshot) => {
-    setNotice((previous) =>
-      TRANSIENT.some((prefix) => previous.startsWith(prefix)) ? "" : previous,
-    );
-    setSelection((previous) => {
-      if (previous.projectId !== next.projectId) return previous;
-      const valid = reconcileSelection(next, previous);
-      if (previous.frameId && valid.frameId !== previous.frameId)
-        setNotice(
-          "The selected frame was removed. Showing all frames on this page.",
-        );
-      else if (previous.nodeId && valid.nodeId !== previous.nodeId)
-        setNotice("The selected layer was removed. Showing its frame.");
-      return valid;
-    });
-  }, []);
-  const snap = useSnapshot(projectId, reload, accepted);
-
-  useEffect(() => {
-    saveSelection(selection);
-  }, [selection]);
-
-  // A missing or deleted selection falls back to the first project, including the first one
-  // created while the workspace was empty.
-  useEffect(() => {
-    if (!list.loaded) return;
-    setSelection((previous) => {
-      const next = pickProject(list.projects, previous.projectId);
-      if (next !== previous.projectId && previous.projectId)
-        setNotice(
-          "The linked or selected project is unavailable. Showing the first available project.",
-        );
-      return next === previous.projectId
+/** URL-owned navigation and address-scoped explanations; no server-data copy. */
+export function useProject(projects: ProjectRef[], loaded: boolean) {
+  const href = useNavigationUrl();
+  const selection = useMemo(() => readNavigation(href), [href]);
+  const [message, setMessage] = useState({ href, text: "" });
+  const notice = message.href === href ? message.text : "";
+  const setNotice = useCallback((text: string) => {
+    const href = window.location.href;
+    setMessage((previous) =>
+      previous.href === href && previous.text === text
         ? previous
-        : { ...EMPTY_SELECTION, projectId: next };
-    });
-  }, [list.loaded, list.projects]);
-
-  const selectProject = useCallback((next: string) => {
-    setNotice("");
-    setActivity((marked) => clearActivity(marked, next));
-    setSelection({ ...EMPTY_SELECTION, projectId: next });
-  }, []);
-  const nameOf = (id: string) =>
-    list.projects.find((entry) => entry.projectId === id)?.name ?? id;
-  // A hint from another project: follow it, or report it without touching this snapshot.
-  const hinted = (id: string, name: string, created: boolean) => {
-    const target = followTarget(follow, id, projectId);
-    if (target) {
-      selectProject(target);
-      if (projectId) setNotice(`Following the agent to ${name}.`);
-      return;
-    }
-    if (id === projectId) return;
-    if (created)
-      return setNotice(`${name} was created. Select it in Project to view it.`);
-    setActivity((marked) => markActivity(marked, id, projectId));
-    setNotice(`${name} has new changes. Select it in Project to view them.`);
-  };
-
-  const connection = useProjectStream(projectId, reload, {
-    cursor: () => snap.revision() ?? 0,
-    onOpen: () => {
-      list.refetch();
-      snap.refresh();
-    },
-    onCommit: (event) => {
-      if (!event) return snap.refresh();
-      const action = commitAction(event, projectId, snap.revision() ?? -1);
-      if (action === "gap") setNotice("Catching up with changes…");
-      if (action !== "ignore") snap.refresh();
-    },
-    onReset: () => {
-      if (projectId) setNotice("Refreshing after an event history reset…");
-      list.refetch();
-      snap.refresh();
-    },
-    onVisibilityChanged: () => {
-      setNotice("");
-      list.refetch();
-      snap.refresh();
-    },
-    onReconnect: list.refetch,
-    onCreated: (project) => {
-      list.merge([project]);
-      list.refetch();
-      hinted(project.projectId, project.name, true);
-    },
-    onActivity: (event) => {
-      list.bump(event);
-      hinted(event.projectId, nameOf(event.projectId), false);
-    },
-  });
-
-  const acceptedSnapshot = snap.snapshot;
-  const selectScope = useCallback((patch: Partial<Selection>) => {
-    setNotice("");
-    setSelection((previous) =>
-      acceptedSnapshot && previous.projectId === acceptedSnapshot.projectId
-        ? reconcileSelection(acceptedSnapshot, { ...previous, ...patch })
-        : previous,
+        : { href, text },
     );
-  }, [acceptedSnapshot]);
+  }, []);
+  const transition = useCallback(
+    (action: ProjectSelectionAction, mode: "push" | "replace") => {
+      if (window.location.href !== href) return;
+      const next = projectSelection({ selection, notice }, action);
+      const target = writeNavigation(next.selection, mode, href);
+      setMessage((previous) =>
+        previous.href === target && previous.text === next.notice
+          ? previous
+          : { href: target, text: next.notice },
+      );
+    },
+    [href, selection, notice],
+  );
+  // User-event handlers stay stable for memoized canvas/layer consumers. Read the
+  // live address at invocation; only passive reconciliation captures an old href.
+  const navigate = useCallback((action: ProjectSelectionAction) => {
+    const href = window.location.href;
+    const selection = readNavigation(href);
+    if (action.type === "project" && action.projectId === selection.projectId)
+      return;
+    const next = projectSelection({ selection, notice: "" }, action);
+    const target = writeNavigation(next.selection, "push", href);
+    setMessage((previous) =>
+      previous.href === target && previous.text === next.notice
+        ? previous
+        : { href: target, text: next.notice },
+    );
+  }, []);
+  useEffect(() => {
+    if (loaded) transition({ type: "projects", projects }, "replace");
+  }, [loaded, projects, transition]);
+  const visible =
+    !loaded ||
+    projects.some((project) => project.projectId === selection.projectId);
+  const selectProject = useCallback(
+    (projectId: string) => navigate({ type: "project", projectId }),
+    [navigate],
+  );
+  const accepted = useCallback(
+    (snapshot: Snapshot) => {
+      // Foreign/late project responses never rewrite the current address.
+      if (snapshot.projectId !== selection.projectId) return;
+      // Reconcile unless the authoritative list omits the project; the
+      // `projects` transition replaces it then. A failed or pending list does
+      // not block defaults or removed-target explanations.
+      if (
+        loaded &&
+        !projects.some((project) => project.projectId === selection.projectId)
+      )
+        return;
+      transition({ type: "accepted", snapshot }, "replace");
+    },
+    [loaded, projects, selection.projectId, transition],
+  );
+  const selectScope = useCallback(
+    (snapshot: Snapshot | null, patch: Partial<Selection>) =>
+      navigate({ type: "scope", snapshot, patch }),
+    [navigate],
+  );
   return {
-    projects: list.projects,
-    loadingProjects: list.loading,
-    selection: visibleSelection,
-    snapshot: snap.snapshot,
-    connection,
-    error: list.error || snap.error,
+    selection: visible ? selection : EMPTY_SELECTION,
     notice,
-    activity,
-    follow,
-    setFollow,
-    retry,
     selectProject,
     selectScope,
+    accepted,
+    setNotice,
   };
 }

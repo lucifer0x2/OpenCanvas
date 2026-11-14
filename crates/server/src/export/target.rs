@@ -17,10 +17,10 @@ pub struct Nodes<'a> {
 }
 
 impl<'a> Nodes<'a> {
-    pub fn new(snapshot: &'a Snapshot, resolved: &'a [Node]) -> Self {
+    pub fn new(authored: &'a [Node], resolved: &'a [Node]) -> Self {
         let by_id = |nodes: &'a [Node]| nodes.iter().map(|n| (n.id.as_str(), n)).collect();
         Self {
-            authored: by_id(&snapshot.nodes),
+            authored: by_id(authored),
             resolved: by_id(resolved),
         }
     }
@@ -73,9 +73,7 @@ pub fn resolve(
 /// The page's child that contains the node, which must be a frame.
 fn root_frame<'a>(nodes: &Nodes<'a>, node: &'a Node) -> Result<&'a Node> {
     if node.kind == NodeKind::Page {
-        return Err(unsupported(
-            "Pages cannot be exported; export a frame or a node inside one",
-        ));
+        return Err(page_unsupported());
     }
     let mut current = node;
     for _ in 0..=nodes.authored.len() {
@@ -130,6 +128,10 @@ fn file_stem(node: &Node) -> String {
         stem.push(c);
     }
     stem
+}
+
+pub fn page_unsupported() -> ApiError {
+    unsupported("Pages cannot be exported; export a frame or a node inside one")
 }
 
 fn unsupported(message: &str) -> ApiError {

@@ -17,8 +17,9 @@ pub(super) fn apply(
     key: &str,
     request: BatchRequest,
     dry: bool,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<Outcome> {
-    apply_mode(session, key, request, dry, None)
+    apply_mode(session, key, request, dry, None, indexes)
 }
 
 pub(super) fn apply_mode(
@@ -27,9 +28,10 @@ pub(super) fn apply_mode(
     request: BatchRequest,
     dry: bool,
     pages: Option<Vec<String>>,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<Outcome> {
     if dry {
-        return preview(session, key, request, pages).map(Outcome::Preview);
+        return preview(session, key, request, pages, indexes).map(Outcome::Preview);
     }
     let mut tx = session.client.transaction().map_err(sql)?;
     let mut db = Db::new(&mut tx, &mut session.statements);
@@ -49,11 +51,37 @@ pub(super) fn apply_mode(
         return Err(StorageError::conflict(project.meta.revision));
     }
     let identity = (project.generation, project.namespace.clone());
-    let (before, binaries, stored) = snapshot::entities_for_write(&mut db, project)?;
-    let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    let (before, binaries, stored) =
+        crate::bench_phase::time("load", || snapshot::entities_for_write(&mut db, project))?;
+    let cache_identity = adapter::identity(
+        before.project_id.clone(),
+        before.schema_version,
+        before.revision,
+        identity.0,
+        &identity.1,
+    );
+    let old_indexes = indexes.for_snapshot(&before, Some(cache_identity.clone()));
+    let (candidate, changed_ids, mut work, next_indexes) =
+        crate::batch::validated_candidate_indexed(
+            &before,
+            &request.operations,
+            old_indexes.clone(),
+        )?;
+    let scope = crate::scoped::BatchScope::indexed(
+        &before,
+        &candidate,
+        &changed_ids,
+        old_indexes,
+        next_indexes.clone(),
+    )?;
     if let Some(pages) = &pages {
-        check(&mut db, &before, &candidate, &request, pages)?;
+        crate::bench_phase::time("scoped.check", || {
+            check(
+                &mut db, &before, &candidate, &request, pages, &scope, &mut work,
+            )
+        })?;
     }
+    drop(work);
     let result = BatchResult {
         project_id: before.project_id.clone(),
         committed_revision: before.revision + 1,
@@ -61,26 +89,34 @@ pub(super) fn apply_mode(
         render_status: "pending".into(),
         replayed: false,
     };
-    let rows = stored.delta(&candidate)?;
-    let history = crate::scoped::envelope(
-        &before,
-        &candidate,
-        value.clone(),
-        value["operations"].clone(),
-    )?;
+    let rows = crate::bench_phase::time("persist.delta", || stored.delta(&candidate))?;
+    let history = crate::bench_phase::time("history.envelope", || {
+        crate::scoped::envelope_with_scopes(
+            scope.footprint,
+            value.clone(),
+            value["operations"].clone(),
+        )
+    })?;
     drop((stored, candidate));
-    let written = transaction::persist(
-        &mut db,
-        &before,
-        rows,
-        &request.idempotency_key,
-        &hash,
-        &history,
-        &result,
-        None,
-    )?;
-    tx.commit().map_err(sql)?;
+    let written = {
+        let _phase = crate::bench_phase::Span::new("persist");
+        let written = transaction::persist(
+            &mut db,
+            &before,
+            rows,
+            &request.idempotency_key,
+            &hash,
+            &history,
+            &result,
+            None,
+        )?;
+        tx.commit().map_err(sql)?;
+        written
+    };
     let revision = result.committed_revision;
+    let mut next_identity = cache_identity;
+    next_identity.revision = revision;
+    indexes.publish(next_identity, next_indexes);
     let committed = Committed::new(before, binaries, written, revision, identity);
     Ok(Outcome::Commit(result, Some(Box::new(committed))))
 }
@@ -94,6 +130,7 @@ fn preview(
     key: &str,
     request: BatchRequest,
     pages: Option<Vec<String>>,
+    indexes: &crate::revision_indexes::IndexCache,
 ) -> Result<DryRunResult> {
     let (mut tx, statements) = session.read_only()?;
     let mut db = Db::new(&mut tx, statements);
@@ -108,10 +145,32 @@ fn preview(
     if pages.is_none() && project.meta.revision != request.expected_revision {
         return Err(StorageError::conflict(project.meta.revision));
     }
+    let identity = adapter::identity(
+        project.meta.project_id.clone(),
+        project.meta.schema_version,
+        project.meta.revision,
+        project.generation,
+        &project.namespace,
+    );
     let (before, _) = snapshot::entities_with_binaries(&mut db, project)?;
-    let (candidate, changed_ids) = crate::batch::validated_candidate(&before, &request.operations)?;
+    let old_indexes = indexes.for_snapshot(&before, Some(identity));
+    let (candidate, changed_ids, mut work, next_indexes) =
+        crate::batch::validated_candidate_indexed(
+            &before,
+            &request.operations,
+            old_indexes.clone(),
+        )?;
     if let Some(pages) = &pages {
-        check(&mut db, &before, &candidate, &request, pages)?;
+        let scope = crate::scoped::BatchScope::indexed(
+            &before,
+            &candidate,
+            &changed_ids,
+            old_indexes,
+            next_indexes,
+        )?;
+        check(
+            &mut db, &before, &candidate, &request, pages, &scope, &mut work,
+        )?;
     }
     Ok(DryRunResult {
         project_id: before.project_id,
@@ -158,6 +217,8 @@ fn check<C: ::postgres::GenericClient>(
     candidate: &crate::validate::Candidate,
     request: &BatchRequest,
     pages: &[String],
+    scope: &crate::scoped::BatchScope,
+    work: &mut crate::validate::ValidationWork,
 ) -> Result<()> {
     let rows = db.query("SELECT revision,CASE WHEN sum(octet_length(operations)) OVER (ORDER BY revision)<=8388608 THEN operations ELSE 'null' END FROM commits WHERE project_id=$1 AND revision>$2 ORDER BY revision LIMIT 1001",
         &[&before.project_id, &(request.expected_revision as i64)])?;
@@ -170,5 +231,5 @@ fn check<C: ::postgres::GenericClient>(
             ))
         })
         .collect::<Result<Vec<_>>>()?;
-    crate::scoped::check(before, candidate, request, pages, commits)
+    crate::scoped::check(before, candidate, request, pages, commits, scope, work)
 }

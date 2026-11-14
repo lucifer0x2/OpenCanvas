@@ -4,6 +4,7 @@ pub(crate) struct Root {
     _lock: File,
     pub(crate) projects: Mutex<BTreeMap<String, Weak<Project>>>,
     pub(crate) viewer_db: Mutex<Option<Connection>>,
+    pub(crate) indexes: crate::revision_indexes::IndexCache,
 }
 impl Root {
     pub(crate) fn check_path(&self) -> Result<()> {
@@ -44,6 +45,7 @@ impl Store {
                 _lock: lock,
                 projects: Mutex::new(BTreeMap::new()),
                 viewer_db: Mutex::new(None),
+                indexes: Default::default(),
             }),
         })
     }
@@ -85,6 +87,7 @@ impl Store {
         sync_dir(&path)?;
         let project = Arc::new(Project {
             root: self.root.clone(),
+            file_identity: project::file_identity(&path.join("db.sql"))?,
             path,
             project_id: project_id.clone(),
             writer: Mutex::new(conn),
@@ -166,6 +169,7 @@ impl Store {
         }
         let project = Arc::new(Project {
             root: self.root.clone(),
+            file_identity: project::file_identity(&path.join("db.sql"))?,
             path,
             project_id: meta.project_id.clone(),
             writer: Mutex::new(conn),

@@ -1,19 +1,17 @@
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { read } from "../api";
 
-/** Listener capability, with null while it is still being checked. */
+/** Listener capability is shared within the current viewer session's cache. */
 export function useViewerAccess() {
-  const [readOnly, setReadOnly] = useState<boolean | null>(null);
-  useEffect(() => {
-    const controller = new AbortController();
-    read<{ readOnly: boolean }>("/api/v1/viewer", controller.signal)
-      .then((access) => {
-        if (!controller.signal.aborted) setReadOnly(access.readOnly !== false);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setReadOnly(true);
-      });
-    return () => controller.abort();
-  }, []);
-  return readOnly;
+  const { data, error } = useSWR(
+    "/api/v1/viewer",
+    (path) => read<{ readOnly: boolean }>(path),
+    {
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+    },
+  );
+  return error ? true : data ? data.readOnly !== false : null;
 }

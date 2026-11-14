@@ -6,6 +6,9 @@ mod breakpoints;
 mod candidate;
 mod easing;
 mod font_face;
+mod font_references;
+mod incremental;
+mod index;
 mod instance_graph;
 mod instances;
 mod keyframes;
@@ -21,16 +24,23 @@ mod properties;
 mod quad;
 mod refs;
 mod scope;
+mod scoped;
 mod shadow;
 mod states;
 mod stroke;
 mod text_props;
 mod token_graph;
 mod tokens;
+mod topology;
 mod values;
 pub use candidate::Candidate;
+pub use font_references::{referenced_font_ids, FontReferences};
+pub use incremental::{ValidationStats, ValidationWork};
+pub use index::NodeIndex;
 pub use refs::{
-    referenced_font_ids, resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme,
-    resolved_tokens_for_theme,
+    resolved_expanded_nodes, resolved_nodes, resolved_nodes_for_theme, resolved_tokens_for_theme,
 };
+pub use scoped::resource_builds;
+pub(crate) use scoped::ScopedResources;
+pub use topology::NodeTopology;
 pub use values::{valid_id, validate_slug};

@@ -4,6 +4,7 @@ pub struct Project {
     pub(crate) path: PathBuf,
     pub(crate) project_id: String,
     pub(crate) writer: Mutex<Connection>,
+    pub(crate) file_identity: Option<(u64, u64)>,
 }
 
 impl Project {
@@ -14,6 +15,12 @@ impl Project {
         guard(&self.path, &self.root.path)?;
         guard(&self.path.join("assets"), &self.path)?;
         guard(&self.path.join("db.sql"), &self.path)?;
+        if self.file_identity != file_identity(&self.path.join("db.sql"))? {
+            return Err(StorageError::new(
+                "PROJECT_REPLACED",
+                "Project database was replaced; reopen the project",
+            ));
+        }
         no_symlink(&self.path.join("db.sql-wal"))?;
         no_symlink(&self.path.join("db.sql-shm"))?;
         Ok(())
@@ -132,4 +139,16 @@ impl Project {
             })
         })?)
     }
+}
+
+#[cfg(unix)]
+pub(crate) fn file_identity(path: &Path) -> Result<Option<(u64, u64)>> {
+    use std::os::unix::fs::MetadataExt;
+    let metadata = fs::symlink_metadata(path)?;
+    Ok(Some((metadata.dev(), metadata.ino())))
+}
+
+#[cfg(not(unix))]
+pub(crate) fn file_identity(_path: &Path) -> Result<Option<(u64, u64)>> {
+    Ok(None)
 }

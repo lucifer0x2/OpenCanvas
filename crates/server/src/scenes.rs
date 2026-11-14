@@ -9,7 +9,7 @@ use axum::{
     extract::{Path, Query, State},
     Json,
 };
-use opencanvas_storage::{Node, NodeKind, Snapshot};
+use opencanvas_storage::{Node, NodeKind, SharedSnapshot, Snapshot};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -80,6 +80,35 @@ impl ScenesQuery {
         Ok(frames)
     }
 
+    fn shared_frames<'a>(&self, shared: &'a SharedSnapshot) -> Result<Vec<&'a Node>> {
+        let Some(scoped) = shared.trusted_scoped()? else {
+            return self.frames(&shared.snapshot);
+        };
+        if shared.snapshot.revision != self.revision {
+            return Err(ApiError::new(
+                "REVISION_UNAVAILABLE",
+                "Requested authored revision is unavailable",
+            ));
+        }
+        if !scoped
+            .node(&self.page_id)
+            .is_some_and(|node| node.kind == NodeKind::Page)
+        {
+            return Err(ApiError::invalid("pageId must identify a page"));
+        }
+        let mut frames: Vec<_> = scoped
+            .children(&self.page_id)
+            .filter(|node| node.kind == NodeKind::Frame)
+            .collect();
+        frames.sort_by(|a, b| (a.sort_key, &a.id).cmp(&(b.sort_key, &b.id)));
+        if self.offset > frames.len() {
+            return Err(ApiError::invalid(
+                "offset exceeds the number of root frames",
+            ));
+        }
+        Ok(frames)
+    }
+
     fn request(&self, frame: &Node) -> SceneRequest {
         SceneRequest {
             frame_id: frame.id.clone(),
@@ -114,8 +143,11 @@ pub(crate) async fn get(
         .map_err(|_| ApiError::invalid("Invalid scenes query"))?
         .0;
     query.validate()?;
-    let snapshot = state.snapshot(project).await?;
-    let frames = query.frames(&snapshot)?;
+    let shared = state
+        .db(move |store| store.shared_snapshot(&project))
+        .await?;
+    let snapshot = &shared.snapshot;
+    let frames = query.shared_frames(&shared)?;
     let total = frames.len();
     let end = query.offset.saturating_add(query.limit).min(total);
     let requests = frames[query.offset..end]
@@ -124,7 +156,7 @@ pub(crate) async fn get(
         .collect();
     let jobs: Vec<_> = state
         .jobs
-        .enqueue_batch(&snapshot, requests)
+        .enqueue_shared_batch(&shared, requests)
         .await?
         .into_iter()
         .map(|job| viewer_origin::job(job, &state.config.base_url, origin.clone()))
@@ -139,3 +171,7 @@ pub(crate) async fn get(
 #[cfg(test)]
 #[path = "scenes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "scenes_shared_tests.rs"]
+mod shared_tests;

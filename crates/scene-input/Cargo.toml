@@ -8,6 +8,8 @@ license.workspace = true
 default = []
 # Native storage retains its existing error conversion without changing type identity.
 sqlite-errors = ["dep:rusqlite"]
+# Task24 benchmark only: raises MAX_NODES and records phase timings. Never a default.
+large-project-bench = []
 
 [dependencies]
 opencanvas-layout = { path = "../layout" }

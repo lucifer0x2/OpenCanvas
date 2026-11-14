@@ -72,7 +72,9 @@ export async function withContinuityViewer(run) {
         await route.fulfill({ contentType: "text/javascript", body });
       });
     }
-    await page.goto(base);
+    // This regression exercises single-frame refresh semantics. Default All/WASM is
+    // covered by all-frames-smoke; this controlled fixture supplies server frame jobs.
+    await page.goto(`${base}/?project=fixture&page=page&frame=frame&node=frame&scene=server`);
     await page.getByText("Scene r7", { exact: true }).waitFor();
     await page.waitForFunction(() => window.Konva?.stages?.length > 0);
     return await run(page, fixture, errors);

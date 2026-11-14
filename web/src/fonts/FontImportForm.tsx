@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { CustomSelect } from "../components/CustomSelect";
-import { readFontFile } from "./fontFiles";
+import { validateFontFile } from "./fontFiles";
 import type { FontDetails } from "./types";
 
 interface Props {
@@ -74,7 +74,7 @@ export function FontImportForm({ busy, ready, retryable, submit }: Props) {
               }
               setChecking(true);
               try {
-                await readFontFile(selected);
+                await validateFontFile(selected);
                 if (version === attempt.current) setFile(selected);
               } catch (cause) {
                 if (version === attempt.current)

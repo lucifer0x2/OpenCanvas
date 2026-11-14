@@ -16,10 +16,15 @@ pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Re
     };
     let mut input =
         opencanvas_scene_input::make_input_with_scale(snapshot, &options, request.scale)?;
+    attach_urls(&mut input, &snapshot.project_id, base);
+    Ok(input)
+}
+
+pub(super) fn attach_urls(input: &mut Value, project: &str, base: &str) {
     for font in input["fonts"].as_array_mut().unwrap() {
         font["url"] = format!(
             "{base}/api/v1/projects/{}/fonts/{}/download",
-            snapshot.project_id,
+            project,
             font["id"].as_str().unwrap()
         )
         .into();
@@ -27,12 +32,11 @@ pub fn make_input(snapshot: &Snapshot, request: &SceneRequest, base: &str) -> Re
     for asset in input["assets"].as_array_mut().unwrap() {
         asset["url"] = format!(
             "{base}/api/v1/projects/{}/assets/{}",
-            snapshot.project_id,
+            project,
             asset["id"].as_str().unwrap()
         )
         .into();
     }
-    Ok(input)
 }
 /// Rejects a request outside the render budget or the supported interaction state.
 pub fn check_request(snapshot: &Snapshot, request: &SceneRequest) -> Result<()> {

@@ -7,7 +7,11 @@
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "test": "node --test --test-concurrency=1 tests/state.test.ts tests/node-links.test.ts tests/preview-keyframes.test.ts tests/preview-model.test.ts tests/preview-schemes.test.ts tests/diagnostics.test.ts tests/scene-service.test.mjs tests/scene-font-bytes.test.mjs tests/scene-worker.test.mjs tests/scene-worker-cache.test.mjs tests/scene-worker-recovery.test.mjs tests/scene-worker-font-cache.test.mjs tests/all-frames.test.mjs tests/page-scenes.test.mjs tests/scene-content-cache.test.mjs tests/scene-worker-keys.test.mjs tests/stale-page-scenes.test.mjs tests/frame-scope.test.ts",
+    "test": "node --test --test-concurrency=1 tests/node-index.test.ts tests/state.test.ts tests/node-links.test.ts tests/preview-keyframes.test.ts tests/preview-model.test.ts tests/preview-schemes.test.ts tests/diagnostics.test.ts tests/scene-service.test.mjs tests/scene-font-bytes.test.mjs tests/scene-worker.test.mjs tests/scene-worker-cache.test.mjs tests/scene-worker-recovery.test.mjs tests/scene-worker-font-cache.test.mjs tests/all-frames.test.mjs tests/page-scenes.test.mjs tests/scene-content-cache.test.mjs tests/scene-worker-keys.test.mjs tests/stale-page-scenes.test.mjs tests/frame-paint.test.mjs tests/frame-scope.test.ts tests/project-selection.test.ts tests/layer-selection.test.ts tests/canvas-selection.test.mjs tests/font-files.test.ts && node --experimental-transform-types --test --test-concurrency=1 tests/snapshot-http.test.ts",
+    "test:react": "node tests/app-shell-smoke.mjs && node --test --test-concurrency=1 tests/project-hooks.test.mjs tests/snapshot-index.test.mjs tests/swr-project-cache.test.mjs tests/url-navigation.test.mjs tests/url-defaults.test.mjs tests/url-follow-navigation.test.mjs tests/font-inventory-cache.test.mjs tests/viewer-access.test.mjs && node tests/layers-render-smoke.mjs && node --test tests/font-workflow.test.mjs",
+    "test:navigation": "node --test --test-concurrency=1 tests/url-navigation.test.mjs tests/url-defaults.test.mjs tests/url-follow-navigation.test.mjs",
+    "test:fonts": "node --test --test-concurrency=1 tests/font-inventory-cache.test.mjs tests/font-workflow.test.mjs && node tests/font-ui-smoke.mjs",
+    "test:repaint": "node tests/all-frames-repaint.mjs",
     "test:scene-wasm": "node tests/scene-wasm-smoke.mjs",
     "test:all-frames": "node --test tests/all-frames.test.mjs && node tests/all-frames-smoke.mjs",
     "test:actions": "node tests/node-actions-smoke.mjs",
@@ -20,7 +24,8 @@
     "konva": "^10.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-konva": "^19.2.0"
+    "react-konva": "^19.2.0",
+    "swr": "^2.5.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

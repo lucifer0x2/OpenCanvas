@@ -51,10 +51,17 @@ editable content and selected page text is preserved. Clicking empty canvas clea
 selection and input focus; a pan or right-click does not deselect. Empty selection
 survives snapshot reconciliation and live SSE refreshes.
 
-Links contain stable project/page/frame/node IDs (`/?project=…&page=…&frame=…&node=…`),
-including percent-encoded virtual instance child IDs. Opening one in a fresh tab
-overrides stored selection, restores scope and highlights the element at the latest
-revision. It encodes no viewport/cache/revision. The MCP connection instructions and
+Navigation lives in the search query: `project`, `page` and `frame` identify the
+scope; `node` is optional. A three-key address opens the scope without highlighting
+an element. Four-key links also highlight the addressed node, including
+percent-encoded virtual instance child IDs. `frame=%3Aall%3A` means All frames.
+The URL is the selection authority on load, reload and Back/Forward; legacy
+`opencanvas.selection` storage is no longer read or written. Missing/invalid IDs
+are normalized against the authoritative list/snapshot and display fallback notices.
+Explicit choices push history; automatic defaults and revision cleanup replace
+the current entry. Address-bar changes preserve other query parameters and hash.
+Copy link keeps its canonical `/?project=…&page=…&frame=…[&node=…]` contract,
+excluding transient viewport/cache/revision parameters. The MCP connection instructions and
 `skill://opencanvas/implement-frame.md` teach AI clients to confirm the exact node ID
 with `find_nodes`, then read its `get_design_context`; deleted/moved IDs must be
 reported rather than guessed. A stale browser address displays a fallback notice.
@@ -69,6 +76,9 @@ re-rasterized or cached per zoom level: the Konva layer stays the size of the ca
 zoom allocates no canvas and costs one paint of the scene per frame (about 1.4 ms p95 for an
 857-node, 716-line scene in headless Chromium). Images are drawn with
 `imageSmoothingQuality = "high"`, which only affects the viewer, never the worker PNG.
+This describes the single-frame view. The All board paints the same vectors during a zoom
+gesture, then caches each frame as a bitmap once the zoom rests
+([VIEWER-FRAME-PAINT.md](VIEWER-FRAME-PAINT.md)).
 
 `paintScene` is the same code the worker PNG runs through `drawScene`, which only validates the
 pipeline, sizes and clears the target and sets its scale before painting. The viewer still draws
@@ -117,7 +127,9 @@ Production builds share a bounded IndexedDB scene cache between All and single-f
 views, always after an accepted authoritative snapshot, keyed by each frame's content
 digest so unchanged frames are reused across revisions.
 See [cache identity, bounds and verification](VIEWER-PROGRESSIVE-CACHE.md).
-The board shares loaded manifests and retains vectors rather than N full-resolution canvases.
+The board shares loaded manifests. Each ready frame keeps one bitmap at the resting zoom,
+never larger than the canvas, so board redraws blit instead of repainting every frame; see
+[VIEWER-FRAME-PAINT.md](VIEWER-FRAME-PAINT.md).
 Server mode and fallback admit batches of four, waiting for confirmed terminal jobs
 before advancing; unknown timeout/transport errors stop admission and expose Retry.
 Failed frames retain labeled slots, and fallback retains completed browser frames.
@@ -130,9 +142,21 @@ See [ALL-FRAMES-REPORT.md](ALL-FRAMES-REPORT.md) for checks and the macOS Chromi
 launch limitation. Unit regressions run in `npm --prefix web test`; the isolated
 browser fixture is `npm --prefix web run test:all-frames`.
 
-Selection persists in local storage. Reload validates the project, page, frame, and node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed frame/layer fallbacks.
+Selection persists in the URL query. Reload validates the project, page, frame, and optional node against the current snapshot, falling back to All when a frame disappears. A visible message explains removed page/frame/layer fallbacks.
 
-The first snapshot request and the event stream start in the same effect pass; every stream open refetches the snapshot, so a commit between the two is never lost. The stream cursor is based on the last accepted HTTP snapshot. Duplicates and foreign project commits are ignored; a commit, gap, reset, or reconnect refetches the authoritative snapshot. Reconnect uses bounded exponential backoff with jitter. Concurrent refreshes coalesce without losing a subsequent refresh. HTTP snapshots never move revision backwards.
+The first snapshot request and event stream start together. SWR owns project-list and
+snapshot server state inside the authorized viewer lifetime. Snapshot request keys include
+project, known revision watermark, object representation, visibility scope and an explicit
+metadata invalidation epoch; scene viewport/theme/frame parameters are independent. The
+snapshot endpoint returns latest, so a newer response is stored only under its actual
+canonical revision. Same-revision events, list refreshes, focus/reconnect and warm project
+switches reuse that payload without another snapshot GET. Every stream open reconciles the
+authoritative list/revision watermarks, and durable commits replay from the last accepted
+HTTP snapshot cursor. Foreign/duplicate commits are ignored; newer commits advance the
+watermark. Different revision requests share an in-flight latest read, then perform a
+follow-up if the response did not satisfy a newer queued watermark. Explicit reset,
+visibility and manual retry invalidate metadata even at the same authored revision, retaining
+ETag/304 and monotonic snapshot checks. Reconnect uses bounded exponential backoff and jitter.
 
 Each render request has an effect lifetime and validates project/revision/frame, expected job ID, viewport, theme/state, and source scene key. A newer revision in the same project/frame/preset retains the last ready scene and loaded resources while pending or failed. A compact, nonblocking status explicitly names the displayed scene revision and requested revision, with Retry on failure; the canvas remains mounted and interactive even during an active drag. The region exposes `aria-busy` while pending. Computed inspector geometry is suppressed until the scene exactly matches the current request, so it cannot silently mix with newer authored properties. Project/frame/preset navigation immediately hides incompatible content before effects run. Late resources and jobs cannot publish into a newer request. Pending jobs are polled at 500 ms and time out after 45 seconds. The top-level job error is distinct from snapshot/connection error; missing fonts and assets display labeled shared-renderer placeholders and explicit status text. Scene and authored revisions are displayed separately.
 
@@ -150,27 +174,44 @@ and asset requests after three tabs. With a project selected the tab uses the pr
 (`/api/v1/events`). Switching closes the previous stream before opening the next, and a failed
 stream is closed before its backoff timer opens a replacement.
 
-- **Live project list.** `project_created` inserts or updates the project in the selector by
-  `projectId`, in the list API's slug order, without a reload. While the workspace is empty the
-  viewer selects the new project, as on first load, and switches to its project stream;
-  otherwise a short notice names the new project.
+- **Live project list.** `project_created` refreshes the authoritative HTTP list. All pages
+  are read before publishing membership. While the workspace is empty the viewer selects
+  the first listed project and switches to its project stream; otherwise a short notice
+  names the new project. A hint alone cannot add a project to the selector.
 - **Activity marks.** `project_activity` from another project bumps its revision in the list,
   marks it with `●` in the selector, shows a count next to the selector and a short notice with
   the project's name. It never refetches the snapshot in view. Selecting the project clears its
   mark and loads its newest revision.
-- **Hints are not durable.** On every stream open and every `reset_required` the viewer refetches
-  both the snapshot and `GET /api/v1/projects`; the list merges by `projectId` and never drops a
-  hinted project or moves a revision backwards. Only the first page (100 projects) is read.
+- **Hints are not durable.** Every stream open/reconnect and reset refreshes
+  `GET /api/v1/projects`, including pagination. HTTP owns visible membership; hints retain
+  newer revision watermarks for listed projects. Unchanged watermarks reuse snapshots;
+  reset/visibility events explicitly revalidate snapshot metadata. Removed projects and
+  snapshot 404s invalidate their cached payloads.
 - **Follow agent** (status bar checkbox). When on, `project_created` or `project_activity` moves
   the viewer to that project. It is **off by default** (`FOLLOW_AGENT_DEFAULT` in
   `web/src/hooks/useFollowAgent.ts`), because jumping away from the project in view loses
   context, and the choice persists in local storage (`opencanvas.followAgent`) when available.
 
-Code: `useProjectList` (list and refetch), `useProjectStream` (the single stream),
-`useSnapshot` (authoritative snapshot), `useFollowAgent`, composed by `useProject`; pure reducers
+Code: App explicitly composes `useProjectList` (SWR list and revision hints),
+`useProject` (URL-derived selection/fallback notices only), `useSnapshot` (SWR snapshot), and
+`useProjectLive` (single-stream handlers, follow/activity). `useProjectStream` owns connection
+lifetime/backoff; `useFollowAgent` owns the follow preference. Pure reducers
 `mergeProjects`, `bumpRevision`, `markActivity`, `clearActivity`, `pickProject` and
 `followTarget` live in `web/src/state.ts` with unit tests. Passive scene viewing sends only GET;
 explicit font imports and computed exports use their documented POST endpoints.
+
+The scoped cache retains at most eight latest project snapshot payloads, with no historical
+trees. Revisiting an evicted project reads it again. Small request/pointer/epoch records
+remain until that project is evicted or the authorized route unmounts. Locking/unmounting
+discards the whole provider and aborts its pending snapshot reads; another authorization
+lifetime cannot reuse its payloads or validators.
+
+`useNavigationUrl` observes history through `useSyncExternalStore`; selection is
+never copied into a React reducer or localStorage. Pure selection transitions are
+applied to the address, with obsolete-address checks before automatic writes.
+Follow hints for unlisted projects wait for authoritative membership and cancel
+when the user navigates, disables follow, retries, disconnects or unmounts.
+See `docs/URL-NAVIGATION.md` for verification and the navigation contract.
 
 ## Verification — 2026-10-28
 

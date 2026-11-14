@@ -6,7 +6,11 @@ pub const SCHEMA_VERSION: u32 = 4;
 pub const MAX_BATCH_OPS: usize = 500;
 pub const MAX_BATCH_BYTES: usize = 2 * 1024 * 1024;
 pub const MAX_ASSET_BYTES: usize = 10 * 1024 * 1024;
+/// Authored and expanded nodes per project. Only the Task24 benchmark feature raises it.
+#[cfg(not(feature = "large-project-bench"))]
 pub const MAX_NODES: usize = 20_000;
+#[cfg(feature = "large-project-bench")]
+pub const MAX_NODES: usize = 2_000_000;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]

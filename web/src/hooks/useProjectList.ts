@@ -1,80 +1,80 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import { read } from "../api";
-import { bumpRevision, mergeProjects } from "../state";
+import { bumpRevision } from "../state";
+import { snapshotResource } from "../data/snapshotResource";
 import type { ActivityEvent, ProjectRef } from "../types";
 
 interface ProjectPage {
   projects: ProjectRef[];
   nextCursor?: string | null;
 }
+const LIST_KEY = ["projects", "visible", "all-pages"] as const;
+const HINTS_KEY = ["project-revision-hints"] as const;
+const EMPTY: ProjectRef[] = [];
+const NO_HINTS: Record<string, number> = {};
 
-/**
- * The project list. `GET /api/v1/projects` is the source of truth: it loads on mount and retry
- * and is refetched on stream (re)open and visibility changes. The response defines which
- * projects are visible. Live activity can preserve a newer revision of a listed project.
- */
-export function useProjectList(reload: number) {
-  const [projects, setProjects] = useState<ProjectRef[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState("");
-  const pending = useRef<AbortController | null>(null);
-
-  const refetch = useCallback(async () => {
-    pending.current?.abort();
-    const controller = new AbortController();
-    pending.current = controller;
-    try {
-      const incoming: ProjectRef[] = [];
-      let cursor: string | null | undefined;
-      do {
-        const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
-        const page = await read<ProjectPage>(
-          `/api/v1/projects${query}`,
-          controller.signal,
-        );
-        if (controller.signal.aborted) return;
-        incoming.push(...page.projects);
-        cursor = page.nextCursor;
-      } while (cursor);
-      const visible = new Set(incoming.map(({ projectId }) => projectId));
-      setProjects((previous) =>
-        mergeProjects(
-          previous.filter(({ projectId }) => visible.has(projectId)),
-          incoming,
-        ),
+async function listProjects() {
+  const projects: ProjectRef[] = [];
+  let cursor: string | null | undefined;
+  const seen = new Set<string>();
+  do {
+    const page = await read<ProjectPage>(
+      `/api/v1/projects${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`,
+    );
+    projects.push(...page.projects);
+    cursor = page.nextCursor;
+    if (cursor && seen.has(cursor))
+      throw new Error(
+        "The project list could not be completed. Retry this view.",
       );
-      setLoaded(true);
-      setError("");
-    } catch (cause) {
-      if (!controller.signal.aborted)
-        setError(
-          cause instanceof Error ? cause.message : "Projects unavailable.",
-        );
-    }
-  }, []);
+    if (cursor) seen.add(cursor);
+  } while (cursor);
+  return projects;
+}
 
+/** HTTP owns membership; revision hints cannot insert an unlisted project. */
+export function useProjectList() {
+  const { cache, mutate } = useSWRConfig();
+  const query = useSWR<ProjectRef[]>(LIST_KEY, listProjects);
+  const hints = useSWR<Record<string, number>>(HINTS_KEY, null);
   useEffect(() => {
-    refetch();
-    return () => pending.current?.abort();
-  }, [refetch, reload]);
-
-  const merge = useCallback(
-    (incoming: ProjectRef[]) =>
-      setProjects((previous) => mergeProjects(previous, incoming)),
-    [],
+    if (query.data)
+      snapshotResource(cache, mutate).reconcileVisible(
+        query.data.map((project) => project.projectId),
+      );
+  }, [cache, mutate, query.data]);
+  const projects = useMemo(
+    () =>
+      Object.entries(hints.data ?? NO_HINTS).reduce(
+        (entries, [projectId, revision]) =>
+          bumpRevision(entries, { projectId, revision }),
+        query.data ?? EMPTY,
+      ),
+    [query.data, hints.data],
   );
+  const refetch = useCallback(() => {
+    return query.mutate().catch(() => undefined);
+  }, [query.mutate]);
   const bump = useCallback(
-    (event: ActivityEvent) =>
-      setProjects((previous) => bumpRevision(previous, event)),
-    [],
+    (event: ActivityEvent) => {
+      if (!Number.isSafeInteger(event.revision)) return;
+      void hints.mutate(
+        (previous = {}) =>
+          previous[event.projectId] >= event.revision
+            ? previous
+            : { ...previous, [event.projectId]: event.revision },
+        { revalidate: false },
+      );
+    },
+    [hints.mutate],
   );
   return {
     projects,
-    loaded,
-    loading: !loaded && !error,
-    error,
+    loaded: query.data !== undefined,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : "",
     refetch,
-    merge,
     bump,
   };
 }

@@ -51,7 +51,7 @@ export function useProjectStream(
     if (!enabled) return;
     let stopped = false;
     let stream: EventSource | undefined;
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     let attempts = 0;
     setConnection("connecting");
     const url = () => {
@@ -62,34 +62,44 @@ export function useProjectStream(
     };
     const connect = () => {
       if (stopped) return;
-      stream = new EventSource(url());
-      stream.onopen = () => {
+      const source = new EventSource(url());
+      stream = source;
+      // Closed sources may still have queued callbacks. They must not invoke handlers
+      // for the next project or schedule another replacement stream.
+      const active = () => !stopped && stream === source;
+      source.onopen = () => {
+        if (!active()) return;
         attempts = 0;
         setConnection("live");
-        // Hints are not durable: reconcile the list and snapshot on every open.
+        // Hints are not durable: reconcile membership/revision watermarks on open.
         latest.current.onOpen();
       };
-      stream.addEventListener("commit", (message) =>
-        latest.current.onCommit(parse<CommitEvent>(message)),
+      source.addEventListener("commit", (message) =>
+        active() && latest.current.onCommit(parse<CommitEvent>(message)),
       );
-      stream.addEventListener("reset_required", () => latest.current.onReset());
-      stream.addEventListener("project_visibility_changed", () =>
-        latest.current.onVisibilityChanged(),
+      source.addEventListener("reset_required", () =>
+        active() && latest.current.onReset(),
       );
-      stream.addEventListener("project_created", (message) => {
+      source.addEventListener("project_visibility_changed", () =>
+        active() && latest.current.onVisibilityChanged(),
+      );
+      source.addEventListener("project_created", (message) => {
+        if (!active()) return;
         const project = parse<ProjectRef>(message);
         if (project?.projectId) latest.current.onCreated(project);
       });
-      stream.addEventListener("project_activity", (message) => {
+      source.addEventListener("project_activity", (message) => {
+        if (!active()) return;
         const event = parse<ActivityEvent>(message);
         if (event?.projectId) latest.current.onActivity(event);
       });
-      stream.onerror = () => {
-        if (stopped) return;
+      source.onerror = () => {
+        if (!active()) return;
         // An HTTP denial is terminal for EventSource. It doesn't expose the status.
-        if (stream?.readyState === EventSource.CLOSED)
+        if (source.readyState === EventSource.CLOSED)
           requestViewerSessionCheck();
-        stream?.close();
+        source.close();
+        stream = undefined;
         latest.current.onReconnect();
         setConnection("reconnecting");
         timer = setTimeout(

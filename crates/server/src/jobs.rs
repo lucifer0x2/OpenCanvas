@@ -15,6 +15,7 @@ mod record;
 mod resource_bytes;
 mod retain;
 mod runner;
+mod shared;
 mod states;
 mod subtree;
 mod wait;
@@ -94,26 +95,8 @@ impl Jobs {
         self.enqueue_inner(snapshot, request, true, Priority::Direct, None)
             .await
     }
-    /// Context reads retain failures for diagnosis. Explicit render_frame retries them.
-    pub(crate) async fn for_context(
-        &self,
-        snapshot: Snapshot,
-        request: SceneRequest,
-    ) -> Result<Value> {
-        self.enqueue_inner(snapshot, request, false, Priority::Direct, None)
-            .await
-    }
-    /// A commit prerender: queued behind requested renders, superseded by a newer prerender of
-    /// the same frame, and never rejected for a full requested tier.
-    pub(crate) async fn prerender(
-        &self,
-        snapshot: Snapshot,
-        request: SceneRequest,
-    ) -> Result<Value> {
-        self.enqueue_inner(snapshot, request, true, Priority::Background, None)
-            .await
-    }
     /// A requested export of one node, laid out in its root frame (`request`) at scale 1.
+    #[cfg(test)]
     pub(crate) async fn export(
         &self,
         snapshot: Snapshot,
@@ -132,6 +115,14 @@ impl Jobs {
         export: Option<ExportSpec>,
     ) -> Result<Value> {
         let prepared = prepared::Prepared::new(&snapshot, request, &self.config, export)?;
+        self.admit_one(prepared, retry, priority).await
+    }
+    async fn admit_one(
+        &self,
+        prepared: prepared::Prepared,
+        retry: bool,
+        priority: Priority,
+    ) -> Result<Value> {
         let mut guard = self.table.lock().await;
         let value = guard.admit(prepared, retry, priority)?;
         drop(guard);

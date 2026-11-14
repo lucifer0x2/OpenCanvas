@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { FontImportError, downloadFont, importFont, listFonts } from "./api";
+import { FontImportError, downloadFont, importFont } from "./api";
 import { readFontFile } from "./fontFiles";
-import type { FontDetails, FontImport, FontList, ProjectFont } from "./types";
+import { useFontInventory } from "./useFontInventory";
+import type { FontDetails, FontImport, ProjectFont } from "./types";
 
 /** One project per mounted manager; requests and immutable retries never cross projects. */
 export function useFonts(
@@ -10,48 +11,26 @@ export function useFonts(
   open: boolean,
   changed: () => void,
 ) {
-  const [data, setData] = useState<FontList | null>(null);
-  const [loading, setLoading] = useState(false);
+  const inventory = useFontInventory(projectId, revision, open);
+  const { data, refresh } = inventory;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [loadError, setLoadError] = useState("");
   const [notice, setNotice] = useState("");
   const [retryable, setRetryable] = useState(false);
-  const [reload, setReload] = useState(0);
   const frozen = useRef<FontImport | null>(null);
+  const inFlight = useRef(false);
   const lifetime = useRef(new AbortController());
-  const refresh = () => setReload((value) => value + 1);
   useEffect(() => {
     const controller = new AbortController();
     lifetime.current = controller;
     return () => controller.abort();
   }, []);
-  useEffect(() => {
-    if (!open || revision === undefined) return;
-    const controller = new AbortController();
-    setLoading(true);
-    listFonts(projectId, controller.signal)
-      .then((next) => {
-        if (!controller.signal.aborted) {
-          setData(next);
-          setLoadError("");
-        }
-      })
-      .catch((cause) => {
-        if (!controller.signal.aborted) {
-          setData(null);
-          setLoadError(cause.message ?? "Could not load project fonts.");
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [projectId, revision, open, reload]);
-
   const submit = async (file?: File, details?: FontDetails) => {
-    if (busy || (!frozen.current && (!data || !file || !details))) return false;
+    if (inFlight.current || (!frozen.current && (!data || !file || !details)))
+      return false;
     const signal = lifetime.current.signal;
+    if (signal.aborted) return false;
+    inFlight.current = true;
     setBusy(true);
     setError("");
     setNotice("");
@@ -113,6 +92,7 @@ export function useFonts(
       }
       return false;
     } finally {
+      inFlight.current = false;
       if (!signal.aborted) setBusy(false);
     }
   };
@@ -128,9 +108,9 @@ export function useFonts(
   };
   return {
     data,
-    loading,
+    loading: inventory.loading,
     busy,
-    error: error || loadError,
+    error: error || inventory.error,
     notice,
     retryable,
     refresh,

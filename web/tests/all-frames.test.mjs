@@ -91,17 +91,21 @@ test("board selection translates the pointer, preserves local bounds and respect
   ];
   const frames = [
     { id: "empty", width: 800, height: 600 },
-    { id: "second", width: 300, height: 600, scene: { nodes } },
+    { id: "second", width: 300, height: 600, scene: { nodes }, revision: 7 },
   ];
   const layout = [
     { x: 0, y: 32 },
     { x: 864, y: 32 },
   ];
   const before = structuredClone(nodes);
-  assert.equal(boardHitTest(frames, layout, 864 + 30, 32 + 40)?.id, "child");
-  assert.equal(boardHitTest(frames, layout, 864 + 320, 32 + 40), undefined);
-  assert.equal(boardHitTest(frames, layout, 830, 40), undefined);
+  assert.equal(boardHitTest(frames, layout, 864 + 30, 32 + 40, 7)?.id, "child");
+  assert.equal(boardHitTest(frames, layout, 864 + 320, 32 + 40, 7), undefined);
+  assert.equal(boardHitTest(frames, layout, 830, 40, 7), undefined);
   assert.deepEqual(nodes, before);
+  // Only the accepted revision is hit: older and stale scenes are not current.
+  assert.equal(boardHitTest(frames, layout, 864 + 30, 32 + 40, 8), undefined);
+  const stale = [frames[0], { ...frames[1], stale: true }];
+  assert.equal(boardHitTest(stale, layout, 864 + 30, 32 + 40, 7), undefined);
 });
 
 test("labels stay 12 CSS pixels at 27% and 5%, with reserved Fit clearance and extreme zoom collision handling", () => {

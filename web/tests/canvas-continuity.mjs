@@ -193,17 +193,53 @@ await withContinuityViewer(async (page, fixture, errors) => {
   await manual();
   fixture.setMode("pending");
   await choose("Project", "second");
-  await page.getByText("Scene pending", { exact: true }).waitFor();
-  assert.equal(
-    await page.locator("canvas").count(),
-    0,
-    "project navigation hides old content",
+  // Project navigation deliberately defaults to All. Its skeletons are new content;
+  // none of the previous project's rendered scenes or computed bounds may survive.
+  await page.getByText("0/2 frames ready", { exact: true }).waitFor();
+  await settled(page);
+  assert.match(
+    await page.getByRole("combobox", { name: "Viewport", exact: true }).innerText(),
+    /^Mobile/,
+    "project navigation preserves the globally selected viewport preset",
   );
+  const nextBoard = await page.evaluate(() => {
+    const stage = window.Konva.stages[0];
+    const frames = stage.find(".canvas-frame");
+    const width = Math.max(...frames.map((frame) => frame.x() + frame.findOne("Rect").width()));
+    const height = Math.max(...frames.map((frame) => frame.y() + frame.findOne("Rect").height()));
+    const scale = Math.max(0.0001, Math.min((stage.width() - 96) / width, (stage.height() - 120) / height, 1));
+    const snap = (value) => Math.round(value * devicePixelRatio) / devicePixelRatio;
+    return {
+      ids: frames.map((frame) => frame.id()),
+      sizes: frames.map((frame) => ({
+        width: frame.findOne("Rect").width(), height: frame.findOne("Rect").height(),
+      })),
+      shapes: frames.reduce((total, frame) => total + frame.find((node) => node.getClassName() === "Shape").length, 0),
+      camera: { x: snap((stage.width() - width * scale) / 2), y: snap((stage.height() - height * scale) / 2), scale },
+      hit: {
+        x: stage.x() + (frames[0].x() + 40) * stage.scaleX(),
+        y: stage.y() + (frames[0].y() + 60) * stage.scaleY(),
+      },
+    };
+  });
+  assert.deepEqual(nextBoard.ids, ["frame", "other"]);
+  assert.deepEqual(nextBoard.sizes, [{ width: 390, height: 844 }, { width: 390, height: 844 }]);
+  assert.equal(nextBoard.shapes, 0, "project skeletons cannot paint earlier scene/resources");
+  assert.equal(
+    await page.locator(".inspector .bounds-grid").count(),
+    0,
+    "project navigation hides the previous computed geometry",
+  );
+  await sameCamera(nextBoard.camera, "new project fits its actual board geometry");
+  const pane = await page.locator(".canvas-host").boundingBox();
+  await page.mouse.click(pane.x + nextBoard.hit.x, pane.y + nextBoard.hit.y);
+  assert.equal(await page.locator(".layer-select[aria-pressed=true]").count(), 0,
+    "pending skeletons cannot hit-test the earlier project's scene");
   fixture.complete(14);
   await ready(14);
   await sameCamera(
-    mobileFit,
-    "project identity resets camera even with colliding frame IDs",
+    nextBoard.camera,
+    "new project scene arrival preserves its deliberate board fit",
   );
   assert.deepEqual(errors, []);
   assert.ok(fixture.requests.every((request) => request.method === "GET"));

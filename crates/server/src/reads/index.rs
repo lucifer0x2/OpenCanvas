@@ -12,9 +12,13 @@ pub(super) struct TreeIndex<'a> {
 
 impl<'a> TreeIndex<'a> {
     pub fn new(nodes: &'a [Node]) -> Self {
+        Self::from_nodes(nodes.iter())
+    }
+
+    pub fn from_nodes(nodes: impl IntoIterator<Item = &'a Node>) -> Self {
         let mut roots = Vec::new();
         let mut children: HashMap<&str, Vec<&Node>> = HashMap::new();
-        let mut by_id = HashMap::with_capacity(nodes.len());
+        let mut by_id = HashMap::new();
         for node in nodes {
             match node.parent_id.as_deref() {
                 Some(parent) => children.entry(parent).or_default().push(node),

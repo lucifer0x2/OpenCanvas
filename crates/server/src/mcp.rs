@@ -81,11 +81,11 @@ async fn dispatch(state: &AppState, name: &str, args: Value) -> Result<Value> {
             domain::mutate(state, name, args).await
         }
         "get_edit_context" => {
-            let snapshot = state
-                .snapshot(args["projectId"].as_str().unwrap().into())
-                .await?;
+            let project = args["projectId"].as_str().unwrap().to_owned();
             let pages = serde_json::from_value(args["pageIds"].clone())?;
-            Ok(opencanvas_storage::edit_context(snapshot, pages)?)
+            state
+                .db(move |store| store.shared_snapshot(&project)?.edit_context(pages))
+                .await
         }
         "get_outline" | "get_subtree" | "get_design_context" | "find_nodes" | "list_tokens"
         | "list_styles" | "list_assets" | "list_fonts" => reads::read(state, name, args).await,
@@ -104,8 +104,10 @@ pub(crate) async fn scene(
     project: String,
     request: SceneRequest,
 ) -> Result<Value> {
-    let snapshot = state.snapshot(project).await?;
-    state.jobs.enqueue(snapshot, request).await
+    let snapshot = state
+        .db(move |store| store.shared_snapshot(&project))
+        .await?;
+    state.jobs.enqueue_shared(&snapshot, request).await
 }
 pub(crate) async fn render(state: &AppState, mut args: Value) -> Result<Value> {
     let project = args["projectId"]

@@ -4,6 +4,7 @@ import { once } from "node:events";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { PAGE_SIZES, startAllFramesFixture } from "./all-frames-fixture.mjs";
+import { board, camera, checkBoard, checkServerPaths, choose, frameScope, ready, settled } from "./all-frames-browser.mjs";
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= fileURLToPath(
   new URL("../../.runtime/browsers", import.meta.url),
@@ -32,58 +33,6 @@ const artifacts = fileURLToPath(
 await mkdir(artifacts, { recursive: true });
 const sceneRequests = () =>
   fixture.requests.filter((url) => /\/scenes?\?/.test(url));
-const choose = async (page, label, option) => {
-  await page.getByRole("combobox", { name: label, exact: true }).click();
-  await page.getByRole("option", { name: option, exact: true }).click();
-};
-const board = (page) =>
-  page.evaluate(() => {
-    const stage = window.Konva.stages.find(
-      (entry) => entry.container()?.isConnected,
-    );
-    if (!stage) return [];
-    return stage.find(".canvas-frame").map((frame) => ({
-      id: frame.id(),
-      x: frame.x(),
-      y: frame.y(),
-      width: frame.findOne("Rect").width(),
-      height: frame.findOne("Rect").height(),
-      label: frame.findOne("Text")?.text(),
-    }));
-  });
-const camera = (page) =>
-  page.evaluate(() => {
-    const stage = window.Konva.stages.find(
-      (entry) => entry.container()?.isConnected,
-    );
-    return { x: stage.x(), y: stage.y(), scale: stage.scaleX() };
-  });
-async function ready(page, count, revision = 7) {
-  await page
-    .getByText(count ? `Scene r${revision}` : "No scene", { exact: true })
-    .waitFor();
-  assert.equal((await board(page)).length, count);
-}
-async function checkBoard(page, pageId) {
-  const entries = await board(page);
-  assert.deepEqual(
-    entries.map((entry) => entry.id),
-    PAGE_SIZES[pageId].map((_, i) => `${pageId}-${i}`),
-  );
-  for (const entry of entries) {
-    assert.ok(entry.label.startsWith(pageId));
-    assert.ok(entry.y >= 32);
-    for (const other of entries) {
-      if (entry.id === other.id) continue;
-      assert.ok(
-        entry.x + entry.width + 63 <= other.x ||
-          other.x + other.width + 63 <= entry.x ||
-          entry.y + entry.height + 95 <= other.y ||
-          other.y + other.height + 95 <= entry.y,
-      );
-    }
-  }
-}
 try {
   for (let i = 0; i < 100 && !output.match(/http:\/\/127\.0\.0\.1:\d+/); i++)
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -110,7 +59,12 @@ try {
     errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(base);
+  await ready(page, 3);
+  assert.equal(await frameScope(page), "All", "fresh selection defaults to All");
+  await checkBoard(page, "three");
+  await choose(page, "Frame", "three / Frame 2");
   await ready(page, 1);
+  assert.equal((await board(page))[0].id, "three-1");
   await choose(page, "Frame", "All");
   await ready(page, 3);
   await checkBoard(page, "three");
@@ -136,10 +90,19 @@ try {
   assert.equal(new URL(link).searchParams.get("frame"), "three-1");
   assert.equal(new URL(link).searchParams.get("node"), "three-1-shape");
   assert.match(await page.locator(".bounds-grid").innerText(), /x\s+24/);
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.locator(".canvas-host").focus();
+  await page.keyboard.press("ArrowRight");
+  await settled(page);
   const before = await camera(page);
   fixture.update();
   await ready(page, 3, 8);
   assert.deepEqual(await camera(page), before);
+  assert.deepEqual(await page.evaluate(() => window.__workerSnapshots), [7, 8],
+    "one structured snapshot per revision across single and All scopes");
+  const fontRequests = () => fixture.requests.filter((url) =>
+    url.endsWith("/fonts/font_bundled/download")).length;
+  assert.equal(fontRequests(), 1, "all frames and revisions share font bytes");
   await page.reload();
   await ready(page, 3, 8);
   assert.equal(
@@ -159,71 +122,37 @@ try {
   await ready(page, 9, 8);
   const resizedFrom = await camera(page);
   await page.setViewportSize({ width: 1100, height: 800 });
-  await page.waitForTimeout(100);
+  await settled(page);
   assert.deepEqual(await camera(page), resizedFrom, "resize preserves camera");
   await page.getByRole("button", { name: "Fit frame", exact: true }).click();
   assert.notDeepEqual(await camera(page), resizedFrom);
   await page.screenshot({ path: `${artifacts}/nine-narrow.png` });
+  const boardCamera = await camera(page);
   await choose(page, "Frame", "nine / Frame 2");
   await ready(page, 1, 8);
-  await choose(page, "Frame", "All");
+  assert.equal((await board(page))[0].id, "nine-1");
+  assert.notDeepEqual(await camera(page), boardCamera, "single-frame scope refits");
+  await choose(page, "Page", "three");
+  await ready(page, 3, 8);
+  await checkBoard(page, "three");
+  await choose(page, "Page", "nine");
   await ready(page, 9, 8);
+  await checkBoard(page, "nine");
   assert.deepEqual(
     sceneRequests(),
     [],
     "healthy WASM All never calls scene APIs",
   );
-  assert.equal(
-    fixture.requests.filter((url) =>
-      url.endsWith("/fonts/font_bundled/download"),
-    ).length,
-    1,
-  );
+  assert.equal(fontRequests(), 2, "reload owns one new shared font cache");
   const snapshots = await page.evaluate(() => window.__workerSnapshots);
   assert.deepEqual(
     snapshots,
-    [7, 8],
-    "one structured snapshot per accepted revision across all frames/scopes",
+    [8],
+    "reload transfers revision once across all pages and scopes",
   );
   assert.deepEqual(errors, []);
   await context.close();
-  // Server batches never queue more than four, and failures stay visible in their slots.
-  const server = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
-  });
-  const serverPage = await server.newPage();
-  await serverPage.goto(`${base}/?scene=server`);
-  await ready(serverPage, 1, 8);
-  await choose(serverPage, "Page", "nine");
-  await ready(serverPage, 1, 8);
-  fixture.fail("nine-4");
-  await choose(serverPage, "Frame", "All");
-  await serverPage
-    .getByText("Render failed", { exact: true })
-    .first()
-    .waitFor();
-  assert.equal((await board(serverPage)).length, 9);
-  await serverPage.screenshot({ path: `${artifacts}/partial-failure.png` });
-  fixture.fail("");
-  await serverPage.getByRole("button", { name: "Retry render" }).click();
-  await ready(serverPage, 9, 8);
-  assert.deepEqual(fixture.metrics(), { maxActive: 4, overlap: false });
-  await server.close();
-  // A missing WASM module uses the same bounded server page contract with visible reason.
-  const fallback = await browser.newContext();
-  await fallback.route("**/scene-wasm/opencanvas_scene_wasm.js", (route) =>
-    route.fulfill({ status: 404, body: "unavailable" }),
-  );
-  const fallbackPage = await fallback.newPage();
-  await fallbackPage.goto(base);
-  await ready(fallbackPage, 1, 8);
-  await choose(fallbackPage, "Frame", "All");
-  await ready(fallbackPage, 3, 8);
-  await fallbackPage
-    .getByText(/Browser scene unavailable; using server scene/)
-    .waitFor();
-  assert.deepEqual(fixture.metrics(), { maxActive: 4, overlap: false });
-  await fallback.close();
+  await checkServerPaths(browser, base, fixture, artifacts);
   console.log(
     "All frames smoke passed: 0/1/3/4/9/mixed, labels/spacing, selection/link/bounds, SSE/reload, scope/resize/Fit, shared WASM/font caches, bounded server batches, partial failure/retry and WASM fallback.",
   );

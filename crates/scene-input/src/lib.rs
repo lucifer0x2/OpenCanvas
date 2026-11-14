@@ -1,6 +1,7 @@
 //! Pure authored models, validation, expansion and scene input preparation.
 //! Default features require no database, filesystem, network or async runtime.
 mod animation_catalog;
+pub mod bench_phase;
 mod content_key;
 mod error;
 mod export_settings;
@@ -12,6 +13,8 @@ mod links;
 mod model;
 mod props_catalog;
 mod props_suggest;
+#[path = "scoped/mod.rs"]
+pub mod read_scope;
 pub mod scene_diagnostics;
 pub mod validate;
 mod viewport;

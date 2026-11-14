@@ -1,6 +1,6 @@
 //! Per-operation shape checks of navigation props (`links`, `flowStart`); destinations and
 //! flow names are checked once per batch in `navigation.rs`.
-use super::{values::valid_id, Candidate};
+use super::{scope::Resolver, values::valid_id};
 use crate::{
     error::*,
     links::{Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME},
@@ -96,7 +96,7 @@ fn link_key_suggestion(key: &str) -> Option<&'static str> {
     }
 }
 
-impl Candidate {
+impl Resolver<'_> {
     /// `flowStart` is a flow name of 1–64 bytes on a root frame (a direct child of a page).
     pub(super) fn check_flow_start(&self, n: &Node, value: &Value) -> Result<()> {
         if value

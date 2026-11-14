@@ -119,3 +119,7 @@ fn project(node: &Value, fields: &[&str]) -> Value {
     }
     out
 }
+
+#[cfg(test)]
+#[path = "inspect_tests.rs"]
+mod tests;

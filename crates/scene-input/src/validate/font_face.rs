@@ -1,5 +1,5 @@
 //! Exact imported static-face selection. Never synthesize or choose a nearby weight.
-use super::Candidate;
+use super::scope::Resolver;
 use crate::{Font, Result, StorageError};
 use serde_json::{Map, Value};
 
@@ -28,7 +28,7 @@ pub(super) fn check_face_property(key: &str, value: &Value) -> Result<()> {
     }
 }
 
-impl Candidate {
+impl Resolver<'_> {
     pub(super) fn select_font_face(
         &self,
         out: &mut Map<String, Value>,

@@ -1,8 +1,43 @@
 //! Which frames a commit's prerender should warm. The viewer shows top-level frames, so a changed
 //! node maps to the outermost frame that contains it (itself included), found through the index.
 use super::index::TreeIndex;
-use opencanvas_storage::{Node, NodeKind, Snapshot};
+use opencanvas_storage::{read_scope::ScopedSnapshot, Node, NodeKind, SharedSnapshot, Snapshot};
 use std::collections::HashSet;
+
+pub(crate) fn prerender_shared<'a>(
+    shared: &'a SharedSnapshot,
+    changed_ids: &[&str],
+    max: usize,
+) -> crate::error::Result<Vec<&'a Node>> {
+    let Some(scoped) = shared.trusted_scoped()? else {
+        return Ok(prerender_frames(&shared.snapshot, changed_ids, max));
+    };
+    let touched: HashSet<&str> = changed_ids
+        .iter()
+        .filter_map(|id| outermost_frame(&scoped, id))
+        .collect();
+    Ok(scoped
+        .frames()
+        .filter(|frame| touched.is_empty() || touched.contains(frame.id.as_str()))
+        .take(max)
+        .collect())
+}
+
+/// The outermost frame on `id`'s parent chain, itself included. Storage rejects cycles, but rows
+/// written behind the validator may hold one: the walk stops after one step per snapshot node,
+/// like `TreeIndex::ancestors`, keeping the frames seen so far (best-effort warm-up selection).
+fn outermost_frame<'a>(scoped: &ScopedSnapshot<'a>, id: &str) -> Option<&'a str> {
+    let mut node = scoped.node(id);
+    let mut frame = None;
+    for _ in 0..=scoped.snapshot().nodes.len() {
+        let Some(current) = node else { break };
+        if current.kind == NodeKind::Frame {
+            frame = Some(current.id.as_str());
+        }
+        node = current.parent_id.as_deref().and_then(|id| scoped.node(id));
+    }
+    frame
+}
 
 /// Frames to prerender after a commit, in storage order, at most `max`. Frames containing a
 /// changed node are chosen; when no changed ID resolves to a frame (token/style-only
@@ -113,5 +148,35 @@ mod tests {
         assert_eq!(ids(prerender_frames(&s, &["deleted-node"], 4)), first);
         assert_eq!(ids(prerender_frames(&s, &["page"], 4)), first);
         assert_eq!(ids(prerender_frames(&s, &[], 4)), first);
+    }
+
+    #[test]
+    fn indexed_prerender_selection_retains_source_order_and_legacy_fallback() {
+        let root = tempfile::tempdir().unwrap();
+        let store: opencanvas_storage::Storage =
+            opencanvas_storage::Store::open(root.path()).unwrap().into();
+        let project = store.create_project("targets", "Targets").unwrap();
+        let ops: Vec<_> = six_frames().nodes.into_iter().map(|mut node| {
+            if node.kind == NodeKind::Frame { node.props = serde_json::json!({"width":10,"height":10}); }
+            if node.kind == NodeKind::Text { node.props = serde_json::json!({"text":"copy","fontId":"font_bundled","fontSize":10,"lineHeight":12}); }
+            serde_json::json!({"op":"create_node","id":node.id,"parentId":node.parent_id,"kind":node.kind,"props":node.props})
+        }).collect();
+        project.apply_batch(serde_json::from_value(serde_json::json!({"projectId":project.id(),"expectedRevision":0,"idempotencyKey":"seed","operations":ops})).unwrap()).unwrap();
+        let shared = store.shared_snapshot(project.id()).unwrap();
+        for changed in [
+            vec!["inner-t"],
+            vec!["f6", "f2-g"],
+            vec!["token"],
+            vec!["deleted"],
+            vec!["page"],
+            vec![],
+        ] {
+            for max in [0, 1, 4, 10] {
+                assert_eq!(
+                    ids(prerender_shared(&shared, &changed, max).unwrap()),
+                    ids(prerender_frames(&shared.snapshot, &changed, max))
+                );
+            }
+        }
     }
 }

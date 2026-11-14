@@ -1,31 +1,37 @@
 //! Component graph, override shape and authored/virtual write boundaries.
+use super::scope::Resolver;
 use super::Candidate;
 use crate::{
     instances::{expand, INSTANCE_KEYS, OVERRIDE_KEYS},
     *,
 };
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 impl Candidate {
-    pub(super) fn validate_instances(&self) -> Result<()> {
+    pub(super) fn validate_instances(
+        &self,
+        affected: Option<&BTreeSet<String>>,
+        themes: &BTreeSet<String>,
+    ) -> Result<Option<BTreeMap<String, Node>>> {
         if !self
             .nodes
             .values()
             .any(|n| n.kind == NodeKind::Instance || n.props.get("component").is_some())
         {
-            return Ok(());
+            return Ok(None);
         }
         let has_instances = self.nodes.values().any(|n| n.kind == NodeKind::Instance);
         self.instance_graph()?;
-        let expanded = expand(&self.nodes.values().cloned().collect::<Vec<_>>())?;
-        let themes = self.validate_tokens()?;
-        let mut placed = self.clone();
-        placed.nodes = expanded
-            .iter()
-            .cloned()
-            .map(|n| (n.id.clone(), n))
-            .collect();
-        for node in self.nodes.values() {
+        let expanded = crate::bench_phase::time("validate.instances.expand", || {
+            expand(&self.nodes.values().cloned().collect::<Vec<_>>())
+        })?;
+        let order: Vec<_> = expanded.iter().map(|node| node.id.clone()).collect();
+        let placed: BTreeMap<_, _> = expanded.into_iter().map(|n| (n.id.clone(), n)).collect();
+        for node in self
+            .nodes
+            .values()
+            .filter(|node| affected.is_none_or(|ids| ids.contains(&node.id)))
+        {
             if let Some(component) = node.props.get("component") {
                 if component.as_object().is_none_or(|o| o.len() != 1)
                     || component["name"]
@@ -88,12 +94,16 @@ impl Candidate {
                             }
                         }
                         let child = placed
-                            .nodes
                             .get(&format!("{}/{target}", node.id))
                             .expect("master descendant has an expanded placement");
-                        for theme in &themes {
-                            placed.theme = theme.clone();
-                            placed.properties(child).map_err(|mut e| {
+                        for theme in themes {
+                            Resolver {
+                                candidate: self,
+                                nodes: &placed,
+                                theme,
+                            }
+                            .properties(child)
+                            .map_err(|mut e| {
                                 e.field = Some(format!(
                                     "props.overrides.{target}.{}",
                                     e.field
@@ -122,19 +132,26 @@ impl Candidate {
         if has_instances {
             // The bounded expander rejects direct/indirect cycles and depth explosions.
             for theme in themes {
-                placed.theme = theme;
-                for node in expanded.iter().filter(|n| {
-                    n.id.contains('/')
+                let context = Resolver {
+                    candidate: self,
+                    nodes: &placed,
+                    theme,
+                };
+                // Preserve the expander's authored-ID/depth-first order, rather than
+                // BTreeMap's virtual-ID order, for failure precedence.
+                for node in order.iter().map(|id| &placed[id]).filter(|n| {
+                    (n.id.contains('/')
                         || self
                             .nodes
                             .get(&n.id)
-                            .is_some_and(|n| n.kind == NodeKind::Instance)
+                            .is_some_and(|n| n.kind == NodeKind::Instance))
+                        && affected.is_none_or(|ids| ids.contains(n.id.split('/').next().unwrap()))
                 }) {
-                    placed.properties(node)?;
+                    context.properties(node)?;
                 }
             }
         }
-        Ok(())
+        Ok(Some(placed))
     }
 
     fn in_component(&self, id: &str) -> bool {

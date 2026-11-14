@@ -50,25 +50,34 @@ impl Candidate {
                 "Project exceeds 20000 authored nodes",
             ));
         }
-        self.validate_notes()?;
-        self.validate_navigation()?;
-        let themes = self.validate_tokens()?;
-        for theme in themes {
-            let mut themed = self.clone();
-            themed.theme = theme;
-            themed.validate_content()?;
+        use crate::bench_phase::time;
+        time("validate.notes_navigation", || {
+            self.validate_notes()?;
+            self.validate_navigation()
+        })?;
+        let themes = time("validate.tokens", || self.validate_tokens())?;
+        for theme in &themes {
+            time("validate.theme", || -> Result<()> {
+                let context = super::scope::Resolver {
+                    candidate: self,
+                    nodes: &self.nodes,
+                    theme,
+                };
+                for style in self.styles.values() {
+                    context.style(style)?;
+                }
+                for node in self.nodes.values() {
+                    context.node(node)?;
+                }
+                Ok(())
+            })?;
         }
-        self.validate_animation_triggers()?;
-        self.validate_instances()?;
-        Ok(())
-    }
-    fn validate_content(&self) -> Result<()> {
-        for style in self.styles.values() {
-            self.style(style)?;
-        }
-        for node in self.nodes.values() {
-            self.node(node)?;
-        }
+        time("validate.animation_triggers", || {
+            self.validate_animation_triggers()
+        })?;
+        time("validate.instances", || {
+            self.validate_instances(None, &themes)
+        })?;
         Ok(())
     }
     fn place(
@@ -145,7 +154,13 @@ impl Candidate {
                     .nodes
                     .get_mut(key)
                     .ok_or_else(|| StorageError::validation("id", "Node does not exist"))?;
-                n.props.as_object_mut().unwrap().extend(update.clone());
+                // Stored rows from older releases/raw SQL must not panic here.
+                n.props
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        StorageError::validation("props", "Properties must be an object")
+                    })?
+                    .extend(update.clone());
                 self.node(&self.nodes[key])?;
                 changed.insert(key.clone());
             }

@@ -8,6 +8,6 @@ mod overflow_rounding_tests;
 #[cfg(test)]
 mod tests;
 pub(crate) use budget::{fit, fit_in_place, is_overflow, BUDGET_SHARE};
-pub(crate) use fragmentation::authored;
+pub(crate) use fragmentation::{authored, authored_scoped};
 pub(crate) use intent::overflow_ids;
 pub(crate) use overflow::append;

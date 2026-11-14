@@ -1,6 +1,6 @@
 use crate::{read_meta, Project, ProjectMeta, Result, Snapshot, SnapshotCacheIdentity};
 
-pub(super) fn snapshot_meta(snapshot: &Snapshot) -> ProjectMeta {
+pub(crate) fn snapshot_meta(snapshot: &Snapshot) -> ProjectMeta {
     ProjectMeta {
         project_id: snapshot.project_id.clone(),
         slug: snapshot.slug.clone(),
@@ -46,7 +46,7 @@ pub(super) fn snapshot(
     Ok((meta, (snapshot, identity)))
 }
 
-fn unchanged_identity(
+pub(crate) fn unchanged_identity(
     project: &Project,
     meta: &ProjectMeta,
     stamp: Option<String>,
@@ -65,7 +65,7 @@ fn unchanged_identity(
 }
 
 #[cfg(unix)]
-fn file_stamp(project: &Project) -> Result<Option<String>> {
+pub(crate) fn file_stamp(project: &Project) -> Result<Option<String>> {
     use std::os::unix::fs::MetadataExt;
     // The reader validates containment. Bracket that read with stamps so a file
     // replacement during a read cannot attach bytes to the wrong incarnation.
@@ -80,6 +80,6 @@ fn file_stamp(project: &Project) -> Result<Option<String>> {
 }
 
 #[cfg(not(unix))]
-fn file_stamp(_project: &Project) -> Result<Option<String>> {
+pub(crate) fn file_stamp(_project: &Project) -> Result<Option<String>> {
     Ok(None)
 }

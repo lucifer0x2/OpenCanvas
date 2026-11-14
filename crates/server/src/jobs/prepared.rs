@@ -32,6 +32,17 @@ impl Prepared {
                 &serde_json::from_value::<Vec<opencanvas_storage::Node>>(input["nodes"].clone())?,
             )
         };
+        Self::from_input(snapshot, request, config, export, input, overflow)
+    }
+
+    pub(super) fn from_input(
+        snapshot: &Snapshot,
+        request: SceneRequest,
+        config: &Config,
+        export: Option<ExportSpec>,
+        input: Value,
+        overflow: Vec<String>,
+    ) -> Result<Self> {
         let mut basis =
             json!({"input":input,"scale":request.scale,"pipeline":config.pipeline_identity});
         if let Some(spec) = &export {

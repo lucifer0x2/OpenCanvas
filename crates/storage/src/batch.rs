@@ -1,6 +1,10 @@
 //! One candidate-validation pipeline for committed and previewed batches.
 use crate::*;
 use serde::Serialize;
+mod validation;
+#[cfg(test)]
+pub(crate) use validation::validated_candidate;
+pub(crate) use validation::validated_candidate_indexed;
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -31,7 +35,7 @@ impl Project {
         }
     }
     /// Preview checks existing key collisions without reserving a key. Revision and
-    /// full candidate validation still run under the same project writer lock.
+    /// candidate validation still run under the same project writer lock.
     pub fn dry_run_batch(&self, request: BatchRequest) -> Result<DryRunResult> {
         match self.run_batch(request, true, None)? {
             (Outcome::Preview(result), _) => Ok(result),
@@ -91,14 +95,36 @@ impl Project {
             }
         }
         let time = Instant::now();
-        let before = read_snapshot(&mut conn)?;
+        let stamp = backend::sqlite::identity::file_stamp(self)?;
+        let before = bench_phase::time("load", || read_snapshot(&mut conn))?;
+        let readiness = before
+            .assets
+            .iter()
+            .map(|asset| self.asset_path(&asset.relative_key).is_ok())
+            .collect();
+        let identity = backend::sqlite::identity::unchanged_identity(
+            self,
+            &backend::sqlite::identity::snapshot_meta(&before),
+            stamp,
+            readiness,
+        )?;
+        let indexes = self.root.indexes.for_snapshot(&before, identity.clone());
         metrics.read_us = us(time);
         if pages.is_none() && before.revision != request.expected_revision {
             return Err(StorageError::conflict(before.revision));
         }
         let time = Instant::now();
-        let (candidate, changed_ids) = validated_candidate(&before, &request.operations)?;
+        let (candidate, changed_ids, mut work, next_indexes) =
+            validated_candidate_indexed(&before, &request.operations, indexes.clone())?;
+        let scope = scoped::BatchScope::indexed(
+            &before,
+            &candidate,
+            &changed_ids,
+            indexes,
+            next_indexes.clone(),
+        )?;
         if let Some(pages) = &pages {
+            let _phase = bench_phase::Span::new("scoped.check");
             let commits = {
                 let mut stmt = conn.prepare("SELECT revision,CASE WHEN sum(length(CAST(ops_json AS BLOB))) OVER (ORDER BY revision)<=8388608 THEN ops_json ELSE 'null' END FROM commits WHERE revision>?1 ORDER BY revision LIMIT 1001")?;
                 let rows = stmt.query_map([request.expected_revision as i64], |r| {
@@ -110,8 +136,11 @@ impl Project {
                 })
                 .collect::<Result<Vec<_>>>()?
             };
-            scoped::check(&before, &candidate, &request, pages, commits)?;
+            scoped::check(
+                &before, &candidate, &request, pages, commits, &scope, &mut work,
+            )?;
         }
+        drop(work);
         metrics.validate_us = us(time);
         if dry_run {
             metrics.total_us = us(total);
@@ -133,12 +162,14 @@ impl Project {
             render_status: "pending".into(),
             replayed: false,
         };
-        let history = scoped::envelope(
-            &before,
-            &candidate,
-            request_value.clone(),
-            request_value["operations"].clone(),
-        )?;
+        let history = bench_phase::time("history.envelope", || {
+            scoped::envelope_with_scopes(
+                scope.footprint,
+                request_value.clone(),
+                request_value["operations"].clone(),
+            )
+        })?;
+        let _phase = bench_phase::Span::new("persist");
         self.persist(
             &mut conn,
             &before,
@@ -149,21 +180,11 @@ impl Project {
             &result,
             &mut metrics,
         )?;
+        if let Some(mut identity) = identity {
+            identity.revision = result.committed_revision;
+            self.root.indexes.publish(identity, next_indexes);
+        }
         metrics.total_us = us(total);
         Ok((Outcome::Committed(result), metrics))
     }
-}
-
-pub(crate) fn validated_candidate(
-    before: &Snapshot,
-    operations: &[Operation],
-) -> Result<(Candidate, Vec<String>)> {
-    let mut candidate = Candidate::from_snapshot(before);
-    let mut changed = BTreeSet::new();
-    for (index, op) in operations.iter().enumerate() {
-        candidate.apply(op, &mut changed).map_err(|e| e.at(index))?;
-    }
-    candidate.prune_links(&mut changed);
-    candidate.validate()?;
-    Ok((candidate, changed.into_iter().collect()))
 }

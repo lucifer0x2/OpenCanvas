@@ -1,86 +1,9 @@
-import { memo, useState } from "react";
-import { nodeName } from "../state";
-import { EMPTY_NODES, nodeIndex, type NodeIndex } from "../nodeIndex";
+import { memo, useMemo } from "react";
+import { nodeIndex } from "../nodeIndex";
 import type { DesignNode } from "../types";
-import { Icon, type IconName } from "./Icon";
+import { layerSelectionPath } from "../layerSelection";
+import { LayerRow } from "./LayerRow";
 import { useNodeActions } from "./NodeActionsProvider";
-
-function LayerRow({
-  node,
-  index,
-  selectedId,
-  select,
-  depth = 0,
-}: {
-  node: DesignNode;
-  index: NodeIndex;
-  selectedId: string;
-  select: (id: string) => void;
-  depth?: number;
-}) {
-  const [expanded, setExpanded] = useState(true);
-  const actions = useNodeActions();
-  const nested = index.childrenByParent.get(node.id) ?? EMPTY_NODES;
-  return (
-    <li>
-      <div
-        className={`layer-row ${selectedId === node.id ? "is-selected" : ""}`}
-        style={{ paddingLeft: 10 + depth * 14 }}
-        onContextMenu={(event) => {
-          if (!actions) return;
-          event.preventDefault();
-          actions.open(node.id, event.clientX, event.clientY);
-        }}
-      >
-        {nested.length ? (
-          <button
-            className={`disclosure ${expanded ? "is-open" : ""}`}
-            aria-label={`${expanded ? "Collapse" : "Expand"} ${nodeName(node)}`}
-            aria-expanded={expanded}
-            onClick={() => setExpanded(!expanded)}
-          >
-            <Icon name="chevron" size={12} />
-          </button>
-        ) : (
-          <span className="disclosure-spacer" />
-        )}
-        <button
-          className="layer-select"
-          onClick={() => select(node.id)}
-          onKeyDown={(event) => {
-            if (
-              event.key === "ContextMenu" ||
-              (event.shiftKey && event.key === "F10")
-            ) {
-              event.preventDefault();
-              const rect = event.currentTarget.getBoundingClientRect();
-              actions?.open(node.id, rect.left, rect.bottom);
-            }
-          }}
-          aria-pressed={selectedId === node.id}
-          title={nodeName(node)}
-        >
-          <Icon name={node.kind as IconName} />
-          <span>{nodeName(node)}</span>
-        </button>
-      </div>
-      {!!nested.length && expanded && (
-        <ul>
-          {nested.map((child) => (
-            <LayerRow
-              key={child.id}
-              node={child}
-              index={index}
-              selectedId={selectedId}
-              select={select}
-              depth={depth + 1}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-}
 
 export const Layers = memo(function Layers({
   nodes,
@@ -96,6 +19,11 @@ export const Layers = memo(function Layers({
   select: (id: string) => void;
 }) {
   const index = nodeIndex(nodes);
+  const actions = useNodeActions();
+  const selection = useMemo(
+    () => layerSelectionPath(nodes, selectedId),
+    [nodes, selectedId],
+  );
   const roots = (frameIds ?? [frameId]).flatMap((id) => index.byId.get(id) ?? []);
   return (
     <section className="layers-content" aria-label="Layers">
@@ -110,8 +38,9 @@ export const Layers = memo(function Layers({
               key={root.id}
               node={root}
               index={index}
-              selectedId={selectedId}
+              selection={selection?.id === root.id ? selection : undefined}
               select={select}
+              openActions={actions?.open}
             />
           ))}
         </ul>

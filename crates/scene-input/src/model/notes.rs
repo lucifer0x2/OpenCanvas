@@ -1,7 +1,11 @@
 //! Notes: design intent attached to a node, stored in the revisioned document.
 use super::*;
 
+/// Notes per project. Only the Task24 benchmark feature raises it (notes scale with pages).
+#[cfg(not(feature = "large-project-bench"))]
 pub const MAX_NOTES: usize = 5000;
+#[cfg(feature = "large-project-bench")]
+pub const MAX_NOTES: usize = 1_000_000;
 pub const MAX_NOTE_TEXT: usize = 2000;
 pub const MAX_NOTE_REPLIES: usize = 100;
 pub const MAX_NOTE_AUTHOR: usize = 64;

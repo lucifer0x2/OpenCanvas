@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DesignNode, Snapshot } from "../types";
 import { frameDimensions } from "../frameScope";
 import { diagnosticLabel } from "../diagnostics";
@@ -12,14 +12,15 @@ import {
   reuseFrame,
   seedFrames,
 } from "../scene/staleFrames";
+import { publishScheduler } from "../scene/publishScheduler";
 import { sceneWorker } from "../scene/workerClient";
 import type { FrameSceneView, SceneView } from "./useScene";
 
-const empty = (): SceneView => ({
+const EMPTY_VIEW: SceneView = {
   status: "empty",
   missing: [],
   diagnostics: [],
-});
+};
 type Loaded = { scope: string; key: string; retryKey: number; view: SceneView };
 
 export function usePageScenes(
@@ -35,25 +36,28 @@ export function usePageScenes(
     ? JSON.stringify([snapshot.projectId, pageId, "all", preset])
     : "";
   const key = snapshot ? JSON.stringify([scope, snapshot.revision, wasm]) : "";
+  const { width, height } = viewport;
   // All authored slots exist before an effect or a scene finishes. Their geometry is immutable.
   const targets = useMemo(
     () =>
       frames.map((frame) => ({
         id: frame.id,
         name: nodeName(frame),
-        ...(viewport.width ? viewport : frameDimensions(frame)),
+        ...(width ? { width, height } : frameDimensions(frame)),
       })),
-    [key],
+    [frames, width, height],
   );
   const [loaded, setLoaded] = useState<Loaded>({
     scope: "",
     key: "",
     retryKey,
-    view: empty(),
+    view: EMPTY_VIEW,
   });
   // The latest published view seeds the next revision of the same scope.
   const latest = useRef(loaded);
-  latest.current = loaded;
+  useLayoutEffect(() => {
+    latest.current = loaded;
+  }, [loaded]);
   // One loader per scope: immutable manifests already loaded stay loaded across revisions.
   const loader = useRef<{
     scope: string;
@@ -84,14 +88,28 @@ export function usePageScenes(
     )
       loader.current = { scope, load: pageResourceLoader() };
     const resources = loader.current.load;
-    const publish = (finished = false, error?: string) => {
+    let finished = false;
+    let failure: string | undefined;
+    // Every frame event schedules; one load commits at most once per animation frame, reading
+    // the latest entries. The final result and errors commit at once; abort drops the rest.
+    const publisher = publishScheduler(() => {
       if (signal.aborted) return;
       setLoaded({
         scope,
         key,
         retryKey,
-        view: pageView(entries, { finished, error, seeded: Boolean(seeded) }),
+        view: pageView(entries, {
+          finished,
+          error: failure,
+          seeded: Boolean(seeded),
+        }),
       });
+    });
+    const publish = () => publisher.schedule();
+    const finish = (error?: string) => {
+      finished = true;
+      failure = error;
+      publisher.flush();
     };
     publish();
     const load = async () => {
@@ -107,7 +125,7 @@ export function usePageScenes(
         snapshot,
         signal,
         wasm,
-        viewport.width ? viewport : undefined,
+        width ? { width, height } : undefined,
         {
           bypassCache,
           reuse: (request, contentKey) => {
@@ -145,6 +163,7 @@ export function usePageScenes(
               ...targets[index],
               scene,
               resources: loaded,
+              revision: result.request.revision,
               contentKey: result.contentKey,
               diagnostics: [
                 ...scene.diagnostics,
@@ -161,22 +180,30 @@ export function usePageScenes(
           },
         },
       );
-      publish(true);
+      finish();
     };
     load().catch((cause) =>
-      publish(
-        true,
+      finish(
         cause instanceof Error ? cause.message : "Page rendering failed.",
       ),
     );
-    return () => controller.abort();
-  }, [key, retryKey]);
-  const view = !snapshot
-    ? empty()
-    : loaded.key === key && loaded.retryKey === retryKey
-      ? loaded.view
-      : transition(loaded, scope, retryKey, targets);
-  return { ...view, cameraKey: scope, requestedRevision: snapshot?.revision };
+    return () => {
+      controller.abort();
+      publisher.cancel();
+    };
+  }, [snapshot, pageId, targets, width, height, wasm, key, scope, retryKey]);
+  const view = useMemo(
+    () => !snapshot
+      ? EMPTY_VIEW
+      : loaded.key === key && loaded.retryKey === retryKey
+        ? loaded.view
+        : transition(loaded, scope, retryKey, targets),
+    [snapshot, loaded, key, scope, retryKey, targets],
+  );
+  return useMemo(
+    () => ({ ...view, cameraKey: scope, requestedRevision: snapshot?.revision }),
+    [view, scope, snapshot?.revision],
+  );
 }
 
 /** Before the effect's first publish: keep the scope's scenes, else show placeholders. */

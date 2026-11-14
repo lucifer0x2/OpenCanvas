@@ -24,15 +24,24 @@ pub(super) fn entries(
     ordered: &[(&Node, usize)],
     filter: Option<Filter>,
 ) -> Vec<(String, Value)> {
+    entries_indexed(s.notes.iter(), index, scope, ordered, filter)
+}
+
+pub(super) fn entries_indexed<'a>(
+    notes: impl IntoIterator<Item = &'a Note>,
+    index: &TreeIndex,
+    scope: &str,
+    ordered: &[(&Node, usize)],
+    filter: Option<Filter>,
+) -> Vec<(String, Value)> {
     let filter = filter.unwrap_or(Filter::Open);
-    if filter == Filter::None || s.notes.is_empty() {
+    if filter == Filter::None {
         return Vec::new();
     }
     // Snapshot notes are ordered by ID, so each node's list stays in ID order.
     let mut by_node: HashMap<&str, Vec<&Note>> = HashMap::new();
-    for note in s
-        .notes
-        .iter()
+    for note in notes
+        .into_iter()
         .filter(|n| filter == Filter::All || !n.resolved)
     {
         by_node.entry(note.node_id.as_str()).or_default().push(note);

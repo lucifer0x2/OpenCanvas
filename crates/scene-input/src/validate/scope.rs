@@ -2,11 +2,13 @@
 use super::Candidate;
 use crate::{Node, Result, StorageError};
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::ops::Deref;
 
 pub(super) struct Resolver<'a> {
     pub candidate: &'a Candidate,
     pub theme: &'a str,
+    pub nodes: &'a BTreeMap<String, Node>,
 }
 impl Deref for Resolver<'_> {
     type Target = Candidate;
@@ -19,9 +21,30 @@ impl Candidate {
         Resolver {
             candidate: self,
             theme: &self.theme,
+            nodes: &self.nodes,
         }
     }
     pub(super) fn effective_theme<'a>(&'a self, node: &'a Node) -> Result<&'a str> {
+        self.resolver().effective_theme(node)
+    }
+    pub fn resolve_props(&self, node: &Node) -> Result<Value> {
+        self.resolver().resolve_scoped_props(node)
+    }
+    pub fn resolve_value(&self, value: &Value, expected: &str) -> Result<Value> {
+        self.resolver().resolve_value(value, expected)
+    }
+    pub(super) fn node(&self, node: &Node) -> Result<()> {
+        self.resolver().node(node)
+    }
+    pub(super) fn style(&self, style: &crate::Style) -> Result<()> {
+        self.resolver().style(style)
+    }
+}
+impl<'context> Resolver<'context> {
+    pub(super) fn effective_theme<'a>(&self, node: &'a Node) -> Result<&'a str>
+    where
+        'context: 'a,
+    {
         let mut current = Some(node);
         // Expansion can concatenate several individually valid authored ancestor chains.
         for _ in 0..=self.nodes.len() {
@@ -49,19 +72,30 @@ impl Candidate {
             }
             current = n.parent_id.as_ref().and_then(|id| self.nodes.get(id));
         }
-        Ok(&self.theme)
+        Ok(self.theme)
     }
-    pub fn resolve_props(&self, node: &Node) -> Result<Value> {
+    pub(super) fn resolve_scoped_props(&self, node: &Node) -> Result<Value> {
         Resolver {
             candidate: self,
             theme: self.effective_theme(node)?,
+            nodes: self.nodes,
         }
         .resolve_props(node)
     }
-    pub fn resolve_value(&self, value: &Value, expected: &str) -> Result<Value> {
-        self.resolver().resolve_value(value, expected)
+    pub(super) fn ancestors(&self, id: &str) -> impl Iterator<Item = &Node> {
+        let parent = |node: &Node| node.parent_id.as_ref().and_then(|id| self.nodes.get(id));
+        std::iter::successors(self.nodes.get(id).and_then(parent), move |node| {
+            parent(node)
+        })
+        .take(128)
     }
-    pub(super) fn resolve_paint(&self, value: &Value) -> Result<Value> {
-        self.resolver().resolve_paint(value)
+    pub(super) fn is_root_frame(&self, id: &str) -> bool {
+        self.nodes.get(id).is_some_and(|n| {
+            n.kind == crate::NodeKind::Frame
+                && n.parent_id
+                    .as_ref()
+                    .and_then(|id| self.nodes.get(id))
+                    .is_some_and(|n| n.kind == crate::NodeKind::Page)
+        })
     }
 }

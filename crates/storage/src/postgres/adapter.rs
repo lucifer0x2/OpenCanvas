@@ -34,12 +34,12 @@ impl PostgresBackend {
     /// assembling the snapshot never holds a pool worker. Replays carry nothing.
     fn fill(&self, committed: Option<Box<write_through::Committed>>) {
         if let Some(committed) = committed {
-            committed.fill(self.cache.as_ref());
+            crate::bench_phase::time("cache.fill", || committed.fill(self.cache.as_ref()));
         }
     }
 }
 
-fn identity(
+pub(super) fn identity(
     project_id: String,
     schema_version: u32,
     revision: u64,
@@ -63,8 +63,9 @@ impl StorageBackend for PostgresBackend {
     ) -> Result<BatchResult> {
         let key = project.to_owned();
         let (request, pages) = request.split();
+        let indexes = self.indexes.clone();
         let (result, committed) = self.pool.run(move |session| {
-            match batch::apply_mode(session, &key, request, false, Some(pages))? {
+            match batch::apply_mode(session, &key, request, false, Some(pages), &indexes)? {
                 batch::Outcome::Commit(result, committed) => Ok((result, committed)),
                 _ => unreachable!(),
             }
@@ -79,8 +80,9 @@ impl StorageBackend for PostgresBackend {
     ) -> Result<DryRunResult> {
         let key = project.to_owned();
         let (request, pages) = request.split();
+        let indexes = self.indexes.clone();
         self.pool.run(move |session| {
-            match batch::apply_mode(session, &key, request, true, Some(pages))? {
+            match batch::apply_mode(session, &key, request, true, Some(pages), &indexes)? {
                 batch::Outcome::Preview(result) => Ok(result),
                 _ => unreachable!(),
             }
@@ -160,23 +162,30 @@ impl StorageBackend for PostgresBackend {
         Ok((snapshot, Some(identity)))
     }
 
+    fn shared_snapshot(&self, project: &str) -> Result<crate::SharedSnapshot> {
+        let (snapshot, identity) = self.snapshot_with_cache_identity(project)?;
+        let indexes = self.indexes.for_snapshot(&snapshot, identity);
+        Ok(crate::SharedSnapshot::committed(snapshot, indexes))
+    }
+
     fn apply_batch(&self, project: &str, request: BatchRequest) -> Result<BatchResult> {
         let key = project.to_owned();
-        let (result, committed) =
-            self.pool.run(
-                move |session| match batch::apply(session, &key, request, false)? {
-                    batch::Outcome::Commit(result, committed) => Ok((result, committed)),
-                    _ => unreachable!("commit operation"),
-                },
-            )?;
+        let indexes = self.indexes.clone();
+        let (result, committed) = self.pool.run(move |session| {
+            match batch::apply(session, &key, request, false, &indexes)? {
+                batch::Outcome::Commit(result, committed) => Ok((result, committed)),
+                _ => unreachable!("commit operation"),
+            }
+        })?;
         self.fill(committed);
         Ok(result)
     }
 
     fn dry_run_batch(&self, project: &str, request: BatchRequest) -> Result<DryRunResult> {
         let key = project.to_owned();
+        let indexes = self.indexes.clone();
         self.pool.run(
-            move |session| match batch::apply(session, &key, request, true)? {
+            move |session| match batch::apply(session, &key, request, true, &indexes)? {
                 batch::Outcome::Preview(result) => Ok(result),
                 _ => unreachable!("preview operation"),
             },

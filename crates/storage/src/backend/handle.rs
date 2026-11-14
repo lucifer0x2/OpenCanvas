@@ -54,6 +54,9 @@ impl Storage {
     pub fn snapshot(&self, key: &str) -> Result<Snapshot> {
         self.backend.snapshot(key)
     }
+    pub fn shared_snapshot(&self, key: &str) -> Result<crate::SharedSnapshot> {
+        self.backend.shared_snapshot(key)
+    }
 
     pub fn snapshot_cache_identity(&self, key: &str) -> Result<Option<SnapshotCacheIdentity>> {
         self.backend.snapshot_cache_identity(key)
