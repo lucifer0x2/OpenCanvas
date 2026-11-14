@@ -73,30 +73,64 @@ the current and candidate dependency closures under its writer boundary:
   changes that can alter face selection.
 - Navigation target pages, recursively, when node links reference another page.
   Newly attached dependencies are checked too.
+- Notes anchored on any node of a guarded page.
 
 Allowed scoped work is node property editing, descendant creation, reordering,
-deletion and reparenting inside existing pages. Cross-page moves require both
-source and destination page IDs, even if descendant rows themselves do not
-change. All effective side effects must be covered. Full validation on the
-current authoritative candidate still enforces ID collisions, references,
-layouts, themes and operation ordering, with atomic rollback on failure.
+deletion and reparenting inside existing pages, plus note writes and page
+appends below. Cross-page moves require both source and destination page IDs,
+even if descendant rows themselves do not change. All effective side effects
+must be covered. Full validation on the current authoritative candidate still
+enforces ID collisions, references, layouts, themes and operation ordering,
+with atomic rollback on failure.
+
+### Notes, page appends and first roots (2026-11-14)
+
+- **Notes.** `create_note`, `reply_note`, `update_note` and `delete_note` are
+  scoped when every anchor involved lies on a guarded page: the stored note's
+  current anchor, its anchor after the batch and any requested `nodeId`. A note
+  change records `note:<id>` plus the `page:` key of its old and new anchor, so
+  edits, moves, delete/recreate ABA and cascades conflict with stale guards on
+  those pages, and with nothing else. Each page closure also lists its notes,
+  which covers note commits recorded before anchor pages were added. Deleting a
+  node now cascades its notes in scoped mode: they were anchored inside the
+  deleted subtree on a guarded page, and a note attached after the read writes
+  that page key, so the stale delete conflicts.
+- **Page appends.** A batch may create pages listed in `pageIds` (the only IDs
+  allowed that do not exist yet) with their subtree, when the project already
+  had pages, existing pages keep their properties and relative order and every
+  new page follows them. The footprint is the new pages' own `page:`/`node:`
+  keys. Sort-key compaction of existing pages records `node:` keys only. Strict
+  appends use the same rule and no longer write `*`. The guard covers the new
+  page's closure (referenced masters, tokens, styles, links). Page deletion,
+  reorder, insertion before existing pages, property edits and the first page
+  of a project stay strict and global.
+- **First roots.** The viewer opens the first page; preview opens the first
+  root frame across pages in order (`rootFrames(...)[0]`). A first root on an
+  empty page is therefore global only when it becomes that project-wide first
+  root, i.e. no earlier page has a root. Otherwise it is scoped-safe and local,
+  in strict mode too. Root insertion with `index` stays rejected; existing roots
+  must remain a prefix.
+
+The `*` decision is computed from the actual parent and candidate of each
+commit, under the writer lock, so a concurrent change that moves a default
+writes `*` itself and invalidates every older guard.
 
 Scoped v1 explicitly rejects:
 
-- Token/style writes, resource imports/registrations and every note operation.
-  These retain strict revision matching. Deleting a node that cascades notes is
-  rejected as well, including notes attached after the original read.
-- Page creation, deletion, reordering and effective page property changes.
+- Token/style writes and resource imports/registrations (strict matching).
+- Notes with any anchor outside the guarded pages.
+- Page deletion, reordering, insertion before existing pages, effective page
+  property changes and the first page of a project.
 - `flowStart` writes and root-frame deletion, reparenting or reordering.
-- The first root frame on an empty page, or root creation with an explicit
-  index. Appending a root after existing roots without `index` is supported;
-  harmless numeric sort-key compaction preserves relative root order.
+- A root frame that becomes the project's first, or root creation with an
+  explicit index. Appending roots without `index` is supported; harmless numeric
+  sort-key compaction preserves relative root order.
 - Missing/ambiguous scope coverage, incomplete legacy history, malformed or
   unknown history envelopes, more than 1,000 intervening commits, or more than
   8 MiB of intervening encoded history. Refetch to obtain a new base.
 
-Strict page/flow/global-root topology changes invalidate all stale scoped
-guards, protecting default navigation selection. Safe root appends preserve
+Strict page/flow/global-root topology changes that move a default or reorder
+pages invalidate all stale scoped guards. Safe root and page appends preserve
 unrelated page guards. Root deletion is rejected in scoped mode even when all
 incoming-link source pages are listed; strict mode retains atomic link cleanup.
 
@@ -160,6 +194,11 @@ Worker checks used only temporary data roots. Actual commands/results:
   temporary runs succeeded.
 - `rtk bypass cargo clippy --offline -p opencanvas-storage -p opencanvas-server
   --lib -- -D warnings`, format and diff checks passed.
+- Notes/page appends/first roots (2026-11-14, SQLite): storage `--lib scoped`
+  5 passed (indexed footprints/closures match the frozen reference), storage
+  `--test scoped_notes_pages` 4 passed + 1 PostgreSQL case ignored (both
+  directions, ABA, cascades, compaction, defaults), server `scoped_concurrency`
+  2 passed + 1 ignored. The PostgreSQL variants compile but were not run.
 
 For portable reproduction with fresh Docker PostgreSQL, run each ignored suite
 through `scripts/task19-check.sh`, for example:

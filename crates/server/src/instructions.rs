@@ -52,8 +52,9 @@ For edits within existing pages, include pageIds in apply_batch/apply_batch_file
 expectedRevision from the actual authored read. Storage derives transitive shared-dependency \
 guards and permits unrelated page/resource commits. get_edit_context reports guard metadata; \
 never fetch a newer guard to relabel an older design read. Scoped success returns editGuard \
-for the next batch. Shared-resource/note/page/global-flow writes, first root-frame creation, \
-and root-frame deletion/reparent/reorder require strict mode (omit pageIds) after rereading. \
+for the next batch. Notes need their anchor pages; append a new page with its ID in pageIds. \
+Shared-resource/flowStart writes, page delete/reorder/edits, root-frame delete/reparent/reorder \
+and a new project-first page or root frame require strict mode (omit pageIds) after rereading. \
 Cross-page moves require both pages. A scoped conflict still requires reread/rebase. \
 Mutations need caller-chosen IDs, expectedRevision and a stable idempotencyKey. After a lost \
 response retry the exact same body and key. After success use committedRevision without an \
