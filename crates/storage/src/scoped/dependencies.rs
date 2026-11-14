@@ -65,6 +65,11 @@ pub(super) fn closure(snapshot: &Snapshot, pages: &[String]) -> Result<BTreeSet<
                 for node in &nodes {
                     scan(&node.props, &mut queue);
                 }
+                for note in candidate.notes.values() {
+                    if page(&candidate.nodes, &note.node_id).as_deref() == Some(id) {
+                        queue.push(format!("note:{}", note.id));
+                    }
+                }
                 // Font face selection can depend on family siblings not explicitly
                 // named in authored properties, under every supported theme.
                 for font in crate::referenced_font_ids(snapshot, &nodes)? {

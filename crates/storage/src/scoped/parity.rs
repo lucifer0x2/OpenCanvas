@@ -3,6 +3,8 @@ use super::{dependency_index::DependencyIndex, history, index::BatchScope, refer
 use crate::*;
 #[path = "parity_guard.rs"]
 mod guard;
+#[path = "parity_notes_pages.rs"]
+mod notes_pages;
 
 fn seed() -> Snapshot {
     let temp = tempfile::tempdir().unwrap();
