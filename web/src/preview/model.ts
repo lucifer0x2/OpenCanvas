@@ -24,6 +24,7 @@ export function frameSize(frame: DesignNode) {
   return {
     width: dimension(frame.props.width, 800),
     height: dimension(frame.props.height, 600),
+    hugHeight: frame.props.height === "hug",
   };
 }
 
