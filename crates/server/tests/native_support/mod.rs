@@ -28,6 +28,9 @@ impl Server {
         Self::start_backend(RenderBackend::Rust).await
     }
     pub async fn start_backend(backend: RenderBackend) -> Self {
+        Self::configured(backend, |_| {}).await
+    }
+    pub async fn configured(backend: RenderBackend, configure: impl FnOnce(&mut Config)) -> Self {
         let root = tempfile::tempdir().unwrap();
         let store = Store::open(root.path().join("data")).unwrap();
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -44,6 +47,7 @@ impl Server {
         if backend == RenderBackend::Rust {
             config.node = root.path().join("no-node").to_string_lossy().into_owned();
         }
+        configure(&mut config);
         let url = config.base_url.clone();
         let state = AppState::new(store, config);
         let app = router(state.clone());

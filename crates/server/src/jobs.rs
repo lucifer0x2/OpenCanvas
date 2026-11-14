@@ -1,8 +1,10 @@
 mod admission;
 mod export;
+mod export_files;
 mod export_fonts;
 mod export_resources;
 mod export_scope;
+mod export_store;
 mod export_svg;
 mod input;
 mod native;
@@ -24,6 +26,7 @@ use crate::{
     state::Config,
 };
 pub use export::{ExportSetting, ExportSpec};
+pub use export_store::ExportRetention;
 use opencanvas_storage::{Snapshot, Storage};
 use queue::{Priority, Queue};
 use serde::{Deserialize, Serialize};
@@ -58,6 +61,7 @@ struct Entry {
     png: Option<Vec<u8>>,
     /// A requested render created or reused this job, so a caller may still read it by ID.
     requested: bool,
+    /// A finished export's files until `record` publishes them to `Table::exports`.
     files: Vec<export::StoredFile>,
 }
 /// Job records and the queue share one lock, so a queued job always has its record.
@@ -66,6 +70,8 @@ struct Table {
     entries: VecDeque<Entry>,
     queue: Queue,
     pace: pace::Pace,
+    /// Ready export files, retained apart from `entries`.
+    exports: export_store::ExportStore,
 }
 pub struct Jobs {
     table: Mutex<Table>,
@@ -83,7 +89,10 @@ impl Jobs {
     ) -> Arc<Self> {
         let (doorbell, rings) = mpsc::channel(1);
         let jobs = Arc::new(Self {
-            table: Mutex::new(Table::default()),
+            table: Mutex::new(Table {
+                exports: export_store::ExportStore::new(config.export_files),
+                ..Table::default()
+            }),
             doorbell,
             config: config.clone(),
             done: watch::channel(0).0,
@@ -124,6 +133,7 @@ impl Jobs {
         priority: Priority,
     ) -> Result<Value> {
         let mut guard = self.table.lock().await;
+        guard.expire_exports();
         let value = guard.admit(prepared, retry, priority)?;
         drop(guard);
         // Full means a ring is already pending; the loop drains the queue on it.
@@ -131,24 +141,21 @@ impl Jobs {
         Ok(value)
     }
     pub async fn get(&self, id: &str) -> Result<Value> {
-        self.table
-            .lock()
-            .await
+        let mut table = self.table.lock().await;
+        table.expire_exports();
+        table
             .entries
             .iter()
             .find(|e| e.value["jobId"] == id)
             .map(|e| e.value.clone())
             .ok_or_else(|| ApiError::new("JOB_NOT_FOUND", "Render job is unavailable"))
     }
+    /// The owning project of a job record or of an export whose files outlived it.
     pub(crate) async fn project_id(&self, id: &str) -> Result<String> {
-        self.table
-            .lock()
-            .await
-            .entries
-            .iter()
-            .find(|entry| entry.value["jobId"] == id)
-            .and_then(|entry| entry.value["projectId"].as_str())
-            .map(str::to_owned)
+        let mut table = self.table.lock().await;
+        table.expire_exports();
+        table
+            .owner(id)
             .ok_or_else(|| ApiError::new("JOB_NOT_FOUND", "Render job is unavailable"))
     }
     pub async fn image(&self, id: &str) -> Result<Vec<u8>> {
