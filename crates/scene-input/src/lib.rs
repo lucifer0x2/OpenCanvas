@@ -10,6 +10,7 @@ mod input;
 mod instance_paint;
 pub mod instances;
 mod links;
+mod merge_patch;
 mod model;
 mod props_catalog;
 mod props_suggest;
@@ -30,6 +31,7 @@ pub use input::{frame_input, make_input, make_input_with_scale, ResolvedNodes, S
 pub use links::{
     flow_start, node_links, Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME,
 };
+pub use merge_patch::{merge_props, merges};
 pub use model::*;
 pub use props_catalog::{
     allowed_props, prop_spec, required_props, PropScope, PropSpec, NODE_KINDS, PROPS,

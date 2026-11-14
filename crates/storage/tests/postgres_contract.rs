@@ -21,6 +21,7 @@ fn real_postgres_replay_scope_reconnect_atomic_preview_and_ordered_history() {
     let before = p.snapshot().unwrap();
     let mut invalid = rename("Must rollback");
     invalid.push(Operation::UpdateNode {
+        merge: false,
         id: "missing".into(),
         props: json!({"name":"bad"}),
     });
@@ -102,6 +103,7 @@ fn two_independent_backends_serialize_writers_and_snapshots_never_mix_commits() 
                 barrier.wait();
                 let mut ops = rename(&format!("Winner {i}"));
                 ops.push(Operation::UpdateNode {
+                    merge: false,
                     id: "peer".into(),
                     props: json!({"name":format!("Winner {i}")}),
                 });

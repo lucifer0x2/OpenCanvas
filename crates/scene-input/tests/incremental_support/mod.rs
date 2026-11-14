@@ -112,6 +112,7 @@ pub fn fixture(copies: usize, extra: usize) -> Snapshot {
 
 pub fn update(id: &str, props: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props,
     }

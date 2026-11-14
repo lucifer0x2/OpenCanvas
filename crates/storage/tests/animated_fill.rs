@@ -13,6 +13,7 @@ fn fill_load() -> Value {
 }
 fn update(id: &str, props: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props,
     }

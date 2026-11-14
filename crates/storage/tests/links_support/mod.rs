@@ -23,6 +23,7 @@ pub fn button(id: &str, parent: &str, links: Value) -> Operation {
 
 pub fn update(id: &str, props: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props,
     }

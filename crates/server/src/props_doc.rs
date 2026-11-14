@@ -26,7 +26,7 @@ fn render() -> String {
          Generated from the validator's property table: these are the only keys `create_node` and \
          `update_node` accept in `props`. Any other key, or a key on the wrong kind, fails with \
          `VALIDATION_FAILED`, `field: \"props.<key>\"`, `nodeId`, `nodeKind`, `allowedKeys` for that \
-         kind and, when one is close, `suggestion`. `update_node` merges its keys into the node's props.\n\n\
+         kind and, when one is close, `suggestion`. `update_node` sets its keys on the node's props; with `merge:true` they are a JSON merge patch (objects merge, `null` deletes).\n\n\
          ## Keys by kind\n\n",
     );
     for kind in &NODE_KINDS {
@@ -55,7 +55,7 @@ fn render() -> String {
          - \"Required\" keys may come from a text style through `styleId` instead of being authored.\n\
          - Root frames (direct children of a page) need numeric `width` and `height`.\n\
          - Text color is `fill`; a container's background is `fill`; corner rounding is `radius`.\n\
-         - `update_node` replaces the whole `layout` object: resend `mode` with the other layout keys.\n\
+         - `update_node` replaces the whole `layout` object (unless `merge:true`): resend `mode` with the other layout keys.\n\
          - `links` targets are root frame IDs checked at the end of the batch; `flowStart` goes on \
          a root frame. `get_design_context` summarizes both as `navigation`.\n\
          - Text wrap collapses ASCII spaces/tabs and preserves LF; NBSP and narrow NBSP remain nonbreaking. Long ordinary words break at graphemes. `textWrap:nowrap` preserves LF and can overflow fixed boxes.\n\

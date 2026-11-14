@@ -17,7 +17,7 @@ pub fn schema() -> Value {
     );
     add(
         "update_node",
-        json!({"id":node_id(),"props":props}),
+        json!({"id":node_id(),"props":props,"merge":{"type":"boolean"}}),
         &["id", "props"],
     );
     add(

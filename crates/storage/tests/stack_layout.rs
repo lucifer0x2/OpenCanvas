@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 
 fn update(id: &str, props: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props,
     }

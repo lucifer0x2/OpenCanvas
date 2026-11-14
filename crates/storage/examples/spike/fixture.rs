@@ -102,6 +102,7 @@ pub fn seed(p: &Project, size: usize) {
 pub fn updates(marker: &str) -> Vec<Operation> {
     (0..10)
         .map(|i| Operation::UpdateNode {
+            merge: false,
             id: format!("leaf-{i}"),
             props: json!({"name":marker,"width":80+marker.len()}),
         })

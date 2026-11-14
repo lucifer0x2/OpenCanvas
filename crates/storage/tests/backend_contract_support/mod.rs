@@ -32,6 +32,7 @@ pub fn page(name: &str) -> Vec<Operation> {
 
 pub fn rename(name: &str) -> Vec<Operation> {
     vec![Operation::UpdateNode {
+        merge: false,
         id: "page".into(),
         props: json!({"name":name}),
     }]

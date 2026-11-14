@@ -26,6 +26,7 @@ pub fn seed(p: &ProjectHandle) {
 }
 pub fn update(id: &str, value: Value) -> Operation {
     Operation::UpdateNode {
+        merge: false,
         id: id.into(),
         props: value,
     }

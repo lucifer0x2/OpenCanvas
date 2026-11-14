@@ -98,6 +98,7 @@ fn instances_virtual_parent_is_readonly_and_override_refs_are_validated_for_ever
         "INSTANCE_CHILD_READONLY"
     );
     let invalid = Operation::UpdateNode {
+        merge: false,
         id: "instance".into(),
         props: json!({"overrides":{"label":{"fill":{"tokenId":"missing"}}}}),
     };

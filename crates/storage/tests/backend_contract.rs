@@ -54,6 +54,7 @@ fn late_failure_and_preview_leave_snapshot_log_and_key_unmodified() {
     let before = p.snapshot().unwrap();
     let mut operations = rename("Transient");
     operations.push(Operation::UpdateNode {
+        merge: false,
         id: "missing".into(),
         props: json!({"name":"bad"}),
     });
@@ -95,6 +96,7 @@ fn facade_concurrent_writers_have_one_winner_without_partial_reads() {
                 barrier.wait();
                 let mut operations = rename(&format!("Winner {i}"));
                 operations.push(Operation::UpdateNode {
+                    merge: false,
                     id: "peer".into(),
                     props: json!({"name":format!("Winner {i}")}),
                 });
