@@ -1,4 +1,4 @@
-//! Existing repo row-wrap fixture plus a bounded authored typography/stack fixture.
+//! Existing repo row-wrap fixture plus bounded authored typography/stack fixtures.
 use super::workspace;
 use serde_json::{json, Value};
 
@@ -97,6 +97,33 @@ pub fn missing_control() -> Vec<Value> {
             "text",
             json!({"width":"fill","height":"hug",
             "text":"Missing ⌘ 🦄 一","fontId":"font_bundled","fontSize":20,"lineHeight":28}),
+        ),
+    ]
+}
+
+/// A long page: the root height hugs wrapped text, so it changes with the viewport width.
+pub fn long_page() -> Vec<Value> {
+    let copy = "Một trang dài có chiều cao theo nội dung, xuống dòng theo bề rộng. ".repeat(6);
+    vec![
+        node(
+            "long-page",
+            "page",
+            "frame",
+            json!({"width":1040,"height":"hug","layout":{"mode":"column","padding":[20,24],
+                "gap":12,"breakpoints":[{"maxWidth":720,"layout":{"mode":"column","padding":12}}]}}),
+        ),
+        node(
+            "long-copy",
+            "long-page",
+            "text",
+            json!({"width":"fill","height":"hug","text":copy,"fontId":"inter","fontSize":18,
+                "lineHeight":27}),
+        ),
+        node(
+            "long-footer",
+            "long-page",
+            "rectangle",
+            json!({"width":"fill","height":48}),
         ),
     ]
 }

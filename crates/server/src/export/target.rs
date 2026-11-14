@@ -1,4 +1,5 @@
-//! What exporting one node means: its root frame laid out at authored size, and its settings
+//! What exporting one node means: its root frame laid out at authored size (a hug height at
+//! its content), and its settings
 //! (the call's, else the node's `exportSettings`, else one PNG at 1x) with file names.
 use crate::{
     error::{ApiError, Result},
@@ -38,9 +39,15 @@ pub fn resolve(
         .get(node_id)
         .ok_or_else(|| ApiError::new("NODE_NOT_FOUND", "Node does not exist at this revision"))?;
     let root = root_frame(nodes, node)?;
-    let size = |key: &str| nodes.resolved.get(root.id.as_str())?.props[key].as_f64();
+    let size = |key: &str| {
+        let value = &nodes.resolved.get(root.id.as_str())?.props[key];
+        // A hug height ignores the viewport height; the scene reports the computed one.
+        value
+            .as_f64()
+            .or((key == "height" && value == "hug").then_some(1.0))
+    };
     let (Some(width), Some(height)) = (size("width"), size("height")) else {
-        return Err(unsupported("Root frame has no fixed width and height"));
+        return Err(unsupported("Root frame has no numeric width and height"));
     };
     let request = SceneRequest {
         frame_id: root.id.clone(),

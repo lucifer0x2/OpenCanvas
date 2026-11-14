@@ -96,10 +96,12 @@ impl Server {
         assert_eq!(provenance["projectId"], project);
         assert_eq!(provenance["frameId"], frame);
         assert_eq!(provenance["revision"], revision);
-        for axis in ["width", "height"] {
+        // The root takes the viewport; a hug-height root reports its computed height.
+        let root = &job["scene"]["nodes"][0]["bounds"];
+        for (axis, expected) in [("width", &request["viewport"]), ("height", root)] {
             assert_eq!(
                 provenance["viewport"][axis].as_f64(),
-                request["viewport"][axis].as_f64()
+                expected[axis].as_f64()
             );
         }
         assert_eq!(provenance["state"], state);
