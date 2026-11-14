@@ -36,6 +36,7 @@ mod workspace_events;
 pub use backend::RenderBackend;
 pub use error::ApiError;
 pub use http::router;
+pub use jobs::ExportRetention;
 pub use public_viewer::PublicViewer;
 pub use state::{AppState, Config};
 

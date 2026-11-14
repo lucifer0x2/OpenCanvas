@@ -76,7 +76,7 @@ fn item(node_id: &str, job: Result<Value>) -> Value {
     match job {
         Ok(job) => {
             let mut item = json!({"nodeId":node_id,"jobId":job["jobId"],"status":job["status"]});
-            for key in ["files", "error"] {
+            for key in ["files", "expiresAt", "error"] {
                 if let Some(value) = job.get(key) {
                     item[key] = value.clone();
                 }

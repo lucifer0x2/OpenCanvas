@@ -1,9 +1,7 @@
 //! Export jobs: compute the node's root frame like a render, then rasterize only the node's
-//! subtree once per PNG setting, or write it as SVG (`export_svg`). The record keeps the files' bytes for `/api/v1/jobs/{job}/files/{i}`
-//! and their metadata, never the scene.
-use super::{
-    export_svg, export_svg::AssetSource, painter::Painter, png::Painted, subtree, Entry, Jobs,
-};
+//! subtree once per PNG setting, or write it as SVG (`export_svg`). The record keeps the files'
+//! metadata, never the scene; `record` moves their bytes to the export store (`export_store`).
+use super::{export_svg, export_svg::AssetSource, painter::Painter, png::Painted, subtree, Entry};
 use crate::error::{ApiError, Result};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -194,27 +192,4 @@ pub(super) fn finish(entry: &mut Entry, base: &str, computed: &Value, rendered: 
 fn fail(entry: &mut Entry, error: ApiError) {
     entry.value["status"] = json!("failed");
     entry.value["error"] = error.value()["error"].clone();
-}
-
-impl Jobs {
-    /// One file of a ready export job.
-    pub async fn file(&self, id: &str, index: usize) -> Result<StoredFile> {
-        let table = self.table.lock().await;
-        let entry = table
-            .entries
-            .iter()
-            .find(|e| e.value["jobId"] == id)
-            .ok_or_else(|| ApiError::new("JOB_NOT_FOUND", "Render job is unavailable"))?;
-        if entry.value["status"] != "ready" {
-            return Err(ApiError::new(
-                "IMAGE_NOT_READY",
-                "Export is pending or failed; inspect the job error",
-            ));
-        }
-        entry
-            .files
-            .get(index)
-            .cloned()
-            .ok_or_else(|| ApiError::new("FILE_NOT_FOUND", "Job has no file at this index"))
-    }
 }

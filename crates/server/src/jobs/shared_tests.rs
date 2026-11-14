@@ -15,6 +15,7 @@ fn config() -> Config {
         render_backend: crate::RenderBackend::Chromium,
         job_timeout: std::time::Duration::from_secs(1),
         pipeline_identity: "scoped-test-pipeline".into(),
+        export_files: Default::default(),
     }
 }
 

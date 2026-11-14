@@ -1,5 +1,5 @@
 //! Job record transitions out of `pending` when a run finishes. Every transition wakes `wait`.
-use super::{export::Rendered, Entry, Jobs};
+use super::{export::Rendered, export_store::ExportStore, Entry, Jobs};
 use crate::error::Result;
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
@@ -17,7 +17,8 @@ impl Jobs {
         deadline: Instant,
         events: &broadcast::Sender<Value>,
     ) {
-        let mut table = self.table.lock().await;
+        let mut guard = self.table.lock().await;
+        let table = &mut *guard;
         if result.is_ok() {
             table.pace.record(elapsed);
         }
@@ -71,11 +72,27 @@ impl Jobs {
         if self.config.render_backend == crate::RenderBackend::Rust {
             reject_expired(entry, deadline);
         }
+        let evicted = publish_files(entry, &mut table.exports);
         if entry.value.get("scene").is_some() {
             let _=events.send(json!({"event":"scene_ready","projectId":entry.value["projectId"],"revision":entry.value["revision"],"sceneKey":entry.value["sceneKey"],"jobId":id}));
         }
+        table.forget(&evicted);
         self.done.send_modify(|n| *n = n.wrapping_add(1));
     }
+}
+
+/// Moves a ready export's files into the export store, out of reach of record eviction, and
+/// returns the jobs whose files the byte budget evicted.
+fn publish_files(entry: &mut Entry, store: &mut ExportStore) -> Vec<String> {
+    let files = std::mem::take(&mut entry.files);
+    if entry.value["kind"] != "export" || entry.value["status"] != "ready" {
+        return Vec::new();
+    }
+    let id = entry.value["jobId"].as_str().unwrap_or_default();
+    let project = entry.value["projectId"].as_str().unwrap_or_default();
+    let (expires_at, evicted) = store.insert(id, project, files, Instant::now());
+    entry.value["expiresAt"] = json!(expires_at);
+    evicted
 }
 
 fn reject_expired(entry: &mut Entry, deadline: Instant) {
