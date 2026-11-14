@@ -124,9 +124,15 @@ pub fn frame_input(
         .filter(|a| assets_used.contains(a.id.as_str()))
         .map(|a| json!({"id":a.id,"hash":a.content_hash,"url":"","mediaType":a.media_type}))
         .collect();
+    // A hug-height scene root ignores the viewport height; one value keeps inputs equal.
+    let height = if nodes[0].props["height"] == "hug" {
+        1.0
+    } else {
+        options.height
+    };
     Ok(
         json!({"schemaVersion":1,"projectId":snapshot.project_id,"revision":snapshot.revision,
-        "frameId":options.frame_id,"viewport":{"width":options.width,"height":options.height},
+        "frameId":options.frame_id,"viewport":{"width":options.width,"height":height},
         "theme":options.theme,"state":options.state,"nodes":nodes,"fonts":fonts,"assets":assets}),
     )
 }

@@ -1,6 +1,6 @@
 use crate::model::*;
 use crate::stack::{ALIGNS, JUSTIFIES};
-use crate::util::{err, finite, is_fill};
+use crate::util::{err, finite, hugs_height, is_fill};
 use crate::{MAX_BREAKPOINTS, percentage, valid_breakpoint_width};
 use std::collections::HashMap;
 
@@ -88,7 +88,8 @@ fn definite_axis<'a>(
     // Tree shape and cycles have already been checked by the caller.
     while let Some(node) = current {
         if node.id == input.frame_id {
-            return true;
+            // The viewport sizes the scene root, except a hug root height.
+            return !(std::ptr::eq(axis(&node.props), &node.props.height) && hugs_height(node));
         }
         match axis(&node.props) {
             Some(Sizing::Fixed(v)) => return !positive || *v > 0.0,

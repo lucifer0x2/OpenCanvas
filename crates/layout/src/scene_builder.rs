@@ -2,7 +2,7 @@
 use crate::measurement::MeasurementSource;
 use crate::model::*;
 use crate::util::*;
-use crate::{RENDERER_VERSION, SCENE_VERSION};
+use crate::{MAX_PIXELS, RENDERER_VERSION, SCENE_VERSION};
 use std::collections::{BTreeMap, HashMap};
 use taffy::prelude::*;
 
@@ -114,6 +114,7 @@ pub(crate) fn build(
             requests: misses.into_values().collect(),
         });
     }
+    let viewport = surface(input, &nodes[0], root_idx)?;
     let source_scene_key = hash(&(input, SCENE_VERSION, RENDERER_VERSION));
     Ok(LayoutStep::Ready {
         scene: Scene {
@@ -123,7 +124,7 @@ pub(crate) fn build(
                 project_id: input.project_id.clone(),
                 revision: input.revision,
                 frame_id: input.frame_id.clone(),
-                viewport: input.viewport.clone(),
+                viewport,
                 theme: input.theme.clone(),
                 state: input.state.clone(),
                 scene_version: SCENE_VERSION.into(),
@@ -137,5 +138,25 @@ pub(crate) fn build(
             assets: input.assets.clone(),
             diagnostics: crate::text_lines::cap(diagnostics),
         },
+    })
+}
+
+/// The painted surface: the input viewport, except that a hug root's computed height
+/// replaces the viewport height, within the same budget.
+fn surface(
+    input: &LayoutInput,
+    root: &SceneNode,
+    root_idx: usize,
+) -> Result<Viewport, LayoutError> {
+    if !hugs_height(&input.nodes[root_idx]) {
+        return Ok(input.viewport.clone());
+    }
+    let height = f64::from(root.bounds.height);
+    if height > 100_000.0 || input.viewport.width * height > f64::from(MAX_PIXELS) {
+        return Err(err("Hug root height exceeds the viewport budget"));
+    }
+    Ok(Viewport {
+        width: input.viewport.width,
+        height,
     })
 }

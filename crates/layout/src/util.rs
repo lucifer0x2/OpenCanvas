@@ -22,6 +22,13 @@ pub(crate) fn finite(n: f32) -> bool {
 pub(crate) fn is_fill(n: &Option<Sizing>) -> bool {
     matches!(n, Some(Sizing::Rule(r)) if r == "fill")
 }
+pub(crate) fn is_hug(n: &Option<Sizing>) -> bool {
+    matches!(n, Some(Sizing::Rule(r)) if r == "hug")
+}
+/// A scene root with `height:"hug"` takes its content height instead of the viewport's.
+pub(crate) fn hugs_height(root: &AuthoredNode) -> bool {
+    is_hug(&root.props.height)
+}
 pub(crate) fn dim(n: &Option<Sizing>, fill_percent: bool) -> Dimension {
     match n {
         Some(Sizing::Fixed(v)) => length(*v),

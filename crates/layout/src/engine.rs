@@ -66,7 +66,11 @@ fn compute_with_source(
         root,
         Size {
             width: AvailableSpace::Definite(input.viewport.width as f32),
-            height: AvailableSpace::Definite(input.viewport.height as f32),
+            height: if hugs_height(&input.nodes[root_idx]) {
+                AvailableSpace::MaxContent
+            } else {
+                AvailableSpace::Definite(input.viewport.height as f32)
+            },
         },
         |inputs, _, context, style| {
             taffy::compute_leaf_layout(

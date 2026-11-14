@@ -7,6 +7,8 @@ mod paint_tests;
 mod responsive;
 #[cfg(test)]
 mod responsive_tests;
+#[cfg(test)]
+mod root_hug_tests;
 mod scene_builder;
 mod stack;
 #[cfg(test)]

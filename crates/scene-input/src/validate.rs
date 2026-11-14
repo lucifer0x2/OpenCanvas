@@ -23,6 +23,7 @@ mod prop_keys;
 mod properties;
 mod quad;
 mod refs;
+mod root_size;
 mod scope;
 mod scoped;
 mod shadow;
