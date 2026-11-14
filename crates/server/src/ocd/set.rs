@@ -1,83 +1,117 @@
-//! `@set id {attr}` compiles to `update_node`, which merges props only at the top level, so an
-//! object-valued prop is replaced whole. Shorthands that assemble part of an object (layout
-//! flags and keys, descendant overrides) would silently drop the stored rest of that object;
-//! here they fail with a hint to write the object in full (`layout={…}`, `overrides={…}`).
-//! `stroke=` is accepted only with color, width and align all given.
+//! `@set id {attr}` compiles to `update_node`. Whole values (`fill=`, `layout={…}`,
+//! `overrides={…}`, `stroke=c,w,a`, `props={…}`) replace the stored prop. Partial writes of
+//! an object prop merge into the stored object at commit (`merge:true`, a JSON merge patch):
+//! layout flags and `p`/`gap`/`align`/`justify`, `<prop>.<field>=` (`layout.gap=8`,
+//! `stroke.width=2`), `<descendant>.<key>=` instance overrides, and `stroke=color[,width]`.
+//! A statement with both writes a replacing update for object values, then a merging one.
 use super::error::Result;
-use super::keys::{self, effective_key};
+use super::keys::{self, effective_key, layout_field};
 use super::lexer::Token;
 use super::parser::{DirectiveStmt, Part};
 use super::props::{self, Target};
 use super::{value, OcdError};
-use serde_json::{json, Value};
+use opencanvas_storage::{merge_props, merges};
+use serde_json::{json, Map, Value};
 
-const LAYOUT_EXAMPLE: &str = r#"layout={"mode":"column","padding":32,"gap":8}"#;
-const OVERRIDES_EXAMPLE: &str = r#"overrides={"ph":{"text":"x","fill":{"tokenId":"pri"}}}"#;
-const STROKE_EXAMPLE: &str =
-    r##"stroke=#E5E7EB,1,inside or stroke={"color":"#E5E7EB","width":1,"align":"inside"}"##;
-
-pub fn update(d: &DirectiveStmt) -> Result<Value> {
+pub fn update(d: &DirectiveStmt) -> Result<Vec<Value>> {
     if d.parts.is_empty() {
         return Err(d.name.error("@set needs at least one attribute"));
     }
+    let id = value::id(&d.positional[0])?;
+    let (mut whole, mut patch) = (Vec::new(), Map::new());
     for part in &d.parts {
-        reject_partial(part)?;
-    }
-    let props = props::build(&d.parts, Target::Update, None)?;
-    Ok(json!({"op":"update_node","id":value::id(&d.positional[0])?,"props":props}))
-}
-
-fn reject_partial(part: &Part) -> Result<()> {
-    let (token, key) = match part {
-        Part::Flag(flag) => return Err(replaced(flag, &flag.text, "layout")),
-        Part::Attr(key, raw) if key.text == "stroke" => {
-            // A JSON object is explicit; a list must name all three fields.
-            let full = raw.text.starts_with('{') || value::split(raw, ',').len() == 3;
-            return match full {
-                true => Ok(()),
-                false => Err(replaced(key, &format!("stroke={}", raw.text), "stroke")),
-            };
+        match partial(part)? {
+            Some(fields) => merge_props(&mut patch, &fields),
+            None => whole.push(part.clone()),
         }
-        Part::Attr(key, _) => (key, key.text.as_str()),
-        _ => return Ok(()),
-    };
-    if let Some((prefix, _)) = key.split_once('.') {
-        // `ph.fill=` overrides a descendant; `layout.gap=` would be read the same way.
-        let object = effective_key(prefix).unwrap_or("overrides");
-        return Err(replaced(token, &format!("{key}="), object));
     }
-    match effective_key(key) {
-        Some("layout") if key != "layout" => Err(replaced(token, &format!("{key}="), "layout")),
-        Some(_) => Ok(()),
-        None if key == "props" => Ok(()),
-        None => Err(unknown(token)),
+    let mut replace = props::build(&whole, Target::Update, None)?;
+    if patch.is_empty() {
+        return Ok(vec![op(&id, replace, false)]);
+    }
+    // A prop written whole takes this statement's partial writes before it replaces.
+    for key in replace.keys().cloned().collect::<Vec<_>>() {
+        if let Some(fields) = patch.remove(&key) {
+            merge_props(&mut replace, &Map::from_iter([(key, fields)]));
+        }
+    }
+    // Scalars, lists and references replace in a merge patch too; records and `null` do not.
+    let (records, values): (Map<_, _>, Map<_, _>) = replace
+        .into_iter()
+        .partition(|(_, value)| merges(value) || value.is_null());
+    patch.extend(values);
+    let mut ops = Vec::new();
+    if !records.is_empty() {
+        ops.push(op(&id, records, false));
+    }
+    if !patch.is_empty() {
+        ops.push(op(&id, patch, true));
+    }
+    Ok(ops)
+}
+
+fn op(id: &str, props: Map<String, Value>, merge: bool) -> Value {
+    let mut op = json!({"op":"update_node","id":id,"props":props});
+    if merge {
+        op["merge"] = json!(true);
+    }
+    op
+}
+
+/// The props one partial write patches, or `None` for a whole value.
+fn partial(part: &Part) -> Result<Option<Map<String, Value>>> {
+    let single = |target| props::build(std::slice::from_ref(part), target, None).map(Some);
+    match part {
+        Part::Flag(_) => single(Target::Update),
+        Part::Attr(key, raw) if key.text == "stroke" => {
+            // A JSON object or all three list fields replace; a color[,width] list patches.
+            match raw.text.starts_with('{') || value::split(raw, ',').len() == 3 {
+                true => Ok(None),
+                false => single(Target::Update),
+            }
+        }
+        Part::Attr(key, raw) => match key.text.split_once('.') {
+            Some((prefix, field)) => match effective_key(prefix) {
+                Some(prop) => field_patch(key, prefix, prop, field, raw).map(Some),
+                // `ph.fill=` overrides instance descendant `ph`, read like a `use` attribute.
+                None => single(Target::Instance),
+            },
+            None if layout_field(&key.text).is_some() => single(Target::Update),
+            None if effective_key(&key.text).is_none() && key.text != "props" => Err(unknown(key)),
+            None => Ok(None),
+        },
+        _ => Ok(None),
     }
 }
 
-/// `padding=` suggests `p`, itself a layout shorthand: point at `layout={…}` instead. Any
-/// other unknown key may be an instance descendant, which only `overrides={…}` can change.
+/// `layout.gap=8`, `stroke.width=2`, `layout.padding=8,16`: one field of an object prop.
+fn field_patch(
+    key: &Token,
+    prefix: &str,
+    prop: &str,
+    field: &str,
+    raw: &Token,
+) -> Result<Map<String, Value>> {
+    let at = key.slice(prefix.chars().count() + 1, None);
+    let mut value = value::parse(raw)?;
+    for name in field.rsplit('.') {
+        let valid = !name.is_empty() && name.bytes().all(|b| b.is_ascii_alphanumeric());
+        if !valid {
+            return Err(at.error(format!("`{field}` is not a field name of `{prop}`")));
+        }
+        value = json!({ name: value });
+    }
+    Ok(Map::from_iter([(prop.to_owned(), value)]))
+}
+
+/// An unknown key on `@set`; an instance descendant is written `<id>.<key>=`.
 fn unknown(token: &Token) -> OcdError {
     let error = keys::unknown(token);
-    match error.suggestion.as_deref().and_then(effective_key) {
-        Some("layout") => replaced(token, &format!("{}=", token.text), "layout"),
-        _ => OcdError {
-            message: format!(
-                "{}; for an instance descendant, @set replaces all overrides: write {OVERRIDES_EXAMPLE} in full",
-                error.message
-            ),
-            ..error
-        },
+    OcdError {
+        message: format!(
+            "{}; for an instance descendant write <descendantId>.text=\"…\"",
+            error.message
+        ),
+        ..error
     }
-}
-
-fn replaced(token: &Token, written: &str, object: &str) -> OcdError {
-    let example = match object {
-        "layout" => LAYOUT_EXAMPLE.to_owned(),
-        "overrides" => OVERRIDES_EXAMPLE.to_owned(),
-        "stroke" => STROKE_EXAMPLE.to_owned(),
-        other => format!("{other}={{…}}"),
-    };
-    token.error(format!(
-        "`{written}` would write part of `{object}`, but @set replaces the whole object and drops its stored fields; write it in full, e.g. {example}"
-    ))
 }

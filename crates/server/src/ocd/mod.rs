@@ -3,12 +3,16 @@
 //! batch is validated and committed exactly like an inline one. Grammar and shorthands are
 //! published in `skill://opencanvas/ocd.md`.
 mod apply;
+mod auto_id;
 mod defaults;
 mod directives;
 mod error;
 mod expand;
+mod instance_keys;
 mod keys;
 mod lexer;
+mod node;
+mod notes;
 mod parser;
 mod props;
 mod set;
@@ -24,11 +28,13 @@ use serde_json::Value;
 const MAX_OPERATIONS: usize = 500;
 
 /// Compiled operations and, for each, the 1-based `(line, column)` of the statement that
-/// produced it. Positions are for error reports only; they are not part of the batch.
+/// produced it, plus each generated node ID with its line. Positions and IDs are reported to
+/// the caller; they are not part of the batch.
 #[derive(Debug, Default)]
 pub struct Compiled {
     pub operations: Vec<Value>,
     pub positions: Vec<(usize, usize)>,
+    pub auto_ids: Vec<(usize, String)>,
 }
 
 /// Compiles OCD source into operations.
@@ -76,6 +82,8 @@ fn too_long(source: &str) -> OcdError {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_edits;
 #[cfg(test)]
 mod tests_errors;
 #[cfg(test)]

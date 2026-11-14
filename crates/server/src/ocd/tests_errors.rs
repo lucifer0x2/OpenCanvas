@@ -60,9 +60,15 @@ fn duplicate_ids_point_at_the_second_use() {
     let e = error("page#p\n  frame#a 1x1\n  frame#a 1x1\n");
     assert_eq!((e.line, e.column), (3, 9));
     assert_eq!(e.message, "Duplicate ID `a` (first used on line 2)");
-    // An explicit ID may collide with a generated one.
-    let e = error("page#p\n  frame 1x1\n  frame#p-1 1x1\n");
+    // An explicit ID may collide with an earlier generated one.
+    let generated = super::compile("page#p\n  frame 1x1\n").unwrap().auto_ids[0]
+        .1
+        .clone();
+    let e = error(&format!("page#p\n  frame 1x1\n  frame#{generated} 1x1\n"));
     assert_eq!((e.line, e.column), (3, 9));
+    // A generated ID never takes one written earlier.
+    let source = format!("page#p\n  frame#{generated} 1x1\n  frame 1x1\n");
+    assert_ne!(super::compile(&source).unwrap().auto_ids[0].1, generated);
 }
 
 #[test]
