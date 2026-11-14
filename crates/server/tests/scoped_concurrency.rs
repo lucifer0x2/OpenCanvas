@@ -97,11 +97,13 @@ async fn contract(s: &impl Mcp) {
 #[tokio::test]
 async fn sqlite_real_mcp_scoped_guards_and_legacy_compatibility() {
     contract(&support::Server::start().await).await;
+    notes_and_pages(&support::Server::start().await).await;
 }
 #[tokio::test]
 #[ignore = "fresh disposable PostgreSQL only"]
 async fn postgres_real_mcp_scoped_guards_and_legacy_compatibility() {
     contract(&postgres_backend_support::Server::start().await).await;
+    notes_and_pages(&postgres_backend_support::Server::start().await).await;
 }
 #[tokio::test]
 async fn sqlite_scoped_file_preview_replay_and_original_schema_validation() {
@@ -128,4 +130,48 @@ async fn sqlite_scoped_file_preview_replay_and_original_schema_validation() {
         2
     );
     assert_eq!(s.call("apply_batch_file", args).await["replayed"], true);
+}
+/// Parallel sessions: a note on one page and a new page do not invalidate another
+/// page's guard; a note on the guarded page does.
+async fn notes_and_pages(s: &impl Mcp) {
+    let slug = format!("scoped-notes-{}", uuid::Uuid::new_v4().simple());
+    let created = s
+        .call("create_project", json!({"slug":slug,"name":"Notes"}))
+        .await;
+    let p = created["projectId"].as_str().unwrap().to_owned();
+    let seed=s.call("apply_batch",json!({"projectId":p,"expectedRevision":0,"idempotencyKey":"seed","operations":[
+        {"op":"create_node","id":"p1","kind":"page","parentId":null,"props":{}},
+        {"op":"create_node","id":"p2","kind":"page","parentId":null,"props":{}},
+        {"op":"create_node","id":"f1","kind":"frame","parentId":"p1","props":{"width":40,"height":40}},
+        {"op":"create_node","id":"f2","kind":"frame","parentId":"p2","props":{"width":40,"height":40}}
+    ]})).await;
+    assert_eq!(seed["committedRevision"], 1, "{seed}");
+    let batch = |key: &str, page: &str, operations: Value| json!({"projectId":p,"expectedRevision":1,"pageIds":[page],"idempotencyKey":key,"operations":operations});
+    let note = batch(
+        "note",
+        "p1",
+        json!([{"op":"create_note","id":"n1","nodeId":"f1","text":"Why"}]),
+    );
+    assert_eq!(s.call("apply_batch", note).await["committedRevision"], 2);
+    let page = batch(
+        "page",
+        "p3",
+        json!([{"op":"create_node","id":"p3","kind":"page","parentId":null,"props":{}},
+        {"op":"create_node","id":"f3","kind":"frame","parentId":"p3","props":{"width":40,"height":40}}]),
+    );
+    let page = s.call("apply_batch", page).await;
+    assert_eq!(page["editGuard"]["pageIds"], json!(["p3"]), "{page}");
+    let other = batch(
+        "other",
+        "p2",
+        json!([{"op":"update_node","id":"f2","props":{"name":"B"}}]),
+    );
+    assert_eq!(s.call("apply_batch", other).await["committedRevision"], 4);
+    let stale = batch(
+        "stale",
+        "p1",
+        json!([{"op":"update_node","id":"f1","props":{"name":"A"}}]),
+    );
+    let stale = s.call("apply_batch", stale).await;
+    assert_eq!(stale["error"]["code"], "REVISION_CONFLICT", "{stale}");
 }
