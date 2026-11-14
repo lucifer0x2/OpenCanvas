@@ -1,113 +1,63 @@
-//! `import_asset` takes the asset bytes from exactly one source: an inbox `path` or inline
-//! `base64`. As with `render_frame`, clients see the flat union of both shapes while the
-//! server validates the strict form, because MCP clients reject a top-level `oneOf`.
+//! `import_asset` takes the asset bytes from exactly one source: an inbox `path`, inline
+//! `base64`, or `sourceProjectId` with `assetId` or `fontId`. As with `render_frame`,
+//! clients see the flat union of these shapes while the server validates the strict form,
+//! because MCP clients reject a top-level `oneOf`.
 use super::{id, object, text};
 use serde_json::{json, Map, Value};
 
-pub const DESCRIPTION: &str = "Import one asset (max 10 MiB) from exactly one of path or base64. Prefer path: a file saved in the project's inbox, inbox-relative or absolute inside it (traversal and symlinks forbidden), so its bytes never enter the conversation; base64 is only for clients without filesystem access. Bytes must match mediaType's signature. Replay and the asset hash use the bytes, not the source. Returns asset plus, as apply_batch does, committedRevision, changedIds, renderStatus and replayed at the top level (result repeats them).";
-const REQUIRED: [&str; 4] = [
-    "projectId",
-    "expectedRevision",
-    "idempotencyKey",
-    "mediaType",
-];
+pub const DESCRIPTION: &str = "Import one asset (max 10 MiB) from one source: path (a file in the project inbox; preferred, keeps bytes out of the conversation), base64, or sourceProjectId plus assetId or fontId to copy it (fontId keeps its registration; no mediaType). No URLs. Returns asset and commit fields like apply_batch.";
+const REQUIRED: [&str; 3] = ["projectId", "expectedRevision", "idempotencyKey"];
 
-fn common() -> Map<String, Value> {
+fn properties(extra: Value) -> Map<String, Value> {
+    let mut properties = json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id()});
+    let properties = properties.as_object_mut().unwrap();
+    properties.extend(extra.as_object().unwrap().clone());
+    properties.clone()
+}
+/// Fields of the two byte sources: the declared type and an optional font registration.
+fn bytes() -> Value {
     let font = object(
         json!({"id":id(),"family":text(256),"weight":{"type":"integer","minimum":1,"maximum":1000},"style":{"enum":["normal","italic"]},"license":{"type":["string","null"],"maxLength":1024}}),
         &["id", "family", "weight", "style"],
     );
-    let properties = json!({"projectId":id(),"expectedRevision":{"type":"integer","minimum":0},"idempotencyKey":id(),"mediaType":{"enum":["image/png","image/jpeg","image/webp","font/ttf","font/otf","font/woff2"]},"font":font});
-    properties.as_object().unwrap().clone()
-}
-fn source(key: &str, schema: Value) -> Value {
-    let mut properties = common();
-    properties.insert(key.into(), schema);
-    let mut required = REQUIRED.to_vec();
-    required.push(key);
-    object(Value::Object(properties), &required)
+    json!({"mediaType":{"enum":["image/png","image/jpeg","image/webp","font/ttf","font/otf","font/woff2"]},"font":font})
 }
 fn base64() -> Value {
     json!({"type":"string","minLength":4,"maxLength":13981016})
 }
-/// What `tools/list` shows: both sources, neither required.
+fn shape(extra: Value) -> Value {
+    let properties = properties(extra);
+    let mut required = REQUIRED.to_vec();
+    required.extend(
+        properties
+            .keys()
+            .map(String::as_str)
+            .filter(|k| !REQUIRED.contains(k) && *k != "font"),
+    );
+    object(Value::Object(properties.clone()), &required)
+}
+fn with_bytes(key: &str, schema: Value) -> Value {
+    let mut extra = bytes();
+    extra[key] = schema;
+    shape(extra)
+}
+fn copy(key: &str) -> Value {
+    shape(json!({"sourceProjectId":text(128),key:text(128)}))
+}
+/// What `tools/list` shows: every source, none required.
 pub fn published() -> Value {
-    let mut properties = common();
+    let mut properties = properties(bytes());
     properties.insert("path".into(), text(4096));
     properties.insert("base64".into(), base64());
+    for key in ["sourceProjectId", "assetId", "fontId"] {
+        properties.insert(key.into(), text(128));
+    }
     object(Value::Object(properties), &REQUIRED)
 }
-/// What `validate` enforces: exactly one source, each closed to the other.
+/// What `validate` enforces: exactly one source, each closed to the others.
 pub fn validation() -> Value {
-    json!({"oneOf":[source("path", text(4096)), source("base64", base64())]})
+    json!({"oneOf":[with_bytes("path", text(4096)), with_bytes("base64", base64()), copy("assetId"), copy("fontId")]})
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{published, validation};
-    use serde_json::{json, Value};
-
-    fn check(args: Value) -> Result<(), String> {
-        crate::schemas::validate("import_asset", &args).map_err(|e| e.0.code)
-    }
-    fn args(source: Value) -> Value {
-        let mut args = json!({"projectId":"p","expectedRevision":0,"idempotencyKey":"k","mediaType":"image/png"});
-        args.as_object_mut()
-            .unwrap()
-            .extend(source.as_object().unwrap().clone());
-        args
-    }
-    #[test]
-    fn published_schema_is_the_flat_union_of_both_sources() {
-        let published = published();
-        let mut union = serde_json::Map::new();
-        for shape in validation()["oneOf"].as_array().unwrap() {
-            for (key, field) in shape["properties"].as_object().unwrap() {
-                assert!(union
-                    .insert(key.clone(), field.clone())
-                    .is_none_or(|f| f == *field));
-            }
-        }
-        assert_eq!(published["properties"], Value::Object(union));
-        assert_eq!(
-            published["required"],
-            json!([
-                "projectId",
-                "expectedRevision",
-                "idempotencyKey",
-                "mediaType"
-            ])
-        );
-        assert_eq!(published["additionalProperties"], false);
-    }
-    #[test]
-    fn validation_requires_exactly_one_source() {
-        let font = json!({"id":"f","family":"F","weight":400,"style":"normal"});
-        for accepted in [
-            args(json!({"path":"logo.png"})),
-            args(json!({"path":"nested/logo.png"})),
-            args(json!({"base64":"iVBORw=="})),
-            args(json!({"path":"f.woff2","font":font})),
-        ] {
-            assert_eq!(check(accepted.clone()), Ok(()), "{accepted}");
-        }
-        for rejected in [
-            args(json!({})),
-            args(json!({"path":"logo.png","base64":"iVBORw=="})),
-            args(json!({"path":""})),
-            args(json!({"path":7})),
-            args(json!({"path":null})),
-            args(json!({"base64":["iVBORw=="]})),
-            args(json!({"base64":"abc"})),
-            args(json!({"path":"logo.png","extra":1})),
-            json!({"projectId":"p","expectedRevision":0,"idempotencyKey":"k","path":"logo.png"}),
-            args(json!({"path":"logo.png","mediaType":"image/gif"})),
-        ] {
-            assert_eq!(
-                check(rejected.clone()),
-                Err("INVALID_REQUEST".into()),
-                "{rejected}"
-            );
-        }
-    }
-}
+mod tests;

@@ -1,9 +1,11 @@
-//! `import_asset` takes its bytes inline as base64 or from a file in the project's inbox.
-//! Both reach storage as the same decoded bytes, so replay and the asset hash ignore the source.
+//! `import_asset` takes its bytes inline as base64, from a file in the project's inbox, or
+//! copied from another project's asset or font. All reach storage as the same bytes, so
+//! replay and the asset hash ignore the source.
 use super::*;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use opencanvas_storage::{FontRegistration, ImportAssetRequest};
 use serde::Deserialize;
+mod copy;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -11,10 +13,13 @@ struct ImportRequest {
     project_id: String,
     expected_revision: u64,
     idempotency_key: String,
-    media_type: String,
+    media_type: Option<String>,
     base64: Option<String>,
     path: Option<String>,
     font: Option<FontRegistration>,
+    source_project_id: Option<String>,
+    asset_id: Option<String>,
+    font_id: Option<String>,
 }
 
 enum Source {
@@ -24,18 +29,32 @@ enum Source {
 
 pub(super) async fn run(state: &AppState, args: Value) -> Result<Value> {
     let req: ImportRequest = serde_json::from_value(args)?;
-    let source = match (req.base64, req.path) {
-        (Some(base64), None) => Source::Bytes(decode(&base64)?),
-        (None, Some(path)) => Source::Inbox(path),
-        _ => return Err(ApiError::invalid("Send exactly one of path or base64")),
+    let picked = (req.base64, req.path, req.source_project_id);
+    let copy_ids = req.asset_id.is_some() || req.font_id.is_some();
+    let (media_type, font, source) = match (req.media_type, picked) {
+        (Some(media), (Some(base64), None, None)) if !copy_ids => {
+            (media, req.font, Source::Bytes(decode(&base64)?))
+        }
+        (Some(media), (None, Some(path), None)) if !copy_ids => {
+            (media, req.font, Source::Inbox(path))
+        }
+        (None, (None, None, Some(project))) if req.font.is_none() => {
+            let copied = copy::read(state, project, req.asset_id, req.font_id).await?;
+            (copied.media_type, copied.font, Source::Bytes(copied.bytes))
+        }
+        _ => {
+            return Err(ApiError::invalid(
+                "Send exactly one of path, base64 or sourceProjectId",
+            ))
+        }
     };
     let mut import = ImportAssetRequest {
         project_id: req.project_id,
         expected_revision: req.expected_revision,
         idempotency_key: req.idempotency_key,
-        media_type: req.media_type,
+        media_type,
         bytes: Vec::new(),
-        font: req.font,
+        font,
     };
     let (id, expected) = (import.project_id.clone(), import.expected_revision);
     let result = state

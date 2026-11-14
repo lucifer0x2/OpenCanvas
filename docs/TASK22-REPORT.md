@@ -130,7 +130,8 @@ New tests cover:
   by request). Only `import_asset` uses the PostgreSQL inbox root. Enabling batch
   files there would reuse the same `Storage` root and needs its own decision.
 - Replaying with `path` re-reads the file, so a retry after a lost response needs
-  the same bytes still in the inbox. The skill says to keep the file until success.
+  the same bytes still in the inbox. `SERVER-OPERATIONS.md` says to keep the file
+  until success.
 - Absolute paths must use the canonical inbox path. An alias through a symlinked
   data root is rejected, as for batch files.
 - PostgreSQL defaults the inbox root to `~/.opencanvas` when no data root is given.
@@ -141,3 +142,63 @@ New tests cover:
   `UNSUPPORTED_PLATFORM`.
 - `crates/server/skills/author-frame.md` is now 323 lines. It is a skill
   document, not handwritten code, so it was not split.
+
+## 22b — `import_asset` sources: inbox path and cross-project copy (OC-8)
+
+Branch `feat/import-asset-sources` (from `main` @`e413793`), 2026-11-14.
+
+### Result
+
+- 22a merged onto current `main`. The only conflict was the module list in
+  `crates/storage/src/lib.rs` (main's `revision_indexes` next to the branch's
+  `inbox`). `apply_batch_file` and `import_asset` share one resolver,
+  `crates/storage/src/inbox.rs`.
+- `import_asset` also takes `sourceProjectId` (ID or slug) plus exactly one of
+  `assetId` or `fontId`, with no `mediaType`, `font`, `path` or `base64`. The
+  server reads the source through `ProjectHandle::read_asset` / `read_font`, which
+  check the bytes against the manifest hash. It then imports them as an ordinary
+  content-addressed import (`crates/server/src/domain/import/copy.rs`). The asset
+  keeps its ID. `fontId` also copies the registration (ID, family, weight, style,
+  license), so text can use the font at once. Replay with the same key returns
+  `replayed:true`. `font_bundled` is rejected (`INVALID_REQUEST`) because it is
+  built in. Missing items return `PROJECT_NOT_FOUND`, `ASSET_NOT_FOUND` or
+  `FONT_NOT_FOUND`.
+- One item per call. Storage commits one asset per import, so copying several
+  faces in one call would need a new multi-asset transaction on both backends.
+- The server does not download URLs. A download would add server-side request
+  forgery risk, and the loopback MCP client can save the file in the inbox itself.
+- The 10 MiB cap stays. Typical fonts are much smaller: Lato TTF is 641 KiB and
+  the bundled Noto Sans is 2.0 MiB; WOFF2 files are usually under 200 KiB. Only
+  full CJK families exceed 10 MiB, and those can be subset or converted to WOFF2.
+  The blocker was carrying base64 through the conversation, not the cap.
+
+### Sizes (before = `main` @`e413793`)
+
+| Measure | Before | After |
+| --- | --- | --- |
+| discovery workflow total (cap 100 000) | 99 645 B | 99 953 B (+308; ±1 B per run) |
+| `tools/list` total (`TOTAL_MAX` 32 768) | 29 734 B | 30 029 B (+295) |
+| `import_asset` tool | 1 205 B | 1 500 B |
+| `skill://opencanvas/author-frame.md` read | 21 697 B | 21 709 B (+12) |
+
+The thresholds stay the same. The 22a wording would have pushed the discovery
+total to 100 739 B, so the import paragraph and tool description were shortened,
+and new ID fields use a plain bounded string. The author-frame changes also
+remove the stale U07 payload-measurement note and the duplicate traversal
+sentence; tool errors report traversal.
+
+### Checks
+
+Render tests need `npm ci`, `npm run build:renderer`, `layout-step` and a
+Playwright headless shell (`PLAYWRIGHT_BROWSERS_PATH`).
+
+- `cargo test -p opencanvas-storage --test inbox_assets --test batch_file --test
+  assets`: 2 (+1 PostgreSQL ignored), 4, 2 passed.
+- `cargo test -p opencanvas-server --lib --test import_copy --test import_inbox
+  --test discovery_workflow --test tools_budget --test tool_schemas --test
+  skill_layer --test structured_authoring --test structured_batch --test
+  font_portability --test postgres_import_inbox --test startup_env --test
+  startup_backend`: 147, 2, 3, 1, 1, 2, 2, 3, 3, 2, 0 (2 PostgreSQL ignored),
+  9, 5 passed; `font_face_context` 2 passed.
+- PostgreSQL copy test `postgres_copies_a_font_with_its_registration_between_projects`
+  compiles but was not run (no disposable cluster).
