@@ -149,10 +149,8 @@ they do not auto-chunk. Split larger input into explicit atomic batches, each
 using the last successful revision and its own key. Without authorized
 filesystem access, use inline batches; never claim a file was written.
 
-Import images and fonts the same way: save the file in that inbox and call
-`import_asset` with `path` and `mediaType`, never pasting base64. Reuse another
-project's font (with its registration) or image via `sourceProjectId` plus
-`fontId` or `assetId`.
+Import images and fonts the same way (`import_asset` `path` + `mediaType`, no
+base64), or copy another project's via `sourceProjectId` + `fontId`/`assetId`.
 
 ## Stack template
 

@@ -45,12 +45,12 @@ async fn in_rejects_anything_but_one_parent_id() {
 async fn errors_after_compilation_point_at_their_statement() {
     let s = Server::start().await;
     let p = s.project().await;
-    // Published schema: an index over 20000, a note over 2000 characters.
+    // Published schema: an index over MAX_NODES (200,000), a note over 2000 characters.
     let error = source(
         &s,
         &p,
         0,
-        "page#pg\n  frame#f 10x10\n    rect#r index=30000",
+        "page#pg\n  frame#f 10x10\n    rect#r index=300000",
     )
     .await;
     assert_eq!(error["code"], "INVALID_REQUEST", "{error}");
