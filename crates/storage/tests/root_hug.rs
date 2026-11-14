@@ -8,6 +8,7 @@ fn update(id: &str, props: Value) -> Operation {
     Operation::UpdateNode {
         id: id.into(),
         props,
+        merge: false,
     }
 }
 
