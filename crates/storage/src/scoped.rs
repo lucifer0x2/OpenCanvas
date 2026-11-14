@@ -8,6 +8,7 @@ pub(crate) mod dependency_index;
 mod history;
 pub(crate) mod index;
 mod navigation;
+mod notes;
 #[cfg(test)]
 mod parity;
 #[cfg(test)]
@@ -81,14 +82,20 @@ pub(crate) fn check(
     if request.expected_revision > before.revision || commits.len() > 1000 {
         return Err(StorageError::conflict(before.revision));
     }
-    scope.before.validate_pages(pages)?;
+    // A guarded page exists already or is appended by this batch.
+    index::PageIndex::validate_page_ids(pages)?;
+    let existed = |p: &String| scope.before.page_nodes.contains_key(p);
+    if !pages
+        .iter()
+        .all(|p| existed(p) || scope.after.page_nodes.contains_key(p))
+    {
+        return Err(StorageError::validation(
+            "pageIds",
+            "Guarded page does not exist",
+        ));
+    }
+    notes::check(before, candidate, &request.operations, pages, scope)?;
     for op in &request.operations {
-        match op {
-            Operation::CreateNode { kind, parent_id: Some(_), .. } if *kind != NodeKind::Page => {},
-            Operation::UpdateNode { .. } | Operation::ReparentNode { .. }
-            | Operation::ReorderNode { .. } | Operation::DeleteSubtree { .. } => {},
-            _ => return Err(unsupported("Scoped batches support existing-page node edits only; use strict mode for shared resources, notes and page structure")),
-        }
         use Operation::*;
         let (id, parent, props) = match op {
             CreateNode {
@@ -100,7 +107,14 @@ pub(crate) fn check(
             UpdateNode { id, props } => (id, None, Some(props)),
             ReparentNode { id, parent_id, .. } => (id, Some(parent_id.as_str()), None),
             ReorderNode { id, .. } | DeleteSubtree { id } => (id, None, None),
-            _ => unreachable!(),
+            CreateNote { .. } | ReplyNote { .. } | UpdateNote { .. } | DeleteNote { .. } => {
+                continue
+            }
+            _ => {
+                return Err(unsupported(
+                    "Token and style writes require strict mode (omit pageIds)",
+                ))
+            }
         };
         if props.is_some_and(|p| p.get("flowStart").is_some()) {
             return Err(unsupported("Global flowStart changes require strict mode"));
@@ -118,14 +132,10 @@ pub(crate) fn check(
             }
         }
         match op {
-            CreateNode { index, .. } if scope.after.root_ids.contains(id) => {
-                if index.is_some()
-                    || parent
-                        .and_then(|p| scope.before.roots.get(p))
-                        .is_none_or(Vec::is_empty)
-                {
-                    return Err(unsupported("Only appending a root frame after existing roots is supported; first-frame creation requires strict mode"));
-                }
+            CreateNode { index: Some(_), .. } if scope.after.root_ids.contains(id) => {
+                return Err(unsupported(
+                    "Append root frames without an explicit index in scoped mode",
+                ));
             }
             DeleteSubtree { .. } | ReparentNode { .. } | ReorderNode { .. }
                 if scope.before.root_ids.contains(id) || scope.after.root_ids.contains(id) =>
@@ -137,47 +147,35 @@ pub(crate) fn check(
             _ => {}
         }
     }
+    if scope.footprint.contains("*") {
+        return Err(unsupported("Changing the default page or first root frame, page order, page deletion or page properties requires strict mode"));
+    }
     for key in &scope.footprint {
         if let Some(page) = key.strip_prefix("page:") {
             if !pages.iter().any(|p| p == page) {
-                return Err(unsupported("Every affected page, including link cleanup and source/destination pages, must be guarded"));
+                return Err(unsupported("Every affected page, including link cleanup, note anchors and source/destination pages, must be guarded"));
             }
-        } else if !key.starts_with("node:") {
-            return Err(unsupported(
-                "Scoped shared-resource and note writes are unsupported",
-            ));
+        } else if !key.starts_with("node:") && !key.starts_with("note:") {
+            return Err(unsupported("Scoped shared-resource writes are unsupported"));
         }
-    }
-    // A page reorder/delete is project structure even when its own key is covered.
-    let old_pages: BTreeMap<_, _> = before
-        .nodes
-        .iter()
-        .filter(|n| n.kind == NodeKind::Page)
-        .map(|n| (n.id.as_str(), n))
-        .collect();
-    let new_pages: BTreeMap<_, _> = candidate
-        .nodes
-        .values()
-        .filter(|n| n.kind == NodeKind::Page)
-        .map(|n| (n.id.as_str(), n))
-        .collect();
-    if old_pages != new_pages {
-        return Err(unsupported(
-            "Page creation, deletion, reorder or property edits require strict mode",
-        ));
     }
     // At the current revision there is no concurrent history to intersect. All
     // page/restriction/effective-coverage checks above still run in the same order.
     let mut guard = BTreeSet::new();
     if request.expected_revision != before.revision {
-        let old = scope.old_indexes.dependencies(|| {
-            dependency_index::DependencyIndex::with_snapshot_tree(
-                before,
-                scope.before.clone(),
-                Some(&scope.old_indexes.references),
-            )
-        })?;
-        guard = old.closure(pages)?;
+        // Pages appended by this batch have no old closure; their new closure
+        // still guards the page key against concurrent create/delete.
+        let old_pages: Vec<_> = pages.iter().filter(|p| existed(p)).cloned().collect();
+        if !old_pages.is_empty() {
+            let old = scope.old_indexes.dependencies(|| {
+                dependency_index::DependencyIndex::with_snapshot_tree(
+                    before,
+                    scope.before.clone(),
+                    Some(&scope.old_indexes.references),
+                )
+            })?;
+            guard = old.closure(&old_pages)?;
+        }
         let new = scope.new_indexes.dependencies(|| {
             dependency_index::DependencyIndex::from_candidate(
                 candidate,

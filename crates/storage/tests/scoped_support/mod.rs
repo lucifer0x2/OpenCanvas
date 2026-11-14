@@ -3,6 +3,9 @@ use opencanvas_storage::*;
 use serde_json::{json, Value};
 use std::sync::Arc;
 pub mod dependencies;
+pub mod notes;
+pub mod pages;
+pub mod roots;
 pub mod semantics;
 
 pub fn seed(p: &ProjectHandle) {
@@ -90,4 +93,13 @@ pub fn font(p: &ProjectHandle, key: &str, family: &str, changed_bytes: bool) {
         }),
     })
     .unwrap();
+}
+pub fn ops(value: Value) -> Vec<Operation> {
+    serde_json::from_value(value).unwrap()
+}
+pub fn code(p: &ProjectHandle, request: ScopedBatchRequest) -> String {
+    p.apply_scoped_batch(request).unwrap_err().code
+}
+pub fn revision(p: &ProjectHandle) -> u64 {
+    p.snapshot().unwrap().revision
 }

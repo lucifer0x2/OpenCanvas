@@ -121,7 +121,7 @@ pub fn restrictions(p: Arc<ProjectHandle>) {
         }],
         vec![Operation::CreateNote {
             id: "note".into(),
-            node_id: "r1".into(),
+            node_id: "r2".into(),
             text: "note".into(),
             author: None,
         }],
@@ -170,18 +170,16 @@ pub fn restrictions(p: Arc<ProjectHandle>) {
         }],
     );
     let revision = p.snapshot().unwrap().revision;
-    assert_eq!(
-        p.apply_scoped_batch(scoped(
-            &p,
-            revision,
-            "cascade",
-            &["p2"],
-            vec![Operation::DeleteSubtree { id: "r1".into() }]
-        ))
-        .unwrap_err()
-        .code,
-        "SCOPED_OPERATION_UNSUPPORTED"
-    );
+    // The cascaded note was anchored on the guarded page, so its key is covered.
+    p.apply_scoped_batch(scoped(
+        &p,
+        revision,
+        "cascade",
+        &["p2"],
+        vec![Operation::DeleteSubtree { id: "r1".into() }],
+    ))
+    .unwrap();
+    assert!(p.snapshot().unwrap().notes.is_empty());
     let revision = p.snapshot().unwrap().revision;
     strict(
         &p,

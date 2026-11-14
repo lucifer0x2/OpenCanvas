@@ -129,6 +129,7 @@ impl RevisionIndexes {
                 .page_nodes
                 .values()
                 .chain(self.pages.roots.values())
+                .chain([&self.pages.order])
                 .map(|ids| ids.iter().map(|s| 24 + s.len()).sum::<usize>() + 96)
                 .sum::<usize>();
         let roots = self

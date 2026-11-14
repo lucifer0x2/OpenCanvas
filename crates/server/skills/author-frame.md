@@ -61,12 +61,13 @@ pretend that memory has been read, initialized or saved.
    concurrently. `get_edit_context` reports guard/dependency metadata; never use
    a newer guard to relabel an older design read. After scoped success, reuse
    `editGuard` for the next batch; after a valid preview it remains provisional.
-   Cross-page moves require both pages. Omit `pageIds` for strict revision mode
-   when writing shared tokens/styles/fonts/assets, notes, page structure or
-   `flowStart`, creating the first root frame, or deleting/reparenting/reordering
-   root frames. A later root frame may be appended without an explicit index.
-   Scoped deletion that cascades notes is rejected. Read again before switching
-   a rejected scoped batch to strict mode; never just raise its revision.
+   Cross-page moves require both pages; notes require their anchor pages. A new
+   page may be appended with its ID in `pageIds`, and root frames appended
+   without an explicit index. Omit `pageIds` for strict revision mode when
+   writing shared tokens/styles/fonts/assets or `flowStart`, deleting, reordering
+   or editing pages, deleting/reparenting/reordering root frames, or creating a
+   page or root frame that becomes the project's first. Read again before
+   switching a rejected scoped batch to strict mode; never raise its revision.
    After a lost response replay that body; never change a replay body under the
    same key.
 5. On explicit `REVISION_CONFLICT`, inspect `error.changedSince` (`fromRevision`,

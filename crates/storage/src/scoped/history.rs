@@ -46,12 +46,19 @@ pub(super) fn footprint_indexed(
     };
     let mut keys = BTreeSet::new();
     bench_phase::count("history.compared_ids", ids.len());
-    if super::navigation::changed(&old_nodes, after, &ids, old_pages, new_pages) {
+    let global = super::navigation::changed(&old_nodes, after, &ids, old_pages, new_pages);
+    if global {
         keys.insert("*".into());
     }
     for id in &ids {
-        if !same(old_nodes.get(id).copied(), after.nodes.get(*id))? {
+        let (old, new) = (old_nodes.get(id).copied(), after.nodes.get(*id));
+        if !same(old, new)? {
             keys.insert(format!("node:{id}"));
+            // Appending a page may compact other pages' sort keys; with order
+            // preserved (no wildcard) their content and guards are unaffected.
+            if !global && only_sort_key(old, new)? {
+                continue;
+            }
             for pages in [old_pages, new_pages] {
                 if let Some(page) = pages.page(id) {
                     keys.insert(format!("page:{page}"));
@@ -81,7 +88,14 @@ pub(super) fn footprint_indexed(
     diff!(styles, "style");
     diff!(assets, "asset");
     diff!(fonts, "font");
-    diff!(notes, "note");
+    super::notes::footprint(
+        before,
+        after,
+        changed.map(|_| &ids),
+        old_pages,
+        new_pages,
+        &mut keys,
+    )?;
     let old_fonts: BTreeMap<_, _> = before.fonts.iter().map(|f| (f.id.as_str(), f)).collect();
     for font in before.fonts.iter().chain(after.fonts.values()) {
         if changed.is_some() && !ids.contains(font.id.as_str()) {
@@ -98,7 +112,19 @@ pub(super) fn footprint_indexed(
     Ok(keys)
 }
 
-fn same<T: serde::Serialize>(before: Option<&T>, after: Option<&T>) -> Result<bool> {
+fn only_sort_key(old: Option<&Node>, new: Option<&Node>) -> Result<bool> {
+    let (Some(old), Some(new)) = (old, new) else {
+        return Ok(false);
+    };
+    if old.kind != NodeKind::Page {
+        return Ok(false);
+    }
+    let mut new = new.clone();
+    new.sort_key = old.sort_key;
+    same(Some(old), Some(&new))
+}
+
+pub(super) fn same<T: serde::Serialize>(before: Option<&T>, after: Option<&T>) -> Result<bool> {
     Ok(serde_json::to_vec(&before)? == serde_json::to_vec(&after)?)
 }
 
