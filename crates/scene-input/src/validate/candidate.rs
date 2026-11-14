@@ -47,7 +47,7 @@ impl Candidate {
         if self.nodes.len() > MAX_NODES {
             return Err(StorageError::validation(
                 "nodes",
-                "Project exceeds 20000 authored nodes",
+                &format!("Project exceeds {MAX_NODES} authored nodes"),
             ));
         }
         use crate::bench_phase::time;

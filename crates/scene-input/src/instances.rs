@@ -113,7 +113,7 @@ impl<L: Lookup> Expander<'_, L> {
         if out.len() >= MAX_NODES {
             return Err(StorageError::new(
                 "INSTANCE_LIMIT",
-                "Expanded project exceeds 20000 nodes",
+                &format!("Expanded project exceeds {MAX_NODES} nodes"),
             ));
         }
         if node.kind != NodeKind::Instance {

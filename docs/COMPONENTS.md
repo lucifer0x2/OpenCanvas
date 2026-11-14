@@ -17,7 +17,7 @@ overrides, including style/token/font/asset dependencies across themes. Outline 
 subtree keep instances as leaves; a virtual-child scope reads that child directly.
 `find_nodes` supports `kinds:["instance"]`, `properties:["componentId"]` and effective
 overridden child text. Snapshot/bundle storage remains authored. Cycles/depth >8,
-invalid override kinds/refs and an expanded project >20,000 nodes are rejected
+invalid override kinds/refs and an expanded project >200,000 nodes are rejected
 atomically; deleting an in-use master returns `COMPONENT_IN_USE` with `count` and
 up to 20 `instanceIds`. No new MCP tool is added.
 
