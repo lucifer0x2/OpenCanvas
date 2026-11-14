@@ -1,6 +1,6 @@
 use crate::model::*;
 use crate::stack::{self, Parent};
-use crate::util::{dim, err, hugs_height, is_fill};
+use crate::util::{dim, err, is_fill, root_hugs_height};
 use std::collections::HashMap;
 use taffy::prelude::*;
 
@@ -58,16 +58,17 @@ pub(crate) fn build(
         };
         stack::apply(&mut style, layout, insets);
     }
+    let hugs = root && root_hugs_height(p, input.viewport.width);
     if root {
         style.size = Size {
             width: length(input.viewport.width as f32),
-            height: if hugs_height(n) {
+            height: if hugs {
                 auto()
             } else {
                 length(input.viewport.height as f32)
             },
         };
-        if hugs_height(n) {
+        if hugs {
             // A paintable surface: an empty hug root is still one pixel tall.
             style.min_size.height = length(p.min_height.unwrap_or(0.0).max(1.0));
         }

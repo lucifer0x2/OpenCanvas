@@ -39,14 +39,14 @@ pub fn resolve(
         .get(node_id)
         .ok_or_else(|| ApiError::new("NODE_NOT_FOUND", "Node does not exist at this revision"))?;
     let root = root_frame(nodes, node)?;
-    let size = |key: &str| {
-        let value = &nodes.resolved.get(root.id.as_str())?.props[key];
-        // A hug height ignores the viewport height; the scene reports the computed one.
-        value
-            .as_f64()
-            .or((key == "height" && value == "hug").then_some(1.0))
-    };
-    let (Some(width), Some(height)) = (size("width"), size("height")) else {
+    let props = nodes.resolved.get(root.id.as_str()).map(|n| &n.props);
+    let width = props.and_then(|p| p["width"].as_f64());
+    // A hug root ignores the viewport height; the scene reports the computed one.
+    let height = props.and_then(|p| {
+        let hugs = width.is_some_and(|w| opencanvas_storage::root_hugs_height(p, w));
+        p["height"].as_f64().or(hugs.then_some(1.0))
+    });
+    let (Some(width), Some(height)) = (width, height) else {
         return Err(unsupported("Root frame has no numeric width and height"));
     };
     let request = SceneRequest {

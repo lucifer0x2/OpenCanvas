@@ -102,6 +102,15 @@ fn breakpoints_reflow_and_the_height_follows() {
 }
 
 #[test]
+fn a_free_rule_keeps_the_viewport_height() {
+    let layout = json!({"mode":"free","breakpoints":[{"maxWidth":400,"layout":{"mode":"column"}}]});
+    let nodes = json!([rect("a", "f", 100., 40.)]);
+    let wide = hug((800., 600.), layout.clone(), nodes.clone(), json!({}));
+    assert_eq!(surface(wide), (800., 600., [0., 0., 800., 600.]));
+    assert_eq!(surface(hug((375., 600.), layout, nodes, json!({}))).1, 40.);
+}
+
+#[test]
 fn hug_root_height_is_not_a_definite_parent_axis() {
     let layout = json!({"mode":"column"});
     for (props, message) in [

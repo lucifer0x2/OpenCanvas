@@ -125,7 +125,7 @@ pub fn frame_input(
         .map(|a| json!({"id":a.id,"hash":a.content_hash,"url":"","mediaType":a.media_type}))
         .collect();
     // A hug-height scene root ignores the viewport height; one value keeps inputs equal.
-    let height = if nodes[0].props["height"] == "hug" {
+    let height = if root_hugs_height(&nodes[0].props, options.width) {
         1.0
     } else {
         options.height
@@ -135,6 +135,14 @@ pub fn frame_input(
         "frameId":options.frame_id,"viewport":{"width":options.width,"height":height},
         "theme":options.theme,"state":options.state,"nodes":nodes,"fonts":fonts,"assets":assets}),
     )
+}
+
+/// Whether a scene root of these resolved props takes its content height at `width`
+/// (`height:"hug"` under a row/column rule) instead of the viewport height.
+pub fn root_hugs_height(props: &Value, width: f64) -> bool {
+    let sizing = json!({"height":props["height"],"layout":props["layout"]});
+    serde_json::from_value(sizing)
+        .is_ok_and(|props| opencanvas_layout::root_hugs_height(&props, width))
 }
 
 fn invalid(message: &str) -> StorageError {

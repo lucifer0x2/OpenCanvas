@@ -148,7 +148,7 @@ fn surface(
     root: &SceneNode,
     root_idx: usize,
 ) -> Result<Viewport, LayoutError> {
-    if !hugs_height(&input.nodes[root_idx]) {
+    if !root_hugs_height(&input.nodes[root_idx].props, input.viewport.width) {
         return Ok(input.viewport.clone());
     }
     let height = f64::from(root.bounds.height);

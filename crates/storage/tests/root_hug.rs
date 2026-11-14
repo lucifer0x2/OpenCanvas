@@ -56,6 +56,25 @@ fn hug_height_is_accepted_and_scene_input_ignores_the_viewport_height() {
     };
     assert_eq!(input(844.), input(600.));
     assert_eq!(input(844.)["viewport"], json!({"width":390.,"height":1.}));
+    // A free component master with a hug height keeps the requested viewport, as before.
+    let master = create(
+        "master",
+        NodeKind::Frame,
+        Some("page"),
+        json!({"component":{"name":"Tile"},"width":200,"height":"hug"}),
+    );
+    p.apply_batch(request(&p, 1, "master", vec![master]))
+        .unwrap();
+    let snapshot = p.snapshot().unwrap();
+    let options = SceneOptions {
+        frame_id: "master".into(),
+        width: 200.,
+        height: 600.,
+        theme: "default".into(),
+        state: "default".into(),
+    };
+    let input = make_input(&snapshot, &options).unwrap();
+    assert_eq!(input["viewport"], json!({"width":200.,"height":600.}));
 }
 
 #[test]

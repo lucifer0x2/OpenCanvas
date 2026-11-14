@@ -66,7 +66,7 @@ fn compute_with_source(
         root,
         Size {
             width: AvailableSpace::Definite(input.viewport.width as f32),
-            height: if hugs_height(&input.nodes[root_idx]) {
+            height: if root_hugs_height(&input.nodes[root_idx].props, input.viewport.width) {
                 AvailableSpace::MaxContent
             } else {
                 AvailableSpace::Definite(input.viewport.height as f32)
