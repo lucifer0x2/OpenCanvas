@@ -1,6 +1,6 @@
 //! What exporting one node means: its root frame laid out at authored size (a hug height at
-//! its content), and its settings
-//! (the call's, else the node's `exportSettings`, else one PNG at 1x) with file names.
+//! its content), and its settings (the call's, else the node's `exportSettings`, else one PNG
+//! at 1x) with file names.
 use crate::{
     error::{ApiError, Result},
     jobs::{ExportSetting, ExportSpec, SceneRequest},
