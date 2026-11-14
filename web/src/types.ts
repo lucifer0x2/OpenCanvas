@@ -48,6 +48,8 @@ export interface SceneRequest extends Viewport {
   projectId: string;
   revision: number;
   frameId: string;
+  /** The root height hugs content: the scene reports it and `height` is a placeholder. */
+  hugHeight?: boolean;
 }
 
 export interface RenderJob {

@@ -20,24 +20,26 @@ pub(crate) fn rect(id: &str, parent: &str, w: f32, h: f32) -> Value {
     node(id, parent, "rectangle", json!({"width":w,"height":h}))
 }
 
-/// Runs `compute` to a scene, measuring text at 8 px per character and 24 px per line.
+/// Node bounds of [`scene`] by ID.
 pub(crate) fn run(value: Value) -> Boxes {
+    scene(value)
+        .nodes
+        .into_iter()
+        .map(|n| {
+            (
+                n.id,
+                [n.bounds.x, n.bounds.y, n.bounds.width, n.bounds.height],
+            )
+        })
+        .collect()
+}
+/// Runs `compute` to a scene, measuring text at 8 px per character and 24 px per line.
+pub(crate) fn scene(value: Value) -> Scene {
     let input: LayoutInput = serde_json::from_value(value).unwrap();
     let mut cache = MeasureCache::new();
     for _ in 0..MAX_PASSES {
         match compute(&input, &cache).unwrap() {
-            LayoutStep::Ready { scene } => {
-                return scene
-                    .nodes
-                    .into_iter()
-                    .map(|n| {
-                        (
-                            n.id,
-                            [n.bounds.x, n.bounds.y, n.bounds.width, n.bounds.height],
-                        )
-                    })
-                    .collect();
-            }
+            LayoutStep::Ready { scene } => return scene,
             LayoutStep::Pending { requests } => {
                 for r in requests {
                     let chars = r.text.chars().count();

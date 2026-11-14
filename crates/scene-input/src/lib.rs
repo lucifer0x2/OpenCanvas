@@ -27,7 +27,9 @@ pub use export_settings::{
     check_export_settings, export_format, export_suffix, EXPORT_FORMATS, MAX_EXPORT_SETTINGS,
 };
 pub use image_fit::IMAGE_FITS;
-pub use input::{frame_input, make_input, make_input_with_scale, ResolvedNodes, SceneOptions};
+pub use input::{
+    frame_input, make_input, make_input_with_scale, root_hugs_height, ResolvedNodes, SceneOptions,
+};
 pub use links::{
     flow_start, node_links, Link, LINK_ACTIONS, LINK_KEYS, LINK_TRIGGERS, MAX_FLOW_NAME,
 };

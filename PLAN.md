@@ -59,7 +59,7 @@ Phần viewer chỉ đọc và contract dữ liệu không phụ thuộc việc 
 
 MVP hỗ trợ page, frame, group, rectangle, text và image; group dùng layout hoặc tọa độ tự do.
 Layout gồm row/column, padding (một số hoặc 1–4 cạnh kiểu CSS), gap, `align`/`justify` (P08a), fixed/fill/hug, min/max và row wrap opt-in đã duyệt ngày 2026-10-28.
-Frame gốc có kích thước cố định; không hỗ trợ chu kỳ phần trăm hoặc fill trong trục hug mơ hồ.
+Frame gốc có width số; height số hoặc `hug` theo nội dung (OC-5, chỉ với layout row/column); không hỗ trợ chu kỳ phần trăm hoặc fill trong trục hug mơ hồ.
 Text dùng một font/style mỗi node, plain text, line height tường minh và wrap theo chiều rộng.
 Image chỉ cần fit/contain/cover, crop đơn giản, opacity và clip theo frame.
 MVP có literal tokens kiểu color/dimension/number, primitive styles và typed refs ở property được hỗ trợ.
@@ -71,7 +71,7 @@ Không cam kết tự động mô phỏng CSS media query hoặc mọi hành vi 
 
 ### Responsive opt-in — kích thước tỷ lệ và breakpoint
 
-- Node con nhận `width` và `height` là phần trăm thập phân từ `0%` đến `100%`, theo trục cha xác định. Root frame giữ kích thước authored dạng số và dùng viewport khi render. Min/max tính theo pixel.
+- Node con nhận `width` và `height` là phần trăm thập phân từ `0%` đến `100%`, theo trục cha xác định. Root frame giữ width số và dùng viewport khi render; height `hug` lấy chiều cao nội dung. Min/max tính theo pixel.
 - Container có thể khai báo tối đa tám `layout.breakpoints` theo `maxWidth` tăng dần. Chọn layout đầu tiên thỏa `viewport.width <= maxWidth`, dùng layout mặc định ngoài các ngưỡng. Mỗi layout thay thế hoàn chỉnh và không lồng breakpoint.
 - Backend, layout binary, render và inspect dùng cùng quy tắc. Giữ authored revision và cập nhật backend với layout binary trong cùng image. Xem [hợp đồng responsive](docs/CONTRACT.md#responsive-layout).
 
@@ -83,7 +83,7 @@ Thiếu/false giữ hành vi cũ ở row/column/free; true chỉ cho container p
 với mode row. Sai kiểu (null/string/number/ref) bị từ chối; storage vẫn reject unknown keys.
 Wrapping row cần width số hữu hạn >0 hoặc fill qua chuỗi ancestor fill tới width số >0;
 width thiếu/hug hoặc chỉ có min/max không definite. Direct layout chốt selected frame
-bằng viewport hữu hạn; storage kiểm mọi theme, chốt root frame fixed cả hai trục.
+bằng viewport hữu hạn; storage kiểm mọi theme, chốt root frame width fixed, height fixed hoặc hug.
 Child trực tiếp width fill cần minWidth tường minh >0 (dimension ref resolve hợp lệ);
 fixed/hug child hợp lệ, không áp guard này cho text fill nằm trong card column.
 Row rỗng hợp lệ; giữ guard fill trong hug hiện có trên cả hai trục.

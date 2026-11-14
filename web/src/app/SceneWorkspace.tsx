@@ -56,6 +56,7 @@ export function SceneWorkspace({
           frameId: frame.id,
           width: viewport.width || frameDimensions(frame).width,
           height: viewport.height || frameDimensions(frame).height,
+          hugHeight: frameDimensions(frame).hugHeight,
         }
       : null;
   const singleView = useScene(request, retryKey, preset, snapshot);

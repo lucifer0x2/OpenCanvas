@@ -56,8 +56,8 @@ must identify a page. `offset` defaults to zero and may equal `total` (empty fin
 batch), but cannot exceed it. `limit` defaults to four and must be 1–4; oversized
 values are rejected. Unknown or malformed query fields return `INVALID_REQUEST`.
 Omit both `width` and `height` to use each frame's authored positive numeric size
-(fallback 800×600 per missing/non-numeric dimension), or supply both for a shared
-viewport. Existing render viewport/pixel budgets apply; theme/state are default,
+(fallback 800×600 per missing/non-numeric dimension; a root `height:"hug"` always
+follows its content), or supply both for a shared viewport. Existing render viewport/pixel budgets apply; theme/state are default,
 scale is one. An unavailable revision returns `REVISION_UNAVAILABLE`.
 
 All selected frame inputs validate before queue admission. If the requested queue

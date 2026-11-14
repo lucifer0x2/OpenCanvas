@@ -91,6 +91,7 @@ async fn complete_scene_geometry_is_exact_between_real_chromium_and_node_free_na
     let mut ops = fixtures::repo_wrap();
     ops.extend(fixtures::typography());
     ops.extend(fixtures::missing_control());
+    ops.extend(fixtures::long_page());
     let created = chromium.batch(&project, imported, json!(ops)).await;
     let revision = imported + 1;
     assert_eq!(created["committedRevision"], revision, "{created}");
@@ -105,7 +106,7 @@ async fn complete_scene_geometry_is_exact_between_real_chromium_and_node_free_na
         "one identical authored store snapshot"
     );
     let mut comparison = Comparison::default();
-    for frame in ["frame", "typography"] {
+    for frame in ["frame", "typography", "long-page"] {
         let expected = descendants(&ops, frame);
         let mut at_widths = Vec::new();
         for width in [1040, 721, 720, 390] {
@@ -116,6 +117,13 @@ async fn complete_scene_geometry_is_exact_between_real_chromium_and_node_free_na
                     .await;
                 let rust = native.scene(&project, revision, frame, width, state).await;
                 metadata(&browser, &rust);
+                if frame == "long-page" {
+                    for job in [&browser, &rust] {
+                        let h = job["scene"]["provenance"]["viewport"]["height"].as_f64();
+                        let png = h.map(|h| (h * 0.25).ceil());
+                        assert_eq!(job["image"]["height"].as_f64(), png, "hug PNG height");
+                    }
+                }
                 compare::no_missing(&browser);
                 compare::no_missing(&rust);
                 let label = format!("fixture={frame}/viewport={width}x1200/state={state}");
@@ -136,6 +144,13 @@ async fn complete_scene_geometry_is_exact_between_real_chromium_and_node_free_na
             .skip(1)
             .any(|(a, b)| a["bounds"] != b["bounds"]);
         assert!(descendants_changed, "descendants actually reflow: {frame}");
+        if frame == "long-page" {
+            let height = |nodes: &Value| nodes[0]["bounds"]["height"].as_f64().unwrap();
+            assert!(
+                height(&at_widths[3]) > height(&at_widths[0]),
+                "hug root grows"
+            );
+        }
         if frame == "typography" {
             for (index, expected_x) in [(1, 24.0), (2, 12.0)] {
                 let cards = at_widths[index]

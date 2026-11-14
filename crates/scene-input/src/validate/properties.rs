@@ -145,14 +145,7 @@ impl Resolver<'_> {
                 .and_then(|p| self.nodes.get(p))
                 .is_some_and(|p| p.kind == NodeKind::Page)
         {
-            for key in ["width", "height"] {
-                if !p.get(key).is_some_and(Value::is_number) {
-                    return Err(StorageError::validation(
-                        key,
-                        "Root frames require fixed width and height",
-                    ));
-                }
-            }
+            super::root_size::check_root_size(p)?;
         }
         Ok(())
     }

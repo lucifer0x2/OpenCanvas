@@ -22,6 +22,19 @@ pub(crate) fn finite(n: f32) -> bool {
 pub(crate) fn is_fill(n: &Option<Sizing>) -> bool {
     matches!(n, Some(Sizing::Rule(r)) if r == "fill")
 }
+pub(crate) fn is_hug(n: &Option<Sizing>) -> bool {
+    matches!(n, Some(Sizing::Rule(r)) if r == "hug")
+}
+/// A scene root with `height:"hug"` and a row/column rule at this viewport width takes its
+/// content height instead of the viewport's. A free root keeps the viewport height, as before:
+/// its absolute children would not size it.
+pub fn root_hugs_height(root: &Props, width: f64) -> bool {
+    is_hug(&root.height)
+        && root
+            .layout
+            .as_ref()
+            .is_some_and(|l| l.at_width(width).mode != "free")
+}
 pub(crate) fn dim(n: &Option<Sizing>, fill_percent: bool) -> Dimension {
     match n {
         Some(Sizing::Fixed(v)) => length(*v),

@@ -1,10 +1,11 @@
 import type { FrameSceneView, SceneView } from "../hooks/useScene";
 import type { Scene } from "../../../renderer/types";
 import type { SceneRequest } from "../types";
+import { shownHeight } from "../frameScope.ts";
 
 export type FrameTarget = Pick<
   FrameSceneView,
-  "id" | "name" | "width" | "height"
+  "id" | "name" | "width" | "height" | "hugHeight"
 >;
 
 /**
@@ -22,6 +23,7 @@ export function seedFrames(
     return old?.scene && old.resources
       ? {
           ...target,
+          height: shownHeight(target, old.scene),
           scene: old.scene,
           resources: old.resources,
           revision: old.revision,

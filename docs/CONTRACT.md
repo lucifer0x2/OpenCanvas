@@ -87,7 +87,9 @@ Layers ordered by `sortKey` within parent. Page/frame selection derives from aut
 Child `width` and `height` accept literal decimal strings from `"0%"` to
 `"100%"`. The corresponding parent axis must be numeric or follow a fill or
 percentage chain to a numeric size. The selected frame uses the render viewport
-as its root size. Percentages use the parent's content box in a stack and its
+as its root size, except that a `height:"hug"` root (row/column layout only)
+takes its content height; the scene viewport reports it and children cannot
+fill or take a percentage of it. Percentages use the parent's content box in a stack and its
 padding box under free positioning. Pixel min/max bounds still apply.
 
 Containers may set `layout.breakpoints` to up to eight `{maxWidth, layout}`
